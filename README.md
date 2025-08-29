@@ -2,6 +2,9 @@
 
 A Flask web application for managing casual workers and company setup forms.
 
+## Status
+🚀 Ready for deployment to Google Cloud Run with 4Gi memory configuration.
+
 ## Features
 
 - User authentication with Firebase

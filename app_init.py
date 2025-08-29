@@ -1,0 +1,476 @@
+from flask import Flask, session, request, send_from_directory, g, url_for, redirect, jsonify
+import logging
+import os
+import traceback
+import subprocess
+from datetime import datetime
+from models import db, User, Company, Workspace, UserWorkspace
+
+# Create Flask app
+app = Flask(__name__)
+app.secret_key = 'supersecretkey'
+
+# Database configuration - use Cloud SQL in production, SQLite for local development
+if os.environ.get('GAE_ENV', '').startswith('standard') or os.environ.get('CLOUD_SQL_CONNECTION_NAME') or os.environ.get('K_SERVICE'):
+    # Production: Use Cloud SQL
+    db_user = os.environ.get('DB_USER', 'postgres')
+    db_pass = os.environ.get('DB_PASS', '')
+    db_name = os.environ.get('DB_NAME', 'casual_worker_db')
+    
+    # For Cloud SQL Proxy
+    if os.environ.get('CLOUD_SQL_CONNECTION_NAME'):
+        # Use the Cloud SQL connection format
+        connection_name = os.environ.get('CLOUD_SQL_CONNECTION_NAME')
+        app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://{db_user}:{db_pass}@/{db_name}?host=/cloudsql/{connection_name}'
+    else:
+        db_host = os.environ.get('DB_HOST', 'localhost')
+        app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://{db_user}:{db_pass}@{db_host}/{db_name}'
+    
+    # Log database configuration for debugging
+    logging.info(f"Using Cloud SQL configuration:")
+    logging.info(f"  DB_USER: {db_user}")
+    logging.info(f"  DB_NAME: {db_name}")
+    logging.info(f"  CLOUD_SQL_CONNECTION_NAME: {os.environ.get('CLOUD_SQL_CONNECTION_NAME')}")
+    logging.info(f"  K_SERVICE: {os.environ.get('K_SERVICE')}")
+    logging.info(f"  GAE_ENV: {os.environ.get('GAE_ENV')}")
+    logging.info(f"  Database URI: {app.config['SQLALCHEMY_DATABASE_URI']}")
+else:
+    # Development: Use SQLite
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.sqlite'
+    logging.info("Using SQLite configuration for development")
+    logging.info(f"  Environment variables:")
+    logging.info(f"    CLOUD_SQL_CONNECTION_NAME: {os.environ.get('CLOUD_SQL_CONNECTION_NAME')}")
+    logging.info(f"    K_SERVICE: {os.environ.get('K_SERVICE')}")
+    logging.info(f"    GAE_ENV: {os.environ.get('GAE_ENV')}")
+
+app.static_folder = 'static'
+app.static_url_path = '/static'
+
+# Configure session settings for production
+app.config['SESSION_COOKIE_SECURE'] = False  # Set to True in production with HTTPS
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # 1 hour
+
+# Initialize extensions
+db.init_app(app)
+
+# Master Admin Configuration
+MASTER_ADMIN_EMAIL = os.environ.get('MASTER_ADMIN_EMAIL', 'markbmwape@gmail.com')  # Set your email here
+
+def is_master_admin():
+    """Check if current user is the master admin"""
+    if 'user' not in session or 'user_email' not in session['user']:
+        return False
+    
+    # Check against MasterAdmin table first
+    from models import MasterAdmin
+    master_admin = MasterAdmin.query.filter_by(
+        email=session['user']['user_email'], 
+        is_active=True
+    ).first()
+    
+    if master_admin:
+        return True
+    
+    # Fallback to hardcoded email for backward compatibility
+    return session['user']['user_email'] == MASTER_ADMIN_EMAIL
+
+def master_admin_required(f):
+    """Decorator to require master admin access"""
+    from functools import wraps
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not is_master_admin():
+            return redirect(url_for('home_route'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+# Import routes to register them with the app early
+import routes
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+def auth_required(protected_routes=[]):
+    def decorator(f):
+        def decorated_view(*args, **kwargs):
+            if request.endpoint not in protected_routes or request.endpoint == 'static':
+                return f(*args, **kwargs)
+            
+            # For now, bypass authentication and create a mock user session
+            if 'user' not in session or 'user_email' not in session['user']:
+                # Create a mock user session
+                session['user'] = {
+                    'user_email': 'demo@example.com',
+                    'display_name': 'Demo User',
+                    'photo_url': '',
+                    'uid': 'demo123'
+                }
+            
+            return f(*args, **kwargs)
+        decorated_view.__name__ = f.__name__
+        return decorated_view
+    return decorator
+
+@app.after_request
+def create_or_update_user(response):
+    try:
+        if 'user' in session and 'user_email' in session['user']:
+            email = session['user']['user_email']
+            profile_picture = session['user'].get('photo_url')
+            with app.app_context():
+                user = User.query.filter_by(email=email).first()
+                if not user:
+                    new_user = User(email=email, profile_picture=profile_picture)
+                    db.session.add(new_user)
+                    db.session.commit()
+                    logging.info(f"Created new user: {email}")
+                elif user.profile_picture != profile_picture:
+                    user.profile_picture = profile_picture
+                    db.session.commit()
+                    logging.info(f"Updated profile picture for user: {email}")
+    except Exception as e:
+        logging.error(f"Error in create_or_update_user: {str(e)}")
+        # Don't let database errors break the response
+    return response
+
+# Initialize database with Alembic migrations
+with app.app_context():
+    try:
+        # Run Alembic migrations with better error handling
+        import subprocess
+        result = subprocess.run(
+            ["python3", "-m", "alembic", "upgrade", "head"],
+            capture_output=True,
+            text=True,
+            cwd=os.getcwd(),
+            timeout=120  # Increased timeout to 2 minutes
+        )
+        if result.returncode == 0:
+            logging.info("Alembic migrations applied successfully")
+        else:
+            logging.warning(f"Alembic migration warning: {result.stderr}")
+            # Continue execution even if migration fails
+    except subprocess.TimeoutExpired:
+        logging.warning("Alembic migration timed out, continuing with application startup")
+    except Exception as e:
+        logging.error(f"Error applying Alembic migrations: {str(e)}")
+        # Continue execution even if migration fails
+    
+    # Ensure all required columns exist (fallback for Cloud Run)
+    try:
+        with db.engine.connect() as conn:
+            # Check and add workspace_id to company table
+            cursor = conn.execute(db.text("PRAGMA table_info(company)"))
+            company_columns = [row[1] for row in cursor.fetchall()]
+            
+            if 'workspace_id' not in company_columns:
+                logging.info("Adding workspace_id column to company table")
+                conn.execute(db.text("ALTER TABLE company ADD COLUMN workspace_id INTEGER REFERENCES workspace(id)"))
+                conn.commit()
+            
+            # Check and add other required columns
+            if 'daily_payout_rate' not in company_columns:
+                logging.info("Adding daily_payout_rate column to company table")
+                conn.execute(db.text("ALTER TABLE company ADD COLUMN daily_payout_rate FLOAT DEFAULT 56.0"))
+                conn.commit()
+            
+            if 'currency' not in company_columns:
+                logging.info("Adding currency column to company table")
+                conn.execute(db.text("ALTER TABLE company ADD COLUMN currency VARCHAR(3) DEFAULT 'ZMW'"))
+                conn.commit()
+            
+            if 'currency_symbol' not in company_columns:
+                logging.info("Adding currency_symbol column to company table")
+                conn.execute(db.text("ALTER TABLE company ADD COLUMN currency_symbol VARCHAR(5) DEFAULT 'K'"))
+                conn.commit()
+            
+            if 'phone' not in company_columns:
+                logging.info("Adding phone column to company table")
+                conn.execute(db.text("ALTER TABLE company ADD COLUMN phone VARCHAR(20) DEFAULT ''"))
+                conn.commit()
+            
+            # Check worker table
+            cursor = conn.execute(db.text("PRAGMA table_info(worker)"))
+            worker_columns = [row[1] for row in cursor.fetchall()]
+            
+            if 'date_of_birth' not in worker_columns:
+                logging.info("Adding date_of_birth column to worker table")
+                conn.execute(db.text("ALTER TABLE worker ADD COLUMN date_of_birth DATE"))
+                conn.commit()
+            
+            # Check task table
+            cursor = conn.execute(db.text("PRAGMA table_info(task)"))
+            task_columns = [row[1] for row in cursor.fetchall()]
+            
+            if 'payment_type' not in task_columns:
+                logging.info("Adding payment_type column to task table")
+                conn.execute(db.text("ALTER TABLE task ADD COLUMN payment_type VARCHAR(20) DEFAULT 'per_day'"))
+                conn.commit()
+            
+            if 'per_part_rate' not in task_columns:
+                logging.info("Adding per_part_rate column to task table")
+                conn.execute(db.text("ALTER TABLE task ADD COLUMN per_part_rate FLOAT"))
+                conn.commit()
+            
+            if 'per_part_payout' not in task_columns:
+                logging.info("Adding per_part_payout column to task table")
+                conn.execute(db.text("ALTER TABLE task ADD COLUMN per_part_payout FLOAT"))
+                conn.commit()
+            
+            if 'per_part_currency' not in task_columns:
+                logging.info("Adding per_part_currency column to task table")
+                conn.execute(db.text("ALTER TABLE task ADD COLUMN per_part_currency VARCHAR(10)"))
+                conn.commit()
+            
+            if 'completion_date' not in task_columns:
+                logging.info("Adding completion_date column to task table")
+                conn.execute(db.text("ALTER TABLE task ADD COLUMN completion_date DATETIME"))
+                conn.commit()
+            
+            # Check attendance table
+            cursor = conn.execute(db.text("PRAGMA table_info(attendance)"))
+            attendance_columns = [row[1] for row in cursor.fetchall()]
+            
+            if 'units_completed' not in attendance_columns:
+                logging.info("Adding units_completed column to attendance table")
+                conn.execute(db.text("ALTER TABLE attendance ADD COLUMN units_completed INTEGER"))
+                conn.commit()
+        
+        logging.info("Database schema verification completed successfully")
+        
+    except Exception as e:
+        logging.error(f"Error ensuring database schema: {str(e)}")
+        # Continue anyway - the app might still work with partial schema
+
+app.config['LOGO_URL'] = '/static/logo.png'
+
+# Set default theme
+app.config['THEME'] = 'lofi'
+# PICK FROM ANY DAISY UI THEME ALL YOU HAVE TO DO IS CHANGE THIS VARIABLE!
+
+# Set default app title
+app.config['APP_TITLE'] = 'My Dashboard'
+
+# Context processor to inject theme and app title into all templates
+@app.context_processor
+def inject_theme_and_title():
+    return dict(theme=app.config['THEME'], app_title=app.config['APP_TITLE'])
+
+# Set up authentication for protected routes
+protected_routes = [
+    'home_route', 
+    'workers_route', 
+    'tasks_route', 
+    'reports_route', 
+    'attendance_route',
+    'task_attendance_route',
+    'task_units_completed_route',
+    'payments_route',
+    'update_payout_rate',
+    'create_worker',
+    'create_task',
+    'create_company',
+    'import_field',
+    'delete_import_field',
+    'import_workers',
+    'add_team_member',
+    'update_team_member_role',
+    'delete_team_member',
+    'analyze_columns',
+    'import_mapped_workers',
+    'delete_worker',
+    'update_worker',
+    'update_task_attendance',
+    'add_worker_to_task',
+    'bulk_delete_workers',
+    'update_task_date',
+    'delete_task',
+    'update_task_status',
+    'download_report',
+    'manage_report_field'
+]
+
+# Create a simple before_request handler that bypasses auth for now
+@app.before_request
+def check_auth():
+    # Only check authentication for protected routes, not for sign-in related routes
+    if request.endpoint and request.endpoint != 'static':
+        # Check if this is a protected route that needs authentication
+        if request.endpoint in protected_routes:
+            # Add debugging
+            logging.info(f"Checking auth for endpoint: {request.endpoint}")
+            logging.info(f"Session user: {session.get('user')}")
+            logging.info(f"Session keys: {list(session.keys())}")
+            
+            # For protected routes, check if user is authenticated
+            if 'user' not in session or 'user_email' not in session['user']:
+                logging.warning(f"Authentication failed for {request.endpoint}. Session: {dict(session)}")
+                # Redirect to workspace selection instead of signin
+                return redirect(url_for('workspace_selection_route'))
+            
+            # Check if user has an active workspace
+            if 'current_workspace' not in session:
+                logging.warning(f"No active workspace for {request.endpoint}. Session: {dict(session)}")
+                return redirect(url_for('workspace_selection_route'))
+            
+            # Ensure demo user exists in DB for authenticated users
+            try:
+                user = User.query.filter_by(email=session['user']['user_email']).first()
+                if not user:
+                    user = User(email=session['user']['user_email'], profile_picture='', role='Admin')
+                    db.session.add(user)
+                    db.session.commit()
+                    logging.info("Created user in DB.")
+            except Exception as e:
+                logging.error(f"Error creating/querying user: {str(e)}")
+                # Continue without user creation if there's a database error
+            
+            # Check trial expiration for admin users
+            try:
+                if user and 'current_workspace' in session:
+                    workspace_id = session['current_workspace']['id']
+                    workspace = Workspace.query.get(workspace_id)
+                    
+                    if workspace and session['current_workspace'].get('role') == 'Admin':
+                        from datetime import datetime
+                        now = datetime.utcnow()
+                        
+                        # Check if trial has expired
+                        if workspace.trial_end_date and now > workspace.trial_end_date and workspace.subscription_status == 'trial':
+                            # Only redirect to payments if not already on payments page
+                            if request.endpoint != 'payments_route':
+                                logging.info(f"Trial expired for workspace {workspace.name}, redirecting admin to payments")
+                                return redirect(url_for('payments_route'))
+            except Exception as e:
+                logging.error(f"Error checking trial expiration: {str(e)}")
+            
+            # Ensure demo company exists in DB for authenticated users
+            try:
+                if user and 'current_workspace' in session:
+                    workspace_id = session['current_workspace']['id']
+                    company = Company.query.filter_by(workspace_id=workspace_id).first()
+                    if not company:
+                        company = Company(
+                            name='Demo Company',
+                            registration_number='DEMO123',
+                            address='123 Demo Street',
+                            industry='Demo Industry',
+                            created_by=user.id,
+                            workspace_id=workspace_id,
+                            daily_payout_rate=56.0,
+                            currency='ZMW',
+                            currency_symbol='K',
+                            phone='0000000000'  # Default phone value
+                        )
+                        db.session.add(company)
+                        db.session.commit()
+                        logging.info("Created demo company in DB.")
+            except Exception as e:
+                logging.error(f"Error creating demo company: {str(e)}")
+
+# Add a test route to verify authentication bypass
+@app.route("/test-auth")
+def test_auth():
+    return jsonify({
+        'user': session.get('user'),
+        'current_workspace': session.get('current_workspace'),
+        'message': 'Authentication bypass working!'
+    })
+
+@app.route("/debug")
+def debug_info():
+    """Debug endpoint to check environment and database configuration"""
+    return jsonify({
+        'environment_variables': {
+            'CLOUD_SQL_CONNECTION_NAME': os.environ.get('CLOUD_SQL_CONNECTION_NAME'),
+            'DB_USER': os.environ.get('DB_USER'),
+            'DB_NAME': os.environ.get('DB_NAME'),
+            'DB_HOST': os.environ.get('DB_HOST'),
+            'GAE_ENV': os.environ.get('GAE_ENV')
+        },
+        'database_uri': app.config['SQLALCHEMY_DATABASE_URI'],
+        'using_cloud_sql': 'postgresql' in app.config['SQLALCHEMY_DATABASE_URI'],
+        'timestamp': datetime.utcnow().isoformat()
+    })
+
+@app.route("/test-reports")
+def test_reports():
+    return jsonify({
+        'message': 'Reports route is accessible!',
+        'session': dict(session)
+    })
+
+@app.route("/health")
+def health_check():
+    """Health check endpoint for Cloud Run"""
+    try:
+        # Log environment variables for debugging
+        logging.info(f"Health check - Environment variables:")
+        logging.info(f"  CLOUD_SQL_CONNECTION_NAME: {os.environ.get('CLOUD_SQL_CONNECTION_NAME')}")
+        logging.info(f"  DB_USER: {os.environ.get('DB_USER')}")
+        logging.info(f"  DB_NAME: {os.environ.get('DB_NAME')}")
+        logging.info(f"  K_SERVICE: {os.environ.get('K_SERVICE')}")
+        logging.info(f"  GAE_ENV: {os.environ.get('GAE_ENV')}")
+        logging.info(f"  Database URI: {app.config['SQLALCHEMY_DATABASE_URI']}")
+        
+        # Test database connection
+        with app.app_context():
+            logging.info("Testing database connection...")
+            with db.engine.connect() as conn:
+                result = conn.execute(db.text("SELECT 1"))
+                logging.info(f"Database connection successful: {result.fetchone()}")
+            
+            # Run Alembic migrations if needed
+            logging.info("Running Alembic migrations...")
+            try:
+                result = subprocess.run(
+                    ["python3", "-m", "alembic", "upgrade", "head"],
+                    capture_output=True,
+                    text=True,
+                    cwd=os.getcwd(),
+                    timeout=60
+                )
+                if result.returncode != 0:
+                    logging.warning(f"Alembic migration warning: {result.stderr}")
+                    logging.warning(f"Alembic migration stdout: {result.stdout}")
+                else:
+                    logging.info("Alembic migrations applied successfully")
+            except Exception as e:
+                logging.warning(f"Could not run Alembic migrations: {e}")
+                # Continue without failing the health check
+        
+        return jsonify({
+            'status': 'healthy',
+            'database': 'connected',
+            'migrations': 'applied',
+            'environment': {
+                'cloud_sql_connection': os.environ.get('CLOUD_SQL_CONNECTION_NAME'),
+                'db_user': os.environ.get('DB_USER'),
+                'db_name': os.environ.get('DB_NAME'),
+                'k_service': os.environ.get('K_SERVICE'),
+                'gae_env': os.environ.get('GAE_ENV')
+            },
+            'timestamp': datetime.utcnow().isoformat()
+        })
+    except Exception as e:
+        logging.error(f"Health check failed: {str(e)}")
+        logging.error(f"Exception type: {type(e)}")
+        import traceback
+        logging.error(f"Traceback: {traceback.format_exc()}")
+        return jsonify({
+            'status': 'unhealthy',
+            'error': str(e),
+            'error_type': str(type(e)),
+            'environment': {
+                'cloud_sql_connection': os.environ.get('CLOUD_SQL_CONNECTION_NAME'),
+                'db_user': os.environ.get('DB_USER'),
+                'db_name': os.environ.get('DB_NAME'),
+                'k_service': os.environ.get('K_SERVICE'),
+                'gae_env': os.environ.get('GAE_ENV')
+            },
+            'timestamp': datetime.utcnow().isoformat()
+        }), 500
+

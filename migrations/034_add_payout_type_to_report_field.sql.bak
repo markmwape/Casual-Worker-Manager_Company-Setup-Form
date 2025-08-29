@@ -1,0 +1,2 @@
+-- Migration: Add payout_type to report_field
+ALTER TABLE report_field ADD COLUMN payout_type VARCHAR(20) NOT NULL DEFAULT 'per_day'; 

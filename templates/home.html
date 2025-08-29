@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="{{ theme }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Embee accounting - Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.24/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/daisyui@4.4.24/dist/full.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script>
+        window.tailwind = window.tailwind || {};
+        window.tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-navy': {
+                            '50': '#f8fafc',
+                            '100': '#e2e8f0',
+                            '200': '#cbd5e1',
+                            '300': '#94a3b8',
+                            '400': '#64748b',
+                            '500': '#1A2B48',
+                            '600': '#0f1a2e',
+                            '700': '#0a1424',
+                            '800': '#050a12',
+                            '900': '#020508'
+                        },
+                        'brand-gold': {
+                            '50': '#fefce8',
+                            '100': '#fef3c7',
+                            '200': '#fde68a',
+                            '300': '#fcd34d',
+                            '400': '#fbbf24',
+                            '500': '#E5B23A',
+                            '600': '#d4a02a',
+                            '700': '#b45309',
+                            '800': '#92400e',
+                            '900': '#78350f'
+                        },
+                        'brand-gray': {
+                            '50': '#f8fafc',
+                            '100': '#f1f5f9',
+                            '200': '#e2e8f0',
+                            '300': '#cbd5e1',
+                            '400': '#94a3b8',
+                            '500': '#7C8A9A',
+                            '600': '#5a6778',
+                            '700': '#475569',
+                            '800': '#334155',
+                            '900': '#1e293b'
+                        }
+                    },
+                    boxShadow: {
+                        '3xl': '0 35px 60px -15px rgba(0, 0, 0, 0.3)',
+                    },
+                    perspective: {
+                        '1000': '1000px',
+                    },
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/date-picker.css') }}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="{{ url_for('static', filename='js/script.js') }}?v=1.1"></script>
+    <script src="{{ url_for('static', filename='js/date-picker.js') }}"></script>
+    <script>
+        // Pass user role to JavaScript
+        window.currentUserRole = "{{ session.get('current_workspace', {}).get('role', '') }}";
+    </script>
+</head>
+<body>
+    <div class="drawer lg:drawer-open">
+        <input id="my-drawer" type="checkbox" class="drawer-toggle" />
+        <div class="drawer-content p-8 bg-brand-navy-50/80 min-h-screen">
+            {% block content %}
+            <div class="container mx-auto px-4 w-full max-w-6xl">
+                <!-- Welcome Header -->
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+                    <div class="flex items-center gap-4 mb-8">
+                        <img src="{{ url_for('static', filename='img/logo + text.png') }}" alt="Embee Accounting Logo" class="h-14 w-auto object-contain" />
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold text-primary mb-2">
+                            Welcome, {{ session.get('user', {}).get('display_name', 'User') }}
+                        </h1>
+                        <p class="text-sm text-gray-500">
+                            Here's what's happening with your casual workforce today.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Workspace Info Card -->
+                {% if session.get('current_workspace') %}
+                <div class="card bg-gradient-to-br from-brand-navy-50 via-brand-gray-50 to-brand-navy-100 border border-brand-navy-200/60 shadow-lg mb-8 hover:shadow-xl transition-all duration-300">
+                    <div class="card-body p-6">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 bg-gradient-to-br from-brand-navy-500 to-brand-navy-600 rounded-xl flex items-center justify-center shadow-md">
+                                    <i class="fas fa-building text-white text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-bold text-gray-800">{{ session.get('current_workspace', {}).get('name', 'Workspace') }}</h3>
+                                    <p class="text-sm text-gray-600 mt-1">Your workspace</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div class="flex items-center gap-3">
+                                    <span class="text-sm font-semibold text-gray-700">Workspace Code:</span>
+                                    <div class="flex items-center gap-2">
+                                        <input type="text" 
+                                               value="{{ session.get('current_workspace', {}).get('code', '') }}" 
+                                               class="input input-sm font-mono text-center bg-white border-2 border-brand-navy-300 focus:border-brand-navy-500 focus:ring-2 focus:ring-brand-navy-200 shadow-sm" 
+                                               readonly 
+                                               style="width: 150px; font-size: 13px; letter-spacing: 1px;">
+                                        <button onclick="copyWorkspaceCode()" class="btn btn-sm btn-primary shadow-md hover:shadow-lg transition-all duration-200">
+                                            <i class="fas fa-copy mr-1"></i>
+                                            Copy
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4 p-3 bg-brand-navy-100/50 rounded-lg border border-brand-navy-200/50">
+                            <div class="flex items-center gap-2 text-sm text-brand-navy-700">
+                                <i class="fas fa-info-circle text-brand-navy-600"></i>
+                                <span class="font-medium">Share this code with team members to invite them to your workspace</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Trial Message (for Admin users) -->
+                {% if session.get('current_workspace', {}).get('role') == 'Admin' %}
+                <div id="trial-message" class="card bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 shadow-lg mb-8">
+                    <div class="card-body p-6">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-md">
+                                <i class="fas fa-gift text-white text-xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-lg font-bold text-gray-800 mb-1">🎉 Welcome to Your Free Trial!</h3>
+                                <p class="text-gray-600 mb-3">You're currently on a 1-month free trial. No credit card required to get started.</p>
+                                <div class="flex items-center gap-4">
+                                    <span class="text-sm text-gray-500">
+                                        <i class="fas fa-clock mr-1"></i>
+                                        <span id="trial-days-left">Loading trial information...</span>
+                                    </span>
+                                    <a href="{{ url_for('payments_route') }}" class="btn btn-sm btn-success">
+                                        <i class="fas fa-credit-card mr-1"></i>
+                                        Manage Subscription
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 gap-6 sm:grid-cols-3 mb-8">
+                    <a href="{{ url_for('workers_route') }}" class="card bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer">
+                        <div class="card-body p-6">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <h3 class="text-sm font-semibold text-blue-700 mb-1">Total Workers</h3>
+                                    <p class="text-3xl font-bold text-blue-800">{{ total_workers }}</p>
+                                    <p class="text-xs text-blue-600 mt-1">Active workforce</p>
+                                </div>
+                                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                                    <i data-feather="users" class="text-blue-600 w-6 h-6"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+
+                    <a href="{{ url_for('tasks_route') }}" class="card bg-gradient-to-br from-green-50 to-green-100 border border-green-200 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer">
+                        <div class="card-body p-6">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <h3 class="text-sm font-semibold text-green-700 mb-1">Active Tasks</h3>
+                                    <p class="text-3xl font-bold text-green-800">{{ total_tasks }}</p>
+                                    <p class="text-xs text-green-600 mt-1">Current projects</p>
+                                </div>
+                                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                                    <i data-feather="clipboard" class="text-green-600 w-6 h-6"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+
+                    <div class="card bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer" onclick="openEditPayoutModal()">
+                        <div class="card-body p-6">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <h3 class="text-sm font-semibold text-purple-700 mb-1">Daily Payout</h3>
+                                    <div class="flex items-center">
+                                        <p id="payoutRate" class="text-3xl font-bold text-purple-800">
+                                            <span id="currencySymbol">{{ company.currency_symbol if company and company.currency_symbol else 'K' }}</span>{{ company.daily_payout_rate if company else 56.0 }}
+                                        </p>
+                                        <button onclick="openEditPayoutModal()" class="btn btn-ghost btn-sm ml-2 hover:bg-purple-200">
+                                            <i class="fas fa-pen text-purple-600"></i>
+                                        </button>
+                                    </div>
+                                    <p class="text-xs text-purple-600 mt-1">Per worker</p>
+                                </div>
+                                <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-wallet text-purple-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- User Roles Card -->
+                <div class="card bg-blue-50 shadow-xl hover:shadow-2xl transition-all mb-8 border border-blue-100">
+                    <div class="card-body p-6">
+                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-800">Team Members</h3>
+                                <p class="text-sm text-gray-600 mt-1">Manage your team access and permissions</p>
+                            </div>
+                            {% if session.get('current_workspace', {}).get('role') != 'Supervisor' %}
+                            <button onclick="document.getElementById('add-team-member-modal').showModal()" class="btn btn-primary shadow-lg hover:shadow-xl transition-all duration-200 w-full sm:w-auto">
+                                <i data-feather="user-plus" class="mr-2"></i>Add Team Member
+                            </button>
+                            {% endif %}
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="table w-full">
+                                <thead>
+                                    <tr class="bg-blue-50/50">
+                                        <th class="text-gray-700 font-semibold">Email</th>
+                                        <th class="text-gray-700 font-semibold">Role</th>
+                                        {% if session.get('current_workspace', {}).get('role') != 'Supervisor' %}
+                                        <th class="text-gray-700 font-semibold" style="min-width: 120px;">Actions</th>
+                                        {% endif %}
+                                    </tr>
+                                </thead>
+                                <tbody id="teamMembersTableBody" class="divide-y divide-gray-100">
+                                    {% for user in team_members %}
+                                    <tr data-user-id="{{ user.id }}" class="hover:bg-blue-100/50 transition-colors duration-150">
+                                        <td class="py-4">
+                                            <div class="flex items-center">
+                                                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                                    <span class="text-blue-600 font-semibold text-sm">{{ user.email[0].upper() }}</span>
+                                                </div>
+                                                <span class="font-medium text-gray-800">{{ user.email }}</span>
+                                            </div>
+                                        </td>
+                                        <td class="py-4">
+                                            <span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                                                {{ user.role }}
+                                            </span>
+                                        </td>
+                                        {% if session.get('current_workspace', {}).get('role') != 'Supervisor' %}
+                                        <td class="py-4">
+                                            <div class="flex gap-2 justify-center">
+                                                <button onclick="openEditRoleModal('{{ user.id }}', '{{ user.email }}', '{{ user.role }}')" class="btn btn-ghost btn-sm hover:bg-blue-100 text-blue-600 border border-blue-200 p-2 rounded-md transition-all duration-200 hover:shadow-sm flex items-center justify-center" title="Edit">
+                                                    <i data-feather="edit" class="w-4 h-4"></i>
+                                                </button>
+                                                <button onclick="openRemoveTeamMemberModal('{{ user.id }}', '{{ user.email }}')" class="btn btn-ghost btn-sm hover:bg-red-100 text-red-600 border border-red-200 p-2 rounded-md transition-all duration-200 hover:shadow-sm flex items-center justify-center" title="Delete">
+                                                    <i data-feather="trash-2" class="w-4 h-4"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                        {% endif %}
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                {% include 'modals/team_member.html' %}
+                <!-- Edit Payout Rate Modal -->
+                <dialog id="edit-payout-modal" class="modal">
+                    <div class="modal-box bg-blue-50 shadow-2xl border border-blue-100">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-xl text-gray-800">Edit Daily Payout Rate</h3>
+                            <button onclick="closeEditPayoutModal()" class="btn btn-ghost btn-sm hover:bg-gray-100">
+                                <i class="fas fa-times text-gray-600 text-lg"></i>
+                            </button>
+                        </div>
+                        <form id="payoutForm" class="py-4">
+                            <div class="space-y-4">
+                                <!-- Currency Selection -->
+                                <div class="form-control">
+                                    <label class="label">
+                                        <span class="label-text font-medium text-gray-700">Currency</span>
+                                    </label>
+                                    <div class="bg-white border border-gray-200 rounded-lg max-h-64 overflow-y-auto">
+                                        <div class="currency-list space-y-1 p-2">
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="AED" data-symbol="د.إ" class="radio radio-primary mr-3">
+                                                <span class="flex-1">AED - United Arab Emirates Dirham (د.إ)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="AFN" data-symbol="؋" class="radio radio-primary mr-3">
+                                                <span class="flex-1">AFN - Afghani (؋)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="ALL" data-symbol="L" class="radio radio-primary mr-3">
+                                                <span class="flex-1">ALL - Albanian Lek (L)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="AMD" data-symbol="֏" class="radio radio-primary mr-3">
+                                                <span class="flex-1">AMD - Armenian Dram (֏)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="ANG" data-symbol="ƒ" class="radio radio-primary mr-3">
+                                                <span class="flex-1">ANG - Netherlands Antillean Guilder (ƒ)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="AOA" data-symbol="Kz" class="radio radio-primary mr-3">
+                                                <span class="flex-1">AOA - Angolan Kwanza (Kz)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="ARS" data-symbol="$" class="radio radio-primary mr-3">
+                                                <span class="flex-1">ARS - Argentine Peso ($)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="AUD" data-symbol="$" class="radio radio-primary mr-3">
+                                                <span class="flex-1">AUD - Australian Dollar ($)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="AWG" data-symbol="ƒ" class="radio radio-primary mr-3">
+                                                <span class="flex-1">AWG - Aruban Florin (ƒ)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="AZN" data-symbol="₼" class="radio radio-primary mr-3">
+                                                <span class="flex-1">AZN - Azerbaijani Manat (₼)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="BAM" data-symbol="KM" class="radio radio-primary mr-3">
+                                                <span class="flex-1">BAM - Bosnia and Herzegovina Mark (KM)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="BBD" data-symbol="$" class="radio radio-primary mr-3">
+                                                <span class="flex-1">BBD - Barbadian Dollar ($)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="BDT" data-symbol="৳" class="radio radio-primary mr-3">
+                                                <span class="flex-1">BDT - Bangladeshi Taka (৳)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="BGN" data-symbol="лв" class="radio radio-primary mr-3">
+                                                <span class="flex-1">BGN - Bulgarian Lev (лв)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="BHD" data-symbol=".د.ب" class="radio radio-primary mr-3">
+                                                <span class="flex-1">BHD - Bahraini Dinar (.د.ب)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="BIF" data-symbol="FBu" class="radio radio-primary mr-3">
+                                                <span class="flex-1">BIF - Burundian Franc (FBu)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="BMD" data-symbol="$" class="radio radio-primary mr-3">
+                                                <span class="flex-1">BMD - Bermudian Dollar ($)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="BND" data-symbol="$" class="radio radio-primary mr-3">
+                                                <span class="flex-1">BND - Brunei Dollar ($)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="BOB" data-symbol="Bs." class="radio radio-primary mr-3">
+                                                <span class="flex-1">BOB - Bolivian Boliviano (Bs.)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="BRL" data-symbol="R$" class="radio radio-primary mr-3">
+                                                <span class="flex-1">BRL - Brazilian Real (R$)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="BSD" data-symbol="$" class="radio radio-primary mr-3">
+                                                <span class="flex-1">BSD - Bahamian Dollar ($)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="BTN" data-symbol="Nu." class="radio radio-primary mr-3">
+                                                <span class="flex-1">BTN - Bhutanese Ngultrum (Nu.)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="BWP" data-symbol="P" class="radio radio-primary mr-3">
+                                                <span class="flex-1">BWP - Botswana Pula (P)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="BYN" data-symbol="Br" class="radio radio-primary mr-3">
+                                                <span class="flex-1">BYN - Belarusian Ruble (Br)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="BZD" data-symbol="$" class="radio radio-primary mr-3">
+                                                <span class="flex-1">BZD - Belize Dollar ($)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="CAD" data-symbol="$" class="radio radio-primary mr-3">
+                                                <span class="flex-1">CAD - Canadian Dollar ($)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="CDF" data-symbol="Fr" class="radio radio-primary mr-3">
+                                                <span class="flex-1">CDF - Congolese Franc (Fr)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="CHF" data-symbol="Fr" class="radio radio-primary mr-3">
+                                                <span class="flex-1">CHF - Swiss Franc (Fr)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="CLP" data-symbol="$" class="radio radio-primary mr-3">
+                                                <span class="flex-1">CLP - Chilean Peso ($)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="CNY" data-symbol="¥" class="radio radio-primary mr-3">
+                                                <span class="flex-1">CNY - Chinese Yuan (¥)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="COP" data-symbol="$" class="radio radio-primary mr-3">
+                                                <span class="flex-1">COP - Colombian Peso ($)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="CRC" data-symbol="₡" class="radio radio-primary mr-3">
+                                                <span class="flex-1">CRC - Costa Rican Colón (₡)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="CUP" data-symbol="$" class="radio radio-primary mr-3">
+                                                <span class="flex-1">CUP - Cuban Peso ($)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="CVE" data-symbol="$" class="radio radio-primary mr-3">
+                                                <span class="flex-1">CVE - Cabo Verde Escudo ($)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="CZK" data-symbol="Kč" class="radio radio-primary mr-3">
+                                                <span class="flex-1">CZK - Czech Koruna (Kč)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="DJF" data-symbol="Fr" class="radio radio-primary mr-3">
+                                                <span class="flex-1">DJF - Djiboutian Franc (Fr)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="DKK" data-symbol="kr" class="radio radio-primary mr-3">
+                                                <span class="flex-1">DKK - Danish Krone (kr)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="DOP" data-symbol="$" class="radio radio-primary mr-3">
+                                                <span class="flex-1">DOP - Dominican Peso ($)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="DZD" data-symbol="د.ج" class="radio radio-primary mr-3">
+                                                <span class="flex-1">DZD - Algerian Dinar (د.ج)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="EGP" data-symbol="£" class="radio radio-primary mr-3">
+                                                <span class="flex-1">EGP - Egyptian Pound (£)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="ERN" data-symbol="Nfk" class="radio radio-primary mr-3">
+                                                <span class="flex-1">ERN - Eritrean Nakfa (Nfk)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="ETB" data-symbol="Br" class="radio radio-primary mr-3">
+                                                <span class="flex-1">ETB - Ethiopian Birr (Br)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="EUR" data-symbol="€" class="radio radio-primary mr-3">
+                                                <span class="flex-1">EUR - Euro (€)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="FJD" data-symbol="$" class="radio radio-primary mr-3">
+                                                <span class="flex-1">FJD - Fijian Dollar ($)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="FKP" data-symbol="£" class="radio radio-primary mr-3">
+                                                <span class="flex-1">FKP - Falkland Islands Pound (£)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="GBP" data-symbol="£" class="radio radio-primary mr-3">
+                                                <span class="flex-1">GBP - British Pound Sterling (£)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="GEL" data-symbol="₾" class="radio radio-primary mr-3">
+                                                <span class="flex-1">GEL - Georgian Lari (₾)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="GHS" data-symbol="₵" class="radio radio-primary mr-3">
+                                                <span class="flex-1">GHS - Ghanaian Cedi (₵)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="GIP" data-symbol="£" class="radio radio-primary mr-3">
+                                                <span class="flex-1">GIP - Gibraltar Pound (£)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="GMD" data-symbol="D" class="radio radio-primary mr-3">
+                                                <span class="flex-1">GMD - Gambian Dalasi (D)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="GNF" data-symbol="Fr" class="radio radio-primary mr-3">
+                                                <span class="flex-1">GNF - Guinean Franc (Fr)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="GTQ" data-symbol="Q" class="radio radio-primary mr-3">
+                                                <span class="flex-1">GTQ - Guatemalan Quetzal (Q)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="GYD" data-symbol="$" class="radio radio-primary mr-3">
+                                                <span class="flex-1">GYD - Guyanese Dollar ($)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="HKD" data-symbol="$" class="radio radio-primary mr-3">
+                                                <span class="flex-1">HKD - Hong Kong Dollar ($)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="HNL" data-symbol="L" class="radio radio-primary mr-3">
+                                                <span class="flex-1">HNL - Honduran Lempira (L)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="HRK" data-symbol="kn" class="radio radio-primary mr-3">
+                                                <span class="flex-1">HRK - Croatian Kuna (kn)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="HTG" data-symbol="G" class="radio radio-primary mr-3">
+                                                <span class="flex-1">HTG - Haitian Gourde (G)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="HUF" data-symbol="Ft" class="radio radio-primary mr-3">
+                                                <span class="flex-1">HUF - Hungarian Forint (Ft)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="IDR" data-symbol="Rp" class="radio radio-primary mr-3">
+                                                <span class="flex-1">IDR - Indonesian Rupiah (Rp)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="ILS" data-symbol="₪" class="radio radio-primary mr-3">
+                                                <span class="flex-1">ILS - Israeli New Shekel (₪)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="INR" data-symbol="₹" class="radio radio-primary mr-3">
+                                                <span class="flex-1">INR - Indian Rupee (₹)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="IQD" data-symbol="ع.د" class="radio radio-primary mr-3">
+                                                <span class="flex-1">IQD - Iraqi Dinar (ع.د)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="IRR" data-symbol="﷼" class="radio radio-primary mr-3">
+                                                <span class="flex-1">IRR - Iranian Rial (﷼)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="ISK" data-symbol="kr" class="radio radio-primary mr-3">
+                                                <span class="flex-1">ISK - Icelandic Króna (kr)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="JMD" data-symbol="$" class="radio radio-primary mr-3">
+                                                <span class="flex-1">JMD - Jamaican Dollar ($)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="JOD" data-symbol="د.ا" class="radio radio-primary mr-3">
+                                                <span class="flex-1">JOD - Jordanian Dinar (د.ا)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="JPY" data-symbol="¥" class="radio radio-primary mr-3">
+                                                <span class="flex-1">JPY - Japanese Yen (¥)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="KES" data-symbol="Sh" class="radio radio-primary mr-3">
+                                                <span class="flex-1">KES - Kenyan Shilling (Sh)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="KGS" data-symbol="с" class="radio radio-primary mr-3">
+                                                <span class="flex-1">KGS - Kyrgystani Som (с)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="KHR" data-symbol="៛" class="radio radio-primary mr-3">
+                                                <span class="flex-1">KHR - Cambodian Riel (៛)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="KMF" data-symbol="Fr" class="radio radio-primary mr-3">
+                                                <span class="flex-1">KMF - Comorian Franc (Fr)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="KPW" data-symbol="₩" class="radio radio-primary mr-3">
+                                                <span class="flex-1">KPW - North Korean Won (₩)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="KRW" data-symbol="₩" class="radio radio-primary mr-3">
+                                                <span class="flex-1">KRW - South Korean Won (₩)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="KWD" data-symbol="د.ك" class="radio radio-primary mr-3">
+                                                <span class="flex-1">KWD - Kuwaiti Dinar (د.ك)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="KZT" data-symbol="₸" class="radio radio-primary mr-3">
+                                                <span class="flex-1">KZT - Kazakhstani Tenge (₸)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="LAK" data-symbol="₭" class="radio radio-primary mr-3">
+                                                <span class="flex-1">LAK - Lao Kip (₭)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="LBP" data-symbol="ل.ل" class="radio radio-primary mr-3">
+                                                <span class="flex-1">LBP - Lebanese Pound (ل.ل)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="LKR" data-symbol="₨" class="radio radio-primary mr-3">
+                                                <span class="flex-1">LKR - Sri Lankan Rupee (₨)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="LRD" data-symbol="$" class="radio radio-primary mr-3">
+                                                <span class="flex-1">LRD - Liberian Dollar ($)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="LSL" data-symbol="L" class="radio radio-primary mr-3">
+                                                <span class="flex-1">LSL - Lesotho Loti (L)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="LYD" data-symbol="ل.د" class="radio radio-primary mr-3">
+                                                <span class="flex-1">LYD - Libyan Dinar (ل.د)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="MAD" data-symbol="د.م." class="radio radio-primary mr-3">
+                                                <span class="flex-1">MAD - Moroccan Dirham (د.م.)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="MDL" data-symbol="L" class="radio radio-primary mr-3">
+                                                <span class="flex-1">MDL - Moldovan Leu (L)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="MGA" data-symbol="Ar" class="radio radio-primary mr-3">
+                                                <span class="flex-1">MGA - Malagasy Ariary (Ar)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="MKD" data-symbol="ден" class="radio radio-primary mr-3">
+                                                <span class="flex-1">MKD - Macedonian Denar (ден)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="MMK" data-symbol="K" class="radio radio-primary mr-3">
+                                                <span class="flex-1">MMK - Myanmar Kyat (K)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="MNT" data-symbol="₮" class="radio radio-primary mr-3">
+                                                <span class="flex-1">MNT - Mongolian Tögrög (₮)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="MOP" data-symbol="P" class="radio radio-primary mr-3">
+                                                <span class="flex-1">MOP - Macanese Pataca (P)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="MRU" data-symbol="UM" class="radio radio-primary mr-3">
+                                                <span class="flex-1">MRU - Mauritanian Ouguiya (UM)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="MUR" data-symbol="₨" class="radio radio-primary mr-3">
+                                                <span class="flex-1">MUR - Mauritian Rupee (₨)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="MVR" data-symbol="Rf" class="radio radio-primary mr-3">
+                                                <span class="flex-1">MVR - Maldivian Rufiyaa (Rf)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="MWK" data-symbol="MK" class="radio radio-primary mr-3">
+                                                <span class="flex-1">MWK - Malawian Kwacha (MK)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="MXN" data-symbol="$" class="radio radio-primary mr-3">
+                                                <span class="flex-1">MXN - Mexican Peso ($)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="MYR" data-symbol="RM" class="radio radio-primary mr-3">
+                                                <span class="flex-1">MYR - Malaysian Ringgit (RM)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="MZN" data-symbol="MT" class="radio radio-primary mr-3">
+                                                <span class="flex-1">MZN - Mozambican Metical (MT)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="NAD" data-symbol="$" class="radio radio-primary mr-3">
+                                                <span class="flex-1">NAD - Namibian Dollar ($)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="NGN" data-symbol="₦" class="radio radio-primary mr-3">
+                                                <span class="flex-1">NGN - Nigerian Naira (₦)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="NIO" data-symbol="C$" class="radio radio-primary mr-3">
+                                                <span class="flex-1">NIO - Nicaraguan Córdoba (C$)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="NOK" data-symbol="kr" class="radio radio-primary mr-3">
+                                                <span class="flex-1">NOK - Norwegian Krone (kr)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="NPR" data-symbol="₨" class="radio radio-primary mr-3">
+                                                <span class="flex-1">NPR - Nepalese Rupee (₨)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="NZD" data-symbol="$" class="radio radio-primary mr-3">
+                                                <span class="flex-1">NZD - New Zealand Dollar ($)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="OMR" data-symbol="ر.ع." class="radio radio-primary mr-3">
+                                                <span class="flex-1">OMR - Omani Rial (ر.ع.)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="PAB" data-symbol="B/." class="radio radio-primary mr-3">
+                                                <span class="flex-1">PAB - Panamanian Balboa (B/.)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="PEN" data-symbol="S/." class="radio radio-primary mr-3">
+                                                <span class="flex-1">PEN - Peruvian Sol (S/.)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="PGK" data-symbol="K" class="radio radio-primary mr-3">
+                                                <span class="flex-1">PGK - Papua New Guinean Kina (K)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="PHP" data-symbol="₱" class="radio radio-primary mr-3">
+                                                <span class="flex-1">PHP - Philippine Peso (₱)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="PKR" data-symbol="₨" class="radio radio-primary mr-3">
+                                                <span class="flex-1">PKR - Pakistani Rupee (₨)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="PLN" data-symbol="zł" class="radio radio-primary mr-3">
+                                                <span class="flex-1">PLN - Polish Złoty (zł)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="PYG" data-symbol="₲" class="radio radio-primary mr-3">
+                                                <span class="flex-1">PYG - Paraguayan Guaraní (₲)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="QAR" data-symbol="ر.ق" class="radio radio-primary mr-3">
+                                                <span class="flex-1">QAR - Qatari Riyal (ر.ق)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="RON" data-symbol="lei" class="radio radio-primary mr-3">
+                                                <span class="flex-1">RON - Romanian Leu (lei)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="RSD" data-symbol="дин." class="radio radio-primary mr-3">
+                                                <span class="flex-1">RSD - Serbian Dinar (дин.)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="RUB" data-symbol="₽" class="radio radio-primary mr-3">
+                                                <span class="flex-1">RUB - Russian Ruble (₽)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="RWF" data-symbol="Fr" class="radio radio-primary mr-3">
+                                                <span class="flex-1">RWF - Rwandan Franc (Fr)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="SAR" data-symbol="ر.س" class="radio radio-primary mr-3">
+                                                <span class="flex-1">SAR - Saudi Riyal (ر.س)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="SBD" data-symbol="$" class="radio radio-primary mr-3">
+                                                <span class="flex-1">SBD - Solomon Islands Dollar ($)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="SCR" data-symbol="₨" class="radio radio-primary mr-3">
+                                                <span class="flex-1">SCR - Seychellois Rupee (₨)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="SDG" data-symbol="ج.س." class="radio radio-primary mr-3">
+                                                <span class="flex-1">SDG - Sudanese Pound (ج.س.)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="SEK" data-symbol="kr" class="radio radio-primary mr-3">
+                                                <span class="flex-1">SEK - Swedish Krona (kr)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="SGD" data-symbol="$" class="radio radio-primary mr-3">
+                                                <span class="flex-1">SGD - Singapore Dollar ($)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="SHP" data-symbol="£" class="radio radio-primary mr-3">
+                                                <span class="flex-1">SHP - Saint Helena Pound (£)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="SLL" data-symbol="Le" class="radio radio-primary mr-3">
+                                                <span class="flex-1">SLL - Sierra Leonean Leone (Le)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="SOS" data-symbol="Sh" class="radio radio-primary mr-3">
+                                                <span class="flex-1">SOS - Somali Shilling (Sh)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="SRD" data-symbol="$" class="radio radio-primary mr-3">
+                                                <span class="flex-1">SRD - Surinamese Dollar ($)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="SSP" data-symbol="£" class="radio radio-primary mr-3">
+                                                <span class="flex-1">SSP - South Sudanese Pound (£)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="STN" data-symbol="Db" class="radio radio-primary mr-3">
+                                                <span class="flex-1">STN - São Tomé and Príncipe Dobra (Db)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="SVC" data-symbol="₡" class="radio radio-primary mr-3">
+                                                <span class="flex-1">SVC - Salvadoran Colón (₡)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="SYP" data-symbol="£" class="radio radio-primary mr-3">
+                                                <span class="flex-1">SYP - Syrian Pound (£)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="SZL" data-symbol="L" class="radio radio-primary mr-3">
+                                                <span class="flex-1">SZL - Swazi Lilangeni (L)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="THB" data-symbol="฿" class="radio radio-primary mr-3">
+                                                <span class="flex-1">THB - Thai Baht (฿)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="TJS" data-symbol="ЅМ" class="radio radio-primary mr-3">
+                                                <span class="flex-1">TJS - Tajikistani Somoni (ЅМ)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="TMT" data-symbol="m" class="radio radio-primary mr-3">
+                                                <span class="flex-1">TMT - Turkmenistani Manat (m)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="TND" data-symbol="د.ت" class="radio radio-primary mr-3">
+                                                <span class="flex-1">TND - Tunisian Dinar (د.ت)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="TOP" data-symbol="T$" class="radio radio-primary mr-3">
+                                                <span class="flex-1">TOP - Tongan Paʻanga (T$)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="TRY" data-symbol="₺" class="radio radio-primary mr-3">
+                                                <span class="flex-1">TRY - Turkish Lira (₺)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="TTD" data-symbol="$" class="radio radio-primary mr-3">
+                                                <span class="flex-1">TTD - Trinidad and Tobago Dollar ($)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="TWD" data-symbol="NT$" class="radio radio-primary mr-3">
+                                                <span class="flex-1">TWD - New Taiwan Dollar (NT$)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="TZS" data-symbol="Sh" class="radio radio-primary mr-3">
+                                                <span class="flex-1">TZS - Tanzanian Shilling (Sh)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="UAH" data-symbol="₴" class="radio radio-primary mr-3">
+                                                <span class="flex-1">UAH - Ukrainian Hryvnia (₴)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="UGX" data-symbol="Sh" class="radio radio-primary mr-3">
+                                                <span class="flex-1">UGX - Ugandan Shilling (Sh)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="USD" data-symbol="$" class="radio radio-primary mr-3">
+                                                <span class="flex-1">USD - United States Dollar ($)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="UYU" data-symbol="$" class="radio radio-primary mr-3">
+                                                <span class="flex-1">UYU - Uruguayan Peso ($)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="UZS" data-symbol="so'm" class="radio radio-primary mr-3">
+                                                <span class="flex-1">UZS - Uzbekistani Som (so'm)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="VES" data-symbol="Bs.S" class="radio radio-primary mr-3">
+                                                <span class="flex-1">VES - Venezuelan Bolívar Soberano (Bs.S)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="VND" data-symbol="₫" class="radio radio-primary mr-3">
+                                                <span class="flex-1">VND - Vietnamese Đồng (₫)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="VUV" data-symbol="Vt" class="radio radio-primary mr-3">
+                                                <span class="flex-1">VUV - Vanuatu Vatu (Vt)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="WST" data-symbol="T" class="radio radio-primary mr-3">
+                                                <span class="flex-1">WST - Samoan Tālā (T)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="XAF" data-symbol="Fr" class="radio radio-primary mr-3">
+                                                <span class="flex-1">XAF - Central African CFA Franc (Fr)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="XCD" data-symbol="$" class="radio radio-primary mr-3">
+                                                <span class="flex-1">XCD - East Caribbean Dollar ($)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="XOF" data-symbol="Fr" class="radio radio-primary mr-3">
+                                                <span class="flex-1">XOF - West African CFA Franc (Fr)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="XPF" data-symbol="Fr" class="radio radio-primary mr-3">
+                                                <span class="flex-1">XPF - CFP Franc (Fr)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="YER" data-symbol="﷼" class="radio radio-primary mr-3">
+                                                <span class="flex-1">YER - Yemeni Rial (﷼)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="ZAR" data-symbol="R" class="radio radio-primary mr-3">
+                                                <span class="flex-1">ZAR - South African Rand (R)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="ZMW" data-symbol="K" class="radio radio-primary mr-3">
+                                                <span class="flex-1">ZMW - Zambian Kwacha (K)</span>
+                                            </label>
+                                            <label class="currency-option flex items-center p-2 hover:bg-blue-50 rounded cursor-pointer">
+                                                <input type="radio" name="currency" value="ZWL" data-symbol="$" class="radio radio-primary mr-3">
+                                                <span class="flex-1">ZWL - Zimbabwean Dollar ($)</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <label class="label">
+                                        <span class="label-text-alt text-gray-500">Select your preferred currency</span>
+                                    </label>
+                                </div>
+
+                                <!-- Amount Input -->
+                                <div class="form-control">
+                                    <label class="label">
+                                        <span class="label-text font-medium text-gray-700">Daily Payout Rate</span>
+                                    </label>
+                                    <div class="flex items-center gap-2">
+                                        <div class="relative flex-1">
+                                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" id="selectedCurrencySymbol">K</span>
+                                            <input type="number" 
+                                                id="payoutRateInput" 
+                                                class="input input-bordered pl-8 w-full bg-white border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200" 
+                                                min="0" 
+                                                step="0.01" 
+                                                value="{{ company.daily_payout_rate if company else 56.0 }}" 
+                                                required>
+                                        </div>
+                                    </div>
+                                    <label class="label">
+                                        <span class="label-text-alt text-gray-500">Amount paid per worker per day</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="modal-action pt-4">
+                                <button type="button" class="btn btn-ghost hover:bg-gray-100" onclick="closeEditPayoutModal()">Cancel</button>
+                                <button type="submit" class="btn btn-primary shadow-lg hover:shadow-xl transition-all duration-200">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </dialog>
+            </div>
+            {% endblock %}
+            {% block scripts %}{% endblock %}
+        </div>
+        {% include 'components/_sidebar.html' %}
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Feather Icons
+            feather.replace();
+            // Re-run feather.replace() after any dynamic content changes
+            const observer = new MutationObserver(function() {
+                feather.replace();
+            });
+            // Observe the entire document for changes
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const currencySelect = document.getElementById('currencySelect');
+            const selectedCurrencySymbol = document.getElementById('selectedCurrencySymbol');
+            // Only run currency-related code if the elements exist (not on reports page)
+            if (currencySelect && selectedCurrencySymbol) {
+                // Update currency symbol when currency is changed
+                currencySelect.addEventListener('change', function() {
+                    const selectedOption = this.options[this.selectedIndex];
+                    const symbol = selectedOption.dataset.symbol;
+                    selectedCurrencySymbol.textContent = symbol;
+                });
+                // Set initial currency symbol
+                const initialOption = currencySelect.options[currencySelect.selectedIndex];
+                if (initialOption) {
+                    selectedCurrencySymbol.textContent = initialOption.dataset.symbol;
+                }
+            }
+        });
+    </script>
+    <script>
+        function copyWorkspaceCode() {
+            const workspaceCodeInput = document.querySelector('input[readonly]');
+            if (workspaceCodeInput) {
+                workspaceCodeInput.select();
+                workspaceCodeInput.setSelectionRange(0, 99999); // For mobile devices
+                
+                try {
+                    document.execCommand('copy');
+                    showSuccess('Workspace code copied to clipboard!');
+                } catch (err) {
+                    console.error('Failed to copy: ', err);
+                    showError('Failed to copy workspace code');
+                }
+            }
+        }
+
+        function showSuccess(message) {
+            // Create a modern success notification
+            const notificationDiv = document.createElement('div');
+            notificationDiv.className = 'fixed top-4 right-4 z-50 transform transition-all duration-300 ease-in-out translate-x-full';
+            notificationDiv.innerHTML = `
+                <div class="bg-white border-l-4 border-green-500 shadow-lg rounded-lg p-4 max-w-sm">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-check text-green-600 text-sm"></i>
+                            </div>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-gray-900">${message}</p>
+                        </div>
+                        <div class="ml-auto pl-3">
+                            <button onclick="this.parentElement.parentElement.parentElement.remove()" class="text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-times text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(notificationDiv);
+            
+            // Animate in
+            setTimeout(() => {
+                notificationDiv.classList.remove('translate-x-full');
+            }, 100);
+            
+            // Remove after 4 seconds
+            setTimeout(() => {
+                notificationDiv.classList.add('translate-x-full');
+                setTimeout(() => {
+                    notificationDiv.remove();
+                }, 300);
+            }, 4000);
+        }
+
+        function showError(message) {
+            // Create a modern error notification
+            const notificationDiv = document.createElement('div');
+            notificationDiv.className = 'fixed top-4 right-4 z-50 transform transition-all duration-300 ease-in-out translate-x-full';
+            notificationDiv.innerHTML = `
+                <div class="bg-white border-l-4 border-red-500 shadow-lg rounded-lg p-4 max-w-sm">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-exclamation-triangle text-red-600 text-sm"></i>
+                            </div>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-gray-900">${message}</p>
+                        </div>
+                        <div class="ml-auto pl-3">
+                            <button onclick="this.parentElement.parentElement.parentElement.remove()" class="text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-times text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(notificationDiv);
+            
+            // Animate in
+            setTimeout(() => {
+                notificationDiv.classList.remove('translate-x-full');
+            }, 100);
+            
+            // Remove after 5 seconds
+            setTimeout(() => {
+                notificationDiv.classList.add('translate-x-full');
+                setTimeout(() => {
+                    notificationDiv.remove();
+                }, 300);
+            }, 5000);
+        }
+
+        // Load trial information for admin users
+        async function loadTrialInfo() {
+            const trialMessage = document.getElementById('trial-message');
+            if (!trialMessage) return;
+
+            try {
+                const response = await fetch('/api/workspace/payments');
+                const data = await response.json();
+                
+                if (response.ok && data.workspace) {
+                    const trialDaysLeft = document.getElementById('trial-days-left');
+                    if (trialDaysLeft) {
+                        if (data.workspace.is_trial_active) {
+                            trialDaysLeft.textContent = `${data.workspace.trial_days_left} days remaining`;
+                        } else {
+                            trialDaysLeft.textContent = 'Trial expired - please upgrade';
+                            trialMessage.classList.remove('bg-gradient-to-r', 'from-green-50', 'to-emerald-50', 'border-green-200');
+                            trialMessage.classList.add('bg-gradient-to-r', 'from-red-50', 'to-pink-50', 'border-red-200');
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading trial info:', error);
+            }
+        }
+
+        // Load trial info when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTrialInfo();
+        });
+    </script>
+</body>
+</html>

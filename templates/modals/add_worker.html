@@ -1,0 +1,32 @@
+<dialog id="add-worker-modal" class="modal">
+    <div class="modal-box">
+        <h3 class="font-bold text-lg">Add New Worker</h3>
+        <form id="workerForm">
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text">First Name</span>
+                </label>
+                <input type="text" name="first_name" class="input input-bordered w-full">
+            </div>
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text">Last Name</span>
+                </label>
+                <input type="text" name="last_name" class="input input-bordered w-full">
+            </div>
+            {% for field in all_fields %}
+                {% if field.id is not string %}
+                    <div class="form-control w-full">
+                        <label class="label">
+                            <span class="label-text">{{ field.name }}</span>
+                        </label>
+                        <input type="text" name="{{ field.name }}" class="input input-bordered w-full">
+                    </div>
+                {% endif %}
+            {% endfor %}
+            <div class="modal-action">
+                <button type="button" class="btn btn-ghost" onclick="closeAddWorkerModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary">Add Worker</button>
+            </div>
+        </form>
+</dialog>

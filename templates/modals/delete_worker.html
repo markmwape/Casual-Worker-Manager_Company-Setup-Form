@@ -1,0 +1,22 @@
+<dialog id="delete-worker-modal" class="modal">
+    <div class="modal-box">
+        <h3 class="font-bold text-lg">Delete Worker</h3>
+        <p class="py-4">Are you sure you want to delete this worker? This action cannot be undone.</p>
+        <input type="hidden" id="delete-worker-id">
+        <div class="modal-action">
+            <button type="button" class="btn btn-ghost" onclick="closeDeleteWorkerModal()">Cancel</button>
+            <button type="button" class="btn btn-error" onclick="deleteWorker()">Delete Worker</button>
+        </div>
+    </div>
+</dialog>
+
+<dialog id="delete-all-workers-modal" class="modal">
+    <div class="modal-box">
+        <h3 class="font-bold text-lg">Delete All Workers</h3>
+        <p class="py-4">Are you sure you want to delete all workers? This action cannot be undone.</p>
+        <div class="modal-action">
+            <button type="button" class="btn btn-ghost" onclick="document.getElementById('delete-all-workers-modal').close()">Cancel</button>
+            <button type="button" class="btn btn-error" onclick="deleteAllWorkers()">Delete All Workers</button>
+        </div>
+    </div>
+</dialog>

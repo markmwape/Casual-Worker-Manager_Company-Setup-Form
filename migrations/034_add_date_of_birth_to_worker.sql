@@ -1,0 +1,1 @@
+ALTER TABLE worker ADD COLUMN date_of_birth DATE; 

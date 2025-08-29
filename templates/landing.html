@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Embee accounting - Professional Workforce Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.24/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        window.tailwind = window.tailwind || {};
+        window.tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-navy': {
+                            '50': '#f8fafc',
+                            '100': '#e2e8f0',
+                            '200': '#cbd5e1',
+                            '300': '#94a3b8',
+                            '400': '#64748b',
+                            '500': '#1A2B48',
+                            '600': '#0f1a2e',
+                            '700': '#0a1424',
+                            '800': '#050a12',
+                            '900': '#020508'
+                        },
+                        'brand-gold': {
+                            '50': '#fefce8',
+                            '100': '#fef3c7',
+                            '200': '#fde68a',
+                            '300': '#fcd34d',
+                            '400': '#fbbf24',
+                            '500': '#E5B23A',
+                            '600': '#d4a02a',
+                            '700': '#b45309',
+                            '800': '#92400e',
+                            '900': '#78350f'
+                        },
+                        'brand-gray': {
+                            '50': '#f8fafc',
+                            '100': '#f1f5f9',
+                            '200': '#e2e8f0',
+                            '300': '#cbd5e1',
+                            '400': '#94a3b8',
+                            '500': '#7C8A9A',
+                            '600': '#5a6778',
+                            '700': '#475569',
+                            '800': '#334155',
+                            '900': '#1e293b'
+                        }
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        '3xl': '0 35px 60px -15px rgba(0, 0, 0, 0.3)',
+                    },
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body class="font-inter bg-gradient-to-br from-blue-50 to-indigo-100 text-gray-900">
+    <!-- Honeycomb Pattern Corners -->
+    <div class="honeycomb-corner" style="top:0;left:0;"></div>
+    <div class="honeycomb-corner" style="bottom:0;right:0;"></div>
+    <div class="honeycomb-corner" style="top:20%;right:10%;transform:rotate(45deg);"></div>
+    <div class="honeycomb-corner" style="bottom:30%;left:5%;transform:rotate(-30deg);"></div>
+    <div class="honeycomb-corner" style="top:60%;left:15%;transform:rotate(15deg);"></div>
+    <div class="honeycomb-corner" style="top:10%;right:30%;transform:rotate(-15deg);"></div>
+    <!-- Navigation -->
+    <header class="bg-white/80 backdrop-blur-md shadow-lg border-b border-blue-100 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 flex items-center justify-between h-16">
+            <!-- Logo & Brand -->
+            <a href="/" class="flex items-center text-brand-navy-500 font-bold text-xl">
+                <img src="{{ url_for('static', filename='img/logo + text.png') }}" alt="Embee Accounting Logo" class="h-20 w-auto object-contain" />
+            </a>
+
+            <!-- Desktop Navigation -->
+            <nav class="hidden md:flex items-center space-x-8 font-medium">
+                <a href="#features" class="text-brand-navy-500 font-semibold hover:text-brand-navy-700">Features</a>
+                <a href="#pricing" class="text-brand-navy-500 font-semibold hover:text-brand-navy-700">Pricing</a>
+                <a href="#testimonials" class="text-brand-navy-500 font-semibold hover:text-brand-navy-700">Testimonials</a>
+                <a href="{{ url_for('workspace_selection_route') }}" class="bg-brand-navy-500 text-white font-bold px-4 py-2 rounded shadow hover:bg-brand-navy-600 transition">Login / Sign Up</a>
+            </nav>
+
+            <!-- Mobile Menu Button -->
+            <button id="mobileMenuBtn" class="md:hidden text-gray-700 hover:text-brand-navy-500 focus:outline-none">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+            </button>
+        </div>
+
+                    <!-- Mobile Navigation -->
+            <div id="mobileMenu" class="md:hidden hidden border-t border-brand-navy-100 bg-white/95 backdrop-blur-sm">
+                <nav class="px-4 py-4 space-y-3 font-medium">
+                    <a href="#features" class="block text-brand-navy-500 font-semibold hover:text-brand-navy-700">Features</a>
+                    <a href="#pricing" class="block text-brand-navy-500 font-semibold hover:text-brand-navy-700">Pricing</a>
+                    <a href="#testimonials" class="block text-brand-navy-500 font-semibold hover:text-brand-navy-700">Testimonials</a>
+                    <a href="{{ url_for('workspace_selection_route') }}" class="block bg-brand-navy-500 text-white font-bold px-4 py-2 rounded shadow hover:bg-brand-navy-600 transition">Login / Sign Up</a>
+                </nav>
+            </div>
+
+        <script>
+            // Simple mobile menu toggle
+            document.addEventListener('DOMContentLoaded', function () {
+                const btn = document.getElementById('mobileMenuBtn');
+                const menu = document.getElementById('mobileMenu');
+                if (btn && menu) {
+                    btn.addEventListener('click', () => {
+                        menu.classList.toggle('hidden');
+                    });
+                }
+            });
+        </script>
+    </header>
+ 
+    <!-- Hero Section -->
+    <section class="hero min-h-screen bg-gradient-to-br from-brand-navy-500 via-brand-navy-600 to-brand-navy-700 text-white relative overflow-hidden">
+        <div class="absolute inset-0 bg-black/10"></div>
+        <div class="absolute top-0 left-0 w-full h-full">
+            <div class="absolute bottom-20 right-20 w-96 h-96 bg-brand-gray-400/20 rounded-full blur-3xl"></div>
+        </div>
+        
+        <div class="hero-content flex-col lg:flex-row justify-between items-center max-w-7xl mx-auto px-4 relative z-10">
+            <div class="text-center lg:text-left w-full lg:w-1/2">
+                <div class="badge badge-primary mb-4 text-sm font-semibold">
+                    <i class="fas fa-shield-alt mr-1"></i>Trusted by 500+ Companies
+                </div>
+                <h1 class="text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+                    Professional 
+                    <span class="text-blue-200">Workforce</span> 
+                    Management
+                </h1>
+                <p class="text-xl text-blue-100 mb-8 leading-relaxed">
+                    Transform your casual workforce operations with smart attendance tracking, automated payroll, and powerful analytics that save time and reduce costs.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                    <a href="{{ url_for('workspace_selection_route') }}" class="btn btn-primary btn-lg font-semibold text-lg px-8 bg-brand-navy-500 text-white hover:bg-brand-navy-600">
+                        <i class="fas fa-rocket mr-2"></i>Login / Sign Up
+                    </a>
+                    <a href="#demo" class="btn btn-outline btn-lg font-semibold text-lg px-8 border-white text-white hover:bg-white hover:text-brand-navy-500">
+                        <i class="fas fa-eye mr-2"></i>Watch Demo
+                    </a>
+                </div>
+                <div class="flex items-center justify-center lg:justify-start mt-8 space-x-6 text-blue-200">
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle mr-2 text-green-400"></i>
+                        <span class="text-sm">No Credit Card Required</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle mr-2 text-green-400"></i>
+                        <span class="text-sm">14-Day Free Trial</span>
+                    </div>
+                </div>
+            </div>
+            <div class="w-full lg:w-1/2 mt-10 lg:mt-0">
+                <div class="relative">
+                    <div class="absolute inset-0 bg-gradient-to-r from-brand-navy-500 to-brand-navy-600 rounded-2xl transform rotate-3 scale-105 opacity-20"></div>
+                    <img src="{{ url_for('static', filename='img/dashboard-screenshot.png') }}" alt="Embee Accounting Dashboard" class="rounded-2xl shadow-2xl relative z-10 w-full h-auto">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trust Indicators -->
+    <section class="py-12 bg-white border-b border-gray-100">
+        <div class="container mx-auto px-4 max-w-6xl">
+            <div class="flex flex-wrap justify-center items-center space-x-8 lg:space-x-16 opacity-60">
+                <div class="flex items-center">
+                    <i class="fas fa-shield-alt text-2xl text-brand-navy-500 mr-3"></i>
+                    <span class="font-semibold text-gray-700">Bank-Level Security</span>
+                </div>
+                <div class="flex items-center">
+                    <i class="fas fa-clock text-2xl text-brand-navy-500 mr-3"></i>
+                    <span class="font-semibold text-gray-700">99.9% Uptime</span>
+                </div>
+                <div class="flex items-center">
+                    <i class="fas fa-headset text-2xl text-brand-navy-500 mr-3"></i>
+                    <span class="font-semibold text-gray-700">24/7 Support</span>
+                </div>
+                <div class="flex items-center">
+                    <i class="fas fa-certificate text-2xl text-brand-navy-500 mr-3"></i>
+                    <span class="font-semibold text-gray-700">GDPR Compliant</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20 bg-white relative overflow-hidden">
+        <!-- Additional hexagon elements -->
+        <div class="honeycomb-corner" style="top:10%;left:5%;transform:rotate(60deg);opacity:0.3;"></div>
+        <div class="honeycomb-corner" style="bottom:20%;right:5%;transform:rotate(-45deg);opacity:0.4;"></div>
+        <div class="container mx-auto px-4 max-w-6xl relative z-10">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold mb-4 text-gray-900">Everything You Need to Manage Your Workforce</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">From attendance tracking to payroll processing, we've got you covered with enterprise-grade features.</p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="card bg-gradient-to-br from-brand-navy-50 to-brand-gray-50 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+                    <div class="card-body text-center">
+                        <div class="w-16 h-16 bg-brand-navy-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-clock text-2xl text-white"></i>
+                        </div>
+                        <h3 class="card-title text-xl text-gray-900 justify-center">Smart Attendance Tracking</h3>
+                        <p class="text-gray-600">Track attendance with GPS verification, biometric integration, and real-time monitoring.</p>
+                    </div>
+                </div>
+                
+                <div class="card bg-gradient-to-br from-brand-navy-50 to-brand-gray-50 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+                    <div class="card-body text-center">
+                        <div class="w-16 h-16 bg-brand-navy-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-calculator text-2xl text-white"></i>
+                        </div>
+                        <h3 class="card-title text-xl text-gray-900 justify-center">Automated Payroll</h3>
+                        <p class="text-gray-600">Calculate wages, deductions, and taxes automatically with customizable rules.</p>
+                    </div>
+                </div>
+                
+                <div class="card bg-gradient-to-br from-brand-navy-50 to-brand-gray-50 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+                    <div class="card-body text-center">
+                        <div class="w-16 h-16 bg-brand-navy-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-chart-line text-2xl text-white"></i>
+                        </div>
+                        <h3 class="card-title text-xl text-gray-900 justify-center">Advanced Analytics</h3>
+                        <p class="text-gray-600">Get insights into productivity, costs, and trends with detailed reports.</p>
+                    </div>
+                </div>
+                
+                <div class="card bg-gradient-to-br from-brand-navy-50 to-brand-gray-50 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+                    <div class="card-body text-center">
+                        <div class="w-16 h-16 bg-brand-navy-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-mobile-alt text-2xl text-white"></i>
+                        </div>
+                        <h3 class="card-title text-xl text-gray-900 justify-center">Mobile App</h3>
+                        <p class="text-gray-600">Workers can clock in/out, view schedules, and access information on mobile devices.</p>
+                    </div>
+                </div>
+                
+                <div class="card bg-gradient-to-br from-brand-navy-50 to-brand-gray-50 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+                    <div class="card-body text-center">
+                        <div class="w-16 h-16 bg-brand-navy-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-users text-2xl text-white"></i>
+                        </div>
+                        <h3 class="card-title text-xl text-gray-900 justify-center">Multi-Company</h3>
+                        <p class="text-gray-600">Manage multiple companies with separate workspaces and role-based access.</p>
+                    </div>
+                </div>
+                
+                <div class="card bg-gradient-to-br from-brand-navy-50 to-brand-gray-50 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+                    <div class="card-body text-center">
+                        <div class="w-16 h-16 bg-brand-navy-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-file-export text-2xl text-white"></i>
+                        </div>
+                        <h3 class="card-title text-xl text-gray-900 justify-center">Export & Integrate</h3>
+                        <p class="text-gray-600">Export data to Excel, PDF, or integrate with your existing systems via API.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="py-20 bg-gradient-to-br from-gray-50 to-blue-50">
+        <div class="container mx-auto px-4 max-w-6xl">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold mb-4 text-gray-900">Simple, Transparent Pricing</h2>
+                <p class="text-xl text-gray-600">Choose the plan that fits your business needs. All plans include our core features.</p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="card bg-white shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+                    <div class="card-body text-center">
+                        <h3 class="card-title text-2xl text-gray-900 justify-center mb-2">Starter</h3>
+                        <div class="mb-6">
+                            <span class="text-4xl font-bold text-blue-600">$29</span>
+                            <span class="text-gray-600">/month</span>
+                        </div>
+                        <ul class="space-y-3 mb-8 text-left">
+                            <li class="flex items-center">
+                                <i class="fas fa-check text-green-500 mr-3"></i>
+                                Up to 25 Workers
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check text-green-500 mr-3"></i>
+                                Basic Attendance Tracking
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check text-green-500 mr-3"></i>
+                                Monthly Payroll Reports
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check text-green-500 mr-3"></i>
+                                Email Support
+                            </li>
+                        </ul>
+                        <a href="{{ url_for('workspace_selection_route') }}" class="btn btn-primary w-full font-semibold bg-blue-600 text-white hover:bg-blue-700">Start Free Trial</a>
+                    </div>
+                </div>
+                
+                <div class="card bg-white shadow-xl border-2 border-blue-500 relative transform scale-105">
+                    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                        <span class="badge badge-primary text-sm font-semibold">Most Popular</span>
+                    </div>
+                    <div class="card-body text-center">
+                        <h3 class="card-title text-2xl text-gray-900 justify-center mb-2">Professional</h3>
+                        <div class="mb-6">
+                            <span class="text-4xl font-bold text-blue-600">$79</span>
+                            <span class="text-gray-600">/month</span>
+                        </div>
+                        <ul class="space-y-3 mb-8 text-left">
+                            <li class="flex items-center">
+                                <i class="fas fa-check text-green-500 mr-3"></i>
+                                Up to 100 Workers
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check text-green-500 mr-3"></i>
+                                Advanced Analytics
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check text-green-500 mr-3"></i>
+                                Mobile App Access
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check text-green-500 mr-3"></i>
+                                Priority Support
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check text-green-500 mr-3"></i>
+                                API Access
+                            </li>
+                        </ul>
+                        <a href="{{ url_for('workspace_selection_route') }}" class="btn btn-primary w-full font-semibold bg-blue-600 text-white hover:bg-blue-700">Start Free Trial</a>
+                    </div>
+                </div>
+                
+                <div class="card bg-white shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+                    <div class="card-body text-center">
+                        <h3 class="card-title text-2xl text-gray-900 justify-center mb-2">Enterprise</h3>
+                        <div class="mb-6">
+                            <span class="text-4xl font-bold text-blue-600">Custom</span>
+                        </div>
+                        <ul class="space-y-3 mb-8 text-left">
+                            <li class="flex items-center">
+                                <i class="fas fa-check text-green-500 mr-3"></i>
+                                Unlimited Workers
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check text-green-500 mr-3"></i>
+                                Custom Integrations
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check text-green-500 mr-3"></i>
+                                Dedicated Support
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check text-green-500 mr-3"></i>
+                                On-Premise Option
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check text-green-500 mr-3"></i>
+                                SLA Guarantee
+                            </li>
+                        </ul>
+                        <a href="{{ url_for('workspace_selection_route') }}" class="btn btn-primary w-full font-semibold bg-blue-600 text-white hover:bg-blue-700">Contact Sales</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="py-20 bg-white">
+        <div class="container mx-auto px-4 max-w-6xl">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold mb-4 text-gray-900">Trusted by Industry Leaders</h2>
+                <p class="text-xl text-gray-600">See what our customers have to say about their experience.</p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="card bg-gradient-to-br from-blue-50 to-indigo-50 border-0 shadow-lg">
+                    <div class="card-body">
+                        <div class="flex mb-4">
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                        </div>
+                        <p class="italic mb-6 text-gray-700">"This platform has revolutionized how we manage our construction workforce. The payroll automation alone saves us 10 hours per week."</p>
+                        <div class="flex items-center">
+                            <div class="avatar mr-4">
+                                <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
+                                    <span class="text-white font-semibold">JD</span>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-900">John Davis</h4>
+                                <p class="text-sm text-gray-600">Construction Manager, BuildCorp</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card bg-gradient-to-br from-blue-50 to-indigo-50 border-0 shadow-lg">
+                    <div class="card-body">
+                        <div class="flex mb-4">
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                        </div>
+                        <p class="italic mb-6 text-gray-700">"The mobile app is fantastic. Our workers can easily clock in and out, and we get real-time updates on attendance."</p>
+                        <div class="flex items-center">
+                            <div class="avatar mr-4">
+                                <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
+                                    <span class="text-white font-semibold">SM</span>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-900">Sarah Martinez</h4>
+                                <p class="text-sm text-gray-600">HR Director, FarmFresh</p>
+                            </div>
+                </div>
+                    </div>
+                </div>
+                
+                <div class="card bg-gradient-to-br from-blue-50 to-indigo-50 border-0 shadow-lg">
+                    <div class="card-body">
+                        <div class="flex mb-4">
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                        </div>
+                        <p class="italic mb-6 text-gray-700">"The analytics and reporting features help us make data-driven decisions about our workforce. Highly recommended!"</p>
+                        <div class="flex items-center">
+                            <div class="avatar mr-4">
+                                <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
+                                    <span class="text-white font-semibold">RW</span>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-900">Robert Wilson</h4>
+                                <p class="text-sm text-gray-600">Operations Manager, LogisticsPro</p>
+                            </div>
+                    </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Privacy & Security Section -->
+    <section class="py-20 bg-white">
+        <div class="container mx-auto px-4 max-w-6xl">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold mb-4 text-gray-900">Your Data, Your Control</h2>
+                <p class="text-xl text-gray-600">We're committed to protecting your privacy and maintaining the highest security standards.</p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h3 class="text-2xl font-bold mb-6 text-gray-900">Privacy & Security First</h3>
+                    <div class="space-y-6">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-shield-alt text-green-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900 mb-2">Bank-Level Encryption</h4>
+                                <p class="text-gray-600">All data is encrypted in transit and at rest using industry-standard AES-256 encryption.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-4">
+                            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-user-shield text-blue-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900 mb-2">GDPR Compliant</h4>
+                                <p class="text-gray-600">Full compliance with GDPR, CCPA, and other international privacy regulations.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-4">
+                            <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-eye-slash text-purple-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900 mb-2">Data Ownership</h4>
+                                <p class="text-gray-600">Your data belongs to you. Export anytime, delete on request, with full transparency.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-8 flex flex-col sm:flex-row gap-4">
+                        <a href="{{ url_for('privacy_policy_route') }}" class="btn btn-outline border-gray-300 text-gray-700 hover:bg-gray-50">
+                            <i class="fas fa-file-alt mr-2"></i>Privacy Policy
+                        </a>
+                        <a href="{{ url_for('terms_of_use_route') }}" class="btn btn-outline border-gray-300 text-gray-700 hover:bg-gray-50">
+                            <i class="fas fa-file-contract mr-2"></i>Terms of Use
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    <div class="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl p-8">
+                        <div class="grid grid-cols-2 gap-6">
+                            <div class="text-center">
+                                <div class="text-3xl font-bold text-blue-600 mb-2">99.9%</div>
+                                <div class="text-gray-600 text-sm">Uptime SLA</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-3xl font-bold text-green-600 mb-2">24/7</div>
+                                <div class="text-gray-600 text-sm">Security Monitoring</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-3xl font-bold text-purple-600 mb-2">SOC 2</div>
+                                <div class="text-gray-600 text-sm">Certified</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-3xl font-bold text-indigo-600 mb-2">ISO 27001</div>
+                                <div class="text-gray-600 text-sm">Compliant</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 text-center">
+                        <div class="inline-flex items-center px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                            <i class="fas fa-check-circle mr-2"></i>
+                            Trusted by 500+ companies worldwide
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 bg-gradient-to-r from-blue-600 to-indigo-700 text-white">
+        <div class="container mx-auto px-4 max-w-4xl text-center">
+            <h2 class="text-4xl font-bold mb-4">Ready to Transform Your Workforce Management?</h2>
+            <p class="text-xl mb-8 text-blue-100">Join thousands of companies that trust us with their workforce management needs.</p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="{{ url_for('workspace_selection_route') }}" class="btn btn-primary btn-lg font-semibold text-lg px-8 bg-blue-600 text-white hover:bg-blue-700">
+                    <i class="fas fa-rocket mr-2"></i>Login / Sign Up
+                </a>
+                <a href="#contact" class="btn btn-outline btn-lg font-semibold text-lg px-8 border-white text-white hover:bg-white hover:text-blue-600">
+                    <i class="fas fa-phone mr-2"></i>Contact Sales
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="container mx-auto px-4 max-w-6xl">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Embee accounting</h3>
+                    <p class="text-gray-400 mb-4">Professional workforce management for modern businesses.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-facebook"></i></a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Product</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white">Features</a></li>
+                        <li><a href="#" class="hover:text-white">Pricing</a></li>
+                        <li><a href="#" class="hover:text-white">API</a></li>
+                        <li><a href="#" class="hover:text-white">Integrations</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Support</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white">Help Center</a></li>
+                        <li><a href="#" class="hover:text-white">Contact Us</a></li>
+                        <li><a href="#" class="hover:text-white">Status</a></li>
+                        <li><a href="#" class="hover:text-white">Documentation</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Legal</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="{{ url_for('terms_of_use_route') }}" class="hover:text-white">Terms of Use</a></li>
+                        <li><a href="{{ url_for('privacy_policy_route') }}" class="hover:text-white">Privacy Policy</a></li>
+                        <li><a href="{{ url_for('legal_compliance_route') }}" class="hover:text-white">Compliance</a></li>
+                        <li><a href="#" class="hover:text-white">Security</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Company</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white">About</a></li>
+                        <li><a href="#" class="hover:text-white">Blog</a></li>
+                        <li><a href="#" class="hover:text-white">Careers</a></li>
+                        <li><a href="#" class="hover:text-white">Press</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2024 Embee accounting. All rights reserved.</p>
+                <div class="mt-2 space-x-4">
+                    <a href="{{ url_for('terms_of_use_route') }}" class="hover:text-white text-sm">Terms of Use</a>
+                    <span>•</span>
+                    <a href="{{ url_for('privacy_policy_route') }}" class="hover:text-white text-sm">Privacy Policy</a>
+                    <span>•</span>
+                    <a href="{{ url_for('legal_compliance_route') }}" class="hover:text-white text-sm">Legal Compliance</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/daisyui@4.4.24/dist/full.min.js"></script>
+</body>
+</html>

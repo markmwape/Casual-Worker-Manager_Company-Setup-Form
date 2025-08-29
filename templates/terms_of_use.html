@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Use - Embee Accounting</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.24/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        window.tailwind = window.tailwind || {};
+        window.tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-navy': {
+                            '50': '#f8fafc',
+                            '100': '#e2e8f0',
+                            '200': '#cbd5e1',
+                            '300': '#94a3b8',
+                            '400': '#64748b',
+                            '500': '#1A2B48',
+                            '600': '#0f1a2e',
+                            '700': '#0a1424',
+                            '800': '#050a12',
+                            '900': '#020508'
+                        },
+                        'brand-gold': {
+                            '50': '#fefce8',
+                            '100': '#fef3c7',
+                            '200': '#fde68a',
+                            '300': '#fcd34d',
+                            '400': '#fbbf24',
+                            '500': '#E5B23A',
+                            '600': '#d4a02a',
+                            '700': '#b45309',
+                            '800': '#92400e',
+                            '900': '#78350f'
+                        }
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body class="font-inter bg-gray-50 text-gray-900">
+    <!-- Navigation -->
+    <header class="bg-white shadow-lg border-b border-blue-100 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 flex items-center justify-between h-16">
+            <a href="{{ url_for('landing_route') }}" class="flex items-center text-brand-navy-500 font-bold text-xl">
+                <img src="{{ url_for('static', filename='img/logo + text.png') }}" alt="Embee Accounting Logo" class="h-20 w-auto object-contain" />
+            </a>
+            <nav class="hidden md:flex items-center space-x-8 font-medium">
+                <a href="{{ url_for('landing_route') }}" class="text-brand-navy-500 font-semibold hover:text-brand-navy-700">Home</a>
+                <a href="{{ url_for('workspace_selection_route') }}" class="bg-brand-navy-500 text-white font-bold px-4 py-2 rounded shadow hover:bg-brand-navy-600 transition">Login / Sign Up</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto px-4 py-12">
+        <div class="bg-white rounded-lg shadow-lg p-8">
+            <!-- Header -->
+            <div class="text-center mb-12">
+                <h1 class="text-4xl font-bold text-brand-navy-500 mb-4">Terms of Use</h1>
+                <p class="text-gray-600 text-lg">Effective Date: August 17, 2025</p>
+                <p class="text-gray-600">Last Updated: August 17, 2025</p>
+            </div>
+
+            <!-- Content -->
+            <div class="prose prose-lg max-w-none">
+                <section class="mb-8">
+                    <h2 class="text-2xl font-semibold text-brand-navy-500 mb-4">1. Acceptance of Terms</h2>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        By accessing and using Embee Accounting's workforce management platform (the "Service"), you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.
+                    </p>
+                    <p class="text-gray-700 leading-relaxed">
+                        These Terms of Use ("Terms") govern your use of our website located at our domain and our workforce management services offered by Embee Accounting ("we," "us," or "our").
+                    </p>
+                </section>
+
+                <section class="mb-8">
+                    <h2 class="text-2xl font-semibold text-brand-navy-500 mb-4">2. Description of Service</h2>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        Embee Accounting provides a comprehensive workforce management platform that includes:
+                    </p>
+                    <ul class="list-disc list-inside text-gray-700 space-y-2 ml-4 mb-4">
+                        <li>Employee attendance tracking and monitoring</li>
+                        <li>Payroll calculation and management</li>
+                        <li>Task assignment and progress tracking</li>
+                        <li>Reporting and analytics tools</li>
+                        <li>Multi-company workspace management</li>
+                        <li>Data import/export capabilities</li>
+                    </ul>
+                    <p class="text-gray-700 leading-relaxed">
+                        Our Service is designed to help businesses efficiently manage their casual and full-time workforce operations.
+                    </p>
+                </section>
+
+                <section class="mb-8">
+                    <h2 class="text-2xl font-semibold text-brand-navy-500 mb-4">3. User Accounts and Registration</h2>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        To use our Service, you must:
+                    </p>
+                    <ul class="list-disc list-inside text-gray-700 space-y-2 ml-4 mb-4">
+                        <li>Provide accurate, current, and complete information during registration</li>
+                        <li>Maintain and update your account information</li>
+                        <li>Keep your login credentials confidential</li>
+                        <li>Be responsible for all activities under your account</li>
+                        <li>Notify us immediately of any unauthorized use</li>
+                    </ul>
+                    <p class="text-gray-700 leading-relaxed">
+                        You are responsible for maintaining the confidentiality of your account and password and for restricting access to your computer or device.
+                    </p>
+                </section>
+
+                <section class="mb-8">
+                    <h2 class="text-2xl font-semibold text-brand-navy-500 mb-4">4. Acceptable Use Policy</h2>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        You agree to use our Service only for lawful purposes and in accordance with these Terms. You agree not to:
+                    </p>
+                    <ul class="list-disc list-inside text-gray-700 space-y-2 ml-4 mb-4">
+                        <li>Upload, post, or transmit any illegal, harmful, or offensive content</li>
+                        <li>Violate any applicable laws or regulations</li>
+                        <li>Infringe on intellectual property rights of others</li>
+                        <li>Attempt to gain unauthorized access to our systems</li>
+                        <li>Interfere with or disrupt our Service or servers</li>
+                        <li>Use the Service for any fraudulent or unauthorized purpose</li>
+                        <li>Transmit viruses, malware, or other harmful code</li>
+                    </ul>
+                </section>
+
+                <section class="mb-8">
+                    <h2 class="text-2xl font-semibold text-brand-navy-500 mb-4">5. Data and Privacy</h2>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        Your privacy is important to us. Our collection and use of personal information is governed by our Privacy Policy, which is incorporated into these Terms by reference.
+                    </p>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        By using our Service, you acknowledge that:
+                    </p>
+                    <ul class="list-disc list-inside text-gray-700 space-y-2 ml-4 mb-4">
+                        <li>You have read and understand our Privacy Policy</li>
+                        <li>You consent to the collection and use of your information as described</li>
+                        <li>You are responsible for the accuracy of data you input</li>
+                        <li>You have obtained necessary consents from your employees for data processing</li>
+                    </ul>
+                </section>
+
+                <section class="mb-8">
+                    <h2 class="text-2xl font-semibold text-brand-navy-500 mb-4">6. Subscription and Billing</h2>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        Our Service operates on a subscription basis with the following terms:
+                    </p>
+                    <ul class="list-disc list-inside text-gray-700 space-y-2 ml-4 mb-4">
+                        <li>Billing cycles are monthly or annual as selected</li>
+                        <li>Payments are due in advance for each billing period</li>
+                        <li>Failed payments may result in service suspension</li>
+                        <li>Refunds are provided according to our refund policy</li>
+                        <li>Subscription fees may change with 30 days' notice</li>
+                    </ul>
+                    <p class="text-gray-700 leading-relaxed">
+                        We offer a free trial period for new customers. Trial limitations and duration are specified during signup.
+                    </p>
+                </section>
+
+                <section class="mb-8">
+                    <h2 class="text-2xl font-semibold text-brand-navy-500 mb-4">7. Intellectual Property Rights</h2>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        The Service and its original content, features, and functionality are and will remain the exclusive property of Embee Accounting and its licensors. The Service is protected by copyright, trademark, and other laws.
+                    </p>
+                    <p class="text-gray-700 leading-relaxed">
+                        You retain ownership of data you input into our Service. We obtain a limited license to use this data solely to provide our Service to you.
+                    </p>
+                </section>
+
+                <section class="mb-8">
+                    <h2 class="text-2xl font-semibold text-brand-navy-500 mb-4">8. Service Availability and Support</h2>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        While we strive to maintain high availability, we do not guarantee uninterrupted access to our Service. We may:
+                    </p>
+                    <ul class="list-disc list-inside text-gray-700 space-y-2 ml-4 mb-4">
+                        <li>Perform scheduled maintenance with advance notice</li>
+                        <li>Temporarily suspend Service for emergency maintenance</li>
+                        <li>Modify or discontinue features with reasonable notice</li>
+                    </ul>
+                    <p class="text-gray-700 leading-relaxed">
+                        Support is provided according to your subscription plan and our support policy.
+                    </p>
+                </section>
+
+                <section class="mb-8">
+                    <h2 class="text-2xl font-semibold text-brand-navy-500 mb-4">9. Limitation of Liability</h2>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        To the fullest extent permitted by law, Embee Accounting shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses.
+                    </p>
+                    <p class="text-gray-700 leading-relaxed">
+                        Our total liability to you for any damages shall not exceed the amount paid by you to us in the twelve (12) months preceding the claim.
+                    </p>
+                </section>
+
+                <section class="mb-8">
+                    <h2 class="text-2xl font-semibold text-brand-navy-500 mb-4">10. Indemnification</h2>
+                    <p class="text-gray-700 leading-relaxed">
+                        You agree to defend, indemnify, and hold harmless Embee Accounting and its affiliates from and against any claims, damages, obligations, losses, liabilities, costs, or debt arising from your use of the Service or violation of these Terms.
+                    </p>
+                </section>
+
+                <section class="mb-8">
+                    <h2 class="text-2xl font-semibold text-brand-navy-500 mb-4">11. Termination</h2>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        Either party may terminate this agreement at any time:
+                    </p>
+                    <ul class="list-disc list-inside text-gray-700 space-y-2 ml-4 mb-4">
+                        <li>You may cancel your subscription through your account settings</li>
+                        <li>We may terminate for breach of these Terms</li>
+                        <li>We may terminate with 30 days' notice for any reason</li>
+                    </ul>
+                    <p class="text-gray-700 leading-relaxed">
+                        Upon termination, your access to the Service will cease, and data may be deleted according to our data retention policy.
+                    </p>
+                </section>
+
+                <section class="mb-8">
+                    <h2 class="text-2xl font-semibold text-brand-navy-500 mb-4">12. Changes to Terms</h2>
+                    <p class="text-gray-700 leading-relaxed">
+                        We reserve the right to modify these Terms at any time. We will notify users of significant changes via email or through the Service. Continued use of the Service after changes constitutes acceptance of the new Terms.
+                    </p>
+                </section>
+
+                <section class="mb-8">
+                    <h2 class="text-2xl font-semibold text-brand-navy-500 mb-4">13. Governing Law and Dispute Resolution</h2>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        These Terms shall be governed by and construed in accordance with the laws of [Your Jurisdiction], without regard to its conflict of law provisions.
+                    </p>
+                    <p class="text-gray-700 leading-relaxed">
+                        Any disputes arising under these Terms shall be resolved through binding arbitration in accordance with the rules of [Arbitration Organization].
+                    </p>
+                </section>
+
+                <section class="mb-8">
+                    <h2 class="text-2xl font-semibold text-brand-navy-500 mb-4">14. Contact Information</h2>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        If you have any questions about these Terms of Use, please contact us:
+                    </p>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <p class="text-gray-700"><strong>Email:</strong> legal@embeeaccounting.com</p>
+                        <p class="text-gray-700"><strong>Address:</strong> [Your Business Address]</p>
+                        <p class="text-gray-700"><strong>Phone:</strong> [Your Phone Number]</p>
+                    </div>
+                </section>
+
+                <section class="mb-8">
+                    <h2 class="text-2xl font-semibold text-brand-navy-500 mb-4">15. Severability</h2>
+                    <p class="text-gray-700 leading-relaxed">
+                        If any provision of these Terms is held to be invalid or unenforceable, the remaining provisions shall remain in full force and effect.
+                    </p>
+                </section>
+
+                <section>
+                    <h2 class="text-2xl font-semibold text-brand-navy-500 mb-4">16. Entire Agreement</h2>
+                    <p class="text-gray-700 leading-relaxed">
+                        These Terms, together with our Privacy Policy, constitute the entire agreement between you and Embee Accounting regarding the use of our Service.
+                    </p>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-8 mt-12">
+        <div class="container mx-auto px-4 max-w-6xl">
+            <div class="text-center">
+                <p>&copy; 2025 Embee Accounting. All rights reserved.</p>
+                <div class="mt-4 space-x-4">
+                    <a href="{{ url_for('terms_of_use_route') }}" class="text-gray-400 hover:text-white">Terms of Use</a>
+                    <a href="{{ url_for('privacy_policy_route') }}" class="text-gray-400 hover:text-white">Privacy Policy</a>
+                    <a href="{{ url_for('landing_route') }}" class="text-gray-400 hover:text-white">Home</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

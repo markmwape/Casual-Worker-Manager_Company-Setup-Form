@@ -1,0 +1,1004 @@
+// UX Improvements
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 transform translate-x-full`;
+    
+    if (type === 'success') {
+        toast.classList.add('bg-green-500', 'text-white');
+    } else if (type === 'error') {
+        toast.classList.add('bg-red-500', 'text-white');
+    } else {
+        toast.classList.add('bg-blue-500', 'text-white');
+    }
+    
+    toast.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'} mr-2"></i>
+            <span>${message}</span>
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Animate in
+    setTimeout(() => {
+        toast.classList.remove('translate-x-full');
+    }, 100);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        toast.classList.add('translate-x-full');
+        setTimeout(() => {
+            document.body.removeChild(toast);
+        }, 300);
+    }, 3000);
+}
+
+function showLoading(element) {
+    element.disabled = true;
+    element.innerHTML = '<div class="loading-spinner mr-2"></div>Loading...';
+}
+
+function hideLoading(element, originalText) {
+    element.disabled = false;
+    element.innerHTML = originalText;
+}
+
+// Modal functions
+function openLogoutModal() {
+    document.getElementById('logout-modal').classList.add('modal-open');
+}
+
+// Add team member form submission
+document.addEventListener('DOMContentLoaded', function() {
+    const addTeamMemberForm = document.getElementById('addTeamMemberForm');
+    if (addTeamMemberForm) {
+        addTeamMemberForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = {
+                email: formData.get('email'),
+                role: formData.get('role')
+            };
+            
+            fetch('/api/team-member', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.error) {
+                    showToast(result.error, 'error');
+                } else {
+                    // Add new row to table with improved styling
+                    const tbody = document.getElementById('teamMembersTableBody');
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-gray-50 transition-colors duration-150';
+                    tr.setAttribute('data-user-id', result.user.id);
+                    
+                    // Check if current user is a Supervisor to conditionally show Actions column
+                    const isSupervisor = window.currentUserRole === 'Supervisor';
+                    
+                    tr.innerHTML = `
+                        <td class="py-4">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                    <span class="text-blue-600 font-semibold text-sm">${result.user.email[0].toUpperCase()}</span>
+                                </div>
+                                <span class="font-medium text-gray-800">${result.user.email}</span>
+                            </div>
+                        </td>
+                        <td class="py-4">
+                            <span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                                ${result.user.role}
+                            </span>
+                        </td>
+                        ${!isSupervisor ? `
+                        <td class="py-4">
+                            <div class="flex gap-2 justify-center">
+                                <button onclick="openEditRoleModal('${result.user.id}', '${result.user.email}', '${result.user.role}')" class="btn btn-ghost btn-sm hover:bg-blue-100 text-blue-600 border border-blue-200 p-2 rounded-md transition-all duration-200 hover:shadow-sm flex items-center justify-center" title="Edit">
+                                    <i data-feather="edit" class="w-4 h-4"></i>
+                                </button>
+                                <button onclick="openRemoveTeamMemberModal('${result.user.id}', '${result.user.email}')" class="btn btn-ghost btn-sm hover:bg-red-100 text-red-600 border border-red-200 p-2 rounded-md transition-all duration-200 hover:shadow-sm flex items-center justify-center" title="Delete">
+                                    <i data-feather="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </td>
+                        ` : ''}
+                    `;
+                    tbody.appendChild(tr);
+                    
+                    // Close modal and reset form
+                    document.getElementById('add-team-member-modal').close();
+                    e.target.reset();
+                    
+                                        // Show success message
+                    showToast('Team member added successfully!', 'success');
+                    
+                    // Refresh Feather icons
+                    reinitializeFeatherIcons();
+                }
+            })
+            .catch(error => {
+                console.error('Error adding team member:', error);
+                showToast('Failed to add team member', 'error');
+            });
+        });
+    }
+});
+
+function openImportWorkersModal() {
+    document.getElementById('import-workers-modal').showModal();
+    loadImportFields();
+}
+
+function loadImportFields() {
+    console.log('Loading import fields...');
+    // Load existing import fields
+    fetch('/api/import-field')
+    .then(response => {
+        console.log('Load fields response status:', response.status);
+        if (response.status === 401 || response.status === 403) {
+            throw new Error('Authentication required. Please log in again.');
+        }
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(fields => {
+        console.log('Loaded fields:', fields);
+        const currentFields = document.getElementById('currentFields');
+        
+        // Clear all fields first
+        currentFields.innerHTML = '';
+        
+        // Add default fields back
+        const firstNameDiv = document.createElement('div');
+        firstNameDiv.className = 'bg-blue-100 p-2 rounded-lg text-blue-700 font-medium truncate';
+        firstNameDiv.setAttribute('data-field', 'first_name');
+        firstNameDiv.textContent = 'First Name';
+        currentFields.appendChild(firstNameDiv);
+        
+        const lastNameDiv = document.createElement('div');
+        lastNameDiv.className = 'bg-blue-100 p-2 rounded-lg text-blue-700 font-medium truncate';
+        lastNameDiv.setAttribute('data-field', 'last_name');
+        lastNameDiv.textContent = 'Last Name';
+        currentFields.appendChild(lastNameDiv);
+        
+        const dobDiv = document.createElement('div');
+        dobDiv.className = 'bg-blue-100 p-2 rounded-lg text-blue-700 font-medium truncate';
+        dobDiv.setAttribute('data-field', 'date_of_birth');
+        dobDiv.textContent = 'Date of Birth';
+        currentFields.appendChild(dobDiv);
+        
+        // Add custom fields
+        fields.forEach(field => {
+            const fieldDiv = document.createElement('div');
+            fieldDiv.className = 'bg-blue-100 p-2 rounded-lg text-blue-700 font-medium flex justify-between items-center';
+            fieldDiv.setAttribute('data-field', field.id);
+            fieldDiv.innerHTML = `
+                <span class="truncate">${field.name}</span>
+                <button type="button" class="btn btn-ghost btn-sm" onclick="removeCustomField(${field.id})">
+                    <i class="material-icons text-error">delete</i>
+                </button>
+            `;
+            currentFields.appendChild(fieldDiv);
+        });
+    })
+    .catch(error => {
+        console.error('Error loading import fields:', error);
+        if (error.message.includes('Authentication required')) {
+            alert('Please log in again to use this feature.');
+            window.location.href = '/';
+        } else {
+            console.error('Failed to load import fields:', error.message);
+        }
+    });
+}
+
+function closeImportWorkersModal() {
+    document.getElementById('import-workers-modal').close();
+    window.location.reload();
+}
+
+function closeLogoutModal() {
+    document.getElementById('logout-modal').classList.remove('modal-open');
+}
+
+function openAddWorkerModal() {
+    document.getElementById('add-worker-modal').showModal();
+}
+
+function closeAddWorkerModal() {
+    document.getElementById('add-worker-modal').close();
+}
+
+// Handle worker form submission
+document.addEventListener('DOMContentLoaded', function() {
+    const workerForm = document.getElementById('workerForm');
+    if (workerForm) {
+        console.log('Worker form found, adding submit handler');
+        workerForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log('Worker form submitted');
+            
+            const formData = new FormData(e.target);
+            const data = {};
+            
+            // Convert form data to JSON
+            for (let [key, value] of formData.entries()) {
+                data[key] = value;
+            }
+            
+            console.log('Sending worker data:', data);
+            
+            const editWorkerId = workerForm.getAttribute('data-edit-worker-id');
+            let url, method;
+            if (editWorkerId) {
+                url = `/api/worker/${editWorkerId}`;
+                method = 'PUT';
+            } else {
+                url = '/api/worker';
+                method = 'POST';
+            }
+            
+            fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.json();
+            })
+            .then(result => {
+                console.log('Response result:', result);
+                if (result.error) {
+                    showToast(result.error, 'error');
+                } else {
+                    closeAddWorkerModal();
+                    showToast(editWorkerId ? 'Worker updated successfully!' : 'Worker added successfully!', 'success');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                }
+            })
+            .catch(error => {
+                console.error('Error saving worker:', error);
+                showToast('Failed to save worker', 'error');
+            })
+            .finally(() => {
+                workerForm.removeAttribute('data-edit-worker-id');
+                const submitBtn = workerForm.querySelector('button[type="submit"]');
+                if (submitBtn) submitBtn.textContent = 'Add Worker';
+            });
+        });
+    } else {
+        console.log('Worker form not found');
+    }
+    
+    // Handle import workers form submission
+    const importWorkersForm = document.getElementById('importWorkersForm');
+    if (importWorkersForm) {
+        console.log('Import workers form found, adding submit handler');
+        importWorkersForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log('Import workers form submitted');
+            
+            const formData = new FormData(e.target);
+            
+            fetch('/api/worker/import', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.error) {
+                    showToast(result.error, 'error');
+                } else {
+                    // Show column mapping section
+                    document.getElementById('importForm').classList.add('hidden');
+                    document.getElementById('columnMapping').classList.remove('hidden');
+                    
+                    // Store file ID for later use
+                    document.getElementById('columnMapping').dataset.fileId = result.file_id;
+                    
+                    // Load Excel columns for mapping
+                    loadExcelColumns(result.columns);
+                }
+            })
+            .catch(error => {
+                console.error('Error uploading file:', error);
+                showToast('Failed to upload file', 'error');
+            });
+        });
+    } else {
+        console.log('Import workers form not found');
+    }
+});
+
+function loadExcelColumns(columns) {
+    const mappingTableBody = document.getElementById('mappingTableBody');
+    mappingTableBody.innerHTML = '';
+    
+    // Get current fields (both default and custom)
+    const currentFields = document.getElementById('currentFields');
+    const fields = Array.from(currentFields.children).map(field => {
+        const span = field.querySelector('span');
+        return {
+            name: span ? span.textContent : field.textContent.trim(),
+            id: field.getAttribute('data-field')
+        };
+    });
+    
+    // Create mapping rows
+    fields.forEach(field => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${field.name}</td>
+            <td>
+                <select class="select select-bordered w-full" data-field="${field.id}">
+                    <option value="">Select Column</option>
+                    ${columns.map(col => `<option value="${col}">${col}</option>`).join('')}
+                </select>
+            </td>
+        `;
+        mappingTableBody.appendChild(tr);
+    });
+}
+
+function openAddTaskModal() {
+    const modal = document.getElementById('add-task-modal');
+    if (modal) {
+        modal.classList.add('modal-open');
+        
+        // Set default date to today
+        const dateInput = document.getElementById('task-start-date');
+        if (dateInput && !dateInput.value) {
+            const today = new Date().toISOString().split('T')[0];
+            dateInput.value = today;
+        }
+        
+        // Update status indicator
+        updateTaskStatusIndicator();
+        
+        // Debug the form when modal is opened
+        const taskForm = document.getElementById('taskForm');
+        if (taskForm) {
+            console.log('Task form found when modal opened:', taskForm);
+            console.log('Form onsubmit:', taskForm.onsubmit);
+        } else {
+            console.log('Task form not found when modal opened');
+        }
+    }
+}
+
+function updateTaskStatusIndicator() {
+    const dateInput = document.getElementById('task-start-date');
+    const statusIndicator = document.getElementById('task-status-indicator');
+    const statusValue = document.getElementById('task-status-value');
+    
+    if (dateInput && statusIndicator && statusValue) {
+        const selectedDate = new Date(dateInput.value);
+        const currentDate = new Date();
+        currentDate.setHours(0, 0, 0, 0);
+        selectedDate.setHours(0, 0, 0, 0);
+        
+        if (selectedDate < currentDate) {
+            statusValue.textContent = 'Invalid';
+            statusValue.className = 'text-red-600 font-bold';
+            statusIndicator.classList.remove('hidden');
+        } else if (selectedDate.getTime() === currentDate.getTime()) {
+            statusValue.textContent = 'In Progress';
+            statusValue.className = 'text-green-600 font-bold';
+            statusIndicator.classList.remove('hidden');
+        } else {
+            statusValue.textContent = 'Pending';
+            statusValue.className = 'text-orange-600 font-bold';
+            statusIndicator.classList.remove('hidden');
+        }
+    }
+}
+
+function closeAddTaskModal() {
+    document.getElementById('add-task-modal').classList.remove('modal-open');
+}
+
+// Payment type logic for add task modal
+function setupPaymentTypeToggle() {
+    const perPartGroup = document.getElementById('per-part-payout-group');
+    const radios = document.querySelectorAll('input[name="payment_type"]');
+    radios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.value === 'per_part') {
+                perPartGroup.style.display = '';
+            } else {
+                perPartGroup.style.display = 'none';
+            }
+        });
+    });
+}
+
+function createTask(event) {
+    event.preventDefault();
+    const form = event.target || document.getElementById('taskForm');
+    const nameField = form.querySelector('input[name="name"]');
+    const dateField = form.querySelector('input[name="start_date"]');
+    const errorDivId = 'task-date-error';
+    let errorDiv = document.getElementById(errorDivId);
+    if (!errorDiv) {
+        errorDiv = document.createElement('div');
+        errorDiv.id = errorDivId;
+        errorDiv.className = 'alert alert-error mb-2';
+        errorDiv.style.display = 'none';
+        form.insertBefore(errorDiv, form.firstChild);
+    }
+    // Validate start date
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const selectedDate = new Date(dateField.value);
+    selectedDate.setHours(0,0,0,0);
+    if (selectedDate < today) {
+        errorDiv.textContent = 'Start date cannot be in the past.';
+        errorDiv.style.display = '';
+        dateField.focus();
+        return;
+    } else {
+        errorDiv.style.display = 'none';
+    }
+    // Set status based on date
+    let status = 'Pending';
+    if (selectedDate.getTime() === today.getTime()) {
+        status = 'In Progress';
+    }
+    const formData = new FormData(form);
+    const paymentType = formData.get('payment_type') || 'per_day';
+    let perPartPayout = null;
+    let perPartCurrency = null;
+    if (paymentType === 'per_part') {
+        perPartPayout = formData.get('per_part_payout');
+        perPartCurrency = formData.get('per_part_currency');
+        if (!perPartPayout || isNaN(perPartPayout) || Number(perPartPayout) <= 0) {
+            errorDiv.textContent = 'Please enter a valid payout per part.';
+            errorDiv.style.display = '';
+            document.getElementById('per-part-payout').focus();
+            return;
+        }
+        if (!perPartCurrency || perPartCurrency.trim() === '') {
+            errorDiv.textContent = 'Please enter a currency for payout per part.';
+            errorDiv.style.display = '';
+            document.getElementById('per-part-currency').focus();
+            return;
+        }
+    }
+    fetch('/api/task', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            name: formData.get('name'),
+            description: formData.get('description'),
+            start_date: formData.get('start_date'),
+            status: status,
+            payment_type: paymentType,
+            per_part_payout: perPartPayout,
+            per_part_currency: perPartCurrency
+        })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.error) {
+            alert(result.error);
+        } else {
+            closeAddTaskModal();
+            window.location.reload();
+        }
+    })
+    .catch(error => {
+        console.error('Error creating task:', error);
+        alert('Failed to create task');
+    });
+}
+
+function openEditPayoutModal() {
+    document.getElementById('edit-payout-modal').showModal();
+}
+
+function closeEditPayoutModal() {
+    document.getElementById('edit-payout-modal').close();
+}
+
+function resetImportForm() {
+    window.location.reload();
+}
+
+// Keyboard navigation improvements
+document.addEventListener('DOMContentLoaded', function() {
+    // Close modals with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (modal.open) {
+                    modal.close();
+                }
+            });
+        }
+    });
+    
+    // Form validation improvements
+    const inputs = document.querySelectorAll('input, textarea, select');
+    inputs.forEach(input => {
+        input.addEventListener('blur', function() {
+            if (this.hasAttribute('required') && !this.value.trim()) {
+                this.classList.add('error');
+            } else {
+                this.classList.remove('error');
+                if (this.value.trim()) {
+                    this.classList.add('success');
+                }
+            }
+        });
+        
+        input.addEventListener('input', function() {
+            if (this.classList.contains('error') && this.value.trim()) {
+                this.classList.remove('error');
+                this.classList.add('success');
+            }
+        });
+    });
+    
+    // Auto-focus first input in modals
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+        modal.addEventListener('show', function() {
+            const firstInput = this.querySelector('input, textarea, select');
+            if (firstInput) {
+                setTimeout(() => firstInput.focus(), 100);
+            }
+        });
+    });
+});
+
+function saveNewField() {
+    console.log('saveNewField called');
+    const fieldName = document.getElementById('newFieldName').value.trim();
+    
+    console.log('Field name:', fieldName);
+    
+    if (!fieldName) {
+        alert('Please enter a field name');
+        return;
+    }
+    
+    console.log('Sending request to /api/import-field');
+    
+    // Save field to database
+    fetch('/api/import-field', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            name: fieldName
+        })
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        if (response.status === 401 || response.status === 403) {
+            throw new Error('Authentication required. Please log in again.');
+        }
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(result => {
+        console.log('Response result:', result);
+        if (result.error) {
+            alert(result.error);
+        } else {
+            // Add to current fields list
+            const currentFields = document.getElementById('currentFields');
+            const fieldDiv = document.createElement('div');
+            fieldDiv.className = 'bg-blue-100 p-2 rounded-lg text-blue-700 font-medium truncate flex justify-between items-center';
+            fieldDiv.setAttribute('data-field', result.id);
+            fieldDiv.innerHTML = `
+                <span>${fieldName}</span>
+                <button type="button" class="btn btn-ghost btn-sm" onclick="removeCustomField(${result.id})">
+                    <i class="material-icons text-error">delete</i>
+                </button>
+            `;
+            currentFields.appendChild(fieldDiv);
+            
+            // Reset new field form
+            document.getElementById('newFieldName').value = '';
+            
+            // Show success message
+            showToast('Field added successfully!', 'success');
+        }
+    })
+    .catch(error => {
+        console.error('Error adding field:', error);
+        if (error.message.includes('Authentication required')) {
+            alert('Please log in again to use this feature.');
+            window.location.href = '/';
+        } else {
+            alert('Failed to add field: ' + error.message);
+        }
+    });
+}
+
+function removeCustomField(fieldId) {
+    // Confirmation prompt
+    if (!confirm('Are you sure you want to delete this field?')) {
+        return;
+    }
+    console.log('Removing field:', fieldId);
+    // Delete field from database
+    fetch(`/api/import-field/${fieldId}`, {
+        method: 'DELETE'
+    })
+    .then(response => {
+        console.log('Delete field response status:', response.status);
+        if (response.status === 401 || response.status === 403) {
+            throw new Error('Authentication required. Please log in again.');
+        }
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(result => {
+        console.log('Delete field result:', result);
+        if (result.error) {
+            alert(result.error);
+        } else {
+            // Remove field element if it exists
+            const fieldElement = document.querySelector(`[data-field="${fieldId}"]`);
+            if (fieldElement) {
+                fieldElement.remove();
+                showToast('Field deleted successfully!', 'success');
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error deleting field:', error);
+        if (error.message.includes('Authentication required')) {
+            alert('Please log in again to use this feature.');
+            window.location.href = '/';
+        } else {
+            alert('Failed to delete field: ' + error.message);
+        }
+    });
+}
+
+// Handle payout rate form submission
+document.addEventListener('DOMContentLoaded', function() {
+    const payoutForm = document.getElementById('payoutForm');
+    if (payoutForm) {
+        payoutForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const newRate = document.getElementById('payoutRateInput').value;
+            const selectedCurrency = document.querySelector('input[name="currency"]:checked');
+            
+            if (!selectedCurrency) {
+                showToast('Please select a currency', 'error');
+                return;
+            }
+            
+            const currency = selectedCurrency.value;
+            const symbol = selectedCurrency.dataset.symbol;
+            
+            try {
+                const response = await fetch('/api/company/payout-rate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        rate: newRate,
+                        currency: currency,
+                        symbol: symbol
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (response.ok && result.new_rate) {
+                    // Update displayed rate and currency
+                    document.getElementById('payoutRate').innerHTML = `<span id="currencySymbol">${result.symbol}</span>${result.new_rate}`;
+                    // Show success message
+                    showToast('Payout rate updated successfully', 'success');
+                    // Close the modal
+                    const modal = document.getElementById('edit-payout-modal');
+                    if (modal) {
+                        modal.close();
+                    }
+                } else {
+                    throw new Error(result.error || 'Failed to update payout rate');
+                }
+            } catch (error) {
+                console.error('Error updating payout rate:', error);
+                showToast(error.message || 'Failed to update payout rate', 'error');
+            }
+        });
+    }
+});
+
+function openEditRoleModal(userId, email, role) {
+    const form = document.getElementById('editRoleForm');
+    form.querySelector('[name="user_id"]').value = userId;
+    form.querySelector('[name="email"]').value = email;
+    form.querySelector('[name="role"]').value = role;
+    document.getElementById('edit-role-modal').showModal();
+}
+
+function closeEditRoleModal() {
+    document.getElementById('edit-role-modal').close();
+}
+
+function updateRole(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    const userId = formData.get('user_id');
+    const newRole = formData.get('role');
+    
+    fetch(`/api/team-member/${userId}/role`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            role: newRole
+        })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.error) {
+            alert(result.error);
+        } else {
+            // Update the role in the table
+            const row = document.querySelector(`tr[data-user-id="${userId}"]`);
+            if (row) {
+                const roleCell = row.querySelector('td:nth-child(2) span');
+                if (roleCell) {
+                    roleCell.textContent = newRole;
+                }
+            }
+            closeEditRoleModal();
+            
+            // Reinitialize Feather icons
+            reinitializeFeatherIcons();
+            
+            // Show success message
+            showToast('Role updated successfully!', 'success');
+        }
+    })
+    .catch(error => {
+        console.error('Error updating role:', error);
+        alert('Failed to update role');
+    });
+}
+
+function openRemoveTeamMemberModal(userId, email) {
+    document.getElementById('remove-member-id').value = userId;
+    document.getElementById('remove-member-email').textContent = email;
+    document.getElementById('remove-team-member-modal').showModal();
+}
+
+function closeRemoveTeamMemberModal() {
+    document.getElementById('remove-team-member-modal').close();
+}
+
+function removeTeamMember() {
+    const userId = document.getElementById('remove-member-id').value;
+    
+    fetch(`/api/team-member/${userId}`, {
+        method: 'DELETE'
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.error) {
+            alert(result.error);
+        } else {
+            // Remove the row from the table
+            const row = document.querySelector(`tr[data-user-id="${userId}"]`) || 
+                         document.querySelector(`tr:has(button[onclick*="${userId}"])`);
+            if (row) {
+                row.remove();
+            }
+            closeRemoveTeamMemberModal();
+            
+            // Reload the page to ensure consistency
+            window.location.reload();
+        }
+    })
+    .catch(error => {
+        console.error('Error removing team member:', error);
+        alert('Failed to remove team member');
+    });
+}
+
+// Make functions available globally
+window.openLogoutModal = openLogoutModal;
+window.closeLogoutModal = closeLogoutModal;
+window.openAddWorkerModal = openAddWorkerModal;
+window.closeAddWorkerModal = closeAddWorkerModal;
+window.openAddTaskModal = openAddTaskModal;
+window.closeAddTaskModal = closeAddTaskModal;
+window.createTask = createTask;
+window.openEditPayoutModal = openEditPayoutModal;
+window.closeEditPayoutModal = closeEditPayoutModal;
+window.openImportWorkersModal = openImportWorkersModal;
+window.closeImportWorkersModal = closeImportWorkersModal;
+window.loadImportFields = loadImportFields;
+window.loadExcelColumns = loadExcelColumns;
+window.resetImportForm = resetImportForm;
+window.removeCustomField = removeCustomField;
+window.openEditRoleModal = openEditRoleModal;
+window.closeEditRoleModal = closeEditRoleModal;
+window.updateRole = updateRole;
+window.openRemoveTeamMemberModal = openRemoveTeamMemberModal;
+window.closeRemoveTeamMemberModal = closeRemoveTeamMemberModal;
+window.removeTeamMember = removeTeamMember;
+window.saveNewField = saveNewField;
+
+function closeAddTeamMemberModal() {
+    document.getElementById('add-team-member-modal').close();
+}
+
+// Function to reinitialize Feather icons
+function reinitializeFeatherIcons() {
+    if (typeof feather !== 'undefined') {
+        feather.replace();
+    }
+}
+
+// Function to create mapping row for Excel columns
+function createMappingRow(field, columns) {
+    const tr = document.createElement('tr');
+    const fieldId = field.toLowerCase().replace(/ /g, '_');
+    tr.innerHTML = `
+        <td>${field}</td>
+        <td>
+            <select class="select select-bordered w-full" data-field="${fieldId}">
+                <option value="">Select Column</option>
+                ${columns.map(col => `<option value="${col}">${col}</option>`).join('')}
+            </select>
+        </td>
+    `;
+    return tr;
+}
+
+// Function to handle importing workers with column mapping
+window.importWithMapping = function() {
+    const fileId = document.getElementById('columnMapping').dataset.fileId;
+    const mapping = {};
+    
+    // Get all select elements in mapping table
+    const selects = document.querySelectorAll('#mappingTableBody select');
+    selects.forEach(select => {
+        if (select.value) {
+            mapping[select.dataset.field] = select.value;
+        }
+    });
+    
+    fetch('/api/worker/import-mapped', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+            'mapping': JSON.stringify(mapping),
+            'file_id': fileId
+        })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.error) {
+            alert(result.error);
+        } else {
+            document.getElementById('columnMapping').classList.add('hidden');
+            document.getElementById('importResults').classList.remove('hidden');
+        }
+    })
+    .catch(error => {
+        console.error('Error importing workers:', error);
+        alert('Failed to import workers');
+    });
+}
+
+// Currency selection handling
+document.addEventListener('DOMContentLoaded', function() {
+    setupPaymentTypeToggle();
+    const currencyOptions = document.querySelectorAll('input[name="currency"]');
+    const selectedCurrencySymbol = document.getElementById('selectedCurrencySymbol');
+    
+    // Update currency symbol when a radio button is selected
+    currencyOptions.forEach(option => {
+        option.addEventListener('change', function() {
+            const symbol = this.dataset.symbol;
+            selectedCurrencySymbol.textContent = symbol;
+        });
+    });
+
+    // Set initial currency symbol
+    const checkedCurrency = document.querySelector('input[name="currency"]:checked');
+    if (checkedCurrency) {
+        selectedCurrencySymbol.textContent = checkedCurrency.dataset.symbol;
+    }
+    
+    // Debug task form
+    const taskForm = document.getElementById('taskForm');
+    if (taskForm) {
+        console.log('Task form found:', taskForm);
+        console.log('Form onsubmit before:', taskForm.onsubmit);
+        
+        // Remove any existing onsubmit handler
+        taskForm.onsubmit = null;
+        
+        taskForm.addEventListener('submit', function(e) {
+            console.log('Task form submit event triggered');
+            console.log('Form validity:', this.checkValidity());
+            console.log('Form elements:', this.elements);
+            createTask(e);
+        });
+        
+
+        
+        console.log('Form onsubmit after:', taskForm.onsubmit);
+    } else {
+        console.log('Task form not found');
+    }
+});
+
+// Ensure the date input cannot select before today
+function setTaskStartDateMin() {
+    const dateInput = document.getElementById('task-start-date');
+    if (dateInput) {
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.setAttribute('min', today);
+    }
+}
+document.addEventListener('DOMContentLoaded', setTaskStartDateMin);
+
+/* ---------------------------------------------
+   Mobile UX helpers
+----------------------------------------------*/
+document.addEventListener('DOMContentLoaded', function () {
+    const drawerCheckbox = document.getElementById('my-drawer');
+    if (!drawerCheckbox) return;
+
+    // 1. Auto-close sidebar after navigating on mobile
+    const menuLinks = document.querySelectorAll('.sidebar-menu-item');
+    menuLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            // Delay to allow link navigation when using Turbo/flask refresh
+            setTimeout(() => {
+                if (window.innerWidth <= 1023) {
+                    drawerCheckbox.checked = false;
+                }
+            }, 150);
+        });
+    });
+
+    // 2. Close when overlay tapped (safety – DaisyUI should already do this)
+    const overlay = document.querySelector('label.drawer-overlay');
+    if (overlay) {
+        overlay.addEventListener('click', () => {
+            drawerCheckbox.checked = false;
+        });
+    }
+});

@@ -1,0 +1,71 @@
+<!-- Add Team Member Modal -->
+<dialog id="add-team-member-modal" class="modal">
+    <div class="modal-box">
+        <h3 class="font-bold text-lg">Add Team Member</h3>
+        <form id="addTeamMemberForm">
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text">Email</span>
+                </label>
+                <input type="email" name="email" class="input input-bordered w-full" required>
+            </div>
+            <div class="form-control w-full mt-4">
+                <label class="label">
+                    <span class="label-text">Role</span>
+                </label>
+                <select name="role" class="select select-bordered w-full" required>
+                    <option value="Supervisor">Supervisor</option>
+                    <option value="Admin">Admin</option>
+                    <option value="Accountant">Accountant</option>
+                </select>
+            </div>
+            <div class="modal-action">
+                <button type="button" class="btn btn-ghost" onclick="document.getElementById('add-team-member-modal').close()">Cancel</button>
+                <button type="submit" class="btn btn-primary">Add Member</button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
+<!-- Edit Role Modal -->
+<dialog id="edit-role-modal" class="modal">
+    <div class="modal-box">
+        <h3 class="font-bold text-lg">Edit Team Member Role</h3>
+        <form id="editRoleForm" onsubmit="updateRole(event)">
+            <input type="hidden" name="user_id">
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text">Email</span>
+                </label>
+                <input type="email" name="email" class="input input-bordered w-full" readonly>
+            </div>
+            <div class="form-control w-full mt-4">
+                <label class="label">
+                    <span class="label-text">Role</span>
+                </label>
+                <select name="role" class="select select-bordered w-full" required>
+                    <option value="Supervisor">Supervisor</option>
+                    <option value="Admin">Admin</option>
+                    <option value="Accountant">Accountant</option>
+                </select>
+            </div>
+            <div class="modal-action">
+                <button type="button" class="btn btn-ghost" onclick="closeEditRoleModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary">Update Role</button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
+<!-- Remove Team Member Modal -->
+<dialog id="remove-team-member-modal" class="modal">
+    <div class="modal-box">
+        <h3 class="font-bold text-lg">Remove Team Member</h3>
+        <p class="py-4">Are you sure you want to remove <span id="remove-member-email" class="font-bold"></span> from the team?</p>
+        <input type="hidden" id="remove-member-id">
+        <div class="modal-action">
+            <button type="button" class="btn btn-ghost" onclick="closeRemoveTeamMemberModal()">Cancel</button>
+            <button type="button" class="btn btn-error" onclick="removeTeamMember()">Remove</button>
+        </div>
+    </div>
+</dialog>

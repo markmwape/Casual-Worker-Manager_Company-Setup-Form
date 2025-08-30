@@ -62,12 +62,41 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
         import { getAuth } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-        window.firebaseApp = initializeApp({
-            apiKey: "AIzaSyAo1ZFRueQ9nNFbiSF7uGYtgLuMfUWxKXk",
-            authDomain: "casual-worker-webapp.firebaseapp.com",
-            // ... other config ...
-        });
-        window.firebaseAuth = getAuth(window.firebaseApp);
+        
+        // Load Firebase configuration from server
+        async function initializeFirebase() {
+            try {
+                const response = await fetch('/firebase_config');
+                const firebaseConfig = await response.json();
+                
+                // Fallback configuration if server config is incomplete
+                if (!firebaseConfig.apiKey) {
+                    firebaseConfig.apiKey = "AIzaSyD9_N_0ve9ABFwwnTBn1N2oxlUs6xbT-No";
+                    firebaseConfig.authDomain = "ember-accounting.firebaseapp.com";
+                    firebaseConfig.projectId = "ember-accounting";
+                    firebaseConfig.storageBucket = "ember-accounting.firebasestorage.app";
+                    firebaseConfig.messagingSenderId = "328324461979";
+                    firebaseConfig.appId = "1:328324461979:web:0cc9ddad6aa3f157359d3e";
+                    firebaseConfig.measurementId = "G-F1XTE0TP63";
+                }
+                
+                window.firebaseApp = initializeApp(firebaseConfig);
+                window.firebaseAuth = getAuth(window.firebaseApp);
+                console.log('Firebase initialized successfully');
+            } catch (error) {
+                console.error('Error initializing Firebase:', error);
+                // Show user-friendly error message
+                const errorDiv = document.getElementById('signin-error');
+                if (errorDiv) {
+                    errorDiv.textContent = 'Firebase configuration error. Please contact support.';
+                    errorDiv.style.color = 'red';
+                    errorDiv.style.display = 'block';
+                }
+            }
+        }
+        
+        // Initialize Firebase when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initializeFirebase);
     </script>
 </head>
 <body class="font-inter bg-gradient-to-br from-brand-navy-50 to-brand-gray-100 min-h-screen flex items-center justify-center">

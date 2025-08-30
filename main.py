@@ -29,13 +29,36 @@ class StandaloneApplication(BaseApplication):
 @app.route('/firebase_config')
 def get_firebase_config():
     try:
-        # Load Firebase configuration from environment variable or file
-        firebase_config_str = os.environ.get('FIREBASE_CONFIG', '{}')
-        firebase_config = json.loads(firebase_config_str)
+        # Load Firebase configuration from environment variable or use default config
+        firebase_config_str = os.environ.get('FIREBASE_CONFIG', '')
+        
+        if firebase_config_str:
+            firebase_config = json.loads(firebase_config_str)
+        else:
+            # New Firebase configuration for ember-accounting project
+            firebase_config = {
+                "apiKey": "AIzaSyD9_N_0ve9ABFwwnTBn1N2oxlUs6xbT-No",
+                "authDomain": "ember-accounting.firebaseapp.com",
+                "projectId": "ember-accounting",
+                "storageBucket": "ember-accounting.firebasestorage.app",
+                "messagingSenderId": "328324461979",
+                "appId": "1:328324461979:web:0cc9ddad6aa3f157359d3e",
+                "measurementId": "G-F1XTE0TP63"
+            }
+        
         return jsonify(firebase_config)
     except Exception as e:
         logging.error(f"Error retrieving Firebase config: {str(e)}")
-        return jsonify({"error": "Could not retrieve Firebase configuration"}), 500
+        # Return the new fallback configuration
+        return jsonify({
+            "apiKey": "AIzaSyD9_N_0ve9ABFwwnTBn1N2oxlUs6xbT-No",
+            "authDomain": "ember-accounting.firebaseapp.com",
+            "projectId": "ember-accounting",
+            "storageBucket": "ember-accounting.firebasestorage.app",
+            "messagingSenderId": "328324461979",
+            "appId": "1:328324461979:web:0cc9ddad6aa3f157359d3e",
+            "measurementId": "G-F1XTE0TP63"
+        })
 
 @app.route('/test_session')
 def test_session():

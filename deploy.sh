@@ -6,15 +6,15 @@ set -e
 echo "🚀 Starting deployment to Google Cloud Run..."
 
 # Set your project ID (replace with your actual project ID)
-PROJECT_ID="embee-accounting"
-SERVICE_NAME="casual-worker-manager-company-setup-form"
+PROJECT_ID="embee-accounting101"
+SERVICE_NAME="embee-accounting"
 REGION="us-central1"
 
-# Cloud SQL Configuration (update these values after running setup_cloud_sql.py)
-CLOUD_SQL_CONNECTION_NAME="embee-accounting:us-central1:casual-worker-db"
-DB_USER="casual_worker_user"
-DB_PASS="Embeeaccounting2030"
-DB_NAME="casual_worker_db"
+# Cloud SQL Configuration (matching app.yaml and cloudbuild.yaml)
+CLOUD_SQL_CONNECTION_NAME="embee-accounting101:us-central1:cw-manager-db"
+DB_USER="cwuser"
+DB_PASS="CWManager2024!"
+DB_NAME="cw_manager"
 
 echo "📦 Building and deploying to Cloud Run..."
 
@@ -31,7 +31,7 @@ gcloud run deploy $SERVICE_NAME \
   --max-instances 10 \
   --min-instances 0 \
   --port 8080 \
-  --set-env-vars="CLOUD_SQL_CONNECTION_NAME=$CLOUD_SQL_CONNECTION_NAME" \
+  --set-env-vars="INSTANCE_CONNECTION_NAME=$CLOUD_SQL_CONNECTION_NAME" \
   --set-env-vars="DB_USER=$DB_USER" \
   --set-env-vars="DB_PASS=$DB_PASS" \
   --set-env-vars="DB_NAME=$DB_NAME" \

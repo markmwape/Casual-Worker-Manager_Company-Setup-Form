@@ -108,28 +108,23 @@ def create_workspace():
         if expected_workers not in valid_worker_ranges:
             return jsonify({"error": f"Invalid expected workers range: {expected_workers}. Valid options are: {', '.join(valid_worker_ranges)}"}), 400
         
-        # Create new workspace
-        # Create or find a system user for workspace creation
-        try:
-            system_user = User.query.filter_by(email="system@workspace.com").first()
-        except Exception as e:
-            logging.error(f"Error querying system user: {e}")
-            return jsonify({"error": "Failed to query system user"}), 500
-        if not system_user:
-            # Create and commit a system user for workspace creation
-            system_user = User(
-                email="system@workspace.com",
-                profile_picture="",
-                role="System"
+        # Get current user from session - they will be the workspace creator
+        if 'user' not in session or 'user_email' not in session['user']:
+            return jsonify({"error": "User not authenticated"}), 401
+        
+        user_email = session['user']['user_email']
+        current_user = User.query.filter_by(email=user_email).first()
+        
+        if not current_user:
+            # Create user if they don't exist
+            current_user = User(
+                email=user_email,
+                profile_picture=session['user'].get('photo_url', ''),
+                role='User'
             )
-            try:
-                db.session.add(system_user)
-                db.session.commit()
-                logging.info(f"Created system user with ID: {system_user.id}")
-            except Exception as e:
-                logging.error(f"Error creating system user: {e}")
-                db.session.rollback()
-                return jsonify({"error": "Failed to create system user"}), 500
+            db.session.add(current_user)
+            db.session.commit()
+            logging.info(f"Created new user: {user_email}")
         
         workspace = Workspace(
             name=company_name,
@@ -140,14 +135,25 @@ def create_workspace():
             company_phone=company_phone,
             company_email=company_email,
             address="",  # Provide empty string as default
-            created_by=system_user.id  # Use the system user ID
+            created_by=current_user.id  # Use the actual user's ID
         )
         
         # Log the workspace creation attempt
         logging.info(f"Creating workspace with data: {workspace.__dict__}")
         
         db.session.add(workspace)
+        db.session.flush()  # Get the workspace ID
+        
+        # Add the creator as Admin to the workspace
+        user_workspace = UserWorkspace(
+            user_id=current_user.id,
+            workspace_id=workspace.id,
+            role='Admin'
+        )
+        db.session.add(user_workspace)
         db.session.commit()
+        
+        logging.info(f"Added user {user_email} as Admin to workspace {workspace.name}")
         
         return jsonify({
             "success": True,

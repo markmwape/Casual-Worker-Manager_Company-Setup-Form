@@ -336,6 +336,16 @@ with app.app_context():
                     END $$;
                 """)
                 
+                # Add created_at column if it doesn't exist (for existing tables)
+                cur.execute("""
+                    DO $$ 
+                    BEGIN 
+                        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='import_field' AND column_name='created_at') THEN
+                            ALTER TABLE import_field ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+                        END IF;
+                    END $$;
+                """)
+                
                 # Create worker_custom_field_value table
                 cur.execute("""
                     CREATE TABLE IF NOT EXISTS worker_custom_field_value (

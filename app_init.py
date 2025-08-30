@@ -11,16 +11,16 @@ app = Flask(__name__)
 app.secret_key = 'supersecretkey'
 
 # Database configuration - use Cloud SQL in production, SQLite for local development
-if os.environ.get('GAE_ENV', '').startswith('standard') or os.environ.get('CLOUD_SQL_CONNECTION_NAME') or os.environ.get('K_SERVICE'):
+if os.environ.get('GAE_ENV', '').startswith('standard') or os.environ.get('INSTANCE_CONNECTION_NAME') or os.environ.get('K_SERVICE'):
     # Production: Use Cloud SQL
     db_user = os.environ.get('DB_USER', 'postgres')
     db_pass = os.environ.get('DB_PASS', '')
     db_name = os.environ.get('DB_NAME', 'casual_worker_db')
     
     # For Cloud SQL Proxy
-    if os.environ.get('CLOUD_SQL_CONNECTION_NAME'):
+    if os.environ.get('INSTANCE_CONNECTION_NAME'):
         # Use the Cloud SQL connection format
-        connection_name = os.environ.get('CLOUD_SQL_CONNECTION_NAME')
+        connection_name = os.environ.get('INSTANCE_CONNECTION_NAME')
         app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://{db_user}:{db_pass}@/{db_name}?host=/cloudsql/{connection_name}'
     else:
         db_host = os.environ.get('DB_HOST', 'localhost')
@@ -30,7 +30,7 @@ if os.environ.get('GAE_ENV', '').startswith('standard') or os.environ.get('CLOUD
     logging.info(f"Using Cloud SQL configuration:")
     logging.info(f"  DB_USER: {db_user}")
     logging.info(f"  DB_NAME: {db_name}")
-    logging.info(f"  CLOUD_SQL_CONNECTION_NAME: {os.environ.get('CLOUD_SQL_CONNECTION_NAME')}")
+    logging.info(f"  INSTANCE_CONNECTION_NAME: {os.environ.get('INSTANCE_CONNECTION_NAME')}")
     logging.info(f"  K_SERVICE: {os.environ.get('K_SERVICE')}")
     logging.info(f"  GAE_ENV: {os.environ.get('GAE_ENV')}")
     logging.info(f"  Database URI: {app.config['SQLALCHEMY_DATABASE_URI']}")
@@ -39,7 +39,7 @@ else:
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.sqlite'
     logging.info("Using SQLite configuration for development")
     logging.info(f"  Environment variables:")
-    logging.info(f"    CLOUD_SQL_CONNECTION_NAME: {os.environ.get('CLOUD_SQL_CONNECTION_NAME')}")
+    logging.info(f"    INSTANCE_CONNECTION_NAME: {os.environ.get('INSTANCE_CONNECTION_NAME')}")
     logging.info(f"    K_SERVICE: {os.environ.get('K_SERVICE')}")
     logging.info(f"    GAE_ENV: {os.environ.get('GAE_ENV')}")
 
@@ -139,111 +139,125 @@ def create_or_update_user(response):
 # Initialize database with Alembic migrations
 with app.app_context():
     try:
-        # Run Alembic migrations with better error handling
-        import subprocess
-        result = subprocess.run(
-            ["python3", "-m", "alembic", "upgrade", "head"],
-            capture_output=True,
-            text=True,
-            cwd=os.getcwd(),
-            timeout=120  # Increased timeout to 2 minutes
-        )
-        if result.returncode == 0:
-            logging.info("Alembic migrations applied successfully")
+        # Run basic table creation for Cloud SQL
+        if os.environ.get('K_SERVICE'):  # In Cloud Run
+            logging.info("Cloud Run environment detected - running basic table creation")
+            try:
+                import psycopg2
+                from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+                
+                # Get connection details
+                db_user = os.environ.get('DB_USER', 'cwuser')
+                db_pass = os.environ.get('DB_PASS', '')
+                db_name = os.environ.get('DB_NAME', 'cw_manager')
+                connection_name = os.environ.get('INSTANCE_CONNECTION_NAME', '')
+                
+                # Connect and create tables
+                conn = psycopg2.connect(
+                    dbname=db_name,
+                    user=db_user,
+                    password=db_pass,
+                    host=f"/cloudsql/{connection_name}"
+                )
+                conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+                cur = conn.cursor()
+                
+                # Create user table
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS "user" (
+                        id SERIAL PRIMARY KEY,
+                        email VARCHAR(150) UNIQUE NOT NULL,
+                        profile_picture TEXT,
+                        role VARCHAR(50) DEFAULT 'User',
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    );
+                """)
+                
+                # Create workspace table
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS workspace (
+                        id SERIAL PRIMARY KEY,
+                        name VARCHAR(255) NOT NULL,
+                        workspace_code VARCHAR(16) UNIQUE NOT NULL,
+                        address TEXT,
+                        country VARCHAR(100) NOT NULL,
+                        industry_type VARCHAR(100) NOT NULL,
+                        company_phone VARCHAR(20) NOT NULL,
+                        company_email VARCHAR(150) NOT NULL,
+                        expected_workers INTEGER,
+                        expected_workers_string VARCHAR(50) NOT NULL DEFAULT 'below_100',
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        created_by INTEGER NOT NULL,
+                        stripe_customer_id VARCHAR(255),
+                        stripe_subscription_id VARCHAR(255),
+                        subscription_status VARCHAR(50) DEFAULT 'trial',
+                        trial_end_date TIMESTAMP,
+                        subscription_end_date TIMESTAMP,
+                        FOREIGN KEY (created_by) REFERENCES "user"(id)
+                    );
+                """)
+                
+                # Create user_workspace table
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS user_workspace (
+                        id SERIAL PRIMARY KEY,
+                        user_id INTEGER NOT NULL,
+                        workspace_id INTEGER NOT NULL,
+                        role VARCHAR(50) NOT NULL DEFAULT 'User',
+                        joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        FOREIGN KEY (user_id) REFERENCES "user"(id),
+                        FOREIGN KEY (workspace_id) REFERENCES workspace(id),
+                        UNIQUE(user_id, workspace_id)
+                    );
+                """)
+                
+                cur.close()
+                conn.close()
+                logging.info("Core tables created successfully in Cloud SQL")
+                
+            except Exception as db_error:
+                logging.error(f"Error creating tables in Cloud SQL: {db_error}")
         else:
-            logging.warning(f"Alembic migration warning: {result.stderr}")
-            # Continue execution even if migration fails
+            # Local development - use Alembic
+            result = subprocess.run(
+                ["python3", "-m", "alembic", "upgrade", "head"],
+                capture_output=True,
+                text=True,
+                cwd=os.getcwd(),
+                timeout=30
+            )
+            if result.returncode == 0:
+                logging.info("Alembic migrations applied successfully")
+            else:
+                logging.warning(f"Alembic migration warning: {result.stderr}")
     except subprocess.TimeoutExpired:
         logging.warning("Alembic migration timed out, continuing with application startup")
     except Exception as e:
-        logging.error(f"Error applying Alembic migrations: {str(e)}")
+        logging.error(f"Error applying migrations: {str(e)}")
         # Continue execution even if migration fails
     
-    # Ensure all required columns exist (fallback for Cloud Run)
-    try:
-        with db.engine.connect() as conn:
-            # Check and add workspace_id to company table
-            cursor = conn.execute(db.text("PRAGMA table_info(company)"))
-            company_columns = [row[1] for row in cursor.fetchall()]
+    # Skip schema verification for production - rely on Alembic migrations
+    if not (os.environ.get('GAE_ENV', '').startswith('standard') or os.environ.get('INSTANCE_CONNECTION_NAME') or os.environ.get('K_SERVICE')):
+        # Only do schema verification for local SQLite development
+        try:
+            with db.engine.connect() as conn:
+                # Check and add workspace_id to company table
+                cursor = conn.execute(db.text("PRAGMA table_info(company)"))
+                company_columns = [row[1] for row in cursor.fetchall()]
+                
+                if 'workspace_id' not in company_columns:
+                    logging.info("Adding workspace_id column to company table")
+                    conn.execute(db.text("ALTER TABLE company ADD COLUMN workspace_id INTEGER REFERENCES workspace(id)"))
+                    conn.commit()
+                
+                # Other column checks for SQLite...
             
-            if 'workspace_id' not in company_columns:
-                logging.info("Adding workspace_id column to company table")
-                conn.execute(db.text("ALTER TABLE company ADD COLUMN workspace_id INTEGER REFERENCES workspace(id)"))
-                conn.commit()
+            logging.info("Local database schema verification completed successfully")
             
-            # Check and add other required columns
-            if 'daily_payout_rate' not in company_columns:
-                logging.info("Adding daily_payout_rate column to company table")
-                conn.execute(db.text("ALTER TABLE company ADD COLUMN daily_payout_rate FLOAT DEFAULT 56.0"))
-                conn.commit()
-            
-            if 'currency' not in company_columns:
-                logging.info("Adding currency column to company table")
-                conn.execute(db.text("ALTER TABLE company ADD COLUMN currency VARCHAR(3) DEFAULT 'ZMW'"))
-                conn.commit()
-            
-            if 'currency_symbol' not in company_columns:
-                logging.info("Adding currency_symbol column to company table")
-                conn.execute(db.text("ALTER TABLE company ADD COLUMN currency_symbol VARCHAR(5) DEFAULT 'K'"))
-                conn.commit()
-            
-            if 'phone' not in company_columns:
-                logging.info("Adding phone column to company table")
-                conn.execute(db.text("ALTER TABLE company ADD COLUMN phone VARCHAR(20) DEFAULT ''"))
-                conn.commit()
-            
-            # Check worker table
-            cursor = conn.execute(db.text("PRAGMA table_info(worker)"))
-            worker_columns = [row[1] for row in cursor.fetchall()]
-            
-            if 'date_of_birth' not in worker_columns:
-                logging.info("Adding date_of_birth column to worker table")
-                conn.execute(db.text("ALTER TABLE worker ADD COLUMN date_of_birth DATE"))
-                conn.commit()
-            
-            # Check task table
-            cursor = conn.execute(db.text("PRAGMA table_info(task)"))
-            task_columns = [row[1] for row in cursor.fetchall()]
-            
-            if 'payment_type' not in task_columns:
-                logging.info("Adding payment_type column to task table")
-                conn.execute(db.text("ALTER TABLE task ADD COLUMN payment_type VARCHAR(20) DEFAULT 'per_day'"))
-                conn.commit()
-            
-            if 'per_part_rate' not in task_columns:
-                logging.info("Adding per_part_rate column to task table")
-                conn.execute(db.text("ALTER TABLE task ADD COLUMN per_part_rate FLOAT"))
-                conn.commit()
-            
-            if 'per_part_payout' not in task_columns:
-                logging.info("Adding per_part_payout column to task table")
-                conn.execute(db.text("ALTER TABLE task ADD COLUMN per_part_payout FLOAT"))
-                conn.commit()
-            
-            if 'per_part_currency' not in task_columns:
-                logging.info("Adding per_part_currency column to task table")
-                conn.execute(db.text("ALTER TABLE task ADD COLUMN per_part_currency VARCHAR(10)"))
-                conn.commit()
-            
-            if 'completion_date' not in task_columns:
-                logging.info("Adding completion_date column to task table")
-                conn.execute(db.text("ALTER TABLE task ADD COLUMN completion_date DATETIME"))
-                conn.commit()
-            
-            # Check attendance table
-            cursor = conn.execute(db.text("PRAGMA table_info(attendance)"))
-            attendance_columns = [row[1] for row in cursor.fetchall()]
-            
-            if 'units_completed' not in attendance_columns:
-                logging.info("Adding units_completed column to attendance table")
-                conn.execute(db.text("ALTER TABLE attendance ADD COLUMN units_completed INTEGER"))
-                conn.commit()
-        
-        logging.info("Database schema verification completed successfully")
-        
-    except Exception as e:
-        logging.error(f"Error ensuring database schema: {str(e)}")
-        # Continue anyway - the app might still work with partial schema
+        except Exception as e:
+            logging.error(f"Error ensuring local database schema: {str(e)}")
+    else:
+        logging.info("Production environment detected - skipping schema verification, relying on Alembic migrations")
 
 app.config['LOGO_URL'] = '/static/logo.png'
 
@@ -385,7 +399,7 @@ def debug_info():
     """Debug endpoint to check environment and database configuration"""
     return jsonify({
         'environment_variables': {
-            'CLOUD_SQL_CONNECTION_NAME': os.environ.get('CLOUD_SQL_CONNECTION_NAME'),
+            'INSTANCE_CONNECTION_NAME': os.environ.get('INSTANCE_CONNECTION_NAME'),
             'DB_USER': os.environ.get('DB_USER'),
             'DB_NAME': os.environ.get('DB_NAME'),
             'DB_HOST': os.environ.get('DB_HOST'),
@@ -409,7 +423,7 @@ def health_check():
     try:
         # Log environment variables for debugging
         logging.info(f"Health check - Environment variables:")
-        logging.info(f"  CLOUD_SQL_CONNECTION_NAME: {os.environ.get('CLOUD_SQL_CONNECTION_NAME')}")
+        logging.info(f"  INSTANCE_CONNECTION_NAME: {os.environ.get('INSTANCE_CONNECTION_NAME')}")
         logging.info(f"  DB_USER: {os.environ.get('DB_USER')}")
         logging.info(f"  DB_NAME: {os.environ.get('DB_NAME')}")
         logging.info(f"  K_SERVICE: {os.environ.get('K_SERVICE')}")
@@ -447,7 +461,7 @@ def health_check():
             'database': 'connected',
             'migrations': 'applied',
             'environment': {
-                'cloud_sql_connection': os.environ.get('CLOUD_SQL_CONNECTION_NAME'),
+                'instance_connection_name': os.environ.get('INSTANCE_CONNECTION_NAME'),
                 'db_user': os.environ.get('DB_USER'),
                 'db_name': os.environ.get('DB_NAME'),
                 'k_service': os.environ.get('K_SERVICE'),
@@ -465,7 +479,7 @@ def health_check():
             'error': str(e),
             'error_type': str(type(e)),
             'environment': {
-                'cloud_sql_connection': os.environ.get('CLOUD_SQL_CONNECTION_NAME'),
+                'instance_connection_name': os.environ.get('INSTANCE_CONNECTION_NAME'),
                 'db_user': os.environ.get('DB_USER'),
                 'db_name': os.environ.get('DB_NAME'),
                 'k_service': os.environ.get('K_SERVICE'),

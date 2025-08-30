@@ -846,14 +846,42 @@ def task_attendance_route(task_id):
 @app.route("/home", methods=['GET'])
 def home_route():
     try:
+        # Check if user is authenticated
+        if 'user' not in session or 'user_email' not in session['user']:
+            logging.info("User not authenticated, redirecting to signin")
+            return redirect(url_for('signin_route'))
+        
         # Get current user and workspace
         user_email = session['user']['user_email']
         user = User.query.filter_by(email=user_email).first()
         
+        if not user:
+            logging.error(f"User not found in database: {user_email}")
+            return redirect(url_for('signin_route'))
+        
         if 'current_workspace' not in session:
+            logging.info("No current workspace, redirecting to workspace selection")
             return redirect(url_for('workspace_selection_route'))
         
         workspace_id = session['current_workspace']['id']
+        workspace = Workspace.query.get(workspace_id)
+        
+        if not workspace:
+            logging.error(f"Workspace not found: {workspace_id}")
+            session.pop('current_workspace', None)
+            return redirect(url_for('workspace_selection_route'))
+        
+        # Check if user has access to this workspace
+        user_workspace = UserWorkspace.query.filter_by(
+            user_id=user.id,
+            workspace_id=workspace_id
+        ).first()
+        
+        if not user_workspace:
+            logging.error(f"User {user_email} does not have access to workspace {workspace_id}")
+            session.pop('current_workspace', None)
+            return redirect(url_for('workspace_selection_route'))
+        
         company = Company.query.filter_by(workspace_id=workspace_id).first()
 
         if not company:
@@ -880,6 +908,8 @@ def home_route():
         return render_template('home.html', company=company, total_workers=total_workers, total_tasks=total_tasks, team_members=team_members)
     except Exception as e:
         logging.error(f"Error fetching home data: {str(e)}")
+        import traceback
+        logging.error(f"Traceback: {traceback.format_exc()}")
         return render_template('500.html'), 500
 
 @app.route("/api/team-member", methods=['POST'])

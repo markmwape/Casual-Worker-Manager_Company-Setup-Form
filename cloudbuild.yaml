@@ -13,11 +13,11 @@ steps:
     args:
       - 'run'
       - 'deploy'
-      - 'casual-worker-manager'
+      - 'embee-accounting'
       - '--image'
       - 'gcr.io/$PROJECT_ID/casual-worker-manager:latest'
       - '--region'
-      - 'europe-west1'
+      - 'us-central1'
       - '--platform'
       - 'managed'
       - '--allow-unauthenticated'

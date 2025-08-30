@@ -172,6 +172,14 @@ with app.app_context():
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     );
                 """)
+                # Ensure system user exists for workspace creation
+                cur.execute("""
+                    INSERT INTO "user" (email, profile_picture, role)
+                    SELECT 'system@workspace.com', '', 'System'
+                    WHERE NOT EXISTS (
+                        SELECT 1 FROM "user" WHERE email='system@workspace.com'
+                    );
+                """)
                 
                 # Create workspace table
                 cur.execute("""

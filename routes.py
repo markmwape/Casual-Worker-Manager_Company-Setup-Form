@@ -110,17 +110,26 @@ def create_workspace():
         
         # Create new workspace
         # Create or find a system user for workspace creation
-        system_user = User.query.filter_by(email="system@workspace.com").first()
+        try:
+            system_user = User.query.filter_by(email="system@workspace.com").first()
+        except Exception as e:
+            logging.error(f"Error querying system user: {e}")
+            return jsonify({"error": "Failed to query system user"}), 500
         if not system_user:
-            # Create a system user for workspace creation
+            # Create and commit a system user for workspace creation
             system_user = User(
                 email="system@workspace.com",
                 profile_picture="",
                 role="System"
             )
-            db.session.add(system_user)
-            db.session.flush()  # Get the ID without committing
-            logging.info(f"Created system user with ID: {system_user.id}")
+            try:
+                db.session.add(system_user)
+                db.session.commit()
+                logging.info(f"Created system user with ID: {system_user.id}")
+            except Exception as e:
+                logging.error(f"Error creating system user: {e}")
+                db.session.rollback()
+                return jsonify({"error": "Failed to create system user"}), 500
         
         workspace = Workspace(
             name=company_name,

@@ -326,6 +326,16 @@ with app.app_context():
                     );
                 """)
                 
+                # Add company_id column if it doesn't exist (for existing tables)
+                cur.execute("""
+                    DO $$ 
+                    BEGIN 
+                        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='import_field' AND column_name='company_id') THEN
+                            ALTER TABLE import_field ADD COLUMN company_id INTEGER REFERENCES company(id);
+                        END IF;
+                    END $$;
+                """)
+                
                 # Create worker_custom_field_value table
                 cur.execute("""
                     CREATE TABLE IF NOT EXISTS worker_custom_field_value (
@@ -334,6 +344,27 @@ with app.app_context():
                         custom_field_id INTEGER NOT NULL REFERENCES import_field(id),
                         value VARCHAR(255)
                     );
+                """)
+                
+                # Fix worker_custom_field_value column names if they exist with old names
+                cur.execute("""
+                    DO $$ 
+                    BEGIN 
+                        -- Check if old field_name column exists and custom_field_id doesn't
+                        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='worker_custom_field_value' AND column_name='field_name') 
+                           AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='worker_custom_field_value' AND column_name='custom_field_id') THEN
+                            -- Rename field_name to custom_field_id and change type
+                            ALTER TABLE worker_custom_field_value RENAME COLUMN field_name TO custom_field_id;
+                            ALTER TABLE worker_custom_field_value ALTER COLUMN custom_field_id TYPE INTEGER USING custom_field_id::INTEGER;
+                            ALTER TABLE worker_custom_field_value ADD CONSTRAINT fk_custom_field FOREIGN KEY (custom_field_id) REFERENCES import_field(id);
+                        END IF;
+                        
+                        -- Check if old field_value column exists and value doesn't
+                        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='worker_custom_field_value' AND column_name='field_value') 
+                           AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='worker_custom_field_value' AND column_name='value') THEN
+                            ALTER TABLE worker_custom_field_value RENAME COLUMN field_value TO value;
+                        END IF;
+                    END $$;
                 """)
                 
                 # Create worker_import_log table

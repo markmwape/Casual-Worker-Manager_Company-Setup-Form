@@ -108,34 +108,26 @@ def create_workspace():
         if expected_workers not in valid_worker_ranges:
             return jsonify({"error": f"Invalid expected workers range: {expected_workers}. Valid options are: {', '.join(valid_worker_ranges)}"}), 400
         
-        # Get current user from session - they will be the workspace creator
-        if 'user' not in session or 'user_email' not in session['user']:
-            return jsonify({"error": "User not authenticated"}), 401
-        
-        user_email = session['user']['user_email']
-        current_user = User.query.filter_by(email=user_email).first()
-        
-        if not current_user:
-            # Create user if they don't exist
-            current_user = User(
-                email=user_email,
-                profile_picture=session['user'].get('photo_url', ''),
-                role='User'
-            )
-            db.session.add(current_user)
-            db.session.commit()
-            logging.info(f"Created new user: {user_email}")
-        
+        # Use system user for workspace creation
+        try:
+            system_user = User.query.filter_by(email="system@workspace.com").first()
+        except Exception as e:
+            logging.error(f"Error querying system user: {e}")
+            return jsonify({"error": "Failed to query system user"}), 500
+        if not system_user:
+            logging.error("System user not found for workspace creation")
+            return jsonify({"error": "System user not initialized"}), 500
+        # Create workspace under system user; creator will be updated on sign-in
         workspace = Workspace(
             name=company_name,
             country=country,
             industry_type=industry_type,
-            expected_workers_string=expected_workers,  # Use new string column
-            expected_workers=0,  # Provide default value for integer field
+            expected_workers_string=expected_workers,
+            expected_workers=0,
             company_phone=company_phone,
             company_email=company_email,
-            address="",  # Provide empty string as default
-            created_by=current_user.id  # Use the actual user's ID
+            address="",
+            created_by=system_user.id
         )
         
         # Log the workspace creation attempt

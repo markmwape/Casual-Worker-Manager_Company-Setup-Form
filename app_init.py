@@ -236,6 +236,117 @@ with app.app_context():
                     );
                 """)
                 
+                # Create worker table
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS worker (
+                        id SERIAL PRIMARY KEY,
+                        first_name VARCHAR(100),
+                        last_name VARCHAR(100),
+                        date_of_birth DATE,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        company_id INTEGER NOT NULL REFERENCES company(id),
+                        user_id INTEGER REFERENCES "user"(id)
+                    );
+                """)
+                
+                # Create task table
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS task (
+                        id SERIAL PRIMARY KEY,
+                        name VARCHAR(255) NOT NULL,
+                        description TEXT,
+                        status VARCHAR(50) DEFAULT 'Pending',
+                        start_date TIMESTAMP NOT NULL,
+                        completion_date TIMESTAMP,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        company_id INTEGER NOT NULL REFERENCES company(id),
+                        payment_type VARCHAR(20) NOT NULL DEFAULT 'per_day',
+                        per_part_rate FLOAT,
+                        per_part_payout FLOAT,
+                        per_part_currency VARCHAR(10)
+                    );
+                """)
+                
+                # Create attendance table
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS attendance (
+                        id SERIAL PRIMARY KEY,
+                        worker_id INTEGER NOT NULL REFERENCES worker(id),
+                        date DATE NOT NULL,
+                        check_in_time TIMESTAMP,
+                        check_out_time TIMESTAMP,
+                        status VARCHAR(50) DEFAULT 'Absent',
+                        company_id INTEGER NOT NULL REFERENCES company(id),
+                        task_id INTEGER REFERENCES task(id),
+                        units_completed FLOAT DEFAULT 0.0
+                    );
+                """)
+                
+                # Create task_workers junction table
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS task_workers (
+                        task_id INTEGER NOT NULL REFERENCES task(id),
+                        worker_id INTEGER NOT NULL REFERENCES worker(id),
+                        PRIMARY KEY (task_id, worker_id)
+                    );
+                """)
+                
+                # Create master_admin table
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS master_admin (
+                        id SERIAL PRIMARY KEY,
+                        email VARCHAR(150) UNIQUE NOT NULL,
+                        name VARCHAR(100),
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        created_by INTEGER REFERENCES master_admin(id),
+                        is_active BOOLEAN DEFAULT TRUE
+                    );
+                """)
+                
+                # Create report_field table
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS report_field (
+                        id SERIAL PRIMARY KEY,
+                        name VARCHAR(100) NOT NULL,
+                        field_type VARCHAR(50) NOT NULL,
+                        is_nullable BOOLEAN DEFAULT TRUE,
+                        max_limit INTEGER,
+                        payout_type VARCHAR(20) DEFAULT 'fixed'
+                    );
+                """)
+                
+                # Create import_field table
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS import_field (
+                        id SERIAL PRIMARY KEY,
+                        name VARCHAR(100) NOT NULL,
+                        field_type VARCHAR(50) NOT NULL,
+                        is_nullable BOOLEAN DEFAULT TRUE
+                    );
+                """)
+                
+                # Create worker_custom_field_value table
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS worker_custom_field_value (
+                        id SERIAL PRIMARY KEY,
+                        worker_id INTEGER NOT NULL REFERENCES worker(id),
+                        field_name VARCHAR(100) NOT NULL,
+                        field_value TEXT
+                    );
+                """)
+                
+                # Create worker_import_log table
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS worker_import_log (
+                        id SERIAL PRIMARY KEY,
+                        filename VARCHAR(255) NOT NULL,
+                        imported_count INTEGER NOT NULL,
+                        failed_count INTEGER DEFAULT 0,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        company_id INTEGER NOT NULL REFERENCES company(id)
+                    );
+                """)
+                
                 cur.close()
                 conn.close()
                 logging.info("Core tables created successfully in Cloud SQL")

@@ -55,6 +55,12 @@ def join_workspace():
 def create_workspace():
     """API endpoint to create a new workspace"""
     try:
+        # Ensure database connection is working
+        logging.info("Testing database connection before workspace creation")
+        with db.engine.connect() as conn:
+            conn.execute(db.text("SELECT 1"))
+        logging.info("Database connection successful")
+        
         data = request.get_json()
         logging.info(f"Received workspace creation data: {data}")
         
@@ -91,19 +97,18 @@ def create_workspace():
             return jsonify({"error": f"Invalid expected workers range: {expected_workers}. Valid options are: {', '.join(valid_worker_ranges)}"}), 400
         
         # Create new workspace
-        # Check if there's a user with ID 1, if not create a temporary user
-        temp_user = User.query.get(1)
-        if not temp_user:
-            # Check if temporary user already exists
-            temp_user = User.query.filter_by(email="temp@workspace.com").first()
-            if not temp_user:
-                # Create a temporary user for workspace creation
-                temp_user = User(
-                    email="temp@workspace.com",
-                    profile_picture=""
-                )
-                db.session.add(temp_user)
-                db.session.flush()  # Get the ID without committing
+        # Create or find a system user for workspace creation
+        system_user = User.query.filter_by(email="system@workspace.com").first()
+        if not system_user:
+            # Create a system user for workspace creation
+            system_user = User(
+                email="system@workspace.com",
+                profile_picture="",
+                role="System"
+            )
+            db.session.add(system_user)
+            db.session.flush()  # Get the ID without committing
+            logging.info(f"Created system user with ID: {system_user.id}")
         
         workspace = Workspace(
             name=company_name,
@@ -114,7 +119,7 @@ def create_workspace():
             company_phone=company_phone,
             company_email=company_email,
             address="",  # Provide empty string as default
-            created_by=temp_user.id  # Use the temporary user ID
+            created_by=system_user.id  # Use the system user ID
         )
         
         # Log the workspace creation attempt

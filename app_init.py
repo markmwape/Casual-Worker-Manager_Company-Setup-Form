@@ -218,6 +218,23 @@ with app.app_context():
                         UNIQUE(user_id, workspace_id)
                     );
                 """)
+                # Create company table
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS company (
+                        id SERIAL PRIMARY KEY,
+                        name VARCHAR(255) NOT NULL,
+                        registration_number VARCHAR(100) NOT NULL,
+                        address TEXT NOT NULL,
+                        industry VARCHAR(100) NOT NULL,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        created_by INTEGER NOT NULL REFERENCES "user"(id),
+                        workspace_id INTEGER NOT NULL REFERENCES workspace(id),
+                        daily_payout_rate FLOAT DEFAULT 56.0 NOT NULL,
+                        currency VARCHAR(3) DEFAULT 'ZMW' NOT NULL,
+                        currency_symbol VARCHAR(5) DEFAULT 'K' NOT NULL,
+                        phone VARCHAR(20) NOT NULL
+                    );
+                """)
                 
                 cur.close()
                 conn.close()

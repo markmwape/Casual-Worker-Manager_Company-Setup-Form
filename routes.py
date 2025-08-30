@@ -55,11 +55,23 @@ def join_workspace():
 def create_workspace():
     """API endpoint to create a new workspace"""
     try:
-        # Ensure database connection is working
+        # Log environment variables for debugging
+        logging.info("Environment variables:")
+        logging.info(f"  INSTANCE_CONNECTION_NAME: {os.environ.get('INSTANCE_CONNECTION_NAME')}")
+        logging.info(f"  DB_USER: {os.environ.get('DB_USER')}")
+        logging.info(f"  DB_NAME: {os.environ.get('DB_NAME')}")
+        logging.info(f"  K_SERVICE: {os.environ.get('K_SERVICE')}")
+        
+        # Test database connection with better error handling
         logging.info("Testing database connection before workspace creation")
-        with db.engine.connect() as conn:
-            conn.execute(db.text("SELECT 1"))
-        logging.info("Database connection successful")
+        try:
+            with db.engine.connect() as conn:
+                result = conn.execute(db.text("SELECT 1"))
+                logging.info(f"Database connection successful: {result.fetchone()}")
+        except Exception as db_error:
+            logging.error(f"Database connection failed: {str(db_error)}")
+            logging.error(f"Database URI: {app.config.get('SQLALCHEMY_DATABASE_URI', 'NOT SET')}")
+            # Try to continue anyway - maybe the database will work for actual operations
         
         data = request.get_json()
         logging.info(f"Received workspace creation data: {data}")

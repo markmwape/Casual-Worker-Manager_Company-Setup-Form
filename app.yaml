@@ -1,0 +1,14 @@
+runtime: python39
+
+env_variables:
+  INSTANCE_CONNECTION_NAME: embee-accounting101:us-central1:embee-accounting
+  DB_USER: embee-accounting
+  DB_PASS: EmbeeMarkSQL2024!
+  DB_NAME: embee-accounting
+
+beta_settings:
+  cloud_sql_instances: embee-accounting101:us-central1:embee-accounting
+
+automatic_scaling:
+  min_instances: 0
+  max_instances: 10

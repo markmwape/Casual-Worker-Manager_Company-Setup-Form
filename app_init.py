@@ -319,9 +319,10 @@ with app.app_context():
                 cur.execute("""
                     CREATE TABLE IF NOT EXISTS import_field (
                         id SERIAL PRIMARY KEY,
+                        company_id INTEGER NOT NULL REFERENCES company(id),
                         name VARCHAR(100) NOT NULL,
-                        field_type VARCHAR(50) NOT NULL,
-                        is_nullable BOOLEAN DEFAULT TRUE
+                        field_type VARCHAR(50),
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     );
                 """)
                 
@@ -330,8 +331,8 @@ with app.app_context():
                     CREATE TABLE IF NOT EXISTS worker_custom_field_value (
                         id SERIAL PRIMARY KEY,
                         worker_id INTEGER NOT NULL REFERENCES worker(id),
-                        field_name VARCHAR(100) NOT NULL,
-                        field_value TEXT
+                        custom_field_id INTEGER NOT NULL REFERENCES import_field(id),
+                        value VARCHAR(255)
                     );
                 """)
                 

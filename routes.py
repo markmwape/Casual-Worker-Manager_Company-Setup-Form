@@ -17,6 +17,22 @@ import re
 from app_init import master_admin_required
 from sqlalchemy import func, desc
 
+def get_current_company():
+    """Helper function to get the current company from workspace session"""
+    if 'current_workspace' not in session:
+        return None
+    
+    workspace_id = session['current_workspace']['id']
+    return Company.query.filter_by(workspace_id=workspace_id).first()
+
+def get_current_user():
+    """Helper function to get the current user from session"""
+    if 'user' not in session or 'user_email' not in session['user']:
+        return None
+    
+    user_email = session['user']['user_email']
+    return User.query.filter_by(email=user_email).first()
+
 @app.route('/workspace-selection')
 def workspace_selection_route():
     """Route for workspace selection page"""
@@ -615,10 +631,16 @@ def workers_route():
         if not user:
             logger.error(f"User not found: {user_email}")
             return redirect(url_for('landing_route'))
+        
+        # Get company from current workspace
+        if 'current_workspace' not in session:
+            logger.error(f"No active workspace for user: {user_email}")
+            return redirect(url_for('workspace_selection_route'))
             
-        company = Company.query.filter_by(created_by=user.id).first()
+        workspace_id = session['current_workspace']['id']
+        company = Company.query.filter_by(workspace_id=workspace_id).first()
         if not company:
-            logger.info(f"No company found for user: {user_email}")
+            logger.info(f"No company found for workspace: {workspace_id}")
             return render_template('workers.html', workers=[], all_fields=[])
 
         # Get custom fields for this company
@@ -756,10 +778,8 @@ def import_workers():
 def tasks_route():
     try:
         from datetime import date
-        # Get current user's company
-        user_email = session['user']['user_email']
-        user = User.query.filter_by(email=user_email).first()
-        company = Company.query.filter_by(created_by=user.id).first()
+        # Get current company from workspace
+        company = get_current_company()
 
         if not company:
             return render_template('tasks.html', tasks=[], task_statuses=['Pending', 'In Progress', 'Completed'], today_date=date.today().strftime('%Y-%m-%d'))
@@ -773,10 +793,8 @@ def tasks_route():
 @app.route("/task/<int:task_id>/attendance", methods=['GET'])
 def task_attendance_route(task_id):
     try:
-        # Get current user's company
-        user_email = session['user']['user_email']
-        user = User.query.filter_by(email=user_email).first()
-        company = Company.query.filter_by(created_by=user.id).first()
+        # Get current company from workspace
+        company = get_current_company()
 
         if not company:
             return render_template('task_attendance.html', task=None, attendance_records=[], workers=[], selected_date=None)
@@ -1069,8 +1087,7 @@ def attendance_route():
         from datetime import date, datetime
         # Get current user's company
         user_email = session['user']['user_email']
-        user = User.query.filter_by(email=user_email).first()
-        company = Company.query.filter_by(created_by=user.id).first()
+        company = get_current_company()
 
         if not company:
             return render_template('attendance.html', attendance_records=[])
@@ -1097,10 +1114,8 @@ def attendance_route():
 def reports_route():
     try:
         from datetime import date, timedelta, datetime
-        # Get current user's company
-        user_email = session['user']['user_email']
-        user = User.query.filter_by(email=user_email).first()
-        company = Company.query.filter_by(created_by=user.id).first()
+        # Get current company from workspace
+        company = get_current_company()
 
         if not company:
             return render_template('reports.html', report_data={}, custom_fields=[], preview_records=[], import_fields=[], per_day_records=[], per_part_records=[])

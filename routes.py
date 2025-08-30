@@ -136,16 +136,16 @@ def create_workspace():
         db.session.add(workspace)
         db.session.flush()  # Get the workspace ID
         
-        # Add the creator as Admin to the workspace
+        # Assign system user as Admin until real user signs in
         user_workspace = UserWorkspace(
-            user_id=current_user.id,
+            user_id=system_user.id,
             workspace_id=workspace.id,
             role='Admin'
         )
         db.session.add(user_workspace)
         db.session.commit()
         
-        logging.info(f"Added user {user_email} as Admin to workspace {workspace.name}")
+        logging.info(f"Assigned system user as Admin to workspace {workspace.name}")
         
         return jsonify({
             "success": True,

@@ -36,9 +36,9 @@ steps:
       - '--port'
       - '8080'
       - '--set-env-vars'
-      - 'INSTANCE_CONNECTION_NAME=embee-accounting101:us-central1:embee-accounting,DB_USER=embee-accounting,DB_PASS=EmbeeMarkSQL2024!,DB_NAME=embee-accounting,DB_HOST=/cloudsql/embee-accounting101:us-central1:embee-accounting'
+      - 'INSTANCE_CONNECTION_NAME=embee-accounting101:us-central1:cw-manager-db,DB_USER=cwuser,DB_PASS=CWManager2024!,DB_NAME=cw_manager'
       - '--add-cloudsql-instances'
-      - 'embee-accounting101:us-central1:embee-accounting'
+      - 'embee-accounting101:us-central1:cw-manager-db'
 
 images:
   - 'gcr.io/$PROJECT_ID/casual-worker-manager:latest' 

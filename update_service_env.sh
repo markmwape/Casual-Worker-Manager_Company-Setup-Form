@@ -5,8 +5,8 @@ echo "Updating Cloud Run service with environment variables..."
 
 gcloud run services update embee-accounting \
   --region=us-central1 \
-  --set-env-vars="INSTANCE_CONNECTION_NAME=embee-accounting101:us-central1:embee-accounting,DB_USER=embee-accounting,DB_PASS=EmbeeMarkSQL2024!,DB_NAME=embee-accounting" \
-  --add-cloudsql-instances=embee-accounting101:us-central1:embee-accounting \
+  --set-env-vars="INSTANCE_CONNECTION_NAME=embee-accounting101:us-central1:cw-manager-db,DB_USER=cwuser,DB_PASS=CWManager2024!,DB_NAME=cw_manager" \
+  --add-cloudsql-instances=embee-accounting101:us-central1:cw-manager-db \
   --quiet
 
 echo "Service updated successfully!"

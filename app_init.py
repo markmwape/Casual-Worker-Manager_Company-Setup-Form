@@ -181,6 +181,15 @@ with app.app_context():
                     );
                 """)
                 
+                # Ensure master admin user exists
+                cur.execute("""
+                    INSERT INTO master_admin (email, name, is_active, created_at)
+                    SELECT 'markbmwape@gmail.com', 'Mark Mwape', TRUE, CURRENT_TIMESTAMP
+                    WHERE NOT EXISTS (
+                        SELECT 1 FROM master_admin WHERE email='markbmwape@gmail.com'
+                    );
+                """)
+                
                 # Create workspace table
                 cur.execute("""
                     CREATE TABLE IF NOT EXISTS workspace (

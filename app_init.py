@@ -307,12 +307,45 @@ with app.app_context():
                 cur.execute("""
                     CREATE TABLE IF NOT EXISTS report_field (
                         id SERIAL PRIMARY KEY,
+                        company_id INTEGER NOT NULL REFERENCES company(id),
                         name VARCHAR(100) NOT NULL,
                         field_type VARCHAR(50) NOT NULL,
-                        is_nullable BOOLEAN DEFAULT TRUE,
-                        max_limit INTEGER,
-                        payout_type VARCHAR(20) DEFAULT 'fixed'
+                        formula TEXT,
+                        max_limit FLOAT,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        payout_type VARCHAR(20) DEFAULT 'per_day' NOT NULL
                     );
+                """)
+                
+                # Add missing columns to report_field table if they don't exist
+                cur.execute("""
+                    DO $$ 
+                    BEGIN 
+                        -- Add company_id if missing
+                        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='report_field' AND column_name='company_id') THEN
+                            ALTER TABLE report_field ADD COLUMN company_id INTEGER REFERENCES company(id);
+                        END IF;
+                        
+                        -- Add created_at if missing
+                        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='report_field' AND column_name='created_at') THEN
+                            ALTER TABLE report_field ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+                        END IF;
+                        
+                        -- Add formula if missing
+                        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='report_field' AND column_name='formula') THEN
+                            ALTER TABLE report_field ADD COLUMN formula TEXT;
+                        END IF;
+                        
+                        -- Add max_limit if missing
+                        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='report_field' AND column_name='max_limit') THEN
+                            ALTER TABLE report_field ADD COLUMN max_limit FLOAT;
+                        END IF;
+                        
+                        -- Add payout_type if missing
+                        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='report_field' AND column_name='payout_type') THEN
+                            ALTER TABLE report_field ADD COLUMN payout_type VARCHAR(20) DEFAULT 'per_day' NOT NULL;
+                        END IF;
+                    END $$;
                 """)
                 
                 # Create import_field table

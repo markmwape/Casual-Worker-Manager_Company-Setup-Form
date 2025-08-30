@@ -236,10 +236,25 @@ def set_session():
                             db.session.commit()
                             logging.info(f"Added workspace creator {email} to workspace {workspace.name} with role {role}")
                         else:
-                            # For non-creators, check if they have been added as team members
-                            # If not, deny access
-                            logging.warning(f"User {email} attempted to join workspace {workspace.name} but is not a team member")
-                            return jsonify({"error": "You are not authorized to access this workspace. Please contact the workspace administrator to be added as a team member."}), 403
+                            # For newly created workspaces, check if system user is the creator
+                            system_user = User.query.filter_by(email="system@workspace.com").first()
+                            if system_user and workspace.created_by == system_user.id:
+                                # Transfer ownership to actual user and make them admin
+                                workspace.created_by = user.id
+                                role = 'Admin'
+                                user_workspace = UserWorkspace(
+                                    user_id=user.id,
+                                    workspace_id=workspace.id,
+                                    role=role
+                                )
+                                db.session.add(user_workspace)
+                                db.session.commit()
+                                logging.info(f"Transferred workspace {workspace.name} ownership to {email} and made them admin")
+                            else:
+                                # For non-creators, check if they have been added as team members
+                                # If not, deny access
+                                logging.warning(f"User {email} attempted to join workspace {workspace.name} but is not a team member")
+                                return jsonify({"error": "You are not authorized to access this workspace. Please contact the workspace administrator to be added as a team member."}), 403
                     
                     # Store workspace info in session
                     session['current_workspace'] = {

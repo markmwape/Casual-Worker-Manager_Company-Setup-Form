@@ -26,7 +26,6 @@ jobs:
         uses: google-github-actions/setup-gcloud@v1
         with:
           project_id: embee-accounting101
-          export_default_credentials: true
 
       - name: Configure Docker for GCR
         run: |

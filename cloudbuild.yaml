@@ -13,7 +13,7 @@ steps:
     args:
       - 'run'
       - 'deploy'
-      - 'embee-accounting'
+      - 'cw-manager-service'
       - '--image'
       - 'gcr.io/$PROJECT_ID/casual-worker-manager:latest'
       - '--region'

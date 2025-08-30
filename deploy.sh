@@ -7,7 +7,7 @@ echo "🚀 Starting deployment to Google Cloud Run..."
 
 # Set your project ID (replace with your actual project ID)
 PROJECT_ID="embee-accounting101"
-SERVICE_NAME="embee-accounting"
+SERVICE_NAME="cw-manager-service"
 REGION="us-central1"
 
 # Cloud SQL Configuration (matching app.yaml and cloudbuild.yaml)

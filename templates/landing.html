@@ -269,106 +269,100 @@
 
     <!-- Pricing Section -->
     <section id="pricing" class="py-20 bg-gradient-to-br from-gray-50 to-blue-50">
-        <div class="container mx-auto px-4 max-w-6xl">
+        <div class="container mx-auto px-4 max-w-7xl">
             <div class="text-center mb-16">
                 <h2 class="text-4xl font-bold mb-4 text-gray-900">Simple, Transparent Pricing</h2>
                 <p class="text-xl text-gray-600">Choose the plan that fits your business needs. All plans include our core features.</p>
             </div>
             
-            <div class="grid md:grid-cols-3 gap-8">
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Starter Plan -->
                 <div class="card bg-white shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
                     <div class="card-body text-center">
-                        <h3 class="card-title text-2xl text-gray-900 justify-center mb-2">Starter</h3>
+                        <div class="flex items-center justify-center mb-2">
+                            <span class="text-2xl mr-2">👥</span>
+                            <h3 class="card-title text-xl text-gray-900 justify-center">Starter</h3>
+                        </div>
+                        <p class="text-gray-600 text-sm mb-4">Small Teams</p>
                         <div class="mb-6">
-                            <span class="text-4xl font-bold text-blue-600">$29</span>
+                            <span class="text-3xl font-bold text-blue-600">$40</span>
                             <span class="text-gray-600">/month</span>
                         </div>
-                        <ul class="space-y-3 mb-8 text-left">
-                            <li class="flex items-center">
-                                <i class="fas fa-check text-green-500 mr-3"></i>
-                                Up to 25 Workers
-                            </li>
-                            <li class="flex items-center">
-                                <i class="fas fa-check text-green-500 mr-3"></i>
-                                Basic Attendance Tracking
-                            </li>
-                            <li class="flex items-center">
-                                <i class="fas fa-check text-green-500 mr-3"></i>
-                                Monthly Payroll Reports
-                            </li>
-                            <li class="flex items-center">
-                                <i class="fas fa-check text-green-500 mr-3"></i>
-                                Email Support
-                            </li>
-                        </ul>
+                        <div class="mb-8 text-center">
+                            <div class="flex items-center justify-center">
+                                <i class="fas fa-users text-blue-600 mr-2"></i>
+                                <span class="text-lg font-semibold text-gray-700">Up to 50 workers</span>
+                            </div>
+                        </div>
                         <a href="{{ url_for('workspace_selection_route') }}" class="btn btn-primary w-full font-semibold bg-blue-600 text-white hover:bg-blue-700">Start Free Trial</a>
                     </div>
                 </div>
                 
+                <!-- Growth Plan -->
                 <div class="card bg-white shadow-xl border-2 border-blue-500 relative transform scale-105">
                     <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
                         <span class="badge badge-primary text-sm font-semibold">Most Popular</span>
                     </div>
                     <div class="card-body text-center">
-                        <h3 class="card-title text-2xl text-gray-900 justify-center mb-2">Professional</h3>
+                        <div class="flex items-center justify-center mb-2">
+                            <span class="text-2xl mr-2">💵</span>
+                            <h3 class="card-title text-xl text-gray-900 justify-center">Growth</h3>
+                        </div>
+                        <p class="text-gray-600 text-sm mb-4">Mid-Size Operations</p>
                         <div class="mb-6">
-                            <span class="text-4xl font-bold text-blue-600">$79</span>
+                            <span class="text-3xl font-bold text-blue-600">$120</span>
                             <span class="text-gray-600">/month</span>
                         </div>
-                        <ul class="space-y-3 mb-8 text-left">
-                            <li class="flex items-center">
-                                <i class="fas fa-check text-green-500 mr-3"></i>
-                                Up to 100 Workers
-                            </li>
-                            <li class="flex items-center">
-                                <i class="fas fa-check text-green-500 mr-3"></i>
-                                Advanced Analytics
-                            </li>
-                            <li class="flex items-center">
-                                <i class="fas fa-check text-green-500 mr-3"></i>
-                                Mobile App Access
-                            </li>
-                            <li class="flex items-center">
-                                <i class="fas fa-check text-green-500 mr-3"></i>
-                                Priority Support
-                            </li>
-                            <li class="flex items-center">
-                                <i class="fas fa-check text-green-500 mr-3"></i>
-                                API Access
-                            </li>
-                        </ul>
+                        <div class="mb-8 text-center">
+                            <div class="flex items-center justify-center">
+                                <i class="fas fa-users text-blue-600 mr-2"></i>
+                                <span class="text-lg font-semibold text-gray-700">51–250 workers</span>
+                            </div>
+                        </div>
                         <a href="{{ url_for('workspace_selection_route') }}" class="btn btn-primary w-full font-semibold bg-blue-600 text-white hover:bg-blue-700">Start Free Trial</a>
                     </div>
                 </div>
                 
+                <!-- Enterprise Plan -->
                 <div class="card bg-white shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
                     <div class="card-body text-center">
-                        <h3 class="card-title text-2xl text-gray-900 justify-center mb-2">Enterprise</h3>
-                        <div class="mb-6">
-                            <span class="text-4xl font-bold text-blue-600">Custom</span>
+                        <div class="flex items-center justify-center mb-2">
+                            <span class="text-2xl mr-2">🏢</span>
+                            <h3 class="card-title text-xl text-gray-900 justify-center">Enterprise</h3>
                         </div>
-                        <ul class="space-y-3 mb-8 text-left">
-                            <li class="flex items-center">
-                                <i class="fas fa-check text-green-500 mr-3"></i>
-                                Unlimited Workers
-                            </li>
-                            <li class="flex items-center">
-                                <i class="fas fa-check text-green-500 mr-3"></i>
-                                Custom Integrations
-                            </li>
-                            <li class="flex items-center">
-                                <i class="fas fa-check text-green-500 mr-3"></i>
-                                Dedicated Support
-                            </li>
-                            <li class="flex items-center">
-                                <i class="fas fa-check text-green-500 mr-3"></i>
-                                On-Premise Option
-                            </li>
-                            <li class="flex items-center">
-                                <i class="fas fa-check text-green-500 mr-3"></i>
-                                SLA Guarantee
-                            </li>
-                        </ul>
+                        <p class="text-gray-600 text-sm mb-4">Large Workforces</p>
+                        <div class="mb-6">
+                            <span class="text-3xl font-bold text-blue-600">$220</span>
+                            <span class="text-gray-600">/month</span>
+                        </div>
+                        <div class="mb-8 text-center">
+                            <div class="flex items-center justify-center">
+                                <i class="fas fa-users text-blue-600 mr-2"></i>
+                                <span class="text-lg font-semibold text-gray-700">251–1,000 workers</span>
+                            </div>
+                        </div>
+                        <a href="{{ url_for('workspace_selection_route') }}" class="btn btn-primary w-full font-semibold bg-blue-600 text-white hover:bg-blue-700">Start Free Trial</a>
+                    </div>
+                </div>
+                
+                <!-- Corporate Plan -->
+                <div class="card bg-white shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+                    <div class="card-body text-center">
+                        <div class="flex items-center justify-center mb-2">
+                            <span class="text-2xl mr-2">🏭</span>
+                            <h3 class="card-title text-xl text-gray-900 justify-center">Corporate</h3>
+                        </div>
+                        <p class="text-gray-600 text-sm mb-4">Very Large Operations</p>
+                        <div class="mb-6">
+                            <span class="text-3xl font-bold text-blue-600">$350</span>
+                            <span class="text-gray-600">/month (flat fee)</span>
+                        </div>
+                        <div class="mb-8 text-center">
+                            <div class="flex items-center justify-center">
+                                <i class="fas fa-users text-blue-600 mr-2"></i>
+                                <span class="text-lg font-semibold text-gray-700">1,001+ workers</span>
+                            </div>
+                        </div>
                         <a href="{{ url_for('workspace_selection_route') }}" class="btn btn-primary w-full font-semibold bg-blue-600 text-white hover:bg-blue-700">Contact Sales</a>
                     </div>
                 </div>

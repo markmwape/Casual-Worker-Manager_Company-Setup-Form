@@ -455,6 +455,23 @@
         </div>
     </section>
 
+    <!-- Privacy & Legal Section -->
+    <section class="py-20 bg-gray-50">
+        <div class="container mx-auto px-4 max-w-4xl text-center">
+            <h2 class="text-3xl font-bold mb-4 text-gray-900">Your Data, Your Control</h2>
+            <p class="text-xl text-gray-600 mb-8">We're committed to protecting your privacy and maintaining transparency in how we handle your data.</p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="{{ url_for('privacy_policy_route') }}" class="btn btn-outline border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-3">
+                    <i class="fas fa-file-alt mr-2"></i>Privacy Policy
+                </a>
+                <a href="{{ url_for('terms_of_use_route') }}" class="btn btn-outline border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-3">
+                    <i class="fas fa-file-contract mr-2"></i>Terms of Use
+                </a>
+            </div>
+        </div>
+    </section>
+
     <!-- CTA Section -->
     <section class="py-20 bg-gradient-to-r from-blue-600 to-indigo-700 text-white">
         <div class="container mx-auto px-4 max-w-4xl text-center">

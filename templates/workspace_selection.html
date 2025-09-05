@@ -93,45 +93,64 @@
             0%, 100% { transform: translateY(0px); }
             50% { transform: translateY(-10px); }
         }
+        .shadow-3xl {
+            box-shadow: 0 35px 60px -15px rgba(0, 0, 0, 0.3);
+        }
+        .honeycomb-corner {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(45deg, rgba(26, 43, 72, 0.1) 0%, rgba(124, 138, 154, 0.05) 100%);
+            clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
+            pointer-events: none;
+            z-index: 1;
+        }
     </style>
 </head>
-<body class="font-inter bg-gradient-to-br from-brand-navy-50 via-brand-gray-50 to-brand-navy-100 min-h-screen flex items-center justify-center p-4">
-    <div class="w-full max-w-6xl mx-auto">
+<body class="font-inter bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+    <!-- Honeycomb Pattern Corners -->
+    <div class="honeycomb-corner" style="top:5%;left:5%;transform:rotate(60deg);opacity:0.3;"></div>
+    <div class="honeycomb-corner" style="bottom:10%;right:5%;transform:rotate(-45deg);opacity:0.4;"></div>
+    <div class="honeycomb-corner" style="top:20%;right:10%;transform:rotate(15deg);opacity:0.2;"></div>
+    <div class="honeycomb-corner" style="bottom:30%;left:8%;transform:rotate(-30deg);opacity:0.3;"></div>
+    <div class="honeycomb-corner" style="top:60%;left:15%;transform:rotate(45deg);opacity:0.25;"></div>
+    
+    <div class="w-full max-w-6xl mx-auto relative z-10">
         <!-- Header Section -->
         <div class="text-center mb-12">
-            <div class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-brand-navy-500 to-brand-navy-600 rounded-full mb-6 shadow-2xl floating-animation">
-                <i class="fas fa-rocket text-3xl text-white"></i>
+            <div class="inline-flex items-center justify-center mb-6">
+                <img src="{{ url_for('static', filename='img/logo + text.png') }}" alt="Embee Accounting Logo" class="h-24 w-auto object-contain floating-animation" />
             </div>
-            <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-4">Welcome to Your Workspace</h1>
-            <p class="text-xl text-gray-600 max-w-2xl mx-auto">Choose how you'd like to get started with your casual workforce management</p>
+            <h1 class="text-4xl md:text-5xl font-bold text-brand-navy-600 mb-4">Welcome to Your Workspace</h1>
+            <p class="text-xl text-brand-gray-600 max-w-2xl mx-auto">Choose how you'd like to get started with your professional workforce management platform</p>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
             <!-- Join Workspace Card -->
-            <div class="card bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 backdrop-blur-sm shadow-2xl border-0 card-hover border border-emerald-200/30">
+            <div class="card bg-white/80 backdrop-blur-sm shadow-2xl border-0 card-hover border border-emerald-200/30 hover:shadow-3xl">
                 <div class="card-body p-8 md:p-10">
                     <div class="flex flex-col items-center text-center">
                         <div class="w-20 h-20 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center mb-6 shadow-xl icon-glow">
                             <i class="fas fa-users text-3xl text-white"></i>
                         </div>
-                        <h2 class="card-title text-3xl font-bold text-gray-800 mb-3">Join a Workspace</h2>
-                        <p class="text-gray-600 mb-8 text-lg">Enter your workspace code to join an existing team</p>
+                        <h2 class="card-title text-3xl font-bold text-brand-navy-600 mb-3">Join a Workspace</h2>
+                        <p class="text-brand-gray-600 mb-8 text-lg">Enter your workspace code to join an existing team</p>
                         
                         <form id="join-workspace-form" class="w-full space-y-6">
                             <div class="form-control">
                                 <label class="label">
-                                    <span class="label-text font-semibold text-gray-700 text-lg">Workspace Code</span>
+                                    <span class="label-text font-semibold text-brand-navy-600 text-lg">Workspace Code</span>
                                 </label>
                                 <input type="text" 
                                        id="workspace-code" 
                                        name="workspace_code" 
                                        placeholder="Enter 16-character code" 
                                        required 
-                                       class="input input-bordered w-full text-lg font-mono tracking-wider input-focus bg-white/80 border-2 border-emerald-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
+                                       class="input input-bordered w-full text-lg font-mono tracking-wider input-focus bg-white border-2 border-emerald-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
                                        maxlength="16"
                                        pattern="[A-Z0-9]{16}">
                                 <label class="label">
-                                    <span class="label-text-alt text-gray-500">Enter the 16-character workspace code provided by your administrator</span>
+                                    <span class="label-text-alt text-brand-gray-500">Enter the 16-character workspace code provided by your administrator</span>
                                 </label>
                             </div>
                             <button type="submit" class="btn btn-success w-full text-lg font-semibold btn-hover bg-gradient-to-r from-emerald-500 to-green-600 border-0 shadow-lg">
@@ -145,36 +164,36 @@
             </div>
 
             <!-- Create Workspace Card -->
-            <div class="card bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 backdrop-blur-sm shadow-2xl border-0 card-hover border border-blue-200/30">
+            <div class="card bg-white/80 backdrop-blur-sm shadow-2xl border-0 card-hover border border-blue-200/30 hover:shadow-3xl">
                 <div class="card-body p-8 md:p-10">
                     <div class="flex flex-col items-center text-center">
-                        <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mb-6 shadow-xl icon-glow">
+                        <div class="w-20 h-20 bg-gradient-to-br from-brand-navy-500 to-brand-navy-600 rounded-2xl flex items-center justify-center mb-6 shadow-xl icon-glow">
                             <i class="fas fa-building text-3xl text-white"></i>
                         </div>
-                        <h2 class="card-title text-3xl font-bold text-gray-800 mb-3">Create a Workspace</h2>
-                        <p class="text-gray-600 mb-8 text-lg">Set up a new workspace for your organization</p>
+                        <h2 class="card-title text-3xl font-bold text-brand-navy-600 mb-3">Create a Workspace</h2>
+                        <p class="text-brand-gray-600 mb-8 text-lg">Set up a new workspace for your organization</p>
                         
                         <form id="create-workspace-form" class="w-full space-y-6">
                             <div class="form-control">
                                 <label class="label">
-                                    <span class="label-text font-semibold text-gray-700 text-lg">Company Name</span>
+                                    <span class="label-text font-semibold text-brand-navy-600 text-lg">Company Name</span>
                                 </label>
                                 <input type="text" 
                                        id="company-name" 
                                        name="company_name" 
                                        placeholder="Enter company name" 
                                        required 
-                                       class="input input-bordered w-full text-lg input-focus bg-white/80 border-2 border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                                       class="input input-bordered w-full text-lg input-focus bg-white border-2 border-blue-200 focus:border-brand-navy-500 focus:ring-2 focus:ring-blue-200">
                             </div>
                             
                             <div class="form-control">
                                 <label class="label">
-                                    <span class="label-text font-semibold text-gray-700 text-lg">Country</span>
+                                    <span class="label-text font-semibold text-brand-navy-600 text-lg">Country</span>
                                 </label>
                                 <select id="country" 
                                         name="country" 
                                         required 
-                                        class="select select-bordered w-full text-lg input-focus bg-white/80 border-2 border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                                        class="select select-bordered w-full text-lg input-focus bg-white border-2 border-blue-200 focus:border-brand-navy-500 focus:ring-2 focus:ring-blue-200">
                                     <option value="">Select country</option>
                                     <option value="Afghanistan">Afghanistan</option>
                                     <option value="Albania">Albania</option>
@@ -376,12 +395,12 @@
                             
                             <div class="form-control">
                                 <label class="label">
-                                    <span class="label-text font-semibold text-gray-700 text-lg">Industry Type</span>
+                                    <span class="label-text font-semibold text-brand-navy-600 text-lg">Industry Type</span>
                                 </label>
                                 <select id="industry-type" 
                                         name="industry_type" 
                                         required 
-                                        class="select select-bordered w-full text-lg input-focus bg-white/80 border-2 border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                                        class="select select-bordered w-full text-lg input-focus bg-white border-2 border-blue-200 focus:border-brand-navy-500 focus:ring-2 focus:ring-blue-200">
                                     <option value="">Select industry</option>
                                     <option value="Construction">Construction</option>
                                     <option value="Agriculture">Agriculture</option>
@@ -405,32 +424,32 @@
                             
                             <div class="form-control">
                                 <label class="label">
-                                    <span class="label-text font-semibold text-gray-700 text-lg">Company Phone Number (with Country Code)</span>
+                                    <span class="label-text font-semibold text-brand-navy-600 text-lg">Company Phone Number (with Country Code)</span>
                                 </label>
                                 <input type="tel" 
                                        id="company-phone" 
                                        name="company_phone" 
                                        placeholder="e.g., +260 971 234 567" 
                                        required 
-                                       class="input input-bordered w-full text-lg input-focus bg-white/80 border-2 border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                                       class="input input-bordered w-full text-lg input-focus bg-white border-2 border-blue-200 focus:border-brand-navy-500 focus:ring-2 focus:ring-blue-200">
                                 <label class="label">
-                                    <span class="label-text-alt text-gray-500">Include country code (e.g., +260 for Zambia, +1 for US)</span>
+                                    <span class="label-text-alt text-brand-gray-500">Include country code (e.g., +260 for Zambia, +1 for US)</span>
                                 </label>
                             </div>
                             
                             <div class="form-control">
                                 <label class="label">
-                                    <span class="label-text font-semibold text-gray-700 text-lg">Company Email Address</span>
+                                    <span class="label-text font-semibold text-brand-navy-600 text-lg">Company Email Address</span>
                                 </label>
                                 <input type="email" 
                                        id="company-email" 
                                        name="company_email" 
                                        placeholder="Enter company email address" 
                                        required 
-                                       class="input input-bordered w-full text-lg input-focus bg-white/80 border-2 border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                                       class="input input-bordered w-full text-lg input-focus bg-white border-2 border-blue-200 focus:border-brand-navy-500 focus:ring-2 focus:ring-blue-200">
                             </div>
                             
-                            <button type="submit" class="btn btn-primary w-full text-lg font-semibold btn-hover bg-gradient-to-r from-blue-500 to-indigo-600 border-0 shadow-lg">
+                            <button type="submit" class="btn btn-primary w-full text-lg font-semibold btn-hover bg-gradient-to-r from-brand-navy-500 to-brand-navy-600 border-0 shadow-lg text-white hover:from-brand-navy-600 hover:to-brand-navy-700">
                                 <i class="fas fa-plus mr-3"></i>Create Workspace
                             </button>
                         </form>
@@ -443,7 +462,7 @@
         
         <!-- Trial Info -->
         <div class="text-center">
-            <div class="alert alert-info bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-0 shadow-xl max-w-4xl mx-auto">
+            <div class="alert bg-gradient-to-r from-brand-navy-500 to-brand-navy-600 text-white border-0 shadow-xl max-w-4xl mx-auto rounded-2xl">
                 <div class="flex items-center justify-center gap-3">
                     <i class="fas fa-gift text-2xl"></i>
                     <div class="text-left">

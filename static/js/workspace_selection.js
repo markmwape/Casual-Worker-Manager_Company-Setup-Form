@@ -72,13 +72,12 @@ document.addEventListener('DOMContentLoaded', function() {
             company_name: document.getElementById('company-name').value.trim(),
             country: document.getElementById('country').value.trim(),
             industry_type: document.getElementById('industry-type').value.trim(),
-            expected_workers: document.getElementById('expected-workers').value,
             company_phone: document.getElementById('company-phone').value.trim(),
             company_email: document.getElementById('company-email').value.trim()
         };
 
         // Validate form data
-        const requiredFields = ['company_name', 'country', 'industry_type', 'expected_workers', 'company_phone', 'company_email'];
+        const requiredFields = ['company_name', 'country', 'industry_type', 'company_phone', 'company_email'];
         const missingFields = requiredFields.filter(field => !formData[field]);
         
         if (missingFields.length > 0) {

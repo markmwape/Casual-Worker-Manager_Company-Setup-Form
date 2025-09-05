@@ -131,6 +131,35 @@
                                 <span class="font-medium">Share this code with team members to invite them to your workspace</span>
                             </div>
                         </div>
+                        
+                        <!-- Company Contact Information -->
+                        {% if session.get('current_workspace', {}).get('company_email') or session.get('current_workspace', {}).get('company_phone') %}
+                        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {% if session.get('current_workspace', {}).get('company_email') %}
+                            <div class="flex items-center gap-3 p-3 bg-white/60 rounded-lg border border-brand-navy-200/50">
+                                <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-envelope text-white text-sm"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="text-xs text-gray-600 font-medium">Company Email</div>
+                                    <div class="text-sm text-gray-800 font-semibold">{{ session.get('current_workspace', {}).get('company_email', '') }}</div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            {% if session.get('current_workspace', {}).get('company_phone') %}
+                            <div class="flex items-center gap-3 p-3 bg-white/60 rounded-lg border border-brand-navy-200/50">
+                                <div class="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-phone text-white text-sm"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="text-xs text-gray-600 font-medium">Company Phone</div>
+                                    <div class="text-sm text-gray-800 font-semibold">{{ session.get('current_workspace', {}).get('company_phone', '') }}</div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
                 {% endif %}

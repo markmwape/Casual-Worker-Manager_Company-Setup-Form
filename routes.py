@@ -95,7 +95,7 @@ def create_workspace():
         company_name = data.get('company_name', '').strip()
         country = data.get('country', '').strip()
         industry_type = data.get('industry_type', '').strip()
-        expected_workers = str(data.get('expected_workers', '')).strip()
+        expected_workers = str(data.get('expected_workers', 'not_specified')).strip()
         company_phone = data.get('company_phone', '').strip()
         company_email = data.get('company_email', '').strip()
         
@@ -104,7 +104,6 @@ def create_workspace():
             'company_name': company_name,
             'country': country,
             'industry_type': industry_type,
-            'expected_workers': expected_workers,
             'company_phone': company_phone,
             'company_email': company_email
         }
@@ -119,10 +118,10 @@ def create_workspace():
         if not re.match(email_pattern, company_email):
             return jsonify({"error": "Invalid email format"}), 400
         
-        # Validate expected workers format
-        valid_worker_ranges = ['below_100', '100_250', '251_500', '501_1000', 'above_1000']
+        # Validate expected workers format (if provided)
+        valid_worker_ranges = ['below_100', '100_250', '251_500', '501_1000', 'above_1000', 'not_specified']
         if expected_workers not in valid_worker_ranges:
-            return jsonify({"error": f"Invalid expected workers range: {expected_workers}. Valid options are: {', '.join(valid_worker_ranges)}"}), 400
+            expected_workers = 'not_specified'
         
         # Use system user for workspace creation
         try:
@@ -277,7 +276,9 @@ def set_session():
                         'id': workspace.id,
                         'name': workspace.name,
                         'code': workspace.workspace_code,
-                        'role': user_workspace.role if user_workspace else 'Supervisor'
+                        'role': user_workspace.role if user_workspace else 'Supervisor',
+                        'company_email': workspace.company_email,
+                        'company_phone': workspace.company_phone
                     }
 
         logging.info(f"Session set successfully: {session['user']}")

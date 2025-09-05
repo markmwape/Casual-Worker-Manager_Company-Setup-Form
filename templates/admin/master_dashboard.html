@@ -73,6 +73,23 @@
             border: 1px solid #e2e8f0;
             backdrop-filter: blur(10px);
         }
+        .table-container .overflow-x-auto {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .table-container table {
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        .table-container th,
+        .table-container td {
+            border-right: 1px solid #e2e8f0;
+            vertical-align: top;
+        }
+        .table-container th:last-child,
+        .table-container td:last-child {
+            border-right: none;
+        }
         .table-header {
             background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
             border-bottom: 2px solid #e2e8f0;
@@ -836,47 +853,54 @@
                     </div>
                     
                     <div class="table-container">
-                        <table class="w-full">
-                            <thead class="table-header">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Workspace
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Industry
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Country
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Users
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Workers
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Tasks
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        This Month
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Attendance Days
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Completion Rate
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Subscription
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Access Status
-                                    </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Actions
-                                    </th>
-                                </tr>
-                            </thead>
+                        <div class="overflow-x-auto">
+                            <table class="w-full min-w-max">
+                                <thead class="table-header">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-0 w-48">
+                                            Workspace
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-0 w-28">
+                                            Industry
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-0 w-24">
+                                            Country
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-0 w-52">
+                                            Company Email
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-0 w-40">
+                                            Company Phone
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-0 w-20">
+                                            Users
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-0 w-24">
+                                            Workers
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-0 w-24">
+                                            Tasks
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-0 w-28">
+                                            This Month
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-0 w-32">
+                                            Attendance Days
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-0 w-32">
+                                            Completion Rate
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-0 w-28">
+                                            Subscription
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-0 w-28">
+                                            Access Status
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-0 w-40">
+                                            Actions
+                                        </th>
+                                    </tr>
+                                </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
                                 {% for item in enhanced_workspaces %}
                                 <tr class="table-row">
@@ -900,6 +924,18 @@
                                         <div class="flex items-center">
                                             <i class="fas fa-globe text-gray-400 mr-2"></i>
                                             <span class="text-sm text-gray-900">{{ item.workspace.country }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-envelope text-gray-400 mr-2"></i>
+                                            <span class="text-sm text-gray-900">{{ item.workspace.company_email or 'N/A' }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-phone text-gray-400 mr-2"></i>
+                                            <span class="text-sm text-gray-900">{{ item.workspace.company_phone or 'N/A' }}</span>
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
@@ -1021,6 +1057,7 @@
                                 {% endfor %}
                             </tbody>
                         </table>
+                        </div>
                     </div>
                 </div>
 
@@ -1318,14 +1355,14 @@
                         </h4>
                         <div class="table-container">
                             <div class="overflow-x-auto">
-                                <table class="w-full">
+                                <table class="w-full min-w-max">
                                     <thead class="table-header">
                                         <tr>
-                                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Task Details</th>
-                                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Workers</th>
-                                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Attendance</th>
-                                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Performance</th>
-                                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
+                                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-0 w-64">Task Details</th>
+                                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-0 w-32">Workers</th>
+                                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-0 w-40">Attendance</th>
+                                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-0 w-36">Performance</th>
+                                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-0 w-28">Priority</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-gray-200">

@@ -405,31 +405,17 @@
                             
                             <div class="form-control">
                                 <label class="label">
-                                    <span class="label-text font-semibold text-gray-700 text-lg">Expected Monthly Casual Workers</span>
-                                </label>
-                                <select id="expected-workers" 
-                                        name="expected_workers" 
-                                        required 
-                                        class="select select-bordered w-full text-lg input-focus bg-white/80 border-2 border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
-                                    <option value="">Select number of workers</option>
-                                    <option value="below_100">Below 100</option>
-                                    <option value="100_250">100–250</option>
-                                    <option value="251_500">251–500</option>
-                                    <option value="501_1000">501–1000</option>
-                                    <option value="above_1000">Above 1000</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-control">
-                                <label class="label">
-                                    <span class="label-text font-semibold text-gray-700 text-lg">Company Phone Number</span>
+                                    <span class="label-text font-semibold text-gray-700 text-lg">Company Phone Number (with Country Code)</span>
                                 </label>
                                 <input type="tel" 
                                        id="company-phone" 
                                        name="company_phone" 
-                                       placeholder="Enter company phone number" 
+                                       placeholder="e.g., +260 971 234 567" 
                                        required 
                                        class="input input-bordered w-full text-lg input-focus bg-white/80 border-2 border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                                <label class="label">
+                                    <span class="label-text-alt text-gray-500">Include country code (e.g., +260 for Zambia, +1 for US)</span>
+                                </label>
                             </div>
                             
                             <div class="form-control">

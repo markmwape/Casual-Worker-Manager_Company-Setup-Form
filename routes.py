@@ -653,15 +653,19 @@ def update_company_contact():
         if not data or 'email' not in data or 'phone' not in data:
             return jsonify({'error': 'Email and phone are required'}), 400
 
-        # Get current company from the session
-        company = get_current_company()
+        # Get current workspace from the session
+        if 'current_workspace' not in session:
+            return jsonify({'error': 'No workspace found in session'}), 404
+            
+        workspace_id = session['current_workspace']['id']
+        workspace = Workspace.query.filter_by(id=workspace_id).first()
         
-        if not company:
-            return jsonify({'error': 'No company found for current workspace'}), 404
+        if not workspace:
+            return jsonify({'error': 'No workspace found for current session'}), 404
 
-        # Update the company's email and phone
-        company.email = data['email']
-        company.phone = data['phone']
+        # Update the workspace's email and phone
+        workspace.company_email = data['email']
+        workspace.company_phone = data['phone']
         
         db.session.commit()
         

@@ -111,6 +111,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (response.ok) {
                 // Store workspace info and redirect to login
+                // Add deferred creation flag for new workspaces
+                data.workspace.deferred_creation = true;
                 sessionStorage.setItem('pending_workspace', JSON.stringify(data.workspace));
                 window.location.href = '/signin?workspace=' + encodeURIComponent(data.workspace.code);
             } else {

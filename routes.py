@@ -641,6 +641,46 @@ def create_company():
         db.session.rollback()
         return jsonify({'error': 'Failed to create company'}), 500
 
+@app.route("/api/company/contact", methods=['POST'])
+def update_company_contact():
+    try:
+        # Check if user is logged in
+        if 'user' not in session or 'user_email' not in session['user']:
+            return jsonify({'error': 'Not authenticated'}), 401
+
+        data = request.get_json()
+        
+        if not data or 'email' not in data or 'phone' not in data:
+            return jsonify({'error': 'Email and phone are required'}), 400
+
+        # Get current company from the session
+        company = get_current_company()
+        
+        if not company:
+            return jsonify({'error': 'No company found for current workspace'}), 404
+
+        # Update the company's email and phone
+        company.email = data['email']
+        company.phone = data['phone']
+        
+        db.session.commit()
+        
+        # Update the session data if it exists
+        if 'current_workspace' in session and isinstance(session['current_workspace'], dict):
+            session['current_workspace']['company_email'] = data['email']
+            session['current_workspace']['company_phone'] = data['phone']
+            session.modified = True
+        
+        return jsonify({
+            'success': True,
+            'message': 'Company contact information updated successfully'
+        }), 200
+        
+    except Exception as e:
+        logging.error(f"Error updating company contact: {str(e)}")
+        db.session.rollback()
+        return jsonify({'error': 'Failed to update company contact information'}), 500
+
 @app.route("/workers", methods=['GET'])
 def workers_route():
     try:

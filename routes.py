@@ -1,4 +1,4 @@
-from models import WorkerImportLog, ImportField, WorkerCustomFieldValue, ReportField
+from models import WorkerImportLog, ImportField, WorkerCustomFieldValue, ReportField, ActivityLog
 from models import Attendance, Task, Worker, Company, User, Workspace, UserWorkspace, MasterAdmin
 from flask import render_template, session, redirect, url_for, make_response, abort, request, jsonify, send_file
 from app_init import app, db
@@ -16,6 +16,7 @@ import io
 import re
 from app_init import master_admin_required
 from sqlalchemy import func, desc
+from activity_logger import log_activity, get_recent_activities, get_activity_stats, LogMessages
 
 def get_current_company():
     """Helper function to get the current company from workspace session"""
@@ -238,6 +239,23 @@ def set_session():
                     db.session.add(user_workspace)
                     db.session.commit()
                     
+                    # Log workspace creation
+                    log_activity(
+                        action_type='create',
+                        resource_type='workspace',
+                        description=LogMessages.WORKSPACE_CREATED.format(name=workspace.name),
+                        resource_id=workspace.id,
+                        details={
+                            'workspace_name': workspace.name,
+                            'country': workspace.country,
+                            'industry_type': workspace.industry_type,
+                            'company_phone': workspace.company_phone,
+                            'company_email': workspace.company_email
+                        },
+                        user_email=email,
+                        workspace_id=workspace.id
+                    )
+                    
                     logging.info(f"Created new workspace {workspace.name} with admin {email}")
                     
                 elif workspace_data.get('id'):
@@ -285,6 +303,20 @@ def set_session():
                     'company_email': workspace.company_email,
                     'company_phone': workspace.company_phone
                 }
+                
+                # Log user login to workspace
+                log_activity(
+                    action_type='login',
+                    resource_type='workspace',
+                    description=LogMessages.USER_LOGIN,
+                    resource_id=workspace.id,
+                    details={
+                        'workspace_name': workspace.name,
+                        'user_role': user_workspace.role if user_workspace else 'Admin'
+                    },
+                    user_email=email,
+                    workspace_id=workspace.id
+                )
                 
                 # Ensure a company exists for this workspace
                 existing_company = Company.query.filter_by(workspace_id=workspace.id).first()
@@ -446,6 +478,22 @@ def update_payout_rate():
         company.currency_symbol = new_symbol
         db.session.commit()
         
+        # Log payout rate update
+        log_activity(
+            action_type='update',
+            resource_type='company',
+            description=LogMessages.COMPANY_PAYOUT_UPDATED.format(currency=new_symbol, amount=new_rate),
+            resource_id=company.id,
+            details={
+                'old_rate': company.daily_payout_rate,
+                'new_rate': new_rate,
+                'old_currency': company.currency,
+                'new_currency': new_currency,
+                'old_symbol': company.currency_symbol,
+                'new_symbol': new_symbol
+            }
+        )
+        
         return jsonify({
             'message': 'Payout rate updated successfully',
             'new_rate': new_rate,
@@ -462,6 +510,86 @@ def update_payout_rate():
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
+
+@app.route("/api/activity-logs", methods=['GET'])
+def get_activity_logs():
+    """Get recent activity logs for the current workspace"""
+    try:
+        # Check if user is authenticated
+        if 'user' not in session or 'user_email' not in session['user']:
+            return jsonify({'error': 'Not authenticated'}), 401
+        
+        # Get current workspace
+        if 'current_workspace' not in session:
+            return jsonify({'error': 'No active workspace'}), 400
+        
+        workspace_id = session['current_workspace']['id']
+        
+        # Get query parameters
+        limit = request.args.get('limit', 20, type=int)
+        page = request.args.get('page', 1, type=int)
+        action_type = request.args.get('action_type')
+        resource_type = request.args.get('resource_type')
+        
+        # Limit the number of records to prevent performance issues
+        limit = min(limit, 100)
+        
+        # Build query
+        query = ActivityLog.query.filter_by(workspace_id=workspace_id)
+        
+        if action_type:
+            query = query.filter(ActivityLog.action_type == action_type)
+        
+        if resource_type:
+            query = query.filter(ActivityLog.resource_type == resource_type)
+        
+        # Get total count
+        total = query.count()
+        
+        # Apply pagination and ordering
+        activities = query.order_by(
+            ActivityLog.created_at.desc()
+        ).offset((page - 1) * limit).limit(limit).all()
+        
+        # Convert to dict format
+        activity_list = []
+        for activity in activities:
+            activity_dict = activity.to_dict()
+            # Parse created_at for better formatting
+            if activity.created_at:
+                activity_dict['created_at_formatted'] = activity.created_at.strftime('%Y-%m-%d %H:%M:%S')
+                activity_dict['time_ago'] = get_time_ago(activity.created_at)
+            activity_list.append(activity_dict)
+        
+        return jsonify({
+            'activities': activity_list,
+            'total': total,
+            'page': page,
+            'limit': limit,
+            'has_more': total > page * limit
+        }), 200
+        
+    except Exception as e:
+        logging.error(f"Error fetching activity logs: {str(e)}")
+        return jsonify({'error': 'Failed to fetch activity logs'}), 500
+
+def get_time_ago(date_time):
+    """Get human-readable time difference"""
+    from datetime import datetime, timezone
+    
+    now = datetime.utcnow()
+    diff = now - date_time
+    
+    if diff.days > 0:
+        return f"{diff.days} day{'s' if diff.days != 1 else ''} ago"
+    elif diff.seconds > 3600:
+        hours = diff.seconds // 3600
+        return f"{hours} hour{'s' if hours != 1 else ''} ago"
+    elif diff.seconds > 60:
+        minutes = diff.seconds // 60
+        return f"{minutes} minute{'s' if minutes != 1 else ''} ago"
+    else:
+        return "Just now"
 logger = logging.getLogger(__name__)
 
 @app.errorhandler(500)
@@ -536,6 +664,20 @@ def create_worker():
         
         db.session.commit()
         
+        # Log worker creation
+        worker_name = f"{new_worker.first_name} {new_worker.last_name}".strip()
+        log_activity(
+            action_type='create',
+            resource_type='worker',
+            description=LogMessages.WORKER_CREATED.format(name=worker_name),
+            resource_id=new_worker.id,
+            details={
+                'worker_name': worker_name,
+                'company_id': company.id,
+                'custom_fields': {field.name: data.get(field.name) for field in import_fields if field.name in data}
+            }
+        )
+        
         return jsonify({'message': 'Worker added successfully'}), 201
         
     except Exception as e:
@@ -590,6 +732,23 @@ def create_task():
         )
         db.session.add(new_task)
         db.session.commit()
+        
+        # Log task creation
+        log_activity(
+            action_type='create',
+            resource_type='task',
+            description=LogMessages.TASK_CREATED.format(name=new_task.name),
+            resource_id=new_task.id,
+            details={
+                'task_name': new_task.name,
+                'description': new_task.description,
+                'start_date': new_task.start_date.isoformat(),
+                'payment_type': new_task.payment_type,
+                'status': new_task.status,
+                'company_id': company.id
+            }
+        )
+        
         logging.info(f"Successfully created task: {new_task.id}")
         return jsonify({
             'message': 'Task created successfully',
@@ -985,7 +1144,17 @@ def home_route():
                     'role': uw.role
                 })
 
-        return render_template('home.html', company=company, total_workers=total_workers, total_tasks=total_tasks, team_members=team_members)
+        # Get recent activities for this workspace
+        recent_activities = get_recent_activities(workspace_id, limit=20)
+        activity_stats = get_activity_stats(workspace_id, days=7)
+
+        return render_template('home.html', 
+                             company=company, 
+                             total_workers=total_workers, 
+                             total_tasks=total_tasks, 
+                             team_members=team_members,
+                             recent_activities=recent_activities,
+                             activity_stats=activity_stats)
     except Exception as e:
         logging.error(f"Error fetching home data: {str(e)}")
         import traceback
@@ -1037,6 +1206,20 @@ def add_team_member():
         )
         db.session.add(user_workspace)
         db.session.commit()
+
+        # Log team member addition
+        log_activity(
+            action_type='create',
+            resource_type='team_member',
+            description=LogMessages.TEAM_MEMBER_ADDED.format(email=email, role=role),
+            resource_id=existing_user.id,
+            details={
+                'user_email': email,
+                'user_id': existing_user.id,
+                'role': role,
+                'workspace_id': workspace_id
+            }
+        )
 
         return jsonify({
             'message': 'Team member added successfully',

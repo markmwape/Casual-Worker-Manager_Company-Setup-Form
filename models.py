@@ -223,6 +223,40 @@ class MasterAdmin(db.Model):
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
 
+class ActivityLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    workspace_id = db.Column(db.Integer, db.ForeignKey('workspace.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    user_email = db.Column(db.String(150), nullable=False)
+    action_type = db.Column(db.String(50), nullable=False)  # 'create', 'update', 'delete', 'import', 'login', 'logout'
+    resource_type = db.Column(db.String(50), nullable=False)  # 'worker', 'task', 'company', 'team_member', 'attendance', etc.
+    resource_id = db.Column(db.Integer, nullable=True)  # ID of the affected resource
+    description = db.Column(db.Text, nullable=False)  # Human-readable description
+    details = db.Column(db.Text, nullable=True)  # JSON string with additional details
+    ip_address = db.Column(db.String(45), nullable=True)  # User's IP address
+    user_agent = db.Column(db.Text, nullable=True)  # Browser/device info
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    workspace = db.relationship('Workspace', backref='activity_logs')
+    user = db.relationship('User', backref='activity_logs')
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'workspace_id': self.workspace_id,
+            'user_id': self.user_id,
+            'user_email': self.user_email,
+            'action_type': self.action_type,
+            'resource_type': self.resource_type,
+            'resource_id': self.resource_id,
+            'description': self.description,
+            'details': self.details,
+            'ip_address': self.ip_address,
+            'user_agent': self.user_agent,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+
 class Attendance(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     worker_id = db.Column(db.Integer, db.ForeignKey('worker.id'), nullable=False)

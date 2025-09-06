@@ -151,6 +151,19 @@ def create_workspace():
         db.session.add(workspace)
         db.session.flush()  # Get the workspace ID
         
+        # Create a company for this workspace
+        company = Company(
+            name=company_name,
+            registration_number="",  # Will be filled later if needed
+            address="",  # Will be filled later if needed
+            industry=industry_type,
+            phone=company_phone,
+            created_by=system_user.id,
+            workspace_id=workspace.id
+        )
+        db.session.add(company)
+        db.session.flush()  # Get the company ID
+        
         # Assign system user as Admin until real user signs in
         user_workspace = UserWorkspace(
             user_id=system_user.id,
@@ -160,6 +173,7 @@ def create_workspace():
         db.session.add(user_workspace)
         db.session.commit()
         
+        logging.info(f"Created workspace {workspace.name} with company {company.name}")
         logging.info(f"Assigned system user as Admin to workspace {workspace.name}")
         
         return jsonify({
@@ -280,6 +294,23 @@ def set_session():
                         'company_email': workspace.company_email,
                         'company_phone': workspace.company_phone
                     }
+                    
+                    # Ensure a company exists for this workspace
+                    existing_company = Company.query.filter_by(workspace_id=workspace.id).first()
+                    if not existing_company:
+                        # Create a company for this workspace
+                        new_company = Company(
+                            name=workspace.name,
+                            registration_number="",
+                            address="",
+                            industry=workspace.industry_type,
+                            phone=workspace.company_phone,
+                            created_by=user.id,
+                            workspace_id=workspace.id
+                        )
+                        db.session.add(new_company)
+                        db.session.commit()
+                        logging.info(f"Created company for existing workspace: {workspace.name}")
 
         logging.info(f"Session set successfully: {session['user']}")
         logging.info(f"Session keys: {list(session.keys())}")
@@ -422,10 +453,8 @@ def update_payout_rate():
         if not new_currency or not new_symbol:
             return jsonify({'error': 'Currency and symbol are required'}), 400
             
-        # Get current user's company
-        user_email = session['user']['user_email']
-        user = User.query.filter_by(email=user_email).first()
-        company = Company.query.filter_by(created_by=user.id).first()
+        # Get current company from workspace
+        company = get_current_company()
         
         if not company:
             return jsonify({'error': 'Company not found'}), 404
@@ -489,10 +518,8 @@ def create_worker():
     try:
         data = request.get_json()
         
-        # Get current user's company
-        user_email = session['user']['user_email']
-        user = User.query.filter_by(email=user_email).first()
-        company = Company.query.filter_by(created_by=user.id).first()
+        # Get current company from workspace
+        company = get_current_company()
         
         if not company:
             return jsonify({'error': 'Company not found'}), 404
@@ -537,15 +564,11 @@ def create_task():
         if not data.get('start_date'):
             return jsonify({'error': 'Start date is required'}), 400
         
-        # Get current user's company
-        user_email = session['user']['user_email']
-        user = User.query.filter_by(email=user_email).first()
-        if not user:
-            logging.error(f"User not found for email: {user_email}")
-            return jsonify({'error': 'User not found'}), 404
-        company = Company.query.filter_by(created_by=user.id).first()
+        # Get current company from workspace
+        company = get_current_company()
+        
         if not company:
-            logging.error(f"Company not found for user: {user_email}")
+            logging.error(f"Company not found for current workspace")
             return jsonify({'error': 'Company not found'}), 404
         try:
             # Parse start date
@@ -676,10 +699,8 @@ def workers_route():
 @app.route("/api/import-field", methods=['GET', 'POST'])
 def import_field():
     try:
-        # Get current user's company
-        user_email = session['user']['user_email']
-        user = User.query.filter_by(email=user_email).first()
-        company = Company.query.filter_by(created_by=user.id).first()
+        # Get current company from workspace
+        company = get_current_company()
         
         if not company:
             return jsonify({'error': 'Company not found'}), 404
@@ -722,10 +743,8 @@ def import_field():
 @app.route("/api/import-field/<int:field_id>", methods=['DELETE'])
 def delete_import_field(field_id):
     try:
-        # Get current user's company
-        user_email = session['user']['user_email']
-        user = User.query.filter_by(email=user_email).first()
-        company = Company.query.filter_by(created_by=user.id).first()
+        # Get current company from workspace
+        company = get_current_company()
         
         if not company:
             return jsonify({'error': 'Company not found'}), 404
@@ -1345,10 +1364,13 @@ def import_mapped_workers():
         # Log the mapping for debugging
         logging.info(f"Column mapping: {mapping}")
         
+        # Get current user and company
         user_email = session['user']['user_email']
         user = User.query.filter_by(email=user_email).first()
-        company = Company.query.filter_by(created_by=user.id).first()
+        company = get_current_company()
         
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
         if not company:
             return jsonify({'error': 'Company not found'}), 404
         
@@ -1477,10 +1499,8 @@ def import_mapped_workers():
 @app.route("/api/worker/<int:worker_id>", methods=['DELETE'])
 def delete_worker(worker_id):
     try:
-        # Get current user's company
-        user_email = session['user']['user_email']
-        user = User.query.filter_by(email=user_email).first()
-        company = Company.query.filter_by(created_by=user.id).first()
+        # Get current company from workspace
+        company = get_current_company()
         
         if not company:
             return jsonify({'error': 'Company not found'}), 404
@@ -1513,10 +1533,8 @@ def delete_worker(worker_id):
 def update_worker(worker_id):
     try:
         data = request.get_json()
-        # Get current user's company
-        user_email = session['user']['user_email']
-        user = User.query.filter_by(email=user_email).first()
-        company = Company.query.filter_by(created_by=user.id).first()
+        # Get current company from workspace
+        company = get_current_company()
         if not company:
             return jsonify({'error': 'Company not found'}), 404
         worker = Worker.query.filter_by(id=worker_id, company_id=company.id).first()
@@ -1545,10 +1563,8 @@ def update_worker(worker_id):
 @app.route("/api/task/<int:task_id>/attendance", methods=['POST'])
 def update_task_attendance(task_id):
     try:
-        # Get current user's company
-        user_email = session['user']['user_email']
-        user = User.query.filter_by(email=user_email).first()
-        company = Company.query.filter_by(created_by=user.id).first()
+        # Get current company from workspace
+        company = get_current_company()
         
         if not company:
             return jsonify({'error': 'Company not found'}), 404
@@ -1609,10 +1625,8 @@ def update_task_attendance(task_id):
 @app.route("/api/task/<int:task_id>/add-worker", methods=['POST'])
 def add_worker_to_task(task_id):
     try:
-        # Get current user's company
-        user_email = session['user']['user_email']
-        user = User.query.filter_by(email=user_email).first()
-        company = Company.query.filter_by(created_by=user.id).first()
+        # Get current company from workspace
+        company = get_current_company()
         
         if not company:
             return jsonify({'error': 'Company not found'}), 404
@@ -1669,10 +1683,8 @@ def bulk_delete_workers():
         if not worker_ids:
             return jsonify({'error': 'No worker IDs provided'}), 400
 
-        # Get current user's company
-        user_email = session['user']['user_email']
-        user = User.query.filter_by(email=user_email).first()
-        company = Company.query.filter_by(created_by=user.id).first()
+        # Get current company from workspace
+        company = get_current_company()
         if not company:
             return jsonify({'error': 'Company not found'}), 404
 
@@ -1695,10 +1707,8 @@ def bulk_delete_workers():
 @app.route("/api/task/<int:task_id>/update-date", methods=['POST'])
 def update_task_date(task_id):
     try:
-        # Get current user's company
-        user_email = session['user']['user_email']
-        user = User.query.filter_by(email=user_email).first()
-        company = Company.query.filter_by(created_by=user.id).first()
+        # Get current company from workspace
+        company = get_current_company()
         
         if not company:
             return jsonify({'error': 'Company not found'}), 404
@@ -1733,10 +1743,8 @@ def update_task_date(task_id):
 @app.route("/api/task/<int:task_id>", methods=['DELETE'])
 def delete_task(task_id):
     try:
-        # Get current user's company
-        user_email = session['user']['user_email']
-        user = User.query.filter_by(email=user_email).first()
-        company = Company.query.filter_by(created_by=user.id).first()
+        # Get current company from workspace
+        company = get_current_company()
         
         if not company:
             return jsonify({'error': 'Company not found'}), 404
@@ -1801,10 +1809,8 @@ from abilities import llm
 @app.route("/report/download")
 def download_report():
     try:
-        # Get current user's company
-        user_email = session['user']['user_email']
-        user = User.query.filter_by(email=user_email).first()
-        company = Company.query.filter_by(created_by=user.id).first()
+        # Get current company from workspace
+        company = get_current_company()
         
         if not company:
             return jsonify({'error': 'Company not found'}), 404
@@ -2051,10 +2057,8 @@ def download_report():
 @app.route("/api/report-field", methods=['POST', 'DELETE', 'PUT'])
 def manage_report_field():
     try:
-        # Get current user's company
-        user_email = session['user']['user_email']
-        user = User.query.filter_by(email=user_email).first()
-        company = Company.query.filter_by(created_by=user.id).first()
+        # Get current company from workspace
+        company = get_current_company()
         
         if not company:
             return jsonify({'error': 'Company not found'}), 404
@@ -2135,10 +2139,8 @@ def manage_report_field():
 @app.route("/task/<int:task_id>/units-completed", methods=['GET'])
 def task_units_completed_route(task_id):
     try:
-        # Get current user's company
-        user_email = session['user']['user_email']
-        user = User.query.filter_by(email=user_email).first()
-        company = Company.query.filter_by(created_by=user.id).first()
+        # Get current company from workspace
+        company = get_current_company()
 
         if not company:
             return render_template('task_units_completed.html', task=None, attendance_records=[], workers=[], selected_date=None)

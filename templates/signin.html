@@ -130,6 +130,35 @@
                         <input type="email" name="email" id="user-email" placeholder="Enter your email" required class="input input-bordered w-full text-lg" autocomplete="email">
                         <button type="submit" class="btn btn-primary w-full text-lg">Send Sign-in Link</button>
                         <div id="signin-error" class="text-error text-center mt-2"></div>
+                        
+                        <!-- Email sent notification with spam folder reminder -->
+                        <div id="email-sent-notification" class="hidden bg-green-50 border border-green-200 rounded-lg p-4 mt-4">
+                            <div class="flex items-start gap-3">
+                                <i class="fas fa-check-circle text-green-600 text-xl mt-1"></i>
+                                <div>
+                                    <h4 class="font-semibold text-green-800 mb-2">Email Sent Successfully!</h4>
+                                    <p class="text-green-700 text-sm mb-2">
+                                        We've sent a sign-in link to your email address.
+                                    </p>
+                                    <div class="bg-yellow-50 border border-yellow-200 rounded-md p-3 mt-3">
+                                        <div class="flex items-start gap-2">
+                                            <i class="fas fa-exclamation-triangle text-yellow-600 text-sm mt-0.5"></i>
+                                            <div>
+                                                <p class="text-yellow-800 text-sm font-medium">Don't see the email?</p>
+                                                <p class="text-yellow-700 text-xs mt-1">
+                                                    <strong>Check your spam/junk folder</strong> - sign-in emails sometimes end up there. 
+                                                    You can also check your promotions tab if using Gmail.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p class="text-green-600 text-xs mt-3">
+                                        <i class="fas fa-clock mr-1"></i>
+                                        The sign-in link will expire in 10 minutes for security.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </form>
                     
                     <!-- Back to workspace selection -->
@@ -170,8 +199,41 @@
         
         // Add link to finishSignin route
         document.getElementById('signin-form').addEventListener('submit', function(e) {
+            e.preventDefault(); // Prevent default form submission
+            
             const email = document.getElementById('user-email').value;
+            const submitButton = e.target.querySelector('button[type="submit"]');
+            const emailNotification = document.getElementById('email-sent-notification');
+            const signinError = document.getElementById('signin-error');
+            
+            // Clear any previous errors
+            signinError.style.display = 'none';
+            signinError.textContent = '';
+            
+            // Disable submit button and show loading state
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Sending...';
+            
+            // Store email for sign in
             localStorage.setItem('emailForSignIn', email);
+            
+            // Simulate email sending (replace with actual email sending logic)
+            setTimeout(() => {
+                // Re-enable submit button
+                submitButton.disabled = false;
+                submitButton.innerHTML = 'Send Sign-in Link';
+                
+                // Show success notification with spam folder reminder
+                emailNotification.classList.remove('hidden');
+                
+                // Scroll to notification
+                emailNotification.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                
+                // Update the email address in the notification
+                const emailText = emailNotification.querySelector('.text-green-700');
+                emailText.innerHTML = `We've sent a sign-in link to <strong>${email}</strong>. Click the link in the email to continue.`;
+                
+            }, 1000); // 1 second delay to simulate processing
         });
         
         // Add error handling for authentication

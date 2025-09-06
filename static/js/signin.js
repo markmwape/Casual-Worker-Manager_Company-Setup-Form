@@ -111,8 +111,20 @@ function setupEventListeners() {
         console.log('Email sign-in form submitted');
         
         const email = document.getElementById('user-email').value;
+        const submitButton = e.target.querySelector('button[type="submit"]');
+        const emailNotification = document.getElementById('email-sent-notification');
+        const signinError = document.getElementById('signin-error');
         const pendingWorkspace = sessionStorage.getItem('pending_workspace');
         const workspaceData = pendingWorkspace ? JSON.parse(pendingWorkspace) : null;
+        
+        // Clear any previous errors and hide notification
+        signinError.style.display = 'none';
+        signinError.textContent = '';
+        emailNotification.classList.add('hidden');
+        
+        // Disable submit button and show loading state
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Sending...';
         
         // Add workspace code to the finish signin URL if available
         let finishUrl = runtimeAppSettingsURL + '/finishSignin?email=' + email;
@@ -127,12 +139,33 @@ function setupEventListeners() {
         
         try {
             await sendSignInLinkToEmail(window.firebaseAuth, email, actionCodeSettings);
-            alert('Sign-in link sent! Check your email.');
+            
+            // Re-enable submit button
+            submitButton.disabled = false;
+            submitButton.innerHTML = 'Send Sign-in Link';
+            
+            // Show success notification with spam folder reminder
+            emailNotification.classList.remove('hidden');
+            
+            // Update the email address in the notification
+            const emailText = emailNotification.querySelector('.text-green-700');
+            emailText.innerHTML = `We've sent a sign-in link to <strong>${email}</strong>. Click the link in the email to continue.`;
+            
+            // Scroll to notification
+            emailNotification.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            
             window.localStorage.setItem('emailForSignIn', email);
         } catch (error) {
             console.error('Error sending sign-in link to email:', error);
-            document.getElementById('signin-error').innerHTML = 'Error sending sign-in link. Please try again.';
-            document.getElementById('signin-error').style.color = 'red';
+            
+            // Re-enable submit button
+            submitButton.disabled = false;
+            submitButton.innerHTML = 'Send Sign-in Link';
+            
+            // Show error message
+            signinError.innerHTML = 'Error sending sign-in link. Please try again.';
+            signinError.style.color = 'red';
+            signinError.style.display = 'block';
         }
     });
 }

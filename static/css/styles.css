@@ -1451,22 +1451,4 @@ input[type="date"]::-webkit-date-and-time-value {
     flex-wrap: nowrap !important;
 }
 
-/* Honeycomb background elements for decoration */
-.honeycomb-corner {
-    position: absolute;
-    width: 200px;
-    height: 200px;
-    background-image: url("data:image/svg+xml,%3Csvg width='200' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M100 0L186.6 50V150L100 200L13.4 150V50L100 0Z' fill='%23e0f2fe'/%3E%3C/svg%3E");
-    background-size: contain;
-    background-repeat: no-repeat;
-    opacity: 0.5;
-    z-index: 0;
-    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
-}
-
-/* Hide decorative hexagons on smaller screens to prevent overlap */
-@media (max-width: 768px) {
-    .honeycomb-corner {
-        display: none;
-    }
-}
+/* Clean, professional design with gradients */

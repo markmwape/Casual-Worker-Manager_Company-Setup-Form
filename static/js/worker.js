@@ -139,7 +139,28 @@ window.openEditWorkerModal = function(workerId) {
     let cellIdx = 1; // skip checkbox
     inputs.forEach(input => {
         if (cells[cellIdx]) {
-            input.value = cells[cellIdx].innerText.trim() === 'N/A' ? '' : cells[cellIdx].innerText.trim();
+            let cellValue = cells[cellIdx].innerText.trim();
+            if (cellValue === 'N/A') {
+                input.value = '';
+            } else {
+                // Handle date fields specifically
+                if (input.type === 'date' && cellValue) {
+                    // The date might be in YYYY-MM-DD format already, but let's make sure
+                    try {
+                        // If the date is already in the correct format, use it directly
+                        const date = new Date(cellValue);
+                        if (!isNaN(date.getTime())) {
+                            input.value = cellValue;
+                        } else {
+                            input.value = '';
+                        }
+                    } catch (e) {
+                        input.value = '';
+                    }
+                } else {
+                    input.value = cellValue;
+                }
+            }
             cellIdx++;
         }
     });

@@ -524,10 +524,19 @@ def create_worker():
         if not company:
             return jsonify({'error': 'Company not found'}), 404
         
+        # Handle date_of_birth
+        date_of_birth = None
+        if data.get('date_of_birth'):
+            try:
+                date_of_birth = datetime.strptime(data['date_of_birth'], '%Y-%m-%d').date()
+            except ValueError:
+                return jsonify({'error': 'Invalid date format for date of birth. Use YYYY-MM-DD'}), 400
+        
         # Create new worker
         new_worker = Worker(
             first_name=data.get('first_name', ''),
             last_name=data.get('last_name', ''),
+            date_of_birth=date_of_birth,
             company_id=company.id
         )
         db.session.add(new_worker)
@@ -1584,6 +1593,16 @@ def update_worker(worker_id):
         worker = Worker.query.filter_by(id=worker_id, company_id=company.id).first()
         if not worker:
             return jsonify({'error': 'Worker not found'}), 404
+        # Handle date_of_birth
+        if 'date_of_birth' in data:
+            if data['date_of_birth']:
+                try:
+                    worker.date_of_birth = datetime.strptime(data['date_of_birth'], '%Y-%m-%d').date()
+                except ValueError:
+                    return jsonify({'error': 'Invalid date format for date of birth. Use YYYY-MM-DD'}), 400
+            else:
+                worker.date_of_birth = None
+        
         # Update default fields
         worker.first_name = data.get('first_name', worker.first_name)
         worker.last_name = data.get('last_name', worker.last_name)

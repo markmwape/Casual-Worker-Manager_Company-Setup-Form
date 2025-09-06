@@ -211,7 +211,18 @@ function closeLogoutModal() {
 }
 
 function openAddWorkerModal() {
-    document.getElementById('add-worker-modal').showModal();
+    const modal = document.getElementById('add-worker-modal');
+    const form = document.getElementById('workerForm');
+    
+    // Reset form and ensure it's in "add" mode
+    if (form) {
+        form.reset();
+        form.removeAttribute('data-edit-worker-id');
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) submitBtn.textContent = 'Add Worker';
+    }
+    
+    modal.showModal();
 }
 
 function closeAddWorkerModal() {

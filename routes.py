@@ -535,19 +535,10 @@ def get_activity_logs():
         
     except Exception as e:
         logging.error(f"Error fetching activity logs: {e}")
-        return jsonify({'error': 'Failed to fetch activity logs'}), 500        if action_type:
-            query = query.filter(ActivityLog.action_type == action_type)
-        
-        if resource_type:
-            query = query.filter(ActivityLog.resource_type == resource_type)
-        
-        # Get total count
-        total = query.count()
-        
-        # Apply pagination and ordering
-        activities = query.order_by(
-            ActivityLog.created_at.desc()
-        ).offset((page - 1) * limit).limit(limit).all()
+        return jsonify({'error': 'Failed to fetch activity logs'}), 500
+
+# Remove the broken activity log filtering code below
+# @app.route("/api/activity-logs-old", methods=['GET'])
         
         # Convert to dict format
         activity_list = []

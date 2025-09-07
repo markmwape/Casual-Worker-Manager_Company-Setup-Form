@@ -513,36 +513,31 @@ logging.basicConfig(level=logging.INFO)
 
 @app.route("/api/activity-logs", methods=['GET'])
 def get_activity_logs():
-    """Get recent activity logs for the current workspace"""
+    """Get recent activity logs"""
     try:
-        logging.info(f"Activity logs API called. Session keys: {list(session.keys())}")
-        
         # Check if user is authenticated
         if 'user' not in session or 'user_email' not in session['user']:
             logging.warning("User not authenticated for activity logs")
             return jsonify({'error': 'Not authenticated'}), 401
-        
-        # Get current workspace
-        if 'current_workspace' not in session:
-            logging.warning("No current workspace in session")
-            return jsonify({'error': 'No active workspace'}), 400
-        
-        workspace_id = session['current_workspace']['id']
-        logging.info(f"Getting activity logs for workspace_id: {workspace_id}")
-        
+
         # Get query parameters
         limit = request.args.get('limit', 20, type=int)
-        page = request.args.get('page', 1, type=int)
-        action_type = request.args.get('action_type')
-        resource_type = request.args.get('resource_type')
+        limit = min(limit, 100)  # Cap at 100 records
+
+        # Get activities using the simplified function
+        from activity_logger import get_recent_activities
+        activities = get_recent_activities(limit)
         
-        # Limit the number of records to prevent performance issues
-        limit = min(limit, 100)
+        logging.info(f"Returning {len(activities)} activity logs")
         
-        # Build query
-        query = ActivityLog.query.filter_by(workspace_id=workspace_id)
+        return jsonify({
+            'activities': activities,
+            'total': len(activities)
+        })
         
-        if action_type:
+    except Exception as e:
+        logging.error(f"Error fetching activity logs: {e}")
+        return jsonify({'error': 'Failed to fetch activity logs'}), 500        if action_type:
             query = query.filter(ActivityLog.action_type == action_type)
         
         if resource_type:
@@ -757,6 +752,11 @@ def create_task():
         )
         
         logging.info(f"Successfully created task: {new_task.id}")
+        
+        # Log the activity
+        from activity_logger import log_activity
+        log_activity("Create Task", f"Created task: {new_task.name}")
+        
         return jsonify({
             'message': 'Task created successfully',
             'task_id': new_task.id

@@ -1,55 +1,32 @@
 import json
 from datetime import datetime
 from flask import session, request
-from models import ActivityLog, db, User
+from models import ActivityLog, db
 import logging
 
-def log_activity(action_type, resource_type, description, resource_id=None, details=None, user_email=None, workspace_id=None):
+def log_activity(action, description, user_email=None):
     """
-    Log user activity in the workspace
+    Simple activity logging
     
     Args:
-        action_type (str): Type of action ('create', 'update', 'delete', 'import', 'login', 'logout', 'view')
-        resource_type (str): Type of resource ('worker', 'task', 'company', 'team_member', 'attendance', 'report', 'workspace')
-        description (str): Human-readable description of the action
-        resource_id (int, optional): ID of the affected resource
-        details (dict, optional): Additional details to store as JSON
+        action (str): Action performed (e.g., 'Create Task', 'Update Worker', 'Login')
+        description (str): Description of the action
         user_email (str, optional): User email (if not in session)
-        workspace_id (int, optional): Workspace ID (if not in session)
     """
     try:
-        # Get user info from session or parameters
+        # Get user email from session if not provided
         if not user_email and 'user' in session and 'user_email' in session['user']:
             user_email = session['user']['user_email']
-        
-        if not workspace_id and 'current_workspace' in session:
-            workspace_id = session['current_workspace']['id']
-        
-        # Skip logging if we don't have required information
-        if not user_email or not workspace_id:
-            return
-        
-        # Get user object for user_id
-        user = User.query.filter_by(email=user_email).first()
-        user_id = user.id if user else None
         
         # Get IP address and User Agent
         ip_address = request.remote_addr if request else None
         user_agent = request.headers.get('User-Agent') if request else None
         
-        # Convert details to JSON string if provided
-        details_json = json.dumps(details) if details else None
-        
         # Create activity log entry
         activity_log = ActivityLog(
-            workspace_id=workspace_id,
-            user_id=user_id,
             user_email=user_email,
-            action_type=action_type,
-            resource_type=resource_type,
-            resource_id=resource_id,
+            action=action,
             description=description,
-            details=details_json,
             ip_address=ip_address,
             user_agent=user_agent
         )
@@ -57,12 +34,32 @@ def log_activity(action_type, resource_type, description, resource_id=None, deta
         db.session.add(activity_log)
         db.session.commit()
         
-        logging.info(f"Activity logged: {action_type} {resource_type} by {user_email}: {description}")
+        logging.info(f"Activity logged: {action} by {user_email}")
         
     except Exception as e:
-        logging.error(f"Failed to log activity: {str(e)}")
-        # Don't raise the exception to avoid breaking the main functionality
-        db.session.rollback()
+        logging.error(f"Failed to log activity: {e}")
+        # Don't let logging errors break the main functionality
+        try:
+            db.session.rollback()
+        except:
+            pass
+
+def get_recent_activities(limit=50):
+    """
+    Get recent activities
+    
+    Args:
+        limit (int): Maximum number of activities to return
+    
+    Returns:
+        list: List of activity dictionaries
+    """
+    try:
+        activities = ActivityLog.query.order_by(ActivityLog.timestamp.desc()).limit(limit).all()
+        return [activity.to_dict() for activity in activities]
+    except Exception as e:
+        logging.error(f"Failed to get recent activities: {e}")
+        return []
 
 def get_recent_activities(workspace_id, limit=50):
     """

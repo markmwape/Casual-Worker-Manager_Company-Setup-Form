@@ -515,15 +515,20 @@ logging.basicConfig(level=logging.INFO)
 def get_activity_logs():
     """Get recent activity logs for the current workspace"""
     try:
+        logging.info(f"Activity logs API called. Session keys: {list(session.keys())}")
+        
         # Check if user is authenticated
         if 'user' not in session or 'user_email' not in session['user']:
+            logging.warning("User not authenticated for activity logs")
             return jsonify({'error': 'Not authenticated'}), 401
         
         # Get current workspace
         if 'current_workspace' not in session:
+            logging.warning("No current workspace in session")
             return jsonify({'error': 'No active workspace'}), 400
         
         workspace_id = session['current_workspace']['id']
+        logging.info(f"Getting activity logs for workspace_id: {workspace_id}")
         
         # Get query parameters
         limit = request.args.get('limit', 20, type=int)
@@ -560,6 +565,8 @@ def get_activity_logs():
                 activity_dict['created_at_formatted'] = activity.created_at.strftime('%Y-%m-%d %H:%M:%S')
                 activity_dict['time_ago'] = get_time_ago(activity.created_at)
             activity_list.append(activity_dict)
+        
+        logging.info(f"Returning {len(activity_list)} activities out of {total} total")
         
         return jsonify({
             'activities': activity_list,

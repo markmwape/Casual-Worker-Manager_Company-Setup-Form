@@ -36,8 +36,14 @@ if os.environ.get('GAE_ENV', '').startswith('standard') or os.environ.get('INSTA
     logging.info(f"  Database URI: {app.config['SQLALCHEMY_DATABASE_URI']}")
 else:
     # Development: Use SQLite
+    # Flask automatically uses the instance folder for SQLite databases
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.sqlite'
     logging.info("Using SQLite configuration for development")
+    # Ensure instance folder exists
+    try:
+        os.makedirs(app.instance_path, exist_ok=True)
+    except OSError:
+        pass
     logging.info(f"  Environment variables:")
     logging.info(f"    INSTANCE_CONNECTION_NAME: {os.environ.get('INSTANCE_CONNECTION_NAME')}")
     logging.info(f"    K_SERVICE: {os.environ.get('K_SERVICE')}")

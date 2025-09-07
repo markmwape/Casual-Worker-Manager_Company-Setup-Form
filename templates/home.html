@@ -1318,6 +1318,11 @@
         let activityPage = 1;
         let isLoadingActivities = false;
         
+        // Load initial activity logs when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadActivityLogs(true);
+        });
+        
         // Activity filter change handler
         document.getElementById('activityFilter').addEventListener('change', function() {
             activityPage = 1;

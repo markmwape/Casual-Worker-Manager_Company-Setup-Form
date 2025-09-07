@@ -89,6 +89,7 @@ if __name__ == "__main__":
         "max_requests": 1000,
         "max_requests_jitter": 100,
         "worker_connections": 1000,
-        "keepalive": 2
+        "keepalive": 2,
+        "max_requests_jitter": 50
     }
     StandaloneApplication(app, options).run()

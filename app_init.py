@@ -11,12 +11,11 @@ app = Flask(__name__)
 app.secret_key = 'supersecretkey'
 
 # Database configuration - use Cloud SQL in production, SQLite for local development
-# Use Cloud SQL in production environments (App Engine, Cloud Run with INSTANCE_CONNECTION_NAME or GAE_ENV)
 if os.environ.get('GAE_ENV', '').startswith('standard') or os.environ.get('INSTANCE_CONNECTION_NAME') or os.environ.get('K_SERVICE'):
     # Production: Use Cloud SQL
-    db_user = os.environ.get('DB_USER', 'cwuser')
-    db_pass = os.environ.get('DB_PASS', 'CWManager2024!')
-    db_name = os.environ.get('DB_NAME', 'cw_manager')
+    db_user = os.environ.get('DB_USER', 'postgres')
+    db_pass = os.environ.get('DB_PASS', '')
+    db_name = os.environ.get('DB_NAME', 'casual_worker_db')
     
     # For Cloud SQL Proxy
     if os.environ.get('INSTANCE_CONNECTION_NAME'):
@@ -36,14 +35,13 @@ if os.environ.get('GAE_ENV', '').startswith('standard') or os.environ.get('INSTA
     logging.info(f"  GAE_ENV: {os.environ.get('GAE_ENV')}")
     logging.info(f"  Database URI: {app.config['SQLALCHEMY_DATABASE_URI']}")
 else:
-    # Development: Use SQLite in instance folder
-    import os
-    # Ensure instance folder exists
-    os.makedirs(app.instance_path, exist_ok=True)
-    # Use instance database file
-    db_file = os.path.join(app.instance_path, 'database.sqlite')
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_file}'
-    logging.info(f"Using SQLite configuration for development: {db_file}")
+    # Development: Use SQLite
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.sqlite'
+    logging.info("Using SQLite configuration for development")
+    logging.info(f"  Environment variables:")
+    logging.info(f"    INSTANCE_CONNECTION_NAME: {os.environ.get('INSTANCE_CONNECTION_NAME')}")
+    logging.info(f"    K_SERVICE: {os.environ.get('K_SERVICE')}")
+    logging.info(f"    GAE_ENV: {os.environ.get('GAE_ENV')}")
 
 app.static_folder = 'static'
 app.static_url_path = '/static'

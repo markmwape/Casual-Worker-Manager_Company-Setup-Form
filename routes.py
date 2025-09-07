@@ -190,183 +190,151 @@ def set_session():
         }
 
         # Create or update user in database
-        try:
-            with app.app_context():
-                user = User.query.filter_by(email=email).first()
-                if not user:
-                    user = User(email=email, profile_picture=user_data.get('photoURL', ''))
-                    db.session.add(user)
+        with app.app_context():
+            user = User.query.filter_by(email=email).first()
+            if not user:
+                user = User(email=email, profile_picture=user_data.get('photoURL', ''))
+                db.session.add(user)
+                db.session.commit()
+                logging.info(f"Created new user: {email}")
+            
+            # Handle workspace assignment if workspace data is provided
+            if workspace_data:
+                # Check if this is a deferred workspace creation (new workspace)
+                if workspace_data.get('deferred_creation') or workspace_data.get('temp_code'):
+                    # Create the workspace now with the actual admin user
+                    workspace = Workspace(
+                        name=workspace_data.get('company_name') or workspace_data.get('name'),
+                        country=workspace_data.get('country'),
+                        industry_type=workspace_data.get('industry_type'),
+                        expected_workers_string=workspace_data.get('expected_workers_string', 'not_specified'),
+                        expected_workers=0,
+                        company_phone=workspace_data.get('company_phone'),
+                        company_email=workspace_data.get('company_email'),
+                        address="",
+                        created_by=user.id  # Admin user is the creator
+                    )
+                    
+                    db.session.add(workspace)
+                    db.session.flush()  # Get the workspace ID
+                    
+                    # Create a company for this workspace
+                    company = Company(
+                        name=workspace_data.get('company_name') or workspace_data.get('name'),
+                        registration_number="",
+                        address="",
+                        industry=workspace_data.get('industry_type'),
+                        phone=workspace_data.get('company_phone'),
+                        created_by=user.id,
+                        workspace_id=workspace.id
+                    )
+                    db.session.add(company)
+                    
+                    # Add admin user to workspace
+                    user_workspace = UserWorkspace(
+                        user_id=user.id,
+                        workspace_id=workspace.id,
+                        role='Admin'
+                    )
+                    db.session.add(user_workspace)
                     db.session.commit()
-                    logging.info(f"Created new user: {email}")
-                
-                workspace = None
-                user_workspace = None
-                
-                # Handle workspace assignment if workspace data is provided
-                if workspace_data:
-                    try:
-                        # Check if this is a deferred workspace creation (new workspace)
-                        if workspace_data.get('deferred_creation') or workspace_data.get('temp_code'):
-                            # Create the workspace now with the actual admin user
-                            workspace = Workspace(
-                                name=workspace_data.get('company_name') or workspace_data.get('name'),
-                                country=workspace_data.get('country', ''),
-                                industry_type=workspace_data.get('industry_type', ''),
-                                expected_workers_string=workspace_data.get('expected_workers_string', 'not_specified'),
-                                expected_workers=0,
-                                company_phone=workspace_data.get('company_phone', ''),
-                                company_email=workspace_data.get('company_email', ''),
-                                address="",
-                                created_by=user.id  # Admin user is the creator
-                            )
-                            
-                            db.session.add(workspace)
-                            db.session.flush()  # Get the workspace ID
-                            
-                            # Create a company for this workspace
-                            company = Company(
-                                name=workspace_data.get('company_name') or workspace_data.get('name'),
-                                registration_number="",
-                                address="",
-                                industry=workspace_data.get('industry_type', ''),
-                                phone=workspace_data.get('company_phone', ''),
-                                created_by=user.id,
-                                workspace_id=workspace.id
-                            )
-                            db.session.add(company)
-                            
-                            # Add admin user to workspace
-                            user_workspace = UserWorkspace(
-                                user_id=user.id,
-                                workspace_id=workspace.id,
-                                role='Admin'
-                            )
-                            db.session.add(user_workspace)
-                            db.session.commit()
-                            
-                            # Log workspace creation (with safe activity logging)
-                            try:
-                                log_activity(
-                                    action_type='create',
-                                    resource_type='workspace',
-                                    description=LogMessages.WORKSPACE_CREATED.format(name=workspace.name),
-                                    resource_id=workspace.id,
-                                    details={
-                                        'workspace_name': workspace.name,
-                                        'country': workspace.country,
-                                        'industry_type': workspace.industry_type,
-                                        'company_phone': workspace.company_phone,
-                                        'company_email': workspace.company_email
-                                    },
-                                    user_email=email,
-                                    workspace_id=workspace.id
-                                )
-                            except Exception as log_error:
-                                logging.warning(f"Failed to log workspace creation activity: {log_error}")
-                            
-                            logging.info(f"Created new workspace {workspace.name} with admin {email}")
-                            
-                        elif workspace_data.get('id'):
-                            # Existing workspace
-                            workspace = Workspace.query.get(workspace_data['id'])
-                            if workspace:
-                                # Check if user is already in this workspace
-                                user_workspace = UserWorkspace.query.filter_by(
-                                    user_id=user.id, 
-                                    workspace_id=workspace.id
-                                ).first()
-                                
-                                logging.info(f"Session setting - User ID: {user.id}, Workspace ID: {workspace.id}, Workspace created_by: {workspace.created_by}")
-                                logging.info(f"Session setting - Existing UserWorkspace: {user_workspace.role if user_workspace else 'None'}")
-                                
-                                if not user_workspace:
-                                    # Check if user is the workspace creator (admin)
-                                    if workspace.created_by == user.id:
-                                        # Workspace creator gets admin access
-                                        role = 'Admin'
-                                        user_workspace = UserWorkspace(
-                                            user_id=user.id,
-                                            workspace_id=workspace.id,
-                                            role=role
-                                        )
-                                        db.session.add(user_workspace)
-                                        db.session.commit()
-                                        logging.info(f"Added workspace creator {email} to workspace {workspace.name} with role {role}")
-                                    else:
-                                        # For non-creators, check if they have been added as team members
-                                        # If not, deny access
-                                        logging.warning(f"User {email} attempted to join workspace {workspace.name} but is not a team member")
-                                        return jsonify({"error": "You are not authorized to access this workspace. Please contact the workspace administrator to be added as a team member."}), 403
-                        else:
-                            logging.error("Invalid workspace data provided")
-                            return jsonify({"error": "Invalid workspace data"}), 400
-                    except Exception as workspace_error:
-                        logging.error(f"Error handling workspace data: {workspace_error}")
-                        import traceback
-                        logging.error(f"Workspace error traceback: {traceback.format_exc()}")
-                        # Continue without workspace for now
-                        workspace = None
-                        user_workspace = None
-                
-                # If no workspace data provided, just set up basic session without workspace
-                if not workspace_data:
-                    logging.info(f"No workspace data provided, setting up basic session for {email}")
-                
-                # Set workspace info in session if we have a workspace
-                if workspace:
-                    session['current_workspace'] = {
-                        'id': workspace.id,
-                        'name': workspace.name,
-                        'code': workspace.workspace_code,
-                        'role': user_workspace.role if user_workspace else 'Admin',
-                        'company_email': workspace.company_email,
-                        'company_phone': workspace.company_phone
-                    }
                     
-                    # Log user login to workspace (with safe activity logging)
-                    try:
-                        log_activity(
-                            action_type='login',
-                            resource_type='workspace',
-                            description=LogMessages.USER_LOGIN,
-                            resource_id=workspace.id,
-                            details={
-                                'workspace_name': workspace.name,
-                                'user_role': user_workspace.role if user_workspace else 'Admin'
-                            },
-                            user_email=email,
+                    # Log workspace creation
+                    log_activity(
+                        action_type='create',
+                        resource_type='workspace',
+                        description=LogMessages.WORKSPACE_CREATED.format(name=workspace.name),
+                        resource_id=workspace.id,
+                        details={
+                            'workspace_name': workspace.name,
+                            'country': workspace.country,
+                            'industry_type': workspace.industry_type,
+                            'company_phone': workspace.company_phone,
+                            'company_email': workspace.company_email
+                        },
+                        user_email=email,
+                        workspace_id=workspace.id
+                    )
+                    
+                    logging.info(f"Created new workspace {workspace.name} with admin {email}")
+                    
+                elif workspace_data.get('id'):
+                    # Existing workspace
+                    workspace = Workspace.query.get(workspace_data['id'])
+                    if workspace:
+                        # Check if user is already in this workspace
+                        user_workspace = UserWorkspace.query.filter_by(
+                            user_id=user.id, 
                             workspace_id=workspace.id
-                        )
-                    except Exception as log_error:
-                        logging.warning(f"Failed to log user login activity: {log_error}")
-                    
-                    # Ensure a company exists for this workspace
-                    try:
-                        existing_company = Company.query.filter_by(workspace_id=workspace.id).first()
-                        if not existing_company:
-                            # Create a company for this workspace
-                            new_company = Company(
-                                name=workspace.name,
-                                registration_number="",
-                                address="",
-                                industry=workspace.industry_type or '',
-                                phone=workspace.company_phone or '',
-                                created_by=user.id,
-                                workspace_id=workspace.id
-                            )
-                            db.session.add(new_company)
-                            db.session.commit()
-                            logging.info(f"Created company for existing workspace: {workspace.name}")
-                    except Exception as company_error:
-                        logging.warning(f"Failed to create company for workspace: {company_error}")
+                        ).first()
+                        
+                        logging.info(f"Session setting - User ID: {user.id}, Workspace ID: {workspace.id}, Workspace created_by: {workspace.created_by}")
+                        logging.info(f"Session setting - Existing UserWorkspace: {user_workspace.role if user_workspace else 'None'}")
+                        
+                        if not user_workspace:
+                            # Check if user is the workspace creator (admin)
+                            if workspace.created_by == user.id:
+                                # Workspace creator gets admin access
+                                role = 'Admin'
+                                user_workspace = UserWorkspace(
+                                    user_id=user.id,
+                                    workspace_id=workspace.id,
+                                    role=role
+                                )
+                                db.session.add(user_workspace)
+                                db.session.commit()
+                                logging.info(f"Added workspace creator {email} to workspace {workspace.name} with role {role}")
+                            else:
+                                # For non-creators, check if they have been added as team members
+                                # If not, deny access
+                                logging.warning(f"User {email} attempted to join workspace {workspace.name} but is not a team member")
+                                return jsonify({"error": "You are not authorized to access this workspace. Please contact the workspace administrator to be added as a team member."}), 403
+                else:
+                    logging.error("Invalid workspace data provided")
+                    return jsonify({"error": "Invalid workspace data"}), 400
+            
+            # Set workspace info in session if we have a workspace
+            if 'workspace' in locals() and workspace:
+                session['current_workspace'] = {
+                    'id': workspace.id,
+                    'name': workspace.name,
+                    'code': workspace.workspace_code,
+                    'role': user_workspace.role if user_workspace else 'Admin',
+                    'company_email': workspace.company_email,
+                    'company_phone': workspace.company_phone
+                }
+                
+                # Log user login to workspace
+                log_activity(
+                    action_type='login',
+                    resource_type='workspace',
+                    description=LogMessages.USER_LOGIN,
+                    resource_id=workspace.id,
+                    details={
+                        'workspace_name': workspace.name,
+                        'user_role': user_workspace.role if user_workspace else 'Admin'
+                    },
+                    user_email=email,
+                    workspace_id=workspace.id
+                )
+                
+                # Ensure a company exists for this workspace
+                existing_company = Company.query.filter_by(workspace_id=workspace.id).first()
+                if not existing_company:
+                    # Create a company for this workspace
+                    new_company = Company(
+                        name=workspace.name,
+                        registration_number="",
+                        address="",
+                        industry=workspace.industry_type,
+                        phone=workspace.company_phone,
+                        created_by=user.id,
+                        workspace_id=workspace.id
+                    )
+                    db.session.add(new_company)
+                    db.session.commit()
+                    logging.info(f"Created company for existing workspace: {workspace.name}")
 
-        except Exception as db_error:
-            logging.error(f"Database error in set_session: {db_error}")
-            import traceback
-            logging.error(f"Database error traceback: {traceback.format_exc()}")
-            db.session.rollback()
-            # Continue with session creation even if database operations fail
-        
         logging.info(f"Session set successfully: {session['user']}")
         logging.info(f"Session keys: {list(session.keys())}")
         return jsonify({"status": "success"}), 200
@@ -375,82 +343,7 @@ def set_session():
         logging.error(f"Exception type: {type(e)}")
         import traceback
         logging.error(f"Traceback: {traceback.format_exc()}")
-        try:
-            db.session.rollback()
-        except:
-            pass
         return jsonify({"error": "Could not set session"}), 500
-
-@app.route('/api/debug/activities', methods=['GET'])
-def debug_activities():
-    """Debug endpoint to check activity logging"""
-    try:
-        workspace_id = request.args.get('workspace_id')
-        if not workspace_id:
-            return jsonify({"error": "workspace_id required"}), 400
-        
-        # Check if ActivityLog table exists
-        try:
-            total_activities = ActivityLog.query.count()
-        except Exception as table_error:
-            return jsonify({
-                "error": "ActivityLog table does not exist",
-                "details": str(table_error),
-                "workspace_id": workspace_id
-            }), 500
-        
-        # Get activities for this workspace
-        activities = ActivityLog.query.filter_by(workspace_id=workspace_id).order_by(ActivityLog.created_at.desc()).limit(10).all()
-        
-        activity_data = []
-        for activity in activities:
-            activity_data.append({
-                'id': activity.id,
-                'action_type': activity.action_type,
-                'details': activity.details,
-                'created_at': activity.created_at.isoformat() if activity.created_at else None,
-                'workspace_id': activity.workspace_id
-            })
-        
-        return jsonify({
-            'workspace_id': workspace_id,
-            'activity_count': len(activities),
-            'activities': activity_data,
-            'total_activities_in_db': total_activities
-        })
-    
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/api/refresh-activities', methods=['POST'])
-def refresh_activities():
-    """Refresh activities by creating a test activity"""
-    try:
-        # Check if user is authenticated
-        if 'user' not in session or 'user_email' not in session['user']:
-            return jsonify({'error': 'Not authenticated'}), 401
-
-        # Check if user has current workspace
-        if 'current_workspace' not in session:
-            return jsonify({'error': 'No workspace selected'}), 400
-
-        workspace_id = session['current_workspace']['id']
-        user_email = session['user']['user_email']
-
-        # Create a test activity
-        log_activity(
-            action_type="system",
-            resource_type="dashboard",
-            description="Activity log refreshed",
-            workspace_id=workspace_id,
-            user_email=user_email
-        )
-
-        return jsonify({'success': True, 'message': 'Activities refreshed'})
-        
-    except Exception as e:
-        logging.error(f"Error refreshing activities: {e}")
-        return jsonify({'error': 'Failed to refresh activities'}), 500
 
 @app.route('/api/workspace/payments', methods=['GET'])
 def get_workspace_payments():
@@ -627,50 +520,31 @@ def get_activity_logs():
             logging.warning("User not authenticated for activity logs")
             return jsonify({'error': 'Not authenticated'}), 401
 
-        # Check if user has current workspace
-        if 'current_workspace' not in session:
-            logging.warning("No current workspace for activity logs")
-            return jsonify({'error': 'No workspace selected'}), 400
-
-        workspace_id = session['current_workspace']['id']
-
         # Get query parameters
         limit = request.args.get('limit', 20, type=int)
         limit = min(limit, 100)  # Cap at 100 records
-        page = request.args.get('page', 1, type=int)
-        action_type = request.args.get('action_type', None)
 
-        # Calculate offset
-        offset = (page - 1) * limit
-
-        # Get activities using the activity logger function
+        # Get activities using the simplified function
         from activity_logger import get_recent_activities
-        activities = get_recent_activities(workspace_id, limit=limit)
+        activities = get_recent_activities(limit)
         
-        # Filter by action_type if provided
-        if action_type:
-            activities = [a for a in activities if a.get('action_type') == action_type]
-        
-        # Apply pagination manually
-        total = len(activities)
-        paginated_activities = activities[offset:offset + limit]
-        has_more = (offset + limit) < total
-        
-        logging.info(f"Returning {len(paginated_activities)} activity logs for workspace {workspace_id}")
+        logging.info(f"Returning {len(activities)} activity logs")
         
         return jsonify({
-            'activities': paginated_activities,
-            'total': total,
-            'has_more': has_more,
-            'page': page,
-            'limit': limit
+            'activities': activities,
+            'total': len(activities)
         })
         
     except Exception as e:
         logging.error(f"Error fetching activity logs: {e}")
-        import traceback
-        logging.error(f"Activity logs traceback: {traceback.format_exc()}")
-        return jsonify({'error': 'Failed to fetch activity logs'}), 500
+        return jsonify({'error': 'Failed to fetch activity logs'}), 500        if action_type:
+            query = query.filter(ActivityLog.action_type == action_type)
+        
+        if resource_type:
+            query = query.filter(ActivityLog.resource_type == resource_type)
+        
+        # Get total count
+        total = query.count()
         
         # Apply pagination and ordering
         activities = query.order_by(
@@ -862,25 +736,26 @@ def create_task():
         db.session.commit()
         
         # Log task creation
-        try:
-            log_activity(
-                action_type='create',
-                resource_type='task',
-                description=LogMessages.TASK_CREATED.format(name=new_task.name),
-                resource_id=new_task.id,
-                details={
-                    'task_name': new_task.name,
-                    'description': new_task.description,
-                    'start_date': new_task.start_date.isoformat(),
-                    'payment_type': new_task.payment_type,
-                    'status': new_task.status,
-                    'company_id': company.id
-                }
-            )
-        except Exception as log_error:
-            logging.warning(f"Failed to log task creation activity: {log_error}")
+        log_activity(
+            action_type='create',
+            resource_type='task',
+            description=LogMessages.TASK_CREATED.format(name=new_task.name),
+            resource_id=new_task.id,
+            details={
+                'task_name': new_task.name,
+                'description': new_task.description,
+                'start_date': new_task.start_date.isoformat(),
+                'payment_type': new_task.payment_type,
+                'status': new_task.status,
+                'company_id': company.id
+            }
+        )
         
         logging.info(f"Successfully created task: {new_task.id}")
+        
+        # Log the activity
+        from activity_logger import log_activity
+        log_activity("Create Task", f"Created task: {new_task.name}")
         
         return jsonify({
             'message': 'Task created successfully',
@@ -1276,44 +1151,9 @@ def home_route():
                     'role': uw.role
                 })
 
-        # Get recent activities for this workspace (with error handling)
-        recent_activities = []
-        activity_stats = {}
-        try:
-            recent_activities = get_recent_activities(workspace_id, limit=20)
-            activity_stats = get_activity_stats(workspace_id, days=7)
-            
-            # Debug logging for activities
-            logging.info(f"Dashboard - Workspace ID: {workspace_id}")
-            logging.info(f"Dashboard - Recent activities count: {len(recent_activities)}")
-            if recent_activities:
-                logging.info(f"Dashboard - Sample activity: {recent_activities[0]}")
-            else:
-                # Check if there are any activities at all in the database
-                total_activities = ActivityLog.query.count()
-                workspace_activities = ActivityLog.query.filter(ActivityLog.workspace_id == workspace_id).count()
-                logging.info(f"Dashboard - Total activities in DB: {total_activities}")
-                logging.info(f"Dashboard - Activities for workspace {workspace_id}: {workspace_activities}")
-                
-                # Create a welcome activity if none exist for this workspace
-                if workspace_activities == 0:
-                    try:
-                        log_activity(
-                            action_type="system",
-                            resource_type="dashboard",
-                            description="Welcome to your dashboard! Start by creating tasks or adding workers.",
-                            workspace_id=workspace_id,
-                            user_email=user_email
-                        )
-                        logging.info("Created welcome activity for new workspace")
-                    except Exception as welcome_error:
-                        logging.error(f"Failed to create welcome activity: {welcome_error}")
-                        
-        except Exception as activity_error:
-            logging.error(f"Error fetching activities: {str(activity_error)}")
-            # Continue without activities if there's an error
-            recent_activities = []
-            activity_stats = {}
+        # Get recent activities for this workspace
+        recent_activities = get_recent_activities(workspace_id, limit=20)
+        activity_stats = get_activity_stats(workspace_id, days=7)
 
         return render_template('home.html', 
                              company=company, 

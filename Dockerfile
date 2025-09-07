@@ -25,5 +25,5 @@ USER appuser
 # Expose port
 EXPOSE 8080
 
-# Use the original main.py for better compatibility
+# Use the main.py entry point for better control
 CMD ["python", "main.py"] 

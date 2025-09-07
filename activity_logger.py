@@ -18,24 +18,30 @@ def log_activity(action=None, description=None, user_email=None, action_type=Non
     try:
         # Handle new API format
         if action_type is not None:
-            action = f"{action_type.title()} {resource_type.title()}"
-            if not description:
-                description = f"{action_type.title()} {resource_type} (ID: {resource_id})"
+            # Use action_type as provided
+            final_action_type = action_type
+            final_resource_type = resource_type
+            final_resource_id = resource_id
+            final_description = description
             
             # Add details to description if provided
             if details and isinstance(details, dict):
                 # Add key details to description for better readability
                 if 'task_name' in details:
-                    description = f"{action_type.title()} task: {details['task_name']}"
+                    final_description = f"{action_type.title()} task: {details['task_name']}"
                 elif 'worker_name' in details:
-                    description = f"{action_type.title()} worker: {details['worker_name']}"
+                    final_description = f"{action_type.title()} worker: {details['worker_name']}"
                 elif 'workspace_name' in details:
-                    description = f"{action_type.title()} workspace: {details['workspace_name']}"
+                    final_description = f"{action_type.title()} workspace: {details['workspace_name']}"
         
         # Handle old API format (backward compatibility)
         elif action is not None and description is not None:
-            # Use provided action and description as-is
-            pass
+            # Convert old format to new format
+            final_action_type = action
+            final_resource_type = 'system'
+            final_resource_id = None
+            final_description = description
+            details = None
         else:
             logging.error("Invalid log_activity call - missing required parameters")
             return
@@ -44,15 +50,43 @@ def log_activity(action=None, description=None, user_email=None, action_type=Non
         if not user_email and 'user' in session and 'user_email' in session['user']:
             user_email = session['user']['user_email']
         
+        # Get workspace_id from session if not provided
+        if not workspace_id and 'current_workspace' in session:
+            workspace_id = session['current_workspace'].get('id')
+        
+        # Get user_id from database if we have email
+        user_id = None
+        if user_email:
+            try:
+                from models import User
+                user = User.query.filter_by(email=user_email).first()
+                if user:
+                    user_id = user.id
+            except Exception as user_error:
+                logging.warning(f"Could not get user_id for {user_email}: {user_error}")
+        
         # Get IP address and User Agent
         ip_address = request.remote_addr if request else None
         user_agent = request.headers.get('User-Agent') if request else None
         
+        # Convert details to JSON string if it's a dict
+        details_json = None
+        if details and isinstance(details, dict):
+            try:
+                details_json = json.dumps(details)
+            except Exception as json_error:
+                logging.warning(f"Could not serialize details to JSON: {json_error}")
+        
         # Create activity log entry
         activity_log = ActivityLog(
+            workspace_id=workspace_id,
+            user_id=user_id,
             user_email=user_email,
-            action=action,
-            description=description,
+            action_type=final_action_type,
+            resource_type=final_resource_type,
+            resource_id=final_resource_id,
+            description=final_description,
+            details=details_json,
             ip_address=ip_address,
             user_agent=user_agent
         )
@@ -60,7 +94,7 @@ def log_activity(action=None, description=None, user_email=None, action_type=Non
         db.session.add(activity_log)
         db.session.commit()
         
-        logging.info(f"Activity logged: {action} by {user_email}")
+        logging.info(f"Activity logged: {final_action_type} {final_resource_type} by {user_email}")
         
     except Exception as e:
         logging.error(f"Failed to log activity: {e}")
@@ -72,44 +106,27 @@ def log_activity(action=None, description=None, user_email=None, action_type=Non
         except:
             pass
 
-def get_recent_activities(limit=50):
+def get_recent_activities(workspace_id=None, limit=50):
     """
-    Get recent activities
+    Get recent activities, optionally filtered by workspace
     
     Args:
+        workspace_id (int, optional): Workspace ID to filter by
         limit (int): Maximum number of activities to return
     
     Returns:
         list: List of activity dictionaries
     """
     try:
-        activities = ActivityLog.query.order_by(ActivityLog.timestamp.desc()).limit(limit).all()
+        query = ActivityLog.query
+        
+        if workspace_id:
+            query = query.filter(ActivityLog.workspace_id == workspace_id)
+        
+        activities = query.order_by(ActivityLog.created_at.desc()).limit(limit).all()
         return [activity.to_dict() for activity in activities]
     except Exception as e:
         logging.error(f"Failed to get recent activities: {e}")
-        return []
-
-def get_recent_activities(workspace_id, limit=50):
-    """
-    Get recent activities for a workspace
-    
-    Args:
-        workspace_id (int): Workspace ID
-        limit (int): Number of activities to retrieve
-    
-    Returns:
-        list: List of activity log entries
-    """
-    try:
-        activities = ActivityLog.query.filter_by(
-            workspace_id=workspace_id
-        ).order_by(
-            ActivityLog.created_at.desc()
-        ).limit(limit).all()
-        
-        return [activity.to_dict() for activity in activities]
-    except Exception as e:
-        logging.error(f"Failed to retrieve activities: {str(e)}")
         return []
 
 def get_activity_stats(workspace_id, days=7):

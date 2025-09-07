@@ -41,70 +41,12 @@ def ensure_activity_log_table(app, db):
     """Ensure the ActivityLog table exists in the database"""
     try:
         with app.app_context():
-            # Check if ActivityLog table exists
-            from models import ActivityLog
-            
-            # Try to query the table
-            try:
-                ActivityLog.query.count()
-                logger.info("✅ ActivityLog table exists and is accessible")
-                return True
-            except Exception as table_error:
-                logger.warning(f"ActivityLog table not accessible: {table_error}")
-                
-                # Try to create the table
-                logger.info("🔧 Attempting to create ActivityLog table...")
-                
-                # Import SQLAlchemy text for raw SQL
-                from sqlalchemy import text
-                
-                # PostgreSQL-compatible CREATE TABLE statement
-                create_table_sql = text("""
-                CREATE TABLE IF NOT EXISTS activity_log (
-                    id SERIAL PRIMARY KEY,
-                    workspace_id INTEGER NOT NULL,
-                    user_id INTEGER,
-                    user_email VARCHAR(150) NOT NULL,
-                    action_type VARCHAR(50) NOT NULL,
-                    resource_type VARCHAR(50) NOT NULL,
-                    resource_id INTEGER,
-                    description TEXT NOT NULL,
-                    details TEXT,
-                    ip_address VARCHAR(45),
-                    user_agent TEXT,
-                    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
-                );
-                """)
-                
-                # Create indexes
-                indexes = [
-                    "CREATE INDEX IF NOT EXISTS idx_activity_log_workspace_id ON activity_log(workspace_id);",
-                    "CREATE INDEX IF NOT EXISTS idx_activity_log_user_id ON activity_log(user_id);",
-                    "CREATE INDEX IF NOT EXISTS idx_activity_log_created_at ON activity_log(created_at);",
-                    "CREATE INDEX IF NOT EXISTS idx_activity_log_action_type ON activity_log(action_type);",
-                    "CREATE INDEX IF NOT EXISTS idx_activity_log_resource_type ON activity_log(resource_type);"
-                ]
-                
-                # Execute table creation
-                db.session.execute(create_table_sql)
-                
-                # Execute index creation
-                for index_sql in indexes:
-                    try:
-                        db.session.execute(text(index_sql))
-                    except Exception as idx_error:
-                        logger.warning(f"Failed to create index: {idx_error}")
-                
-                db.session.commit()
-                logger.info("✅ ActivityLog table created successfully!")
-                
-                # Verify the table was created
-                count = ActivityLog.query.count()
-                logger.info(f"📊 ActivityLog table verified with {count} records")
-                return True
-                
+            # Create all tables as defined in models (including ActivityLog)
+            db.create_all()
+            logger.info("✅ All database tables are created or already exist.")
+            return True
     except Exception as e:
-        logger.error(f"❌ Failed to ensure ActivityLog table: {e}")
+        logger.error(f"❌ Failed to ensure database tables: {e}")
         # Don't fail the entire app startup for this
         return False
 

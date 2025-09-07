@@ -25,5 +25,5 @@ USER appuser
 # Expose port
 EXPOSE 8080
 
-# Use the main.py entry point for better control
-CMD ["gunicorn", "main:app", "-b", "0.0.0.0:8080", "--workers=1", "--timeout=300"]
+# Use shell form to allow env var expansion for Cloud Run
+ENTRYPOINT ["sh", "-c", "gunicorn main:app -b 0.0.0.0:$PORT --workers=1 --timeout=300"]

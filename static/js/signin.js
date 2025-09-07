@@ -6,41 +6,81 @@ let runtimeAppSettingsURL = '';
 async function fetchRuntimeAppSettingsURL() {
     try {
         const response = await fetch('/url');
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
         const data = await response.json();
-        runtimeAppSettingsURL = data.url;
+        runtimeAppSettingsURL = data.url || window.location.origin;
         console.log('Runtime app settings URL fetched:', runtimeAppSettingsURL);
     } catch (error) {
-        console.error('Error fetching runtime app settings URL:', error);
+        console.warn('Error fetching runtime app settings URL, using fallback:', error);
+        // Fallback to current origin
+        runtimeAppSettingsURL = window.location.origin;
     }
 }
 
 // Wait for Firebase to be initialized
 function waitForFirebase() {
     return new Promise((resolve, reject) => {
-        const checkFirebase = () => {
-            if (window.firebaseAuth) {
+        // Check if Firebase is already initialized
+        if (window.firebaseAuth && window.firebaseInitialized) {
+            resolve();
+            return;
+        }
+        
+        // Listen for Firebase ready event
+        const handleFirebaseReady = () => {
+            window.removeEventListener('firebaseReady', handleFirebaseReady);
+            if (window.firebaseAuth && window.firebaseInitialized) {
                 resolve();
             } else {
-                setTimeout(checkFirebase, 100);
+                reject(new Error('Firebase failed to initialize'));
             }
         };
-        checkFirebase();
         
-        // Timeout after 10 seconds
+        window.addEventListener('firebaseReady', handleFirebaseReady);
+        
+        // Fallback timeout after 5 seconds (reduced from 10)
         setTimeout(() => {
-            if (!window.firebaseAuth) {
+            window.removeEventListener('firebaseReady', handleFirebaseReady);
+            if (window.firebaseAuth && window.firebaseInitialized) {
+                resolve();
+            } else {
                 reject(new Error('Firebase initialization timeout'));
             }
-        }, 10000);
+        }, 5000);
     });
 }
 
 // Initialize the app
 async function initializeApp() {
     try {
+        // Show loading state
+        const googleButton = document.getElementById('google-signin');
+        const emailButton = document.querySelector('#signin-form button[type="submit"]');
+        
+        if (googleButton) {
+            googleButton.disabled = true;
+            googleButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Initializing...';
+        }
+        if (emailButton) {
+            emailButton.disabled = true;
+        }
+        
         await fetchRuntimeAppSettingsURL();
         await waitForFirebase();
+        
+        // Re-enable buttons and restore original text
+        if (googleButton) {
+            googleButton.disabled = false;
+            googleButton.innerHTML = '<i class="fab fa-google mr-2"></i>Sign in with Google';
+        }
+        if (emailButton) {
+            emailButton.disabled = false;
+        }
+        
         setupEventListeners();
+        console.log('App initialized successfully');
     } catch (error) {
         console.error('Error initializing app:', error);
         const errorDiv = document.getElementById('signin-error');
@@ -48,6 +88,18 @@ async function initializeApp() {
             errorDiv.textContent = 'Failed to initialize authentication. Please refresh the page.';
             errorDiv.style.color = 'red';
             errorDiv.style.display = 'block';
+        }
+        
+        // Re-enable buttons even on error so user can retry
+        const googleButton = document.getElementById('google-signin');
+        const emailButton = document.querySelector('#signin-form button[type="submit"]');
+        
+        if (googleButton) {
+            googleButton.disabled = false;
+            googleButton.innerHTML = '<i class="fab fa-google mr-2"></i>Sign in with Google (Retry)';
+        }
+        if (emailButton) {
+            emailButton.disabled = false;
         }
     }
 }

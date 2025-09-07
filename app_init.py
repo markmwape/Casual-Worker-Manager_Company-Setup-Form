@@ -14,9 +14,9 @@ app.secret_key = 'supersecretkey'
 # Use Cloud SQL in production environments (App Engine, Cloud Run with INSTANCE_CONNECTION_NAME or GAE_ENV)
 if os.environ.get('GAE_ENV', '').startswith('standard') or os.environ.get('INSTANCE_CONNECTION_NAME') or os.environ.get('K_SERVICE'):
     # Production: Use Cloud SQL
-    db_user = os.environ.get('DB_USER', 'postgres')
-    db_pass = os.environ.get('DB_PASS', '')
-    db_name = os.environ.get('DB_NAME', 'casual_worker_db')
+    db_user = os.environ.get('DB_USER', 'cwuser')
+    db_pass = os.environ.get('DB_PASS', 'CWManager2024!')
+    db_name = os.environ.get('DB_NAME', 'cw_manager')
     
     # For Cloud SQL Proxy
     if os.environ.get('INSTANCE_CONNECTION_NAME'):

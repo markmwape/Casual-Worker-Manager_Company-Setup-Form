@@ -238,22 +238,7 @@ def set_session():
                     db.session.add(user_workspace)
                     db.session.commit()
                     
-                    # Log workspace creation
-                    log_activity(
-                        action_type='create',
-                        resource_type='workspace',
-                        description="Activity logged",
-                        resource_id=workspace.id,
-                        details={
-                            'workspace_name': workspace.name,
-                            'country': workspace.country,
-                            'industry_type': workspace.industry_type,
-                            'company_phone': workspace.company_phone,
-                            'company_email': workspace.company_email
-                        },
-                        user_email=email,
-                        workspace_id=workspace.id
-                    )
+                    # Activity logging removed for now
                     
                     logging.info(f"Created new workspace {workspace.name} with admin {email}")
                     
@@ -303,19 +288,7 @@ def set_session():
                     'company_phone': workspace.company_phone
                 }
                 
-                # Log user login to workspace
-                log_activity(
-                    action_type='login',
-                    resource_type='workspace',
-                    description="Activity logged",
-                    resource_id=workspace.id,
-                    details={
-                        'workspace_name': workspace.name,
-                        'user_role': user_workspace.role if user_workspace else 'Admin'
-                    },
-                    user_email=email,
-                    workspace_id=workspace.id
-                )
+                # Activity logging removed for now
                 
                 # Ensure a company exists for this workspace
                 existing_company = Company.query.filter_by(workspace_id=workspace.id).first()
@@ -477,21 +450,7 @@ def update_payout_rate():
         company.currency_symbol = new_symbol
         db.session.commit()
         
-        # Log payout rate update
-        log_activity(
-            action_type='update',
-            resource_type='company',
-            description="Activity logged",
-            resource_id=company.id,
-            details={
-                'old_rate': company.daily_payout_rate,
-                'new_rate': new_rate,
-                'old_currency': company.currency,
-                'new_currency': new_currency,
-                'old_symbol': company.currency_symbol,
-                'new_symbol': new_symbol
-            }
-        )
+        # Activity logging removed for now
         
         return jsonify({
             'message': 'Payout rate updated successfully',
@@ -655,19 +614,8 @@ def create_worker():
         
         db.session.commit()
         
-        # Log worker creation
+        # Activity logging removed for now
         worker_name = f"{new_worker.first_name} {new_worker.last_name}".strip()
-        log_activity(
-            action_type='create',
-            resource_type='worker',
-            description="Activity logged",
-            resource_id=new_worker.id,
-            details={
-                'worker_name': worker_name,
-                'company_id': company.id,
-                'custom_fields': {field.name: data.get(field.name) for field in import_fields if field.name in data}
-            }
-        )
         
         return jsonify({'message': 'Worker added successfully'}), 201
         
@@ -724,21 +672,7 @@ def create_task():
         db.session.add(new_task)
         db.session.commit()
         
-        # Log task creation
-        log_activity(
-            action_type='create',
-            resource_type='task',
-            description="Activity logged",
-            resource_id=new_task.id,
-            details={
-                'task_name': new_task.name,
-                'description': new_task.description,
-                'start_date': new_task.start_date.isoformat(),
-                'payment_type': new_task.payment_type,
-                'status': new_task.status,
-                'company_id': company.id
-            }
-        )
+        # Activity logging removed for now
         
         logging.info(f"Successfully created task: {new_task.id}")
         
@@ -1138,9 +1072,9 @@ def home_route():
                     'role': uw.role
                 })
 
-        # Get recent activities for this workspace
-        recent_activities = get_recent_activities(workspace_id, limit=20)
-        activity_stats = get_activity_stats(workspace_id, days=7)
+        # Activity logging removed for now
+        recent_activities = []
+        activity_stats = {}
 
         return render_template('home.html', 
                              company=company, 
@@ -1201,19 +1135,7 @@ def add_team_member():
         db.session.add(user_workspace)
         db.session.commit()
 
-        # Log team member addition
-        log_activity(
-            action_type='create',
-            resource_type='team_member',
-            description="Activity logged",
-            resource_id=existing_user.id,
-            details={
-                'user_email': email,
-                'user_id': existing_user.id,
-                'role': role,
-                'workspace_id': workspace_id
-            }
-        )
+        # Activity logging removed for now
 
         return jsonify({
             'message': 'Team member added successfully',

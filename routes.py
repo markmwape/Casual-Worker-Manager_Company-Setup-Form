@@ -381,6 +381,37 @@ def set_session():
             pass
         return jsonify({"error": "Could not set session"}), 500
 
+@app.route('/api/debug/activities', methods=['GET'])
+def debug_activities():
+    """Debug endpoint to check activity logging"""
+    try:
+        workspace_id = request.args.get('workspace_id')
+        if not workspace_id:
+            return jsonify({"error": "workspace_id required"}), 400
+        
+        # Get activities for this workspace
+        activities = ActivityLog.query.filter_by(workspace_id=workspace_id).order_by(ActivityLog.created_at.desc()).limit(10).all()
+        
+        activity_data = []
+        for activity in activities:
+            activity_data.append({
+                'id': activity.id,
+                'action_type': activity.action_type,
+                'details': activity.details,
+                'created_at': activity.created_at.isoformat() if activity.created_at else None,
+                'workspace_id': activity.workspace_id
+            })
+        
+        return jsonify({
+            'workspace_id': workspace_id,
+            'activity_count': len(activities),
+            'activities': activity_data,
+            'total_activities_in_db': ActivityLog.query.count()
+        })
+    
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/api/workspace/payments', methods=['GET'])
 def get_workspace_payments():
     """API endpoint to get workspace payment information (admin only)"""
@@ -1185,6 +1216,18 @@ def home_route():
         # Get recent activities for this workspace
         recent_activities = get_recent_activities(workspace_id, limit=20)
         activity_stats = get_activity_stats(workspace_id, days=7)
+        
+        # Debug logging for activities
+        logging.info(f"Dashboard - Workspace ID: {workspace_id}")
+        logging.info(f"Dashboard - Recent activities count: {len(recent_activities)}")
+        if recent_activities:
+            logging.info(f"Dashboard - Sample activity: {recent_activities[0]}")
+        else:
+            # Check if there are any activities at all in the database
+            total_activities = ActivityLog.query.count()
+            workspace_activities = ActivityLog.query.filter(ActivityLog.workspace_id == workspace_id).count()
+            logging.info(f"Dashboard - Total activities in DB: {total_activities}")
+            logging.info(f"Dashboard - Activities for workspace {workspace_id}: {workspace_activities}")
 
         return render_template('home.html', 
                              company=company, 

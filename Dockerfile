@@ -26,4 +26,4 @@ USER appuser
 EXPOSE 8080
 
 # Use the main.py entry point for better control
-CMD ["python", "main.py"] 
+CMD ["gunicorn", "main:app", "-b", "0.0.0.0:8080", "--workers=1", "--timeout=300"]

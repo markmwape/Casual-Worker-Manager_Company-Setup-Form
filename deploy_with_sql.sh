@@ -16,7 +16,9 @@ gcloud run deploy cw-manager-service \
   --set-env-vars="DB_PASS=temppass123" \
   --memory=1Gi \
   --cpu=1 \
-  --timeout=300
+  --timeout=300 \
+  --cpu-throttling \
+  --execution-environment=gen2
 
 echo "Deployment complete!"
 echo "Service URL:"

@@ -25,5 +25,5 @@ USER appuser
 # Expose port
 EXPOSE 8080
 
-# Use the main.py entry point for better control
-CMD ["python", "main.py"] 
+# Use the new startup script for better error handling
+CMD ["python", "start_server.py"] 

@@ -537,11 +537,7 @@ def get_activity_logs():
         
     except Exception as e:
         logging.error(f"Error fetching activity logs: {e}")
-        return jsonify({'error': 'Failed to fetch activity logs'}), 500        if action_type:
-            query = query.filter(ActivityLog.action_type == action_type)
-        
-        if resource_type:
-            query = query.filter(ActivityLog.resource_type == resource_type)
+        return jsonify({'error': 'Failed to fetch activity logs'}), 500
         
         # Get total count
         total = query.count()

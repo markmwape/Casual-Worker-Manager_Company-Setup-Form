@@ -389,6 +389,16 @@ def debug_activities():
         if not workspace_id:
             return jsonify({"error": "workspace_id required"}), 400
         
+        # Check if ActivityLog table exists
+        try:
+            total_activities = ActivityLog.query.count()
+        except Exception as table_error:
+            return jsonify({
+                "error": "ActivityLog table does not exist",
+                "details": str(table_error),
+                "workspace_id": workspace_id
+            }), 500
+        
         # Get activities for this workspace
         activities = ActivityLog.query.filter_by(workspace_id=workspace_id).order_by(ActivityLog.created_at.desc()).limit(10).all()
         
@@ -406,7 +416,7 @@ def debug_activities():
             'workspace_id': workspace_id,
             'activity_count': len(activities),
             'activities': activity_data,
-            'total_activities_in_db': ActivityLog.query.count()
+            'total_activities_in_db': total_activities
         })
     
     except Exception as e:
@@ -1213,21 +1223,29 @@ def home_route():
                     'role': uw.role
                 })
 
-        # Get recent activities for this workspace
-        recent_activities = get_recent_activities(workspace_id, limit=20)
-        activity_stats = get_activity_stats(workspace_id, days=7)
-        
-        # Debug logging for activities
-        logging.info(f"Dashboard - Workspace ID: {workspace_id}")
-        logging.info(f"Dashboard - Recent activities count: {len(recent_activities)}")
-        if recent_activities:
-            logging.info(f"Dashboard - Sample activity: {recent_activities[0]}")
-        else:
-            # Check if there are any activities at all in the database
-            total_activities = ActivityLog.query.count()
-            workspace_activities = ActivityLog.query.filter(ActivityLog.workspace_id == workspace_id).count()
-            logging.info(f"Dashboard - Total activities in DB: {total_activities}")
-            logging.info(f"Dashboard - Activities for workspace {workspace_id}: {workspace_activities}")
+        # Get recent activities for this workspace (with error handling)
+        recent_activities = []
+        activity_stats = {}
+        try:
+            recent_activities = get_recent_activities(workspace_id, limit=20)
+            activity_stats = get_activity_stats(workspace_id, days=7)
+            
+            # Debug logging for activities
+            logging.info(f"Dashboard - Workspace ID: {workspace_id}")
+            logging.info(f"Dashboard - Recent activities count: {len(recent_activities)}")
+            if recent_activities:
+                logging.info(f"Dashboard - Sample activity: {recent_activities[0]}")
+            else:
+                # Check if there are any activities at all in the database
+                total_activities = ActivityLog.query.count()
+                workspace_activities = ActivityLog.query.filter(ActivityLog.workspace_id == workspace_id).count()
+                logging.info(f"Dashboard - Total activities in DB: {total_activities}")
+                logging.info(f"Dashboard - Activities for workspace {workspace_id}: {workspace_activities}")
+        except Exception as activity_error:
+            logging.error(f"Error fetching activities: {str(activity_error)}")
+            # Continue without activities if there's an error
+            recent_activities = []
+            activity_stats = {}
 
         return render_template('home.html', 
                              company=company, 

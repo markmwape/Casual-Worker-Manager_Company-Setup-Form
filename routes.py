@@ -422,6 +422,36 @@ def debug_activities():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/refresh-activities', methods=['POST'])
+def refresh_activities():
+    """Refresh activities by creating a test activity"""
+    try:
+        # Check if user is authenticated
+        if 'user' not in session or 'user_email' not in session['user']:
+            return jsonify({'error': 'Not authenticated'}), 401
+
+        # Check if user has current workspace
+        if 'current_workspace' not in session:
+            return jsonify({'error': 'No workspace selected'}), 400
+
+        workspace_id = session['current_workspace']['id']
+        user_email = session['user']['user_email']
+
+        # Create a test activity
+        log_activity(
+            action_type="system",
+            resource_type="dashboard",
+            description="Activity log refreshed",
+            workspace_id=workspace_id,
+            user_email=user_email
+        )
+
+        return jsonify({'success': True, 'message': 'Activities refreshed'})
+        
+    except Exception as e:
+        logging.error(f"Error refreshing activities: {e}")
+        return jsonify({'error': 'Failed to refresh activities'}), 500
+
 @app.route('/api/workspace/payments', methods=['GET'])
 def get_workspace_payments():
     """API endpoint to get workspace payment information (admin only)"""
@@ -597,27 +627,50 @@ def get_activity_logs():
             logging.warning("User not authenticated for activity logs")
             return jsonify({'error': 'Not authenticated'}), 401
 
+        # Check if user has current workspace
+        if 'current_workspace' not in session:
+            logging.warning("No current workspace for activity logs")
+            return jsonify({'error': 'No workspace selected'}), 400
+
+        workspace_id = session['current_workspace']['id']
+
         # Get query parameters
         limit = request.args.get('limit', 20, type=int)
         limit = min(limit, 100)  # Cap at 100 records
+        page = request.args.get('page', 1, type=int)
+        action_type = request.args.get('action_type', None)
 
-        # Get activities using the simplified function
+        # Calculate offset
+        offset = (page - 1) * limit
+
+        # Get activities using the activity logger function
         from activity_logger import get_recent_activities
-        activities = get_recent_activities(limit)
+        activities = get_recent_activities(workspace_id, limit=limit)
         
-        logging.info(f"Returning {len(activities)} activity logs")
+        # Filter by action_type if provided
+        if action_type:
+            activities = [a for a in activities if a.get('action_type') == action_type]
+        
+        # Apply pagination manually
+        total = len(activities)
+        paginated_activities = activities[offset:offset + limit]
+        has_more = (offset + limit) < total
+        
+        logging.info(f"Returning {len(paginated_activities)} activity logs for workspace {workspace_id}")
         
         return jsonify({
-            'activities': activities,
-            'total': len(activities)
+            'activities': paginated_activities,
+            'total': total,
+            'has_more': has_more,
+            'page': page,
+            'limit': limit
         })
         
     except Exception as e:
         logging.error(f"Error fetching activity logs: {e}")
+        import traceback
+        logging.error(f"Activity logs traceback: {traceback.format_exc()}")
         return jsonify({'error': 'Failed to fetch activity logs'}), 500
-        
-        # Get total count
-        total = query.count()
         
         # Apply pagination and ordering
         activities = query.order_by(
@@ -1241,6 +1294,21 @@ def home_route():
                 workspace_activities = ActivityLog.query.filter(ActivityLog.workspace_id == workspace_id).count()
                 logging.info(f"Dashboard - Total activities in DB: {total_activities}")
                 logging.info(f"Dashboard - Activities for workspace {workspace_id}: {workspace_activities}")
+                
+                # Create a welcome activity if none exist for this workspace
+                if workspace_activities == 0:
+                    try:
+                        log_activity(
+                            action_type="system",
+                            resource_type="dashboard",
+                            description="Welcome to your dashboard! Start by creating tasks or adding workers.",
+                            workspace_id=workspace_id,
+                            user_email=user_email
+                        )
+                        logging.info("Created welcome activity for new workspace")
+                    except Exception as welcome_error:
+                        logging.error(f"Failed to create welcome activity: {welcome_error}")
+                        
         except Exception as activity_error:
             logging.error(f"Error fetching activities: {str(activity_error)}")
             # Continue without activities if there's an error

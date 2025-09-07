@@ -2026,8 +2026,6 @@ def update_task_status(task_id):
         db.session.rollback()
         return jsonify({'error': 'Failed to update task status'}), 500
 
-from abilities import llm
-
 @app.route("/report/download")
 def download_report():
     try:
@@ -3380,9 +3378,42 @@ def create_master_admin_debug():
             'message': 'Master admin created successfully',
             'master_admin': master_admin.to_dict()
         })
-        
     except Exception as e:
         return jsonify({
             'error': str(e),
             'traceback': traceback.format_exc()
         }), 500
+
+@app.route('/firebase_config')
+def get_firebase_config():
+    try:
+        # Load Firebase configuration from environment variable or use default config
+        firebase_config_str = os.environ.get('FIREBASE_CONFIG', '')
+        
+        if firebase_config_str:
+            firebase_config = json.loads(firebase_config_str)
+        else:
+            # New Firebase configuration for ember-accounting project
+            firebase_config = {
+                "apiKey": "AIzaSyD9_N_0ve9ABFwwnTBn1N2oxlUs6xbT-No",
+                "authDomain": "ember-accounting.firebaseapp.com",
+                "projectId": "ember-accounting",
+                "storageBucket": "ember-accounting.firebasestorage.app",
+                "messagingSenderId": "328324461979",
+                "appId": "1:328324461979:web:0cc9ddad6aa3f157359d3e",
+                "measurementId": "G-F1XTE0TP63"
+            }
+        
+        return jsonify(firebase_config)
+    except Exception as e:
+        logging.error(f"Error retrieving Firebase config: {str(e)}")
+        # Return the new fallback configuration
+        return jsonify({
+            "apiKey": "AIzaSyD9_N_0ve9ABFwwnTBn1N2oxlUs6xbT-No",
+            "authDomain": "ember-accounting.firebaseapp.com",
+            "projectId": "ember-accounting",
+            "storageBucket": "ember-accounting.firebasestorage.app",
+            "messagingSenderId": "328324461979",
+            "appId": "1:328324461979:web:0cc9ddad6aa3f157359d3e",
+            "measurementId": "G-F1XTE0TP63"
+        })

@@ -4,16 +4,42 @@ from flask import session, request
 from models import ActivityLog, db
 import logging
 
-def log_activity(action, description, user_email=None):
+def log_activity(action=None, description=None, user_email=None, action_type=None, resource_type=None, resource_id=None, details=None, workspace_id=None):
     """
-    Simple activity logging
+    Unified activity logging function that handles both old and new API calls
     
-    Args:
-        action (str): Action performed (e.g., 'Create Task', 'Update Worker', 'Login')
-        description (str): Description of the action
-        user_email (str, optional): User email (if not in session)
+    Old API:
+        log_activity(action, description, user_email=None)
+    
+    New API:
+        log_activity(action_type=str, resource_type=str, description=str, 
+                    resource_id=int, details=dict, user_email=str, workspace_id=int)
     """
     try:
+        # Handle new API format
+        if action_type is not None:
+            action = f"{action_type.title()} {resource_type.title()}"
+            if not description:
+                description = f"{action_type.title()} {resource_type} (ID: {resource_id})"
+            
+            # Add details to description if provided
+            if details and isinstance(details, dict):
+                # Add key details to description for better readability
+                if 'task_name' in details:
+                    description = f"{action_type.title()} task: {details['task_name']}"
+                elif 'worker_name' in details:
+                    description = f"{action_type.title()} worker: {details['worker_name']}"
+                elif 'workspace_name' in details:
+                    description = f"{action_type.title()} workspace: {details['workspace_name']}"
+        
+        # Handle old API format (backward compatibility)
+        elif action is not None and description is not None:
+            # Use provided action and description as-is
+            pass
+        else:
+            logging.error("Invalid log_activity call - missing required parameters")
+            return
+        
         # Get user email from session if not provided
         if not user_email and 'user' in session and 'user_email' in session['user']:
             user_email = session['user']['user_email']
@@ -38,6 +64,8 @@ def log_activity(action, description, user_email=None):
         
     except Exception as e:
         logging.error(f"Failed to log activity: {e}")
+        import traceback
+        logging.error(f"Activity logging traceback: {traceback.format_exc()}")
         # Don't let logging errors break the main functionality
         try:
             db.session.rollback()

@@ -22,3 +22,6 @@ docker-compose.override.yml
 # Ignore database and environment files
 *.sqlite
 .env
+
+# Exclude test files from Docker build
+test_*.py

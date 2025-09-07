@@ -5,7 +5,6 @@ flask-login
 flask-static-compress
 gunicorn==21.2.0
 pandas
-tailwindcss
 werkzeug==3.0.1
 openpyxl
 firebase-admin

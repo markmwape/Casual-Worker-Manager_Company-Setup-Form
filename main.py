@@ -1,7 +1,15 @@
 import logging
 import os
+import traceback
+
+# Diagnose import issues
+try:
+    from app_init import app
+except Exception:
+    traceback.print_exc()
+    raise
+
 from gunicorn.app.base import BaseApplication
-from app_init import app
 import routes
 from flask import jsonify, request, session, render_template, redirect, url_for
 import json

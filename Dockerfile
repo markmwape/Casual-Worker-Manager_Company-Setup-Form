@@ -26,4 +26,4 @@ USER appuser
 EXPOSE 8080
 
 # Use shell form to allow env var expansion for Cloud Run
-ENTRYPOINT ["sh", "-c", "gunicorn main:app -b 0.0.0.0:$PORT --workers=1 --timeout=300"]
+ENTRYPOINT ["sh", "-c", "gunicorn wsgi:app -b 0.0.0.0:$PORT --workers=1 --timeout=300"]

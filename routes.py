@@ -16,7 +16,6 @@ import io
 import re
 from app_init import master_admin_required
 from sqlalchemy import func, desc
-from activity_logger import log_activity, get_recent_activities, get_activity_stats, LogMessages
 
 def get_current_company():
     """Helper function to get the current company from workspace session"""
@@ -243,7 +242,7 @@ def set_session():
                     log_activity(
                         action_type='create',
                         resource_type='workspace',
-                        description=LogMessages.WORKSPACE_CREATED.format(name=workspace.name),
+                        description="Activity logged",
                         resource_id=workspace.id,
                         details={
                             'workspace_name': workspace.name,
@@ -308,7 +307,7 @@ def set_session():
                 log_activity(
                     action_type='login',
                     resource_type='workspace',
-                    description=LogMessages.USER_LOGIN,
+                    description="Activity logged",
                     resource_id=workspace.id,
                     details={
                         'workspace_name': workspace.name,
@@ -482,7 +481,7 @@ def update_payout_rate():
         log_activity(
             action_type='update',
             resource_type='company',
-            description=LogMessages.COMPANY_PAYOUT_UPDATED.format(currency=new_symbol, amount=new_rate),
+            description="Activity logged",
             resource_id=company.id,
             details={
                 'old_rate': company.daily_payout_rate,
@@ -524,9 +523,8 @@ def get_activity_logs():
         limit = request.args.get('limit', 20, type=int)
         limit = min(limit, 100)  # Cap at 100 records
 
-        # Get activities using the simplified function
-        from activity_logger import get_recent_activities
-        activities = get_recent_activities(limit)
+        # Get activities using a simple stub
+        activities = []  # Stub implementation - no activities for now
         
         logging.info(f"Returning {len(activities)} activity logs")
         
@@ -671,7 +669,7 @@ def create_worker():
         log_activity(
             action_type='create',
             resource_type='worker',
-            description=LogMessages.WORKER_CREATED.format(name=worker_name),
+            description="Activity logged",
             resource_id=new_worker.id,
             details={
                 'worker_name': worker_name,
@@ -739,7 +737,7 @@ def create_task():
         log_activity(
             action_type='create',
             resource_type='task',
-            description=LogMessages.TASK_CREATED.format(name=new_task.name),
+            description="Activity logged",
             resource_id=new_task.id,
             details={
                 'task_name': new_task.name,
@@ -753,9 +751,7 @@ def create_task():
         
         logging.info(f"Successfully created task: {new_task.id}")
         
-        # Log the activity
-        from activity_logger import log_activity
-        log_activity("Create Task", f"Created task: {new_task.name}")
+        # Activity logging removed for now
         
         return jsonify({
             'message': 'Task created successfully',
@@ -1218,7 +1214,7 @@ def add_team_member():
         log_activity(
             action_type='create',
             resource_type='team_member',
-            description=LogMessages.TEAM_MEMBER_ADDED.format(email=email, role=role),
+            description="Activity logged",
             resource_id=existing_user.id,
             details={
                 'user_email': email,

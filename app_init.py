@@ -177,4 +177,6 @@ if os.environ.get('RUN_MIGRATIONS_AT_STARTUP', 'false').lower() == 'true':
                         SELECT 1 FROM master_admin WHERE email='markbmwape@gmail.com'
                     );
                 """)
-           
+        except Exception as e:
+            logging.error(f"Startup migrations error: {str(e)}")
+

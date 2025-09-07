@@ -768,26 +768,25 @@ def create_task():
         db.session.commit()
         
         # Log task creation
-        log_activity(
-            action_type='create',
-            resource_type='task',
-            description=LogMessages.TASK_CREATED.format(name=new_task.name),
-            resource_id=new_task.id,
-            details={
-                'task_name': new_task.name,
-                'description': new_task.description,
-                'start_date': new_task.start_date.isoformat(),
-                'payment_type': new_task.payment_type,
-                'status': new_task.status,
-                'company_id': company.id
-            }
-        )
+        try:
+            log_activity(
+                action_type='create',
+                resource_type='task',
+                description=LogMessages.TASK_CREATED.format(name=new_task.name),
+                resource_id=new_task.id,
+                details={
+                    'task_name': new_task.name,
+                    'description': new_task.description,
+                    'start_date': new_task.start_date.isoformat(),
+                    'payment_type': new_task.payment_type,
+                    'status': new_task.status,
+                    'company_id': company.id
+                }
+            )
+        except Exception as log_error:
+            logging.warning(f"Failed to log task creation activity: {log_error}")
         
         logging.info(f"Successfully created task: {new_task.id}")
-        
-        # Log the activity
-        from activity_logger import log_activity
-        log_activity("Create Task", f"Created task: {new_task.name}")
         
         return jsonify({
             'message': 'Task created successfully',

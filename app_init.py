@@ -11,8 +11,8 @@ app = Flask(__name__)
 app.secret_key = 'supersecretkey'
 
 # Database configuration - use Cloud SQL in production, SQLite for local development
-# Use Cloud SQL only when GAE_ENV or INSTANCE_CONNECTION_NAME is set
-if os.environ.get('GAE_ENV', '').startswith('standard') or os.environ.get('INSTANCE_CONNECTION_NAME'):
+# Use Cloud SQL in production environments (App Engine, Cloud Run with INSTANCE_CONNECTION_NAME or GAE_ENV)
+if os.environ.get('GAE_ENV', '').startswith('standard') or os.environ.get('INSTANCE_CONNECTION_NAME') or os.environ.get('K_SERVICE'):
     # Production: Use Cloud SQL
     db_user = os.environ.get('DB_USER', 'postgres')
     db_pass = os.environ.get('DB_PASS', '')

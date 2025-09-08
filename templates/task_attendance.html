@@ -129,18 +129,30 @@
                                     </td>
                                 {% else %}
                                     <td>
-                                        <input type="radio" 
-                                               name="attendance_{{ record.worker.id }}" 
-                                               class="radio radio-primary" 
-                                               value="present"
-                                               {{ 'checked' if record.status == 'Present' else '' }}>
+                                        <label class="flex items-center justify-center cursor-pointer">
+                                            <input type="radio" 
+                                                   name="attendance_{{ record.worker.id }}" 
+                                                   class="sr-only" 
+                                                   value="present"
+                                                   {{ 'checked' if record.status == 'Present' else '' }}>
+                                            <div class="attendance-btn present-btn {{ 'active' if record.status == 'Present' else '' }}">
+                                                <i class="fas fa-check mr-1"></i>
+                                                Present
+                                            </div>
+                                        </label>
                                     </td>
                                     <td>
-                                        <input type="radio" 
-                                               name="attendance_{{ record.worker.id }}" 
-                                               class="radio radio-error" 
-                                               value="absent"
-                                               {{ 'checked' if record.status == 'Absent' else '' }}>
+                                        <label class="flex items-center justify-center cursor-pointer">
+                                            <input type="radio" 
+                                                   name="attendance_{{ record.worker.id }}" 
+                                                   class="sr-only" 
+                                                   value="absent"
+                                                   {{ 'checked' if record.status == 'Absent' else '' }}>
+                                            <div class="attendance-btn absent-btn {{ 'active' if record.status == 'Absent' else '' }}">
+                                                <i class="fas fa-times mr-1"></i>
+                                                Absent
+                                            </div>
+                                        </label>
                                     </td>
                                 {% endif %}
                             </tr>
@@ -300,5 +312,35 @@
             }
         });
     }
+
+    // Handle attendance button clicks
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add click handlers to all attendance buttons
+        document.querySelectorAll('.attendance-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const label = this.closest('label');
+                const radio = label.querySelector('input[type="radio"]');
+                const workerButtons = document.querySelectorAll(`input[name="${radio.name}"]`);
+                
+                // Uncheck all radio buttons for this worker
+                workerButtons.forEach(r => {
+                    r.checked = false;
+                    r.closest('label').querySelector('.attendance-btn').classList.remove('active');
+                });
+                
+                // Check the clicked radio and activate its button
+                radio.checked = true;
+                this.classList.add('active');
+            });
+        });
+
+        // Initialize button states based on current radio button values
+        document.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
+            const btn = radio.closest('label').querySelector('.attendance-btn');
+            if (btn) {
+                btn.classList.add('active');
+            }
+        });
+    });
 </script>
 {% endblock %}

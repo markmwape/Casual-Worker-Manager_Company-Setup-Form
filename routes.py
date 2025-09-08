@@ -1797,15 +1797,39 @@ def add_worker_to_task(task_id):
         task.workers.append(worker)
         db.session.commit()
         
-        # Create attendance record for the worker for the task's start date
-        attendance = Attendance(
-            worker_id=worker_id,
-            company_id=company.id,
-            date=task.start_date.date(),
-            status='Absent',  # Default status when adding worker
-            task_id=task.id
-        )
-        db.session.add(attendance)
+        # Create attendance records for all dates from task start date to today
+        from datetime import date, timedelta
+        current_date = date.today()
+        start_date = task.start_date.date()
+        
+        # Generate all dates from task start to today (inclusive)
+        date_range = []
+        temp_date = start_date
+        while temp_date <= current_date:
+            date_range.append(temp_date)
+            temp_date += timedelta(days=1)
+        
+        # Create attendance records for each date (all set to Absent)
+        for attendance_date in date_range:
+            # Check if attendance record already exists for this date
+            existing_attendance = Attendance.query.filter_by(
+                worker_id=worker_id,
+                company_id=company.id,
+                date=attendance_date,
+                task_id=task.id
+            ).first()
+            
+            # Only create if it doesn't already exist
+            if not existing_attendance:
+                attendance = Attendance(
+                    worker_id=worker_id,
+                    company_id=company.id,
+                    date=attendance_date,
+                    status='Absent',  # Default status when adding worker
+                    task_id=task.id
+                )
+                db.session.add(attendance)
+        
         db.session.commit()
         
         return jsonify({

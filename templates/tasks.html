@@ -12,7 +12,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {% for task in tasks %}
         <div class="group relative" onclick="navigateToTask(event, {{ task.id }})" data-payment-type="{{ task.payment_type }}">
-            <div class="task-card bg-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl border border-gray-200 overflow-hidden">
+            <div class="task-card bg-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl border border-gray-200 overflow-visible">
                 <div class="p-5">
                     <!-- Header with Title, Badge, and Menu -->
                     <div class="flex justify-between items-start mb-4">

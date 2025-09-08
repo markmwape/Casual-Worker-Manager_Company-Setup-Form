@@ -166,21 +166,21 @@
 
 /* Three-dot menu should have higher z-index */
 .dropdown {
-    z-index: 9999 !important;
+    z-index: 10000 !important;
 }
 
 .dropdown-content {
-    z-index: 10000 !important;
+    z-index: 10001 !important;
 }
 
 /* Specific styling for the three-dot menu dropdown */
 .dropdown.dropdown-end {
-    z-index: 9999 !important;
+    z-index: 10001 !important;
     position: relative;
 }
 
 .dropdown.dropdown-end .dropdown-content {
-    z-index: 10000 !important;
+    z-index: 10001 !important;
     position: absolute;
     top: 100%;
     right: 0;

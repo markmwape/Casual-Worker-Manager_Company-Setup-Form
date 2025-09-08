@@ -66,53 +66,51 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body class="font-inter bg-gradient-to-br from-gray-50 to-blue-50 text-gray-900">
-    <!-- Drawer Layout -->
-    <div class="drawer lg:drawer-open">
-        <input id="landing-drawer" type="checkbox" class="drawer-toggle" />
-        
-        <!-- Mobile toggle button -->
-        <div class="fixed top-4 right-4 z-[110] lg:hidden">
-            <label for="landing-drawer" class="btn btn-primary drawer-button shadow-lg">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" />
-                </svg>
-            </label>
-        </div>
-        
-        <!-- Main Content -->
-        <div class="drawer-content">
-            <!-- Top Header with Logo -->
-            <header class="bg-white/80 backdrop-blur-md shadow-lg border-b border-blue-100 sticky top-0 z-50 lg:ml-80">
-                <div class="max-w-7xl mx-auto px-4 flex items-center justify-between h-16">
-                    <!-- Logo & Brand -->
+    <!-- Professional Header -->
+    <header class="bg-white/80 backdrop-blur-md shadow-lg border-b border-blue-100 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo & Brand -->
+                <div class="flex items-center">
                     <a href="/" class="flex items-center text-brand-navy-500 font-bold text-xl">
-                        <img src="{{ url_for('static', filename='img/logo + text.png') }}" alt="Embee Accounting Logo" class="h-20 w-auto object-contain" />
+                        <img src="{{ url_for('static', filename='img/logo + text.png') }}" alt="Embee Accounting Logo" class="h-12 w-auto object-contain" />
                     </a>
                 </div>
-            </header>
-
-            <!-- Drawer Sidebar -->
-            <div class="drawer-side">
-                <label for="mobile-drawer" class="drawer-overlay"></label>
-                <aside class="w-64 min-h-full bg-base-200">
-                    <div class="p-4">
-                        <h2 class="text-lg font-bold text-brand-navy-500 mb-4">Menu</h2>
-                        <ul class="menu">
-                            <li><a href="#features" class="text-brand-navy-500 font-semibold hover:text-brand-navy-700">Features</a></li>
-                            <li><a href="#pricing" class="text-brand-navy-500 font-semibold hover:text-brand-navy-700">Pricing</a></li>
-                            <li><a href="#testimonials" class="text-brand-navy-500 font-semibold hover:text-brand-navy-700">Testimonials</a></li>
-                            <li class="mt-4">
-                                <a href="{{ url_for('workspace_selection_route') }}" class="btn bg-brand-navy-500 text-white font-bold hover:bg-brand-navy-600 transition">
-                                    Login / Sign Up
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </aside>
+                
+                <!-- Desktop Navigation -->
+                <nav class="hidden md:flex items-center space-x-8">
+                    <a href="#features" class="text-brand-navy-500 font-semibold hover:text-brand-navy-700 transition duration-200">Features</a>
+                    <a href="#pricing" class="text-brand-navy-500 font-semibold hover:text-brand-navy-700 transition duration-200">Pricing</a>
+                    <a href="#testimonials" class="text-brand-navy-500 font-semibold hover:text-brand-navy-700 transition duration-200">Testimonials</a>
+                    <a href="{{ url_for('workspace_selection_route') }}" class="bg-brand-navy-500 text-white font-bold px-6 py-2 rounded-lg shadow-md hover:bg-brand-navy-600 hover:shadow-lg transition duration-200">
+                        Login / Sign Up
+                    </a>
+                </nav>
+                
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden">
+                    <button id="mobile-menu-btn" class="text-brand-navy-500 hover:text-brand-navy-700 focus:outline-none focus:text-brand-navy-700 transition duration-200">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" />
+                        </svg>
+                    </button>
+                </div>
             </div>
+            
+            <!-- Mobile Navigation Menu -->
+            <div id="mobile-menu" class="md:hidden hidden">
+                <div class="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200">
+                    <a href="#features" class="block px-3 py-2 text-brand-navy-500 font-semibold hover:text-brand-navy-700 hover:bg-gray-50 rounded-md transition duration-200">Features</a>
+                    <a href="#pricing" class="block px-3 py-2 text-brand-navy-500 font-semibold hover:text-brand-navy-700 hover:bg-gray-50 rounded-md transition duration-200">Pricing</a>
+                    <a href="#testimonials" class="block px-3 py-2 text-brand-navy-500 font-semibold hover:text-brand-navy-700 hover:bg-gray-50 rounded-md transition duration-200">Testimonials</a>
+                    <a href="{{ url_for('workspace_selection_route') }}" class="block mx-3 mt-4 bg-brand-navy-500 text-white text-center font-bold px-4 py-2 rounded-lg shadow-md hover:bg-brand-navy-600 transition duration-200">
+                        Login / Sign Up
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
 
-            <!-- Main Landing Content -->
- 
     <!-- Hero Section -->
     <section class="hero min-h-screen bg-gradient-to-br from-brand-navy-500 via-brand-navy-600 to-brand-navy-700 text-white relative">
         <div class="absolute inset-0 bg-gradient-to-r from-black/10 to-transparent"></div>
@@ -545,25 +543,31 @@
     <script src="https://cdn.jsdelivr.net/npm/daisyui@4.4.24/dist/full.min.js"></script>
     
     <script>
-        // Drawer functionality for landing page
+        // Simple mobile menu toggle
         document.addEventListener('DOMContentLoaded', function () {
-            const drawer = document.getElementById('mobile-drawer');
-            const overlay = document.querySelector('.drawer-overlay');
-            const menuLinks = document.querySelectorAll('.drawer-side .menu a');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
             
-            // Close drawer when clicking on overlay
-            if (overlay) {
-                overlay.addEventListener('click', () => {
-                    if (drawer) drawer.checked = false;
+            if (mobileMenuBtn && mobileMenu) {
+                mobileMenuBtn.addEventListener('click', function() {
+                    mobileMenu.classList.toggle('hidden');
+                });
+                
+                // Close menu when clicking on links
+                const menuLinks = mobileMenu.querySelectorAll('a');
+                menuLinks.forEach(link => {
+                    link.addEventListener('click', function() {
+                        mobileMenu.classList.add('hidden');
+                    });
+                });
+                
+                // Close menu when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!mobileMenuBtn.contains(event.target) && !mobileMenu.contains(event.target)) {
+                        mobileMenu.classList.add('hidden');
+                    }
                 });
             }
-            
-            // Close drawer when clicking on menu links
-            menuLinks.forEach(link => {
-                link.addEventListener('click', () => {
-                    if (drawer) drawer.checked = false;
-                });
-            });
         });
     </script>
 </body>

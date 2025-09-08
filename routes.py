@@ -420,11 +420,6 @@ def finish_signin_route():
         return redirect(url_for('signin_route'))
     return render_template('finishSignin.html')
 
-@app.route('/payments')
-def payments_route():
-    """Route for payments page (admin only)"""
-    return render_template('payments.html')
-
 @app.route("/api/company/payout-rate", methods=['POST'])
 def update_payout_rate():
     try:

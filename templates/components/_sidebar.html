@@ -95,12 +95,12 @@
                     </a>
                 </li>
                 
-                <!-- Payments menu item (admin only) -->
+                <!-- Payments/Billing menu item (admin only) -->
                 {% if session.get('current_workspace', {}).get('role') in ['Admin'] %}
                 <li class="w-full">
-                    <a href="{{ url_for('payments_route') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-3 px-4 rounded-lg {% if request.endpoint == 'payments_route' %}bg-white/20 text-white{% else %}text-white/90{% endif %} hover:bg-white/10 transition-all duration-200">
+                    <a href="https://billing.stripe.com/p/login/test_5kQaEX5Jg1o5g8lg0SgEg00" target="_blank" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-3 px-4 rounded-lg text-white/90 hover:bg-white/10 transition-all duration-200">
                         <span class="material-icons mr-3">credit_card</span> 
-                        <span class="font-medium">Payments</span>
+                        <span class="font-medium">Payments/Billing</span>
                     </a>
                 </li>
                 {% endif %}

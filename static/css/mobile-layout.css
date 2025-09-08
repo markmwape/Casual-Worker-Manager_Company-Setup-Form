@@ -1,5 +1,30 @@
 /* Mobile Layout Fixes for Dashboard/Home Page */
 
+/* Enhanced drawer overlay for better mobile interaction */
+@media (max-width: 1023px) {
+    /* Ensure drawer overlay covers entire screen and is clickable */
+    .drawer-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.4);
+        z-index: 90;
+        cursor: pointer;
+    }
+    
+    /* Ensure drawer side has proper z-index */
+    .drawer-side {
+        z-index: 100;
+    }
+    
+    /* Mobile menu toggle button */
+    .mobile-sidebar-toggle {
+        z-index: 110;
+    }
+}
+
 /* Fix workspace code section overflow on mobile */
 @media (max-width: 768px) {
     /* Ensure workspace code container doesn't overflow */

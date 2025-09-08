@@ -1272,6 +1272,64 @@
             }
         });
 
+        // Mobile menu close functionality
+        function initializeMobileMenuClose() {
+            const drawerToggle = document.getElementById('my-drawer');
+            const drawerContent = document.querySelector('.drawer-content');
+            const drawerSide = document.querySelector('.drawer-side');
+            const mobileToggleButton = document.querySelector('.mobile-sidebar-toggle');
+
+            // Close menu when clicking on drawer content (main content area) on mobile
+            if (drawerContent) {
+                drawerContent.addEventListener('click', function(e) {
+                    // Only close on mobile (when drawer is not open by default)
+                    if (window.innerWidth < 1024 && drawerToggle && drawerToggle.checked) {
+                        // Don't close if clicking on the mobile toggle button
+                        if (!mobileToggleButton || !mobileToggleButton.contains(e.target)) {
+                            drawerToggle.checked = false;
+                        }
+                    }
+                });
+            }
+
+            // Enhanced touch/click handling for mobile
+            if (window.innerWidth < 1024) {
+                document.addEventListener('touchstart', function(e) {
+                    handleOutsideClick(e);
+                });
+                
+                document.addEventListener('click', function(e) {
+                    handleOutsideClick(e);
+                });
+            }
+
+            function handleOutsideClick(e) {
+                if (!drawerToggle || !drawerSide || window.innerWidth >= 1024) {
+                    return;
+                }
+
+                // If menu is open and click is outside the drawer side and not on the toggle button
+                if (drawerToggle.checked) {
+                    const clickedInsideDrawer = drawerSide.contains(e.target);
+                    const clickedOnToggle = mobileToggleButton && mobileToggleButton.contains(e.target);
+                    
+                    if (!clickedInsideDrawer && !clickedOnToggle) {
+                        drawerToggle.checked = false;
+                    }
+                }
+            }
+
+            // Handle window resize to ensure proper behavior
+            window.addEventListener('resize', function() {
+                if (window.innerWidth >= 1024 && drawerToggle) {
+                    drawerToggle.checked = false;
+                }
+            });
+        }
+
+        // Initialize mobile menu close functionality
+        initializeMobileMenuClose();
+
     </script>
 </body>
 </html>

@@ -25,17 +25,10 @@
     }
 }
 
-/* Fix workspace code section overflow on mobile */
+/* Fix workspace code section overflow on mobile - target specific workspace card */
 @media (max-width: 768px) {
-    /* Ensure workspace code container doesn't overflow */
-    .card-body .flex.items-center.gap-4 {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
-    }
-    
-    /* Make workspace code input section responsive */
-    .flex.flex-wrap.items-center.gap-3 {
+    /* Target the workspace info card specifically */
+    .card.bg-gradient-to-br.from-brand-navy-50 .flex.flex-wrap.items-center.gap-3 {
         flex-direction: column;
         align-items: flex-start;
         width: 100%;
@@ -43,13 +36,13 @@
     }
     
     /* Workspace code input and copy button container */
-    .flex.items-center.gap-2 {
+    .card.bg-gradient-to-br.from-brand-navy-50 .flex.items-center.gap-2 {
         width: 100%;
         justify-content: space-between;
     }
     
     /* Workspace code input responsive width */
-    .input.input-sm.font-mono {
+    .card.bg-gradient-to-br.from-brand-navy-50 .input.input-sm.font-mono {
         width: auto !important;
         min-width: 140px;
         max-width: 100%;
@@ -57,13 +50,13 @@
     }
     
     /* Copy button stays in container */
-    .btn.btn-sm.btn-primary {
+    .card.bg-gradient-to-br.from-brand-navy-50 .btn.btn-sm.btn-primary {
         flex-shrink: 0;
         white-space: nowrap;
     }
 }
 
-/* Fix trial message card overflow on mobile */
+/* Fix trial message card overflow on mobile - target specific trial message */
 @media (max-width: 640px) {
     /* Trial message card responsive layout */
     #trial-message .card-body .flex.items-center.gap-4 {
@@ -99,19 +92,8 @@
     }
 }
 
-/* Additional mobile responsive fixes */
+/* Additional mobile responsive fixes - target specific elements */
 @media (max-width: 480px) {
-    /* Ensure all buttons fit within containers */
-    .btn {
-        word-wrap: break-word;
-        max-width: 100%;
-    }
-    
-    /* Workspace code section on very small screens */
-    .flex.flex-wrap.items-center.gap-3 span {
-        font-size: 0.875rem;
-    }
-    
     /* Company contact information responsive */
     .grid.grid-cols-1.md\\:grid-cols-2.gap-4 {
         grid-template-columns: 1fr;
@@ -130,38 +112,6 @@
     }
 }
 
-/* Force container boundaries */
-@media (max-width: 768px) {
-    /* Ensure no horizontal overflow */
-    .card-body {
-        overflow-x: hidden;
-        word-wrap: break-word;
-    }
-    
-    /* Prevent flex items from overflowing */
-    .flex {
-        min-width: 0;
-    }
-    
-    /* Ensure input fields respect container width */
-    .input {
-        max-width: 100%;
-        box-sizing: border-box;
-    }
-    
-    /* Button text wrapping prevention */
-    .btn {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    
-    /* Specific fix for workspace code copy button */
-    .btn.btn-sm.btn-primary i.fas.fa-copy {
-        margin-right: 0.25rem;
-    }
-}
-
 /* Landscape mobile orientation fixes */
 @media (max-width: 900px) and (max-height: 500px) {
     /* Compact layout for landscape mobile */
@@ -171,9 +121,5 @@
     
     #trial-message .flex.items-center.gap-4 {
         gap: 0.5rem;
-    }
-    
-    .card-body .flex.items-center.gap-4 {
-        gap: 0.75rem;
     }
 }

@@ -41,40 +41,40 @@ body.landing-page .max-w-7xl {
     padding: 0 1rem !important;
 }
 
-/* Ensure navigation doesn't duplicate */
-body.landing-page nav {
-    display: flex !important;
-    position: static !important;
-}
-
-/* Reset mobile menu positioning */
+/* Mobile Menu Specific Fixes */
 body.landing-page #mobileMenu {
     position: static !important;
     display: none !important;
+    width: 100% !important;
 }
 
 body.landing-page #mobileMenu.show {
     display: block !important;
 }
 
-/* Ensure proper responsive behavior */
-@media (max-width: 768px) {
-    body.landing-page .md\\:hidden {
+/* Ensure mobile menu toggle button shows on small screens */
+@media (max-width: 767px) {
+    body.landing-page #mobileMenuBtn {
         display: block !important;
     }
     
-    body.landing-page .md\\:flex {
+    body.landing-page nav.hidden {
         display: none !important;
     }
 }
 
+/* Hide mobile button and show nav on desktop */
 @media (min-width: 768px) {
-    body.landing-page .md\\:hidden {
+    body.landing-page #mobileMenuBtn {
         display: none !important;
     }
     
-    body.landing-page .md\\:flex {
+    body.landing-page nav.hidden {
         display: flex !important;
+    }
+    
+    body.landing-page #mobileMenu {
+        display: none !important;
     }
 }
 
@@ -99,15 +99,4 @@ body.landing-page section,
 body.landing-page div {
     position: static !important;
     transform: none !important;
-}
-
-/* Ensure mobile menu toggle works */
-body.landing-page #mobileMenuBtn {
-    display: block !important;
-}
-
-@media (min-width: 768px) {
-    body.landing-page #mobileMenuBtn {
-        display: none !important;
-    }
 }

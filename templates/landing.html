@@ -108,6 +108,16 @@
                 if (btn && menu) {
                     btn.addEventListener('click', () => {
                         menu.classList.toggle('hidden');
+                        menu.classList.toggle('show');
+                    });
+                    
+                    // Close menu when clicking on a link
+                    const menuLinks = menu.querySelectorAll('a');
+                    menuLinks.forEach(link => {
+                        link.addEventListener('click', () => {
+                            menu.classList.add('hidden');
+                            menu.classList.remove('show');
+                        });
                     });
                 }
             });

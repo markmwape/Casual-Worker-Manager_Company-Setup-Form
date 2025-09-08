@@ -193,36 +193,36 @@
     transform: translateX(0);
 }
 
-/* Ensure dropdowns can extend beyond card boundaries */
-.task-card {
+/* Ensure dropdowns can extend beyond card boundaries - only for drawer layouts */
+.drawer .task-card {
     overflow: visible !important;
 }
 
-.task-card .dropdown {
+.drawer .task-card .dropdown {
     overflow: visible !important;
 }
 
-/* Force dropdown positioning to be above everything */
-.dropdown-content {
+/* Force dropdown positioning to be above everything - only for drawer layouts */
+.drawer .dropdown-content {
     position: absolute !important;
     z-index: 100000 !important;
     transform: none !important;
 }
 
-/* Ensure the dropdown container doesn't clip content */
-.dropdown {
+/* Ensure the dropdown container doesn't clip content - only for drawer layouts */
+.drawer .dropdown {
     overflow: visible !important;
 }
 
-/* Make sure task cards don't clip dropdowns */
-.task-card,
-.card,
-.group {
+/* Make sure task cards don't clip dropdowns - only for drawer layouts */
+.drawer .task-card,
+.drawer .card,
+.drawer .group {
     overflow: visible !important;
 }
 
-/* Override DaisyUI dropdown positioning */
-.dropdown.dropdown-end .dropdown-content {
+/* Override DaisyUI dropdown positioning - only for drawer layouts */
+.drawer .dropdown.dropdown-end .dropdown-content {
     position: absolute !important;
     top: 100% !important;
     right: 0 !important;

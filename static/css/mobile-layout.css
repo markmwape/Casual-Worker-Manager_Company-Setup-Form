@@ -1,0 +1,115 @@
+/* Mobile Layout Fixes */
+
+/* Ensure content never overflows containers on mobile */
+@media (max-width: 640px) {
+    /* General container overflow fixes */
+    .card-body {
+        padding: 1rem !important;
+        overflow-x: hidden;
+    }
+    
+    /* Workspace code section */
+    .card-body .flex.items-center.gap-4 {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+    
+    .card-body .flex.items-center.gap-3 {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+    }
+    
+    /* Input and button containers */
+    .card-body input[readonly] {
+        min-width: 0 !important;
+        width: 100% !important;
+        max-width: none !important;
+        font-size: 12px !important;
+        text-align: center;
+    }
+    
+    /* Button fixes */
+    .btn-sm {
+        font-size: 0.75rem;
+        padding: 0.375rem 0.75rem;
+        white-space: nowrap;
+    }
+    
+    /* Trial message section */
+    .card-body .flex.items-center.gap-4 {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+    
+    /* Text wrapping */
+    .text-sm {
+        word-break: break-word;
+        hyphens: auto;
+    }
+    
+    /* Ensure all flex containers handle overflow properly */
+    .flex {
+        min-width: 0;
+    }
+    
+    .flex > * {
+        min-width: 0;
+    }
+    
+    /* Force content to stay within bounds */
+    * {
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+    
+    /* Info text container */
+    .bg-brand-navy-100\/50 .text-sm {
+        line-height: 1.4;
+        word-wrap: break-word;
+    }
+    
+    /* Stats cards */
+    .grid.grid-cols-1.gap-6.sm\\:grid-cols-3 .card-body {
+        padding: 1rem;
+    }
+    
+    /* Team members table */
+    .overflow-x-auto {
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* Additional mobile fixes for very small screens */
+@media (max-width: 480px) {
+    .container {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+    
+    .card {
+        margin-left: 0;
+        margin-right: 0;
+    }
+    
+    /* Make buttons stack vertically on very small screens */
+    .flex.items-center.gap-2 {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    /* Smaller text on tiny screens */
+    .text-sm {
+        font-size: 0.75rem;
+    }
+    
+    .text-xs {
+        font-size: 0.625rem;
+    }
+}

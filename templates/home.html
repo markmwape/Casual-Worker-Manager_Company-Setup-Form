@@ -109,17 +109,17 @@
                                 </div>
                             </div>
                             <div class="flex items-center gap-4">
-                                <div class="flex items-center gap-3">
+                                <div class="flex items-center gap-3 flex-wrap">
                                     <span class="text-sm font-semibold text-gray-700">Workspace Code:</span>
-                                    <div class="flex items-center gap-2">
+                                    <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap w-full sm:w-auto">
                                         <input type="text" 
                                                value="{{ session.get('current_workspace', {}).get('code', '') }}" 
-                                               class="input input-sm font-mono text-center bg-white border-2 border-brand-navy-300 focus:border-brand-navy-500 focus:ring-2 focus:ring-brand-navy-200 shadow-sm" 
+                                               class="input input-sm font-mono text-center bg-white border-2 border-brand-navy-300 focus:border-brand-navy-500 focus:ring-2 focus:ring-brand-navy-200 shadow-sm w-full sm:w-auto min-w-0" 
                                                readonly 
-                                               style="width: 150px; font-size: 13px; letter-spacing: 1px;">
-                                        <button onclick="copyWorkspaceCode()" class="btn btn-sm btn-primary shadow-md hover:shadow-lg transition-all duration-200">
+                                               style="max-width: 150px; font-size: 13px; letter-spacing: 1px;">
+                                        <button onclick="copyWorkspaceCode()" class="btn btn-sm btn-primary shadow-md hover:shadow-lg transition-all duration-200 flex-shrink-0">
                                             <i class="fas fa-copy mr-1"></i>
-                                            Copy
+                                            <span class="hidden sm:inline">Copy</span>
                                         </button>
                                     </div>
                                 </div>
@@ -184,14 +184,15 @@
                             <div class="flex-1">
                                 <h3 class="text-lg font-bold text-gray-800 mb-1">🎉 Welcome to Your Free Trial!</h3>
                                 <p class="text-gray-600 mb-3">You're currently on a 7-day free trial. No credit card required to get started.</p>
-                                <div class="flex items-center gap-4">
+                                <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                                     <span class="text-sm text-gray-500">
                                         <i class="fas fa-clock mr-1"></i>
                                         <span id="trial-days-left">Loading trial information...</span>
                                     </span>
-                                    <a href="{{ url_for('payments_route') }}" class="btn btn-sm btn-success">
+                                    <a href="{{ url_for('payments_route') }}" class="btn btn-sm btn-success w-full sm:w-auto">
                                         <i class="fas fa-credit-card mr-1"></i>
-                                        Manage Subscription
+                                        <span class="hidden sm:inline">Manage Subscription</span>
+                                        <span class="sm:hidden">Manage</span>
                                     </a>
                                 </div>
                             </div>

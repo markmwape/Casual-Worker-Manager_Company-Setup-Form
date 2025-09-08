@@ -1280,55 +1280,55 @@ input[type="date"]::-webkit-date-and-time-value {
     white-space: nowrap;
 }
 
-/* Fine-tuned phone layout (≤640px) - only for drawer layouts */
+/* Fine-tuned phone layout (≤640px) - exclude landing page */
 @media (max-width: 640px) {
-    /* Reduce outer padding so content isn't cramped - only for drawer layouts */
-    .drawer .drawer-content {
+    /* Reduce outer padding so content isn't cramped - exclude landing page */
+    body:not(.landing-page) .drawer-content {
         padding: 1rem !important;
     }
 
-    /* Cards - only in drawer layouts */
-    .drawer .card {
+    /* Cards - exclude landing page */
+    body:not(.landing-page) .card {
         border-radius: 12px;
     }
-    .drawer .card-body {
+    body:not(.landing-page) .card-body {
         padding: 1rem 1.25rem !important;
     }
 
-    /* Headings - only in drawer layouts */
-    .drawer h1 {
+    /* Headings - exclude landing page */
+    body:not(.landing-page) h1 {
         font-size: 1.5rem !important; /* text-2xl */
     }
-    .drawer h2 {
+    body:not(.landing-page) h2 {
         font-size: 1.25rem !important; /* text-xl */
     }
-    .drawer h3 {
+    body:not(.landing-page) h3 {
         font-size: 1.125rem !important; /* text-lg */
     }
 
-    /* Buttons - only in drawer layouts */
-    .drawer .btn,
-    .drawer .btn-primary,
-    .drawer .btn-secondary {
+    /* Buttons - exclude landing page */
+    body:not(.landing-page) .btn,
+    body:not(.landing-page) .btn-primary,
+    body:not(.landing-page) .btn-secondary {
         padding: 0.5rem 1rem !important;
         font-size: 0.875rem !important;
     }
 
-    /* Table handling – enable horizontal swipe - only in drawer layouts */
-    .drawer table {
+    /* Table handling – enable horizontal swipe - exclude landing page */
+    body:not(.landing-page) table {
         font-size: 0.875rem; /* shrink text a bit */
     }
-    .drawer .overflow-x-auto {
+    body:not(.landing-page) .overflow-x-auto {
         -webkit-overflow-scrolling: touch;
     }
 
-    /* Stats grid: keep single-column layout - only in drawer layouts */
-    .drawer .stats-card {
+    /* Stats grid: keep single-column layout - exclude landing page */
+    body:not(.landing-page) .stats-card {
         margin-bottom: 1rem;
     }
 
-    /* Modal boxes should scale to full width - only in drawer layouts */
-    .drawer .modal-box {
+    /* Modal boxes should scale to full width - exclude landing page */
+    body:not(.landing-page) .modal-box {
         width: 95% !important;
         max-width: 22rem;
     }

@@ -714,31 +714,31 @@ input[type="date"]::-webkit-date-and-time-value {
     padding: 1.5rem;
 }
 
-/* Sidebar */
-.drawer-side {
+/* Sidebar - only for drawer layouts */
+.drawer .drawer-side {
     background: linear-gradient(180deg, var(--primary-navy) 0%, var(--primary-navy-light) 100%);
     box-shadow: var(--shadow-lg);
     color: white;
 }
 
-.drawer-side .menu {
+.drawer .drawer-side .menu {
     background: transparent !important;
     color: white !important;
 }
 
-.drawer-side .menu-item {
+.drawer .drawer-side .menu-item {
     color: white !important;
     font-weight: 500;
     transition: all 0.3s ease;
 }
 
-.drawer-side .menu-item:hover {
+.drawer .drawer-side .menu-item:hover {
     background: rgba(255, 255, 255, 0.1) !important;
     color: white !important;
     transform: translateX(4px);
 }
 
-.drawer-side .menu-item.active {
+.drawer .drawer-side .menu-item.active {
     background: rgba(255, 255, 255, 0.2) !important;
     color: white !important;
     box-shadow: var(--shadow-sm);
@@ -769,18 +769,18 @@ input[type="date"]::-webkit-date-and-time-value {
     box-shadow: var(--shadow-sm);
 }
 
-/* Fix text contrast in sidebar */
-.drawer-side h2,
-.drawer-side h3,
-.drawer-side p {
+/* Fix text contrast in sidebar - only for drawer layouts */
+.drawer .drawer-side h2,
+.drawer .drawer-side h3,
+.drawer .drawer-side p {
     color: white !important;
 }
 
-.drawer-side .text-gray-500 {
+.drawer .drawer-side .text-gray-500 {
     color: rgba(255, 255, 255, 0.7) !important;
 }
 
-.drawer-side .text-primary {
+.drawer .drawer-side .text-primary {
     color: white !important;
 }
 
@@ -970,26 +970,26 @@ input[type="date"]::-webkit-date-and-time-value {
     box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
-/* Improved mobile & tablet responsiveness (below the lg breakpoint 1024px) */
+/* Improved mobile & tablet responsiveness (below the lg breakpoint 1024px) - only for drawer layouts */
 @media (max-width: 1023px) {
-    /* Sidebar sizing */
-    .drawer-side {
+    /* Sidebar sizing - only for drawer layouts */
+    .drawer .drawer-side {
         width: 20rem !important;   /* fixed 320px for consistency */
         /* Hidden by default */
         transform: translateX(-100%);
         transition: transform 0.3s ease-in-out;
     }
 
-    /* Slide in when the drawer is toggled */
-    input.drawer-toggle:checked ~ .drawer-side {
+    /* Slide in when the drawer is toggled - only for drawer layouts */
+    .drawer input.drawer-toggle:checked ~ .drawer-side {
         transform: translateX(0);
     }
 
-    .card {
+    .drawer .card {
         margin-bottom: 1rem;
     }
 
-    .btn {
+    .drawer .btn {
         font-size: 0.875rem;
         padding: 0.5rem 1rem;
     }
@@ -1280,55 +1280,55 @@ input[type="date"]::-webkit-date-and-time-value {
     white-space: nowrap;
 }
 
-/* Fine-tuned phone layout (≤640px) */
+/* Fine-tuned phone layout (≤640px) - only for drawer layouts */
 @media (max-width: 640px) {
-    /* Reduce outer padding so content isn’t cramped */
-    .drawer-content {
+    /* Reduce outer padding so content isn't cramped - only for drawer layouts */
+    .drawer .drawer-content {
         padding: 1rem !important;
     }
 
-    /* Cards */
-    .card {
+    /* Cards - only in drawer layouts */
+    .drawer .card {
         border-radius: 12px;
     }
-    .card-body {
+    .drawer .card-body {
         padding: 1rem 1.25rem !important;
     }
 
-    /* Headings */
-    h1 {
+    /* Headings - only in drawer layouts */
+    .drawer h1 {
         font-size: 1.5rem !important; /* text-2xl */
     }
-    h2 {
+    .drawer h2 {
         font-size: 1.25rem !important; /* text-xl */
     }
-    h3 {
+    .drawer h3 {
         font-size: 1.125rem !important; /* text-lg */
     }
 
-    /* Buttons */
-    .btn,
-    .btn-primary,
-    .btn-secondary {
+    /* Buttons - only in drawer layouts */
+    .drawer .btn,
+    .drawer .btn-primary,
+    .drawer .btn-secondary {
         padding: 0.5rem 1rem !important;
         font-size: 0.875rem !important;
     }
 
-    /* Table handling – enable horizontal swipe */
-    table {
+    /* Table handling – enable horizontal swipe - only in drawer layouts */
+    .drawer table {
         font-size: 0.875rem; /* shrink text a bit */
     }
-    .overflow-x-auto {
+    .drawer .overflow-x-auto {
         -webkit-overflow-scrolling: touch;
     }
 
-    /* Stats grid: keep single-column layout */
-    .stats-card {
+    /* Stats grid: keep single-column layout - only in drawer layouts */
+    .drawer .stats-card {
         margin-bottom: 1rem;
     }
 
-    /* Modal boxes should scale to full width */
-    .modal-box {
+    /* Modal boxes should scale to full width - only in drawer layouts */
+    .drawer .modal-box {
         width: 95% !important;
         max-width: 22rem;
     }
@@ -1352,7 +1352,7 @@ input[type="date"]::-webkit-date-and-time-value {
 }
 
 @media (min-width: 1024px) {
-  .drawer-side {
+  .drawer .drawer-side {
     position: fixed !important;
     top: 0;
     left: 0;
@@ -1362,13 +1362,13 @@ input[type="date"]::-webkit-date-and-time-value {
     overflow: hidden;
     /* Prevents page scroll from affecting sidebar */
   }
-  .drawer-side > .menu {
+  .drawer .drawer-side > .menu {
     height: 100vh;
     overflow-y: auto;
     /* Sidebar content scrolls independently */
     padding-bottom: 2rem;
   }
-  .drawer-content {
+  .drawer .drawer-content {
     margin-left: 20rem; /* Same as sidebar width */
     width: calc(100vw - 20rem);
     max-width: 100vw;
@@ -1379,7 +1379,7 @@ input[type="date"]::-webkit-date-and-time-value {
     min-height: 100vh;
     box-sizing: border-box;
   }
-  .drawer-content > .container {
+  .drawer .drawer-content > .container {
     margin-left: 0;
     margin-right: 0;
     max-width: 72rem;
@@ -1406,27 +1406,27 @@ input[type="date"]::-webkit-date-and-time-value {
         height: 220px;
     }
 }
-/* Force sidebar to be full viewport height on mobile for proper scrolling */
+/* Force sidebar to be full viewport height on mobile for proper scrolling - only for drawer layouts */
 @media (max-width: 1023px) {
-    .drawer-side {
+    .drawer .drawer-side {
         height: 100vh !important;
     }
-    .drawer-side .menu {
+    .drawer .drawer-side .menu {
         height: 100vh !important;
         overflow-y: auto !important;
     }
 }
-/* Ensure sidebar always maintains vertical layout regardless of screen dimensions */
-.drawer-side > div {
+/* Ensure sidebar always maintains vertical layout regardless of screen dimensions - only for drawer layouts */
+.drawer .drawer-side > div {
     min-height: 100vh !important;
     max-width: 20rem !important;
     flex-direction: column !important;
     flex-wrap: nowrap !important;
 }
 
-/* Prevent any horizontal layout issues on landscape screens */
+/* Prevent any horizontal layout issues on landscape screens - only for drawer layouts */
 @media (max-height: 600px) and (min-width: 1024px) {
-    .drawer-side > div {
+    .drawer .drawer-side > div {
         height: 100vh !important;
         overflow-y: auto !important;
         overflow-x: hidden !important;
@@ -1435,17 +1435,17 @@ input[type="date"]::-webkit-date-and-time-value {
     }
 }
 
-/* Force vertical stacking of sidebar content */
-.drawer-side .flex.items-center {
+/* Force vertical stacking of sidebar content - only for drawer layouts */
+.drawer .drawer-side .flex.items-center {
     flex-wrap: nowrap !important;
 }
 
-.drawer-side .text-center {
+.drawer .drawer-side .text-center {
     width: 100% !important;
     flex-shrink: 0 !important;
 }
 
-.drawer-side ul.menu {
+.drawer .drawer-side ul.menu {
     width: 100% !important;
     flex-direction: column !important;
     flex-wrap: nowrap !important;

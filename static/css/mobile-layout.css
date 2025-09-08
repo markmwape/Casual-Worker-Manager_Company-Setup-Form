@@ -1,6 +1,6 @@
-/* Mobile Layout Fixes for Dashboard/Home Page */
+/* Mobile Layout Fixes - Minimal and Essential Only */
 
-/* Enhanced drawer overlay for better mobile interaction */
+/* Enhanced drawer overlay for better mobile menu interaction */
 @media (max-width: 1023px) {
     /* Ensure drawer overlay covers entire screen and is clickable */
     .drawer-overlay {
@@ -22,104 +22,5 @@
     /* Mobile menu toggle button */
     .mobile-sidebar-toggle {
         z-index: 110;
-    }
-}
-
-/* Fix workspace code section overflow on mobile - target specific workspace card */
-@media (max-width: 768px) {
-    /* Target the workspace info card specifically */
-    .card.bg-gradient-to-br.from-brand-navy-50 .flex.flex-wrap.items-center.gap-3 {
-        flex-direction: column;
-        align-items: flex-start;
-        width: 100%;
-        gap: 0.5rem;
-    }
-    
-    /* Workspace code input and copy button container */
-    .card.bg-gradient-to-br.from-brand-navy-50 .flex.items-center.gap-2 {
-        width: 100%;
-        justify-content: space-between;
-    }
-    
-    /* Workspace code input responsive width */
-    .card.bg-gradient-to-br.from-brand-navy-50 .input.input-sm.font-mono {
-        width: auto !important;
-        min-width: 140px;
-        max-width: 100%;
-        flex: 1;
-    }
-    
-    /* Copy button stays in container */
-    .card.bg-gradient-to-br.from-brand-navy-50 .btn.btn-sm.btn-primary {
-        flex-shrink: 0;
-        white-space: nowrap;
-    }
-}
-
-/* Fix trial message card overflow on mobile - target specific trial message */
-@media (max-width: 640px) {
-    /* Trial message card responsive layout */
-    #trial-message .card-body .flex.items-center.gap-4 {
-        flex-direction: column;
-        align-items: flex-start;
-        text-align: left;
-    }
-    
-    /* Trial message content responsive */
-    #trial-message .flex-1 {
-        width: 100%;
-    }
-    
-    /* Trial message buttons container */
-    #trial-message .flex.items-center.gap-4 {
-        flex-direction: column;
-        align-items: flex-start;
-        width: 100%;
-        gap: 0.75rem;
-    }
-    
-    /* Manage subscription button responsive */
-    #trial-message .btn.btn-sm.btn-success {
-        width: 100%;
-        text-align: center;
-        justify-content: center;
-    }
-    
-    /* Trial days text responsive */
-    #trial-message .text-sm.text-gray-500 {
-        width: 100%;
-        margin-bottom: 0.5rem;
-    }
-}
-
-/* Additional mobile responsive fixes - target specific elements */
-@media (max-width: 480px) {
-    /* Company contact information responsive */
-    .grid.grid-cols-1.md\\:grid-cols-2.gap-4 {
-        grid-template-columns: 1fr;
-        gap: 0.75rem;
-    }
-    
-    /* Company contact info cards */
-    .flex.items-center.gap-3.p-3 {
-        padding: 0.75rem;
-    }
-    
-    /* Ensure text doesn't overflow */
-    .text-sm.text-gray-800.font-semibold {
-        word-break: break-word;
-        overflow-wrap: break-word;
-    }
-}
-
-/* Landscape mobile orientation fixes */
-@media (max-width: 900px) and (max-height: 500px) {
-    /* Compact layout for landscape mobile */
-    #trial-message .card-body {
-        padding: 1rem;
-    }
-    
-    #trial-message .flex.items-center.gap-4 {
-        gap: 0.5rem;
     }
 }

@@ -342,7 +342,47 @@ def set_session():
         logging.error(f"Traceback: {traceback.format_exc()}")
         return jsonify({"error": "Could not set session"}), 500
 
-# Removed: /api/workspace/payments - Stripe handles payment info via customer portal
+@app.route('/api/workspace/payments', methods=['GET'])
+def get_workspace_payments():
+    """Get workspace subscription and payment information"""
+    try:
+        if 'current_workspace' not in session:
+            return jsonify({'error': 'No active workspace'}), 400
+        
+        workspace_id = session['current_workspace']['id']
+        workspace = Workspace.query.get(workspace_id)
+        
+        if not workspace:
+            return jsonify({'error': 'Workspace not found'}), 404
+        
+        # Calculate trial information
+        from datetime import date, datetime
+        today = date.today()
+        is_trial_active = False
+        trial_days_left = 0
+        
+        if workspace.trial_end_date:
+            is_trial_active = workspace.trial_end_date > datetime.utcnow()
+            if is_trial_active:
+                trial_days_left = (workspace.trial_end_date.date() - today).days
+        
+        # Return workspace payment info
+        return jsonify({
+            'workspace': {
+                'id': workspace.id,
+                'name': workspace.name,
+                'subscription_status': workspace.subscription_status or 'trial',
+                'subscription_tier': workspace.subscription_tier or 'trial',
+                'is_trial_active': is_trial_active,
+                'trial_days_left': trial_days_left,
+                'trial_end_date': workspace.trial_end_date.isoformat() if workspace.trial_end_date else None,
+                'subscription_end_date': workspace.subscription_end_date.isoformat() if workspace.subscription_end_date else None
+            }
+        }), 200
+        
+    except Exception as e:
+        logging.error(f"Error fetching workspace payments: {str(e)}")
+        return jsonify({'error': 'Failed to fetch workspace information'}), 500
 
 # Removed: /api/stripe/config - Frontend no longer needs publishable key since using Stripe directly
 

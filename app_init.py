@@ -63,30 +63,55 @@ app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # 1 hour
 # Initialize extensions
 db.init_app(app)
 
-# Initialize database tables
-with app.app_context():
+# Initialize database tables with better error handling
+def init_database_safely():
+    """Initialize database with comprehensive error handling"""
     try:
-        # Create all tables that don't exist
-        db.create_all()
-        
-        # Add missing columns if needed
-        from sqlalchemy import text
-        try:
-            # Check and add subscription fields to workspace table
-            db.session.execute(text("ALTER TABLE workspace ADD COLUMN IF NOT EXISTS subscription_tier VARCHAR(50) DEFAULT 'free'"))
-            db.session.execute(text("ALTER TABLE workspace ADD COLUMN IF NOT EXISTS subscription_status VARCHAR(50) DEFAULT 'active'"))
-            db.session.execute(text("ALTER TABLE workspace ADD COLUMN IF NOT EXISTS trial_end_date DATETIME"))
-            db.session.execute(text("ALTER TABLE workspace ADD COLUMN IF NOT EXISTS stripe_customer_id VARCHAR(255)"))
-            db.session.execute(text("ALTER TABLE workspace ADD COLUMN IF NOT EXISTS stripe_subscription_id VARCHAR(255)"))
-            db.session.commit()
-            logging.info("✅ Database tables and columns initialized successfully")
-        except Exception as e:
-            # Column might already exist or different SQL syntax - that's okay
-            db.session.rollback()
-            logging.info(f"Database schema update skipped (likely already exists): {str(e)}")
+        with app.app_context():
+            # Create all tables that don't exist
+            db.create_all()
+            logging.info("✅ Database tables created successfully")
+            
+            # Add missing columns if needed
+            from sqlalchemy import text
+            columns_to_add = [
+                ("subscription_tier", "VARCHAR(50)", "free"),
+                ("subscription_status", "VARCHAR(50)", "active"), 
+                ("trial_end_date", "DATETIME", None),
+                ("stripe_customer_id", "VARCHAR(255)", None),
+                ("stripe_subscription_id", "VARCHAR(255)", None)
+            ]
+            
+            for column_name, column_type, default_value in columns_to_add:
+                try:
+                    if default_value:
+                        sql = f"ALTER TABLE workspace ADD COLUMN IF NOT EXISTS {column_name} {column_type} DEFAULT '{default_value}'"
+                    else:
+                        sql = f"ALTER TABLE workspace ADD COLUMN IF NOT EXISTS {column_name} {column_type}"
+                    
+                    db.session.execute(text(sql))
+                    logging.info(f"✅ Added column {column_name} to workspace table")
+                except Exception as col_error:
+                    logging.info(f"Column {column_name} already exists or couldn't be added: {str(col_error)}")
+                    continue
+            
+            try:
+                db.session.commit()
+                logging.info("✅ Database schema updated successfully")
+            except Exception as commit_error:
+                db.session.rollback()
+                logging.warning(f"Database commit failed, rolling back: {str(commit_error)}")
+                
     except Exception as e:
         logging.error(f"❌ Database initialization failed: {e}")
-        # Don't fail startup, the app might still work
+        logging.error("App will continue without database initialization")
+
+# Call database initialization
+try:
+    init_database_safely()
+except Exception as e:
+    logging.error(f"Database initialization wrapper failed: {e}")
+    # Continue anyway - app can still work with manual database setup
 
 # Master Admin Configuration
 MASTER_ADMIN_EMAIL = os.environ.get('MASTER_ADMIN_EMAIL', 'markbmwape@gmail.com')  # Set your email here

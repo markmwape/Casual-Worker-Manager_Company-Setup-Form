@@ -25,5 +25,25 @@ USER appuser
 # Expose port
 EXPOSE 8080
 
-# Start the app directly without database initialization
-CMD ["gunicorn", "wsgi:app", "-b", "0.0.0.0:8080", "--workers=1", "--timeout=300"]
+# Create a more robust startup script
+RUN echo '#!/bin/bash\n\
+set -e\n\
+echo "Starting Casual Worker Manager..."\n\
+echo "Port: ${PORT:-8080}"\n\
+echo "Environment: Production"\n\
+\n\
+# Start Gunicorn with proper configuration\n\
+exec gunicorn wsgi:app \\\n\
+  --bind 0.0.0.0:${PORT:-8080} \\\n\
+  --workers 1 \\\n\
+  --worker-class sync \\\n\
+  --timeout 300 \\\n\
+  --keepalive 65 \\\n\
+  --max-requests 1000 \\\n\
+  --max-requests-jitter 50 \\\n\
+  --log-level info \\\n\
+  --access-logfile - \\\n\
+  --error-logfile - \\\n\
+  --capture-output' > /app/start.sh && chmod +x /app/start.sh
+
+CMD ["/app/start.sh"]

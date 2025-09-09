@@ -254,7 +254,7 @@
 
     <!-- Pricing Section -->
     <section id="pricing" class="py-20 bg-gradient-to-br from-gray-50 to-blue-50">
-        <div class="container mx-auto px-4 max-w-7xl">
+        <div class="mx-auto px-4" style="max-width: 1400px;">
             <div class="text-center mb-16">
                 <h2 class="text-4xl font-bold mb-4 text-gray-900">Simple, Transparent Pricing</h2>
                 <p class="text-xl text-gray-600">Choose the plan that fits your business needs. All plans include our core features.</p>
@@ -262,9 +262,11 @@
             
             <!-- Stripe Pricing Table -->
             <script async src="https://js.stripe.com/v3/pricing-table.js"></script>
-            <stripe-pricing-table pricing-table-id="prctbl_1S5C12F93s78OlJMeND7RU2l"
-            publishable-key="pk_test_51S5BnwF93s78OlJMAySZCn4asUYyem8VoyxXyzHQVx5izpRIEBtKBop9GP6yCcRweKtpJHhZvRfHXUCANL6Ge3rV00gCUoyuMW">
-            </stripe-pricing-table>
+            <div style="width: 100%; overflow-x: auto;">
+                <stripe-pricing-table pricing-table-id="prctbl_1S5C12F93s78OlJMeND7RU2l"
+                publishable-key="pk_test_51S5BnwF93s78OlJMAySZCn4asUYyem8VoyxXyzHQVx5izpRIEBtKBop9GP6yCcRweKtpJHhZvRfHXUCANL6Ge3rV00gCUoyuMW">
+                </stripe-pricing-table>
+            </div>
         </div>
     </section>
 

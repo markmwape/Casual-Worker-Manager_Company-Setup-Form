@@ -74,7 +74,10 @@ function setupEventListeners() {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        ...user,
+                        email: user.email,
+                        displayName: user.displayName || '',
+                        photoURL: user.photoURL || '',
+                        uid: user.uid,
                         workspace_data: workspaceData
                     })
                 });

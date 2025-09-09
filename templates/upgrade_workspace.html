@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upgrade Workspace</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .workspace-input { margin: 20px 0; }
+        .workspace-input input { padding: 10px; font-size: 16px; width: 300px; }
+        .validation { margin: 10px 0; }
+        .valid { color: green; }
+        .invalid { color: red; }
+        .pricing-table { margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <h1>Upgrade Your Workspace</h1>
+    
+    <div class="workspace-input">
+        <h3>Enter Your Workspace Code:</h3>
+        <input type="text" id="workspaceCode" placeholder="Enter workspace code (e.g., ODUNVCOV2ON8JZFU)">
+        <button onclick="validateWorkspace()">Validate</button>
+        <div id="validationResult" class="validation"></div>
+    </div>
+
+    <div id="pricingSection" style="display: none;">
+        <h3>Choose Your Plan:</h3>
+        
+        <!-- Replace with your actual Stripe Pricing Table -->
+        <stripe-pricing-table 
+            pricing-table-id="prctbl_YOUR_PRICING_TABLE_ID"
+            publishable-key="pk_test_YOUR_PUBLISHABLE_KEY">
+        </stripe-pricing-table>
+        
+        <!-- Simplified Plans: Focus on Worker Limits -->
+        <div class="pricing-table" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 20px 0;">
+            
+            <div style="border: 1px solid #ddd; padding: 20px; border-radius: 8px; text-align: center;">
+                <h4>👥 Starter</h4>
+                <p><strong>Up to 50 workers</strong></p>
+                <p style="font-size: 24px; font-weight: bold;">$40/month</p>
+                <button onclick="checkout('price_1S5BtBF93s78OlJMGU87jzBj')" 
+                        style="width: 100%; padding: 10px; background: #007cba; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                    Choose Starter
+                </button>
+            </div>
+            
+            <div style="border: 1px solid #ddd; padding: 20px; border-radius: 8px; text-align: center;">
+                <h4>📈 Growth</h4>
+                <p><strong>Up to 250 workers</strong></p>
+                <p style="font-size: 24px; font-weight: bold;">$120/month</p>
+                <button onclick="checkout('price_1S5BvVF93s78OlJMSSvb5FZi')" 
+                        style="width: 100%; padding: 10px; background: #007cba; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                    Choose Growth
+                </button>
+            </div>
+            
+            <div style="border: 1px solid #ddd; padding: 20px; border-radius: 8px; text-align: center;">
+                <h4>🏢 Enterprise</h4>
+                <p><strong>Up to 1,000 workers</strong></p>
+                <p style="font-size: 24px; font-weight: bold;">$220/month</p>
+                <button onclick="checkout('price_1S5BwPF93s78OlJMrfeJz9fG')" 
+                        style="width: 100%; padding: 10px; background: #007cba; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                    Choose Enterprise
+                </button>
+            </div>
+            
+            <div style="border: 2px solid #ffa500; padding: 20px; border-radius: 8px; text-align: center; position: relative;">
+                <div style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #ffa500; color: white; padding: 5px 15px; border-radius: 15px; font-size: 12px;">POPULAR</div>
+                <h4>🏛️ Corporate</h4>
+                <p><strong>Unlimited workers</strong></p>
+                <p style="font-size: 24px; font-weight: bold;">$350/month</p>
+                <button onclick="checkout('price_1S5BxIF93s78OlJM8Im1tpEJ')" 
+                        style="width: 100%; padding: 10px; background: #ffa500; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                    Choose Corporate
+                </button>
+            </div>
+            
+        </div>
+    </div>
+
+    <script>
+        let validatedWorkspaceCode = null;
+
+        async function validateWorkspace() {
+            const workspaceCode = document.getElementById('workspaceCode').value;
+            const resultDiv = document.getElementById('validationResult');
+            
+            if (!workspaceCode) {
+                resultDiv.innerHTML = '<span class="invalid">Please enter a workspace code</span>';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/validate-workspace', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ workspace_code: workspaceCode })
+                });
+
+                const data = await response.json();
+                
+                if (data.valid) {
+                    validatedWorkspaceCode = workspaceCode;
+                    resultDiv.innerHTML = `
+                        <span class="valid">✅ Valid workspace: ${data.workspace_name}</span><br>
+                        <small>Current tier: ${data.current_tier}</small>
+                    `;
+                    document.getElementById('pricingSection').style.display = 'block';
+                } else {
+                    validatedWorkspaceCode = null;
+                    resultDiv.innerHTML = '<span class="invalid">❌ Invalid workspace code</span>';
+                    document.getElementById('pricingSection').style.display = 'none';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<span class="invalid">❌ Validation failed</span>';
+            }
+        }
+
+        async function checkout(priceId) {
+            if (!validatedWorkspaceCode) {
+                alert('Please validate your workspace code first');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/create-checkout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        workspace_code: validatedWorkspaceCode,
+                        price_id: priceId 
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.checkout_url) {
+                    // Redirect to Stripe Checkout
+                    window.location.href = data.checkout_url;
+                } else {
+                    alert('Failed to create checkout session: ' + data.error);
+                }
+            } catch (error) {
+                alert('Checkout failed: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

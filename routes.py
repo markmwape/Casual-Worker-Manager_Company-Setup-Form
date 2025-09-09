@@ -734,10 +734,6 @@ def create_checkout_session():
                 }
             ],
             allow_promotion_codes=True,
-                    'text': {'default_value': workspace_code}  # Pre-fill the code
-                }
-            ],
-            allow_promotion_codes=True,
             metadata={
                 'workspace_code': workspace_code,
                 'workspace_id': str(workspace.id)
@@ -1006,30 +1002,7 @@ def get_activity_logs():
 
 # Remove the broken activity log filtering code below
 # @app.route("/api/activity-logs-old", methods=['GET'])
-        
-        # Convert to dict format
-        activity_list = []
-        for activity in activities:
-            activity_dict = activity.to_dict()
-            # Parse created_at for better formatting
-            if activity.created_at:
-                activity_dict['created_at_formatted'] = activity.created_at.strftime('%Y-%m-%d %H:%M:%S')
-                activity_dict['time_ago'] = get_time_ago(activity.created_at)
-            activity_list.append(activity_dict)
-        
-        logging.info(f"Returning {len(activity_list)} activities out of {total} total")
-        
-        return jsonify({
-            'activities': activity_list,
-            'total': total,
-            'page': page,
-            'limit': limit,
-            'has_more': total > page * limit
-        }), 200
-        
-    except Exception as e:
-        logging.error(f"Error fetching activity logs: {str(e)}")
-        return jsonify({'error': 'Failed to fetch activity logs'}), 500
+# Removed broken code that was causing syntax errors
 
 def get_time_ago(date_time):
     """Get human-readable time difference"""
@@ -1100,6 +1073,9 @@ def create_worker():
             try:
                 date_of_birth = datetime.strptime(data['date_of_birth'], '%Y-%m-%d').date()
             except ValueError:
+                pass  # Keep date_of_birth as None if invalid format
+                
+        new_worker = Worker(
             first_name=data.get('first_name', ''),
             last_name=data.get('last_name', ''),
             date_of_birth=date_of_birth,
@@ -1956,6 +1932,8 @@ def reports_route():
                                 result = min(result, field.max_limit)
                             record[field.name] = result
                         except Exception as e:
+                            logging.error(f"Error calculating field {field.name}: {str(e)}")
+                            record[field.name] = 0.00
                 per_day_records.append(record)
             # For each per_part task, add a record
             for task_id, units in per_part_units.items():

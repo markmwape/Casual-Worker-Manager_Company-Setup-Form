@@ -40,7 +40,7 @@ class Workspace(db.Model):
             self.workspace_code = self.generate_workspace_code()
         if not self.trial_end_date:
             from datetime import timedelta
-            self.trial_end_date = datetime.utcnow() + timedelta(days=7)
+            self.trial_end_date = datetime.utcnow() + timedelta(days=30)
     
     def generate_workspace_code(self):
         """Generate a unique 16-character workspace code"""

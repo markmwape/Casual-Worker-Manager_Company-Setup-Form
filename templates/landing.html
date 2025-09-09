@@ -143,7 +143,7 @@
                     </div>
                     <div class="flex items-center">
                         <i class="fas fa-check-circle mr-2 text-green-400"></i>
-                        <span class="text-sm">7-Day Free Trial</span>
+                        <span class="text-sm">30-Day Free Trial</span>
                     </div>
                 </div>
             </div>
@@ -262,9 +262,12 @@
             
             <!-- Stripe Pricing Table -->
             <script async src="https://js.stripe.com/v3/pricing-table.js"></script>
-            <stripe-pricing-table pricing-table-id="prctbl_1S5C12F93s78OlJMeND7RU2l"
-            publishable-key="pk_test_51S5BnwF93s78OlJMAySZCn4asUYyem8VoyxXyzHQVx5izpRIEBtKBop9GP6yCcRweKtpJHhZvRfHXUCANL6Ge3rV00gCUoyuMW">
-            </stripe-pricing-table>
+            <div id="stripe-pricing-table">
+                <div class="text-center py-8">
+                    <div class="loading loading-spinner loading-lg"></div>
+                    <p class="mt-4 text-gray-600">Loading pricing information...</p>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -456,8 +459,36 @@
     <script src="https://cdn.jsdelivr.net/npm/daisyui@4.4.24/dist/full.min.js"></script>
     
     <script>
+        // Load Stripe pricing table dynamically
+        async function loadStripePricingTable() {
+            try {
+                const response = await fetch('/api/stripe/config');
+                const config = await response.json();
+                
+                if (config.publishable_key) {
+                    const container = document.getElementById('stripe-pricing-table');
+                    container.innerHTML = `
+                        <stripe-pricing-table 
+                            pricing-table-id="prctbl_1S5C12F93s78OlJMeND7RU2l"
+                            publishable-key="${config.publishable_key}">
+                        </stripe-pricing-table>
+                    `;
+                }
+            } catch (error) {
+                console.error('Failed to load Stripe pricing table:', error);
+                const container = document.getElementById('stripe-pricing-table');
+                container.innerHTML = `
+                    <div class="text-center py-8">
+                        <p class="text-gray-600">Pricing information temporarily unavailable</p>
+                        <a href="/workspace-selection" class="btn btn-primary mt-4">Get Started Free</a>
+                    </div>
+                `;
+            }
+        }
+
         // Simple mobile menu toggle
         document.addEventListener('DOMContentLoaded', function () {
+            loadStripePricingTable();
             const mobileMenuBtn = document.getElementById('mobile-menu-btn');
             const mobileMenu = document.getElementById('mobile-menu');
             

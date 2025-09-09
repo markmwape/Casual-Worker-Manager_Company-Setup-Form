@@ -16,6 +16,15 @@ import io
 import re
 from app_init import master_admin_required
 from sqlalchemy import func, desc
+from subscription_middleware import subscription_required, check_subscription_status, admin_required
+import stripe
+import hmac
+import hashlib
+
+# Configure Stripe
+stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
+STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET')
+STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY')
 
 def get_current_company():
     """Helper function to get the current company from workspace session"""
@@ -359,24 +368,307 @@ def get_workspace_payments():
         
         # Calculate trial status
         now = datetime.utcnow()
-        trial_days_left = (workspace.trial_end_date - now).days
-        is_trial_active = trial_days_left > 0
+        trial_days_left = 0
+        is_trial_active = False
+        
+        if workspace.trial_end_date:
+            trial_days_left = (workspace.trial_end_date - now).days
+            is_trial_active = trial_days_left > 0
+        
+        # Check overall subscription status
+        subscription_status = check_subscription_status(workspace)
         
         return jsonify({
             "workspace": {
                 "name": workspace.name,
                 "code": workspace.workspace_code,
                 "subscription_status": workspace.subscription_status,
+                "overall_status": subscription_status,
                 "trial_start_date": workspace.created_at.isoformat(),
                 "trial_end_date": workspace.trial_end_date.isoformat() if workspace.trial_end_date else None,
                 "trial_days_left": max(0, trial_days_left),
-                "is_trial_active": is_trial_active
+                "is_trial_active": is_trial_active,
+                "stripe_customer_id": workspace.stripe_customer_id,
+                "stripe_subscription_id": workspace.stripe_subscription_id,
+                "subscription_end_date": workspace.subscription_end_date.isoformat() if workspace.subscription_end_date else None
             }
         }), 200
         
     except Exception as e:
         logging.error(f"Error getting workspace payments: {str(e)}")
         return jsonify({"error": "Failed to get payment information"}), 500
+
+@app.route('/api/stripe/config')
+def get_stripe_config():
+    """Get Stripe publishable key for frontend"""
+    return jsonify({
+        'publishable_key': STRIPE_PUBLISHABLE_KEY
+    })
+
+@app.route('/api/create-checkout-session', methods=['POST'])
+@admin_required
+def create_checkout_session():
+    """Create a Stripe checkout session for subscription"""
+    try:
+        if 'current_workspace' not in session:
+            return jsonify({"error": "No active workspace"}), 400
+        
+        workspace_id = session['current_workspace']['id']
+        workspace = Workspace.query.get(workspace_id)
+        
+        if not workspace:
+            return jsonify({"error": "Workspace not found"}), 404
+        
+        # Get user email for customer
+        user_email = session['user']['user_email']
+        
+        # Create or get Stripe customer
+        customer = None
+        if workspace.stripe_customer_id:
+            try:
+                customer = stripe.Customer.retrieve(workspace.stripe_customer_id)
+            except stripe.error.InvalidRequestError:
+                # Customer doesn't exist, create a new one
+                pass
+        
+        if not customer:
+            customer = stripe.Customer.create(
+                email=user_email,
+                metadata={
+                    'workspace_id': workspace.id,
+                    'workspace_name': workspace.name
+                }
+            )
+            workspace.stripe_customer_id = customer.id
+            db.session.commit()
+        
+        # Create checkout session
+        checkout_session = stripe.checkout.Session.create(
+            customer=customer.id,
+            payment_method_types=['card'],
+            line_items=[{
+                'price': 'price_1S5C0fF93s78OlJMw0nVdNQp',  # Replace with your actual price ID
+                'quantity': 1,
+            }],
+            mode='subscription',
+            success_url=request.host_url + 'subscription/success?session_id={CHECKOUT_SESSION_ID}',
+            cancel_url=request.host_url + 'home',
+            metadata={
+                'workspace_id': workspace.id
+            }
+        )
+        
+        return jsonify({'session_id': checkout_session.id})
+        
+    except Exception as e:
+        logging.error(f"Error creating checkout session: {str(e)}")
+        return jsonify({'error': 'Failed to create checkout session'}), 500
+
+@app.route('/api/request-trial-extension', methods=['POST'])
+@admin_required
+def request_trial_extension():
+    """Request a one-time trial extension"""
+    try:
+        if 'current_workspace' not in session:
+            return jsonify({"error": "No active workspace"}), 400
+        
+        workspace_id = session['current_workspace']['id']
+        workspace = Workspace.query.get(workspace_id)
+        
+        if not workspace:
+            return jsonify({"error": "Workspace not found"}), 404
+        
+        # Check if extension was already used
+        if workspace.subscription_status == 'trial_extended':
+            return jsonify({"error": "Trial extension already used"}), 400
+        
+        # Check if trial has actually expired
+        now = datetime.utcnow()
+        if workspace.trial_end_date and workspace.trial_end_date > now:
+            return jsonify({"error": "Trial has not expired yet"}), 400
+        
+        # Grant 3-day extension
+        from datetime import timedelta
+        workspace.trial_end_date = now + timedelta(days=3)
+        workspace.subscription_status = 'trial_extended'
+        db.session.commit()
+        
+        return jsonify({"message": "Trial extended by 3 days"}), 200
+        
+    except Exception as e:
+        logging.error(f"Error requesting trial extension: {str(e)}")
+        return jsonify({'error': 'Failed to request extension'}), 500
+
+@app.route('/subscription/success')
+def subscription_success():
+    """Handle successful subscription"""
+    try:
+        session_id = request.args.get('session_id')
+        if not session_id:
+            return redirect(url_for('home_route'))
+        
+        # Retrieve the session from Stripe
+        checkout_session = stripe.checkout.Session.retrieve(session_id)
+        
+        if checkout_session.payment_status == 'paid':
+            # Update workspace subscription status
+            workspace_id = checkout_session.metadata.get('workspace_id')
+            if workspace_id:
+                workspace = Workspace.query.get(workspace_id)
+                if workspace:
+                    workspace.subscription_status = 'active'
+                    workspace.stripe_subscription_id = checkout_session.subscription
+                    
+                    # Set subscription end date (30 days from now for monthly)
+                    from datetime import timedelta
+                    workspace.subscription_end_date = datetime.utcnow() + timedelta(days=30)
+                    
+                    db.session.commit()
+                    
+                    return render_template('subscription_success.html', workspace=workspace)
+        
+        return redirect(url_for('home_route'))
+        
+    except Exception as e:
+        logging.error(f"Error handling subscription success: {str(e)}")
+        return redirect(url_for('home_route'))
+
+@app.route('/stripe/webhook', methods=['POST'])
+def stripe_webhook():
+    """Handle Stripe webhooks"""
+    payload = request.get_data()
+    sig_header = request.headers.get('Stripe-Signature')
+    
+    if not STRIPE_WEBHOOK_SECRET:
+        logging.warning("No Stripe webhook secret configured")
+        return jsonify({'error': 'Webhook secret not configured'}), 400
+    
+    try:
+        # Verify webhook signature
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, STRIPE_WEBHOOK_SECRET
+        )
+        
+        logging.info(f"Received Stripe webhook: {event['type']}")
+        
+        if event['type'] == 'customer.subscription.created':
+            handle_subscription_created(event['data']['object'])
+        elif event['type'] == 'customer.subscription.updated':
+            handle_subscription_updated(event['data']['object'])
+        elif event['type'] == 'customer.subscription.deleted':
+            handle_subscription_deleted(event['data']['object'])
+        elif event['type'] == 'invoice.payment_succeeded':
+            handle_payment_succeeded(event['data']['object'])
+        elif event['type'] == 'invoice.payment_failed':
+            handle_payment_failed(event['data']['object'])
+        
+        return jsonify({'received': True})
+        
+    except ValueError as e:
+        logging.error(f"Invalid payload in webhook: {str(e)}")
+        return jsonify({'error': 'Invalid payload'}), 400
+    except stripe.error.SignatureVerificationError as e:
+        logging.error(f"Invalid signature in webhook: {str(e)}")
+        return jsonify({'error': 'Invalid signature'}), 400
+    except Exception as e:
+        logging.error(f"Error processing webhook: {str(e)}")
+        return jsonify({'error': 'Webhook processing failed'}), 500
+
+def handle_subscription_created(subscription):
+    """Handle subscription created webhook"""
+    try:
+        customer_id = subscription['customer']
+        subscription_id = subscription['id']
+        
+        # Find workspace by customer ID
+        workspace = Workspace.query.filter_by(stripe_customer_id=customer_id).first()
+        if workspace:
+            workspace.stripe_subscription_id = subscription_id
+            workspace.subscription_status = 'active'
+            
+            # Set subscription end date based on the subscription period
+            if subscription['items']['data'][0]['price']['recurring']['interval'] == 'month':
+                from datetime import timedelta
+                workspace.subscription_end_date = datetime.utcnow() + timedelta(days=30)
+            
+            db.session.commit()
+            logging.info(f"Subscription created for workspace {workspace.id}")
+        
+    except Exception as e:
+        logging.error(f"Error handling subscription created: {str(e)}")
+
+def handle_subscription_updated(subscription):
+    """Handle subscription updated webhook"""
+    try:
+        subscription_id = subscription['id']
+        status = subscription['status']
+        
+        # Find workspace by subscription ID
+        workspace = Workspace.query.filter_by(stripe_subscription_id=subscription_id).first()
+        if workspace:
+            if status == 'active':
+                workspace.subscription_status = 'active'
+            elif status == 'canceled':
+                workspace.subscription_status = 'canceled'
+            elif status in ['past_due', 'unpaid']:
+                workspace.subscription_status = 'past_due'
+            
+            db.session.commit()
+            logging.info(f"Subscription updated for workspace {workspace.id}: {status}")
+        
+    except Exception as e:
+        logging.error(f"Error handling subscription updated: {str(e)}")
+
+def handle_subscription_deleted(subscription):
+    """Handle subscription deleted webhook"""
+    try:
+        subscription_id = subscription['id']
+        
+        # Find workspace by subscription ID
+        workspace = Workspace.query.filter_by(stripe_subscription_id=subscription_id).first()
+        if workspace:
+            workspace.subscription_status = 'canceled'
+            workspace.subscription_end_date = datetime.utcnow()
+            
+            db.session.commit()
+            logging.info(f"Subscription deleted for workspace {workspace.id}")
+        
+    except Exception as e:
+        logging.error(f"Error handling subscription deleted: {str(e)}")
+
+def handle_payment_succeeded(invoice):
+    """Handle successful payment webhook"""
+    try:
+        subscription_id = invoice.get('subscription')
+        if subscription_id:
+            workspace = Workspace.query.filter_by(stripe_subscription_id=subscription_id).first()
+            if workspace:
+                workspace.subscription_status = 'active'
+                
+                # Extend subscription end date
+                from datetime import timedelta
+                workspace.subscription_end_date = datetime.utcnow() + timedelta(days=30)
+                
+                db.session.commit()
+                logging.info(f"Payment succeeded for workspace {workspace.id}")
+        
+    except Exception as e:
+        logging.error(f"Error handling payment succeeded: {str(e)}")
+
+def handle_payment_failed(invoice):
+    """Handle failed payment webhook"""
+    try:
+        subscription_id = invoice.get('subscription')
+        if subscription_id:
+            workspace = Workspace.query.filter_by(stripe_subscription_id=subscription_id).first()
+            if workspace:
+                workspace.subscription_status = 'past_due'
+                
+                db.session.commit()
+                logging.info(f"Payment failed for workspace {workspace.id}")
+        
+    except Exception as e:
+        logging.error(f"Error handling payment failed: {str(e)}")
 
 @app.route('/test_session_route')
 def test_session_route():
@@ -569,6 +861,7 @@ def signout():
     return redirect(url_for('landing_route'))
 
 @app.route("/api/worker", methods=['POST'])
+@subscription_required
 def create_worker():
     try:
         data = request.get_json()
@@ -620,6 +913,7 @@ def create_worker():
         return jsonify({'error': 'Failed to add worker'}), 500
 
 @app.route("/api/task", methods=['POST'])
+@subscription_required
 def create_task():
     try:
         data = request.get_json()
@@ -759,6 +1053,7 @@ def update_company_contact():
         return jsonify({'error': 'Failed to update company contact information'}), 500
 
 @app.route("/workers", methods=['GET'])
+@subscription_required
 def workers_route():
     try:
         if 'user' not in session or 'user_email' not in session['user']:
@@ -912,6 +1207,7 @@ def import_workers():
         logging.error(f"Error analysing Excel file: {str(e)}")
         return jsonify({'error': 'Failed to analyse Excel file'}), 500
 @app.route("/tasks", methods=['GET'])
+@subscription_required
 def tasks_route():
     try:
         from datetime import date
@@ -1006,6 +1302,7 @@ def task_attendance_route(task_id):
 
 
 @app.route("/home", methods=['GET'])
+@subscription_required
 def home_route():
     try:
         # Check if user is authenticated
@@ -1231,6 +1528,7 @@ def delete_team_member(user_id):
         return jsonify({'error': f'Failed to delete team member: {str(e)}'}), 500
 
 @app.route("/attendance", methods=['GET'])
+@subscription_required
 def attendance_route():
     try:
         from datetime import date, datetime
@@ -1260,6 +1558,7 @@ def attendance_route():
         return render_template('500.html'), 500
 
 @app.route("/reports", methods=['GET'])
+@subscription_required
 def reports_route():
     try:
         from datetime import date, timedelta, datetime

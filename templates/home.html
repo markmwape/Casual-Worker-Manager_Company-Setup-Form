@@ -184,7 +184,7 @@
                             </div>
                             <div class="flex-1">
                                 <h3 class="text-lg font-bold text-gray-800 mb-1">🎉 Welcome to Your Free Trial!</h3>
-                                <p class="text-gray-600 mb-3">You're currently on a 7-day free trial. No credit card required to get started.</p>
+                                <p class="text-gray-600 mb-3">You're currently on a 30-day free trial. No credit card required to get started.</p>
                                 <div class="flex items-center gap-4">
                                     <span class="text-sm text-gray-500">
                                         <i class="fas fa-clock mr-1"></i>
@@ -1199,18 +1199,124 @@
                 
                 if (response.ok && data.workspace) {
                     const trialDaysLeft = document.getElementById('trial-days-left');
+                    const upgradeBtn = trialMessage.querySelector('a[href*="billing.stripe.com"]');
+                    
                     if (trialDaysLeft) {
-                        if (data.workspace.is_trial_active) {
-                            trialDaysLeft.textContent = `${data.workspace.trial_days_left} days remaining`;
+                        // Check subscription status first
+                        if (data.workspace.subscription_status === 'active') {
+                            trialDaysLeft.textContent = 'Pro subscription active';
+                            trialMessage.classList.remove('bg-gradient-to-r', 'from-green-50', 'to-emerald-50', 'border-green-200');
+                            trialMessage.classList.add('bg-gradient-to-r', 'from-blue-50', 'to-indigo-50', 'border-blue-200');
+                            
+                            // Update button text for active subscription
+                            if (upgradeBtn) {
+                                upgradeBtn.innerHTML = '<i class="fas fa-cog mr-1"></i>Manage Billing';
+                                upgradeBtn.classList.remove('btn-success');
+                                upgradeBtn.classList.add('btn-primary');
+                            }
+                        } else if (data.workspace.is_trial_active) {
+                            const daysLeft = data.workspace.trial_days_left;
+                            trialDaysLeft.textContent = `${daysLeft} days remaining`;
+                            
+                            // Show warning if trial is expiring soon (7 days or less)
+                            if (daysLeft <= 7) {
+                                trialMessage.classList.remove('bg-gradient-to-r', 'from-green-50', 'to-emerald-50', 'border-green-200');
+                                trialMessage.classList.add('bg-gradient-to-r', 'from-yellow-50', 'to-orange-50', 'border-yellow-200');
+                                
+                                if (upgradeBtn) {
+                                    upgradeBtn.innerHTML = '<i class="fas fa-bolt mr-1"></i>Upgrade Now';
+                                    upgradeBtn.classList.remove('btn-success');
+                                    upgradeBtn.classList.add('btn-warning');
+                                }
+                            }
                         } else {
-                            trialDaysLeft.textContent = 'Trial expired - please upgrade';
+                            trialDaysLeft.textContent = 'Trial expired';
                             trialMessage.classList.remove('bg-gradient-to-r', 'from-green-50', 'to-emerald-50', 'border-green-200');
                             trialMessage.classList.add('bg-gradient-to-r', 'from-red-50', 'to-pink-50', 'border-red-200');
+                            
+                            if (upgradeBtn) {
+                                upgradeBtn.innerHTML = '<i class="fas fa-credit-card mr-1"></i>Subscribe Now';
+                                upgradeBtn.classList.remove('btn-success');
+                                upgradeBtn.classList.add('btn-error');
+                            }
+                            
+                            // Show upgrade modal after 3 seconds
+                            setTimeout(() => {
+                                showUpgradeModal();
+                            }, 3000);
                         }
                     }
+                } else if (response.status === 402) {
+                    // Payment required - trial expired
+                    window.location.href = '/subscription/upgrade';
                 }
             } catch (error) {
                 console.error('Error loading trial info:', error);
+                
+                // If there's a 402 error (payment required), redirect to upgrade
+                if (error.message && error.message.includes('402')) {
+                    window.location.href = '/subscription/upgrade';
+                }
+            }
+        }
+        
+        // Show upgrade modal for expired trials
+        function showUpgradeModal() {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
+                    <div class="bg-gradient-to-r from-red-500 to-pink-600 px-6 py-4 text-white text-center">
+                        <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
+                        <h3 class="text-xl font-bold">Trial Expired</h3>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-gray-600 mb-4">Your free trial has ended. Upgrade now to continue using all features.</p>
+                        <div class="flex gap-3">
+                            <button onclick="createCheckoutSession()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg">
+                                Upgrade Now
+                            </button>
+                            <button onclick="this.closest('.fixed').remove()" class="flex-1 border border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold py-2 px-4 rounded-lg">
+                                Later
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        // Create Stripe checkout session
+        async function createCheckoutSession() {
+            try {
+                // Get Stripe config
+                const configResponse = await fetch('/api/stripe/config');
+                const config = await configResponse.json();
+                const stripe = Stripe(config.publishable_key);
+
+                const response = await fetch('/api/create-checkout-session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                const session = await response.json();
+                
+                if (response.ok) {
+                    // Redirect to Stripe Checkout
+                    const result = await stripe.redirectToCheckout({
+                        sessionId: session.session_id
+                    });
+                    
+                    if (result.error) {
+                        throw new Error(result.error.message);
+                    }
+                } else {
+                    throw new Error(session.error || 'Failed to create checkout session');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
             }
         }
 

@@ -71,15 +71,19 @@ def is_master_admin():
     if 'user' not in session or 'user_email' not in session['user']:
         return False
     
-    # Check against MasterAdmin table first
-    from models import MasterAdmin
-    master_admin = MasterAdmin.query.filter_by(
-        email=session['user']['user_email'], 
-        is_active=True
-    ).first()
-    
-    if master_admin:
-        return True
+    try:
+        # Check against MasterAdmin table first
+        from models import MasterAdmin
+        master_admin = MasterAdmin.query.filter_by(
+            email=session['user']['user_email'], 
+            is_active=True
+        ).first()
+        
+        if master_admin:
+            return True
+    except Exception as e:
+        # Table might not exist yet, fall back to hardcoded check
+        logging.warning(f"Could not query MasterAdmin table: {str(e)}")
     
     # Fallback to hardcoded email for backward compatibility
     return session['user']['user_email'] == MASTER_ADMIN_EMAIL
@@ -144,47 +148,21 @@ def create_or_update_user(response):
         # Don't let database errors break the response
     return response
 
-# Initialize database with Alembic migrations if enabled
+# Initialize database if enabled (now handled by database_init.py in Docker)
 if os.environ.get('RUN_MIGRATIONS_AT_STARTUP', 'false').lower() == 'true':
-    with app.app_context():
-        try:
-            # Run basic table creation for Cloud SQL
-            if os.environ.get('K_SERVICE'):
-                logging.info("Cloud Run startup migrations enabled - running basic table creation")
-                import psycopg2
-                from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-                # Connection details
-                db_user = os.environ.get('DB_USER', 'cwuser')
-                db_pass = os.environ.get('DB_PASS', '')
-                db_name = os.environ.get('DB_NAME', 'cw_manager')
-                connection_name = os.environ.get('INSTANCE_CONNECTION_NAME', '')
-                # Connect and create tables
-                conn = psycopg2.connect(
-                    dbname=db_name,
-                    user=db_user,
-                    password=db_pass,
-                    host=f"/cloudsql/{connection_name}"
-                )
-                conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-                cur = conn.cursor()
-                # Create user table if not exists
-                cur.execute("""
-                    CREATE TABLE IF NOT EXISTS \"user\" (
-                        id SERIAL PRIMARY KEY,
-                        email VARCHAR(150) UNIQUE NOT NULL,
-                        profile_picture TEXT,
-                        role VARCHAR(50) DEFAULT 'User',
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                    );
-                """)
-                # Ensure master admin user exists
-                cur.execute("""
-                    INSERT INTO master_admin (email, name, is_active, created_at)
-                    SELECT 'markbmwape@gmail.com', 'Mark Mwape', TRUE, CURRENT_TIMESTAMP
-                    WHERE NOT EXISTS (
-                        SELECT 1 FROM master_admin WHERE email='markbmwape@gmail.com'
-                    );
-                """)
-        except Exception as e:
-            logging.error(f"Startup migrations error: {str(e)}")
+    logging.info("Database initialization at startup is enabled")
+    try:
+        # Import and run the database initialization
+        from database_init import init_database, check_database_health
+        
+        if init_database():
+            check_database_health()
+            logging.info("✅ Startup database initialization completed")
+        else:
+            logging.error("❌ Startup database initialization failed")
+            
+    except Exception as e:
+        logging.error(f"Startup database initialization error: {str(e)}")
+        import traceback
+        logging.error(f"Traceback: {traceback.format_exc()}")
 

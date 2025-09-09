@@ -179,55 +179,53 @@
                 {% endif %}
 
                 <!-- Welcome Header -->
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
-                    <div class="flex items-center gap-4 mb-8">
+                <div class="flex items-center justify-between mb-8">
+                    <div class="flex items-center gap-4">
                         <img src="{{ url_for('static', filename='img/logo + text.png') }}" alt="Embee Accounting Logo" class="h-14 w-auto object-contain" />
-                    </div>
-                    <div>
-                        <h1 class="text-3xl font-bold text-black mb-2">
-                            Welcome, {{ session.get('user', {}).get('display_name', 'User') }}
-                        </h1>
-                        <p class="text-sm text-gray-500">
-                            Here's what's happening with your casual workforce today.
-                        </p>
-                        <!-- Enhanced Subscription Status -->
-                        {% if subscription_info %}
-                        <div class="mt-6 flex justify-center">
-                            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6 shadow-sm max-w-4xl w-full">
-                                <div class="flex flex-col sm:flex-row items-center justify-center gap-4 text-center">
-                                    <div class="flex items-center gap-2 text-sm font-medium text-blue-800">
-                                        <i class="fas fa-crown text-blue-600"></i>
-                                        <span>You are currently on the</span>
-                                        <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-semibold">
-                                            {{ subscription_info.tier_name }} plan
-                                        </span>
-                                    </div>
-                                    
-                                    {% if usage_stats.workers_limit %}
-                                    <div class="flex items-center gap-1 text-sm text-blue-700">
-                                        <span class="bg-white/70 px-3 py-1 rounded-full font-medium">
-                                            👥 {{ usage_stats.workers_used }}/{{ usage_stats.workers_limit }} workers
-                                        </span>
-                                    </div>
-                                    {% else %}
-                                    <div class="flex items-center gap-1 text-sm text-blue-700">
-                                        <span class="bg-white/70 px-3 py-1 rounded-full font-medium">
-                                            👥 {{ usage_stats.workers_used }} workers - unlimited
-                                        </span>
-                                    </div>
-                                    {% endif %}
-                                    
-                                    <a href="/upgrade" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105">
-                                        <i class="fas fa-credit-card"></i>
-                                        <span>Manage billing</span>
-                                        <i class="fas fa-arrow-right"></i>
-                                    </a>
-                                </div>
-                            </div>
+                        <div>
+                            <h1 class="text-3xl font-bold text-black mb-2">
+                                Welcome, {{ session.get('user', {}).get('display_name', 'User') }}
+                            </h1>
+                            <p class="text-sm text-gray-500">
+                                Here's what's happening with your casual workforce today.
+                            </p>
                         </div>
-                        {% endif %}
                     </div>
                 </div>
+
+                <!-- Centered Subscription Status -->
+                {% if subscription_info %}
+                <div class="flex justify-center mb-8">
+                    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-8 shadow-sm max-w-2xl w-full">
+                        <div class="flex flex-col items-center justify-center gap-6 text-center">
+                            <div class="flex items-center gap-2 text-lg font-medium text-blue-800">
+                                <i class="fas fa-crown text-blue-600"></i>
+                                <span>You are currently on the</span>
+                            </div>
+                            
+                            <div class="bg-blue-100 text-blue-800 px-6 py-3 rounded-full text-xl font-bold">
+                                👥 {{ subscription_info.tier_name }} plan
+                            </div>
+                            
+                            {% if usage_stats.workers_limit %}
+                            <div class="bg-white/70 px-6 py-3 rounded-full text-lg font-medium text-blue-700">
+                                👥 {{ usage_stats.workers_used }}/{{ usage_stats.workers_limit }} workers
+                            </div>
+                            {% else %}
+                            <div class="bg-white/70 px-6 py-3 rounded-full text-lg font-medium text-blue-700">
+                                👥 {{ usage_stats.workers_used }} workers - unlimited
+                            </div>
+                            {% endif %}
+                            
+                            <a href="/upgrade" class="inline-flex items-center gap-3 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105">
+                                <i class="fas fa-credit-card"></i>
+                                <span>Manage billing</span>
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
 
                 <!-- Workspace Info Card -->
                 {% if session.get('current_workspace') %}

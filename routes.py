@@ -53,15 +53,25 @@ def join_workspace():
     """API endpoint to join a workspace with a code"""
     try:
         data = request.get_json()
+        logging.info(f"Join workspace request data: {data}")
+        
         workspace_code = data.get('workspace_code', '').strip().upper()
+        logging.info(f"Looking for workspace with code: {workspace_code}")
         
         if not workspace_code or len(workspace_code) != 16:
+            logging.warning(f"Invalid workspace code format: {workspace_code}")
             return jsonify({"error": "Invalid workspace code"}), 400
         
         # Find workspace by code
         workspace = Workspace.query.filter_by(workspace_code=workspace_code).first()
         if not workspace:
+            logging.warning(f"Workspace not found for code: {workspace_code}")
+            # Log all existing workspace codes for debugging
+            all_workspaces = Workspace.query.all()
+            logging.info(f"Available workspace codes: {[ws.workspace_code for ws in all_workspaces]}")
             return jsonify({"error": "Workspace not found"}), 404
+        
+        logging.info(f"Found workspace: {workspace.name} (ID: {workspace.id})")
         
         return jsonify({
             "success": True,
@@ -75,6 +85,9 @@ def join_workspace():
         
     except Exception as e:
         logging.error(f"Error joining workspace: {str(e)}")
+        logging.error(f"Exception type: {type(e)}")
+        import traceback
+        logging.error(f"Traceback: {traceback.format_exc()}")
         return jsonify({"error": "Failed to join workspace"}), 500
 
 @app.route('/api/workspace/create', methods=['POST'])

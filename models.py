@@ -27,6 +27,7 @@ class Workspace(db.Model):
     stripe_customer_id = db.Column(db.String(255), nullable=True)
     stripe_subscription_id = db.Column(db.String(255), nullable=True)
     subscription_status = db.Column(db.String(50), default='trial')
+    subscription_tier = db.Column(db.String(50), default='basic')
     trial_end_date = db.Column(db.DateTime, nullable=True)
     subscription_end_date = db.Column(db.DateTime, nullable=True)
     

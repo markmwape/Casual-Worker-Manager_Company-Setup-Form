@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Payment Success</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin: 50px; }
+        .success { background: #d4edda; padding: 20px; border-radius: 10px; color: #155724; }
+        .btn { background: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; }
+        .loading { margin: 20px 0; }
+        .spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid #f3f3f3; border-radius: 50%; border-top: 3px solid #28a745; animation: spin 2s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="success">
+        <h1>🎉 Payment Successful!</h1>
+        <p>Your subscription has been activated successfully.</p>
+        <div class="loading">
+            <div class="spinner"></div>
+            <p>Redirecting you to your dashboard...</p>
+        </div>
+        {% if session_id %}
+            <small>Session ID: {{ session_id }}</small>
+        {% endif %}
+    </div>
+    <br>
+    <a href="/home?subscription_updated=true" class="btn">Go to Dashboard</a>
+    
+    <script>
+        // Auto redirect to home with success flag after 3 seconds
+        setTimeout(function() {
+            window.location.href = '/home?subscription_updated=true';
+        }, 3000);
+    </script>
+</body>
+</html>

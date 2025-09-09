@@ -6,6 +6,14 @@ import subprocess
 from datetime import datetime
 from models import db, User, Company, Workspace, UserWorkspace
 
+# Load environment variables from .env file
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    # dotenv not installed, environment variables should be set externally
+    pass
+
 # Create Flask app
 app = Flask(__name__)
 app.secret_key = 'supersecretkey'

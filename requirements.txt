@@ -11,3 +11,4 @@ firebase-admin
 stripe
 psycopg2-binary
 alembic
+python-dotenv

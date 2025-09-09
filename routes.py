@@ -16,7 +16,8 @@ import io
 import re
 from app_init import master_admin_required
 from sqlalchemy import func, desc
-from subscription_middleware import subscription_required, check_subscription_status, admin_required
+from subscription_middleware import subscription_required, check_subscription_status, admin_required, feature_required, worker_limit_check
+from tier_config import get_tier_spec, get_price_by_product_and_amount, STRIPE_PRICE_MAPPING
 import stripe
 import hmac
 import hashlib
@@ -326,212 +327,15 @@ def set_session():
         logging.error(f"Traceback: {traceback.format_exc()}")
         return jsonify({"error": "Could not set session"}), 500
 
-@app.route('/api/workspace/payments', methods=['GET'])
-def get_workspace_payments():
-    """API endpoint to get workspace payment information (admin only)"""
-    try:
-        if 'current_workspace' not in session:
-            return jsonify({"error": "No active workspace"}), 400
-        
-        workspace_id = session['current_workspace']['id']
-        user_email = session['user']['user_email']
-        
-        user = User.query.filter_by(email=user_email).first()
-        
-        # Add debugging
-        logging.info(f"Payments route - User: {user_email}, User ID: {user.id if user else 'None'}")
-        logging.info(f"Payments route - Workspace ID: {workspace_id}")
-        
-        if not user:
-            logging.error(f"User not found: {user_email}")
-            return jsonify({"error": "User not found"}), 404
-        
-        # Check user's role in workspace
-        user_workspace = UserWorkspace.query.filter_by(
-            user_id=user.id, 
-            workspace_id=workspace_id
-        ).first()
-        
-        logging.info(f"UserWorkspace record: {user_workspace.role if user_workspace else 'None'}")
-        
-        if not user_workspace:
-            logging.error(f"No UserWorkspace record found for user {user.id} in workspace {workspace_id}")
-            return jsonify({"error": "User not found in workspace"}), 404
-        
-        if user_workspace.role != 'Admin':
-            logging.error(f"User {user_email} has role {user_workspace.role}, but Admin required")
-            return jsonify({"error": "Admin access required"}), 403
-        
-        workspace = Workspace.query.get(workspace_id)
-        if not workspace:
-            return jsonify({"error": "Workspace not found"}), 404
-        
-        # Calculate trial status
-        now = datetime.utcnow()
-        trial_days_left = 0
-        is_trial_active = False
-        
-        if workspace.trial_end_date:
-            trial_days_left = (workspace.trial_end_date - now).days
-            is_trial_active = trial_days_left > 0
-        
-        # Check overall subscription status
-        subscription_status = check_subscription_status(workspace)
-        
-        return jsonify({
-            "workspace": {
-                "name": workspace.name,
-                "code": workspace.workspace_code,
-                "subscription_status": workspace.subscription_status,
-                "overall_status": subscription_status,
-                "trial_start_date": workspace.created_at.isoformat(),
-                "trial_end_date": workspace.trial_end_date.isoformat() if workspace.trial_end_date else None,
-                "trial_days_left": max(0, trial_days_left),
-                "is_trial_active": is_trial_active,
-                "stripe_customer_id": workspace.stripe_customer_id,
-                "stripe_subscription_id": workspace.stripe_subscription_id,
-                "subscription_end_date": workspace.subscription_end_date.isoformat() if workspace.subscription_end_date else None
-            }
-        }), 200
-        
-    except Exception as e:
-        logging.error(f"Error getting workspace payments: {str(e)}")
-        return jsonify({"error": "Failed to get payment information"}), 500
+# Removed: /api/workspace/payments - Stripe handles payment info via customer portal
 
-@app.route('/api/stripe/config')
-def get_stripe_config():
-    """Get Stripe publishable key for frontend"""
-    return jsonify({
-        'publishable_key': STRIPE_PUBLISHABLE_KEY
-    })
+# Removed: /api/stripe/config - Frontend no longer needs publishable key since using Stripe directly
 
-@app.route('/api/create-checkout-session', methods=['POST'])
-@admin_required
-def create_checkout_session():
-    """Create a Stripe checkout session for subscription"""
-    try:
-        if 'current_workspace' not in session:
-            return jsonify({"error": "No active workspace"}), 400
-        
-        workspace_id = session['current_workspace']['id']
-        workspace = Workspace.query.get(workspace_id)
-        
-        if not workspace:
-            return jsonify({"error": "Workspace not found"}), 404
-        
-        # Get user email for customer
-        user_email = session['user']['user_email']
-        
-        # Create or get Stripe customer
-        customer = None
-        if workspace.stripe_customer_id:
-            try:
-                customer = stripe.Customer.retrieve(workspace.stripe_customer_id)
-            except stripe.error.InvalidRequestError:
-                # Customer doesn't exist, create a new one
-                pass
-        
-        if not customer:
-            customer = stripe.Customer.create(
-                email=user_email,
-                metadata={
-                    'workspace_id': workspace.id,
-                    'workspace_name': workspace.name
-                }
-            )
-            workspace.stripe_customer_id = customer.id
-            db.session.commit()
-        
-        # Create checkout session
-        checkout_session = stripe.checkout.Session.create(
-            customer=customer.id,
-            payment_method_types=['card'],
-            line_items=[{
-                'price': 'price_1S5C0fF93s78OlJMw0nVdNQp',  # Replace with your actual price ID
-                'quantity': 1,
-            }],
-            mode='subscription',
-            success_url=request.host_url + 'subscription/success?session_id={CHECKOUT_SESSION_ID}',
-            cancel_url=request.host_url + 'home',
-            metadata={
-                'workspace_id': workspace.id
-            }
-        )
-        
-        return jsonify({'session_id': checkout_session.id})
-        
-    except Exception as e:
-        logging.error(f"Error creating checkout session: {str(e)}")
-        return jsonify({'error': 'Failed to create checkout session'}), 500
+# Removed: /api/create-checkout-session - Replaced with simpler /api/create-checkout
 
-@app.route('/api/request-trial-extension', methods=['POST'])
-@admin_required
-def request_trial_extension():
-    """Request a one-time trial extension"""
-    try:
-        if 'current_workspace' not in session:
-            return jsonify({"error": "No active workspace"}), 400
-        
-        workspace_id = session['current_workspace']['id']
-        workspace = Workspace.query.get(workspace_id)
-        
-        if not workspace:
-            return jsonify({"error": "Workspace not found"}), 404
-        
-        # Check if extension was already used
-        if workspace.subscription_status == 'trial_extended':
-            return jsonify({"error": "Trial extension already used"}), 400
-        
-        # Check if trial has actually expired
-        now = datetime.utcnow()
-        if workspace.trial_end_date and workspace.trial_end_date > now:
-            return jsonify({"error": "Trial has not expired yet"}), 400
-        
-        # Grant 3-day extension
-        from datetime import timedelta
-        workspace.trial_end_date = now + timedelta(days=3)
-        workspace.subscription_status = 'trial_extended'
-        db.session.commit()
-        
-        return jsonify({"message": "Trial extended by 3 days"}), 200
-        
-    except Exception as e:
-        logging.error(f"Error requesting trial extension: {str(e)}")
-        return jsonify({'error': 'Failed to request extension'}), 500
+# Removed: /api/request-trial-extension - Not needed, users upgrade through Stripe
 
-@app.route('/subscription/success')
-def subscription_success():
-    """Handle successful subscription"""
-    try:
-        session_id = request.args.get('session_id')
-        if not session_id:
-            return redirect(url_for('home_route'))
-        
-        # Retrieve the session from Stripe
-        checkout_session = stripe.checkout.Session.retrieve(session_id)
-        
-        if checkout_session.payment_status == 'paid':
-            # Update workspace subscription status
-            workspace_id = checkout_session.metadata.get('workspace_id')
-            if workspace_id:
-                workspace = Workspace.query.get(workspace_id)
-                if workspace:
-                    workspace.subscription_status = 'active'
-                    workspace.stripe_subscription_id = checkout_session.subscription
-                    
-                    # Set subscription end date (30 days from now for monthly)
-                    from datetime import timedelta
-                    workspace.subscription_end_date = datetime.utcnow() + timedelta(days=30)
-                    
-                    db.session.commit()
-                    
-                    return render_template('subscription_success.html', workspace=workspace)
-        
-        return redirect(url_for('home_route'))
-        
-    except Exception as e:
-        logging.error(f"Error handling subscription success: {str(e)}")
-        return redirect(url_for('home_route'))
+# Removed: /subscription/success - Stripe handles success pages, webhooks handle subscription updates
 
 @app.route('/stripe/webhook', methods=['POST'])
 def stripe_webhook():
@@ -551,7 +355,11 @@ def stripe_webhook():
         
         logging.info(f"Received Stripe webhook: {event['type']}")
         
-        if event['type'] == 'customer.subscription.created':
+        if event['type'] == 'checkout.session.completed':
+            handle_checkout_session_completed(event['data']['object'])
+        elif event['type'] == 'payment_intent.succeeded':
+            handle_payment_intent_succeeded(event['data']['object'])
+        elif event['type'] == 'customer.subscription.created':
             handle_subscription_created(event['data']['object'])
         elif event['type'] == 'customer.subscription.updated':
             handle_subscription_updated(event['data']['object'])
@@ -580,22 +388,50 @@ def handle_subscription_created(subscription):
         customer_id = subscription['customer']
         subscription_id = subscription['id']
         
-        # Find workspace by customer ID
+        logging.info(f"Processing subscription created: {subscription_id} for customer {customer_id}")
+        
+        # Find workspace by customer ID (should already be linked from checkout.session.completed)
         workspace = Workspace.query.filter_by(stripe_customer_id=customer_id).first()
-        if workspace:
+        if not workspace:
+            logging.warning(f"No workspace found for customer {customer_id}. This might be normal if checkout.session.completed hasn't processed yet.")
+            return
+            
+        # Get product and price information
+        if subscription.get('items') and subscription['items'].get('data'):
+            line_item = subscription['items']['data'][0]
+            price_info = line_item.get('price', {})
+            product_id = price_info.get('product')
+            interval = price_info.get('recurring', {}).get('interval', 'month')
+            
+            # Map product ID to subscription tier
+            product_tier_mapping = {
+                'prod_T1ELaKIPUK85by': 'starter',
+                'prod_T1EOEHvwiG2NHk': 'growth', 
+                'prod_T1EPae2dNy79mG': 'enterprise',
+                'prod_T1EQLnddFuPiqg': 'corporate',
+            }
+            
+            subscription_tier = product_tier_mapping.get(product_id, 'starter')
+            
+            # Determine duration
+            duration_days = 365 if interval == 'year' else 30
+            
+            # Update workspace
             workspace.stripe_subscription_id = subscription_id
             workspace.subscription_status = 'active'
+            workspace.subscription_tier = subscription_tier
+            workspace.trial_end_date = None  # Clear trial
             
-            # Set subscription end date based on the subscription period
-            if subscription['items']['data'][0]['price']['recurring']['interval'] == 'month':
-                from datetime import timedelta
-                workspace.subscription_end_date = datetime.utcnow() + timedelta(days=30)
+            # Set subscription end date
+            from datetime import timedelta
+            workspace.subscription_end_date = datetime.utcnow() + timedelta(days=duration_days)
             
             db.session.commit()
-            logging.info(f"Subscription created for workspace {workspace.id}")
+            logging.info(f"Subscription created for workspace {workspace.id}: {subscription_tier} tier, {interval}ly billing")
         
     except Exception as e:
         logging.error(f"Error handling subscription created: {str(e)}")
+        logging.error(traceback.format_exc())
 
 def handle_subscription_updated(subscription):
     """Handle subscription updated webhook"""
@@ -670,21 +506,387 @@ def handle_payment_failed(invoice):
     except Exception as e:
         logging.error(f"Error handling payment failed: {str(e)}")
 
-@app.route('/test_session_route')
-def test_session_route():
-    """Test endpoint to check session functionality from routes.py"""
+def handle_checkout_session_completed(session):
+    """Handle completed checkout session - this is the most reliable webhook for subscriptions"""
     try:
-        return jsonify({
-            "session_exists": 'user' in session,
-            "session_user": session.get('user'),
-            "current_workspace": session.get('current_workspace'),
-            "all_session_keys": list(session.keys()),
-            "request_endpoint": request.endpoint,
-            "request_method": request.method
-        })
+        customer_id = session.get('customer')
+        subscription_id = session.get('subscription')
+        
+        # Extract workspace code from custom fields
+        workspace_code = None
+        custom_fields = session.get('custom_fields', [])
+        for field in custom_fields:
+            field_key = field.get('key', '').lower()
+            # Handle various workspace code field naming conventions
+            if field_key in ['workspace_code', 'workspacecode', 'workspace-code'] or 'workspace' in field_key:
+                workspace_code = field.get('text', {}).get('value') or field.get('dropdown', {}).get('value')
+                if workspace_code:
+                    break
+        
+        logging.info(f"Checkout session completed - Customer: {customer_id}, Workspace Code: {workspace_code}")
+        
+        if not customer_id:
+            logging.warning("No customer ID in checkout session")
+            return
+        
+        # Find workspace by workspace code first, then fallback to customer ID
+        workspace = None
+        if workspace_code:
+            # Look up workspace by the custom workspace code
+            workspace = Workspace.query.filter_by(workspace_code=workspace_code).first()
+            if not workspace:
+                logging.warning(f"No workspace found for workspace code: {workspace_code}")
+        
+        # Fallback to customer ID lookup if workspace code didn't work
+        if not workspace and customer_id:
+            workspace = Workspace.query.filter_by(stripe_customer_id=customer_id).first()
+            
+        if not workspace:
+            logging.error(f"CRITICAL: No workspace found for customer {customer_id} or workspace code {workspace_code}")
+            
+            # Create refund for invalid workspace code
+            try:
+                if subscription_id:
+                    stripe.Subscription.cancel(subscription_id)
+                    logging.info(f"Cancelled subscription {subscription_id} for invalid workspace code")
+                
+                # Create automatic refund for invalid workspace code
+                payment_intent_id = session.get('payment_intent')
+                if payment_intent_id:
+                    refund = stripe.Refund.create(
+                        payment_intent=payment_intent_id,
+                        reason='requested_by_customer',
+                        metadata={
+                            'reason': 'Invalid workspace code',
+                            'workspace_code': workspace_code,
+                            'customer_id': customer_id
+                        }
+                    )
+                    logging.info(f"Created refund {refund.id} for invalid workspace code: {workspace_code}")
+                else:
+                    logging.warning("No payment_intent found for refund")
+                
+                # Send alert email to admin
+                # send_admin_alert(f"Payment received for invalid workspace code: {workspace_code}")
+                
+            except Exception as e:
+                logging.error(f"Failed to handle invalid workspace code: {str(e)}")
+            
+            return
+        
+        product_id = None
+        price_id = None
+        subscription_tier = 'starter'  # default
+        duration_days = 30  # default monthly
+        
+        # Get product info from subscription
+        if subscription_id:
+            try:
+                subscription = stripe.Subscription.retrieve(subscription_id)
+                if subscription.items.data:
+                    line_item = subscription.items.data[0]
+                    if line_item.price:
+                        product_id = line_item.price.product
+                        price_id = line_item.price.id
+                        
+                        # Determine billing interval
+                        interval = line_item.price.recurring.interval if line_item.price.recurring else 'month'
+                        duration_days = 365 if interval == 'year' else 30
+                        
+                        logging.info(f"Checkout completed: Product {product_id}, Price {price_id}")
+                        
+            except Exception as e:
+                logging.error(f"Error retrieving subscription from checkout: {str(e)}")
+        
+        # Determine tier from product ID
+        if product_id:
+            subscription_tier = get_subscription_tier_from_product(product_id, price_id)
+        else:
+            # Fallback: try to get from invoice if subscription lookup failed
+            try:
+                invoice_id = session.get('invoice')
+                if invoice_id:
+                    invoice = stripe.Invoice.retrieve(invoice_id)
+                    if invoice.lines.data:
+                        line_item = invoice.lines.data[0]
+                        if line_item.price:
+                            product_id = line_item.price.product
+                            subscription_tier = get_subscription_tier_from_product(product_id, line_item.price.id)
+                            logging.info(f"Got product from invoice fallback: {product_id}")
+            except Exception as e:
+                logging.warning(f"Invoice fallback failed: {str(e)}")
+        
+        # Update workspace
+        workspace.subscription_status = 'active'
+        workspace.subscription_tier = subscription_tier
+        workspace.trial_end_date = None  # Clear trial since they paid
+        
+        # Update Stripe IDs if not already set (important for workspace code lookup)
+        if customer_id and not workspace.stripe_customer_id:
+            workspace.stripe_customer_id = customer_id
+            logging.info(f"Linked customer {customer_id} to workspace {workspace.workspace_code}")
+            
+        if subscription_id:
+            workspace.stripe_subscription_id = subscription_id
+        
+        # Set subscription end date
+        from datetime import timedelta
+        workspace.subscription_end_date = datetime.utcnow() + timedelta(days=duration_days)
+        
+        db.session.commit()
+        
+        logging.info(f"Checkout session completed: Workspace {workspace.id} upgraded to {subscription_tier} tier (Product: {product_id})")
+        
     except Exception as e:
-        logging.error(f"Error in test_session_route: {str(e)}")
-        return jsonify({"error": str(e)}), 500
+        logging.error(f"Error handling checkout session completed: {str(e)}")
+        logging.error(traceback.format_exc())
+
+# Frontend Checkout Endpoints
+@app.route('/api/validate-workspace', methods=['POST'])
+def validate_workspace():
+    """Validate workspace code before checkout"""
+    try:
+        data = request.get_json()
+        workspace_code = data.get('workspace_code')
+        
+        if not workspace_code:
+            return jsonify({'error': 'Workspace code required'}), 400
+        
+        workspace = Workspace.query.filter_by(workspace_code=workspace_code).first()
+        
+        if workspace:
+            return jsonify({
+                'valid': True,
+                'workspace_name': workspace.name,
+                'current_tier': workspace.subscription_tier or 'trial',
+                'subscription_status': workspace.subscription_status or 'trial'
+            })
+        else:
+            return jsonify({'valid': False, 'error': 'Invalid workspace code'}), 404
+            
+    except Exception as e:
+        logging.error(f"Error validating workspace: {str(e)}")
+        return jsonify({'error': 'Validation failed'}), 500
+
+@app.route('/api/create-checkout', methods=['POST'])
+def create_checkout_session():
+    """Create Stripe checkout session with workspace code"""
+    try:
+        # Handle both JSON (API) and form data (simple upgrade page)
+        if request.is_json:
+            data = request.get_json()
+            workspace_code = data.get('workspace_code')
+            price_id = data.get('price_id')
+            tier = data.get('tier')
+        else:
+            # Form data from simple upgrade page
+            workspace_code = request.form.get('workspace_code')
+            tier = request.form.get('tier')
+            price_id = None
+        
+        if not workspace_code:
+            return jsonify({'error': 'Workspace code required'}), 400
+        
+        # Get price ID from tier if not provided directly
+        if not price_id and tier:
+            from tier_config import get_price_id_for_tier
+            price_id = get_price_id_for_tier(tier, 'monthly')
+        
+        if not price_id:
+            return jsonify({'error': 'Price ID or tier required'}), 400
+        
+        # Validate workspace exists
+        workspace = Workspace.query.filter_by(workspace_code=workspace_code).first()
+        if not workspace:
+            return jsonify({'error': 'Invalid workspace code'}), 400
+        
+        # Create checkout session
+        checkout_session = stripe.checkout.Session.create(
+            mode='subscription',
+            line_items=[{
+                'price': price_id,
+                'quantity': 1,
+            }],
+            success_url=f"{request.host_url}success?session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url=f"{request.host_url}cancel",
+            custom_fields=[
+                {
+                    'key': 'workspacecode',
+                    'label': {'type': 'custom', 'custom': 'Workspace Code'},
+                    'type': 'text',
+                    'optional': False,
+                    'text': {'default_value': workspace_code}  # Pre-fill the code
+                }
+            ],
+            allow_promotion_codes=True,
+            metadata={
+                'workspace_code': workspace_code,
+                'workspace_id': str(workspace.id)
+            }
+        )
+        
+        # Return appropriate response based on request type
+        if request.is_json:
+            return jsonify({'checkout_url': checkout_session.url})
+        else:
+            # Form submission - redirect directly to Stripe
+            return redirect(checkout_session.url)
+        
+    except Exception as e:
+        logging.error(f"Error creating checkout session: {str(e)}")
+        if request.is_json:
+            return jsonify({'error': str(e)}), 500
+        else:
+            # For form submissions, redirect back with error message
+            return redirect(url_for('upgrade_workspace') + f'?error={str(e)}')
+
+@app.route('/success')
+def checkout_success():
+    """Checkout success page"""
+    session_id = request.args.get('session_id')
+    return render_template('checkout_success.html', session_id=session_id)
+
+@app.route('/cancel')  
+def checkout_cancel():
+    """Checkout cancelled page"""
+    return render_template('checkout_cancel.html')
+
+@app.route('/upgrade')
+def upgrade_workspace():
+    """Direct redirect to Stripe - no complex UI needed"""
+    # Get current workspace from session
+    current_workspace_id = session.get('current_workspace', {}).get('id')
+    if not current_workspace_id:
+        return redirect(url_for('home_route'))
+    
+    workspace = Workspace.query.get(current_workspace_id)
+    if not workspace:
+        return redirect(url_for('home_route'))
+    
+    # If they already have a Stripe customer ID, send to customer portal
+    if workspace.stripe_customer_id:
+        try:
+            portal_session = stripe.billing_portal.Session.create(
+                customer=workspace.stripe_customer_id,
+                return_url=request.url_root
+            )
+            return redirect(portal_session.url)
+        except Exception as e:
+            print(f"Stripe portal error: {e}")
+    
+    # Otherwise, show simple plan selection (much simpler than current page)
+    from tier_config import TIER_SPECS, STRIPE_PRICE_MAPPING
+    
+    return render_template('upgrade_simple.html', 
+                         workspace=workspace,
+                         tiers=TIER_SPECS,
+                         price_mapping=STRIPE_PRICE_MAPPING)
+
+def handle_payment_intent_succeeded(payment_intent):
+    """Handle successful payment intent webhook - upgrade user to paid tier"""
+    try:
+        # Extract customer ID and payment details
+        customer_id = payment_intent.get('customer')
+        
+        if not customer_id:
+            logging.warning("No customer ID in payment intent")
+            return
+        
+        # Find workspace by customer ID
+        workspace = Workspace.query.filter_by(stripe_customer_id=customer_id).first()
+        if not workspace:
+            logging.warning(f"No workspace found for customer {customer_id}")
+            return
+        
+        # Get product ID from subscription or invoice
+        product_id = None
+        price_id = None
+        subscription_tier = 'starter'  # default fallback
+        
+        try:
+            # Method 1: Try to get from invoice first
+            if payment_intent.get('invoice'):
+                invoice = stripe.Invoice.retrieve(payment_intent['invoice'])
+                if invoice.lines.data:
+                    line_item = invoice.lines.data[0]
+                    if line_item.price:
+                        product_id = line_item.price.product
+                        price_id = line_item.price.id
+                        logging.info(f"Got product ID from invoice: {product_id}")
+            
+            # Method 2: If no product from invoice, try subscription
+            if not product_id and payment_intent.get('subscription'):
+                subscription = stripe.Subscription.retrieve(payment_intent['subscription'])
+                if subscription.items.data:
+                    line_item = subscription.items.data[0]
+                    if line_item.price:
+                        product_id = line_item.price.product
+                        price_id = line_item.price.id
+                        logging.info(f"Got product ID from subscription: {product_id}")
+                        
+        except Exception as e:
+            logging.warning(f"Could not retrieve product info: {str(e)}")
+        
+        # Determine subscription tier using helper function
+        if product_id:
+            amount = payment_intent.get('amount')
+            subscription_tier = get_subscription_tier_from_product(product_id, price_id, amount)
+            logging.info(f"Product ID {product_id} mapped to tier: {subscription_tier}")
+        else:
+            logging.warning("No product ID found, using default starter tier")
+        
+        # Set subscription duration (defaulting to monthly, can be refined based on price data)
+        subscription_duration_days = 30  # Monthly default
+        
+        # Update workspace subscription
+        workspace.subscription_status = 'active'
+        workspace.subscription_tier = subscription_tier
+        
+        # Set subscription end date
+        from datetime import timedelta
+        workspace.subscription_end_date = datetime.utcnow() + timedelta(days=subscription_duration_days)
+        
+        # Clear trial end date since they're now paid
+        workspace.trial_end_date = None
+        
+        db.session.commit()
+        
+        logging.info(f"Payment intent succeeded: Workspace {workspace.id} upgraded to {subscription_tier} tier. Product ID: {product_id}")
+        
+    except Exception as e:
+        logging.error(f"Error handling payment intent succeeded: {str(e)}")
+        logging.error(traceback.format_exc())
+
+def get_subscription_tier_from_product(product_id, price_id=None, amount=None):
+    """Helper function to determine subscription tier from Stripe product/price data"""
+    
+    # Try to match by product ID and amount first (most accurate)
+    if amount and product_id:
+        tier = get_price_by_product_and_amount(product_id, amount)
+        if tier:
+            return tier
+    
+    # Try to match by price ID from our mapping
+    if price_id:
+        for price_key, price_info in STRIPE_PRICE_MAPPING.items():
+            if price_info['price_id'] == price_id:
+                return price_info['tier']
+    
+    # Fallback to product ID mapping
+    product_tier_mapping = {
+        'prod_T1ELaKIPUK85by': 'starter',
+        'prod_T1EOEHvwiG2NHk': 'growth',
+        'prod_T1EPae2dNy79mG': 'enterprise',
+        'prod_T1EQLnddFuPiqg': 'corporate',
+    }
+    
+    return product_tier_mapping.get(product_id, 'starter')
+
+# Removed: /test/checkout-session-webhook - Test endpoints not needed in production
+
+# Removed: /test/subscription-webhook - Test endpoints not needed in production
+
+# Removed: /test/payment-intent-webhook and /test_session_route - Test endpoints not needed in production
 
 @app.route('/url')
 def url_route():
@@ -862,6 +1064,7 @@ def signout():
 
 @app.route("/api/worker", methods=['POST'])
 @subscription_required
+@worker_limit_check
 def create_worker():
     try:
         data = request.get_json()
@@ -1180,6 +1383,8 @@ def delete_import_field(field_id):
 from abilities import llm
 
 @app.route("/api/worker/import", methods=['POST'])
+@subscription_required
+@worker_limit_check
 def import_workers():
     try:
         # Validate upload
@@ -1364,9 +1569,53 @@ def home_route():
                     'role': uw.role
                 })
 
+        # Get subscription information
+        from tier_config import get_tier_spec, format_price
+        
+        subscription_info = {
+            'tier': workspace.subscription_tier or 'trial',
+            'status': workspace.subscription_status or 'trial',
+            'workspace_code': workspace.workspace_code,
+            'subscription_end': workspace.subscription_end_date,
+            'trial_end': workspace.trial_end_date
+        }
+        
+        # Get tier details
+        tier_spec = get_tier_spec(subscription_info['tier'])
+        subscription_info.update({
+            'tier_name': tier_spec['name'],
+            'tier_description': tier_spec['description'],
+            'worker_limit': tier_spec.get('worker_limit'),
+            'monthly_price': format_price(subscription_info['tier'], 'monthly'),
+            'features': tier_spec['features']
+        })
+        
+        # Calculate usage - simplified to focus on workers only
+        usage_stats = {
+            'workers_used': total_workers,
+            'workers_limit': tier_spec.get('worker_limit'),
+            'tasks_used': total_tasks,
+            'tasks_limit': None  # Removed task limits since they're not the main differentiator
+        }
+
         # Activity logging removed for now
         recent_activities = []
         activity_stats = {}
+
+        # Check if this is a subscription update success
+        subscription_updated = request.args.get('subscription_updated', False)
+        
+        # Prevent repeated confetti - only show once per session
+        if subscription_updated and subscription_updated != 'false':
+            # Mark as shown in session to prevent repeated displays
+            session_key = f"subscription_success_shown_{workspace_id}"
+            if not session.get(session_key, False):
+                session[session_key] = True
+                subscription_updated = True
+            else:
+                subscription_updated = False
+        else:
+            subscription_updated = False
 
         return render_template('home.html', 
                              company=company, 
@@ -1374,7 +1623,10 @@ def home_route():
                              total_tasks=total_tasks, 
                              team_members=team_members,
                              recent_activities=recent_activities,
-                             activity_stats=activity_stats)
+                             activity_stats=activity_stats,
+                             subscription_info=subscription_info,
+                             usage_stats=usage_stats,
+                             subscription_updated=subscription_updated)
     except Exception as e:
         logging.error(f"Error fetching home data: {str(e)}")
         import traceback
@@ -1559,6 +1811,7 @@ def attendance_route():
 
 @app.route("/reports", methods=['GET'])
 @subscription_required
+@feature_required('advanced_reporting')
 def reports_route():
     try:
         from datetime import date, timedelta, datetime
@@ -1775,6 +2028,8 @@ def analyze_columns():
         logging.error(f"Error analyzing columns: {str(e)}")
         return jsonify({'error': f'Failed to analyze Excel file: {str(e)}'}), 500
 @app.route("/api/worker/import-mapped", methods=['POST'])
+@subscription_required
+@worker_limit_check
 def import_mapped_workers():
     try:
         mapping_str = request.form.get('mapping')
@@ -2137,6 +2392,8 @@ def add_worker_to_task(task_id):
         return jsonify({'error': 'Failed to add worker to task'}), 500
 
 @app.route("/api/worker/bulk-delete", methods=['POST'])
+@subscription_required
+@feature_required('bulk_operations')
 def bulk_delete_workers():
     try:
         data = request.get_json()
@@ -2267,6 +2524,8 @@ def update_task_status(task_id):
         return jsonify({'error': 'Failed to update task status'}), 500
 
 @app.route("/report/download")
+@subscription_required
+@feature_required('advanced_reporting')
 def download_report():
     try:
         # Get current company from workspace
@@ -2515,6 +2774,8 @@ def download_report():
                 'attendance_days': worker_attendance.get(record.worker.id, 0)
             })
 @app.route("/api/report-field", methods=['POST', 'DELETE', 'PUT'])
+@subscription_required
+@feature_required('advanced_reporting')
 def manage_report_field():
     try:
         # Get current company from workspace

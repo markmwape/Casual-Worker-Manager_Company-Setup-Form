@@ -25,6 +25,25 @@ def init_database():
             db.create_all()
             logging.info("✅ Database tables created successfully")
             
+            # Ensure workspace table has all necessary columns (in case of existing DB schema)
+            engine = db.engine
+            required_workspace_columns = {
+                'stripe_customer_id': 'VARCHAR(255)',
+                'stripe_subscription_id': 'VARCHAR(255)',
+                'subscription_status': "VARCHAR(50) DEFAULT 'trial'",
+                'subscription_tier': "VARCHAR(50) DEFAULT 'basic'",
+                'trial_end_date': 'TIMESTAMP',
+                'subscription_end_date': 'TIMESTAMP'
+            }
+            with engine.connect() as conn:
+                for col, col_def in required_workspace_columns.items():
+                    try:
+                        conn.execute(f"ALTER TABLE workspace ADD COLUMN {col} {col_def};")
+                        logging.info(f"Added missing column to workspace: {col}")
+                    except Exception:
+                        # Column probably exists already
+                        pass
+            
             # Check if this is production
             is_production = os.environ.get('K_SERVICE') or os.environ.get('GAE_ENV') or os.environ.get('INSTANCE_CONNECTION_NAME')
             

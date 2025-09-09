@@ -63,6 +63,16 @@ app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # 1 hour
 # Initialize extensions
 db.init_app(app)
 
+# Run database initialization synchronously if enabled
+if os.environ.get('RUN_MIGRATIONS_AT_STARTUP', 'false').lower() == 'true':
+    try:
+        from database_init import init_database, check_database_health
+        init_database()
+        check_database_health()
+        logging.info("✅ Synchronous database initialization completed at startup")
+    except Exception as e:
+        logging.error(f"❌ Synchronous database initialization failed at startup: {e}")
+
 # Master Admin Configuration
 MASTER_ADMIN_EMAIL = os.environ.get('MASTER_ADMIN_EMAIL', 'markbmwape@gmail.com')  # Set your email here
 
@@ -147,22 +157,4 @@ def create_or_update_user(response):
         logging.error(f"Error in create_or_update_user: {str(e)}")
         # Don't let database errors break the response
     return response
-
-# Initialize database if enabled (now handled by database_init.py in Docker)
-if os.environ.get('RUN_MIGRATIONS_AT_STARTUP', 'false').lower() == 'true':
-    logging.info("Database initialization at startup is enabled")
-    try:
-        # Import and run the database initialization
-        from database_init import init_database, check_database_health
-        
-        if init_database():
-            check_database_health()
-            logging.info("✅ Startup database initialization completed")
-        else:
-            logging.error("❌ Startup database initialization failed")
-            
-    except Exception as e:
-        logging.error(f"Startup database initialization error: {str(e)}")
-        import traceback
-        logging.error(f"Traceback: {traceback.format_exc()}")
 

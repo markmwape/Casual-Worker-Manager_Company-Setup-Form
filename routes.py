@@ -51,6 +51,8 @@ def workspace_selection_route():
 @app.route('/api/workspace/join', methods=['POST'])
 def join_workspace():
     """API endpoint to join a workspace with a code"""
+    # Ensure database tables exist before querying
+    db.create_all()
     try:
         data = request.get_json()
         logging.info(f"Join workspace request data: {data}")
@@ -732,6 +734,10 @@ def create_checkout_session():
                 }
             ],
             allow_promotion_codes=True,
+                    'text': {'default_value': workspace_code}  # Pre-fill the code
+                }
+            ],
+            allow_promotion_codes=True,
             metadata={
                 'workspace_code': workspace_code,
                 'workspace_id': str(workspace.id)
@@ -1094,10 +1100,6 @@ def create_worker():
             try:
                 date_of_birth = datetime.strptime(data['date_of_birth'], '%Y-%m-%d').date()
             except ValueError:
-                return jsonify({'error': 'Invalid date format for date of birth. Use YYYY-MM-DD'}), 400
-        
-        # Create new worker
-        new_worker = Worker(
             first_name=data.get('first_name', ''),
             last_name=data.get('last_name', ''),
             date_of_birth=date_of_birth,
@@ -1954,8 +1956,6 @@ def reports_route():
                                 result = min(result, field.max_limit)
                             record[field.name] = result
                         except Exception as e:
-                            logging.error(f"Error calculating field {field.name}: {str(e)}")
-                            record[field.name] = 0.00
                 per_day_records.append(record)
             # For each per_part task, add a record
             for task_id, units in per_part_units.items():

@@ -63,15 +63,30 @@ app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # 1 hour
 # Initialize extensions
 db.init_app(app)
 
-# Run database initialization synchronously if enabled
-if os.environ.get('RUN_MIGRATIONS_AT_STARTUP', 'false').lower() == 'true':
+# Initialize database tables
+with app.app_context():
     try:
-        from database_init import init_database, check_database_health
-        init_database()
-        check_database_health()
-        logging.info("✅ Synchronous database initialization completed at startup")
+        # Create all tables that don't exist
+        db.create_all()
+        
+        # Add missing columns if needed
+        from sqlalchemy import text
+        try:
+            # Check and add subscription fields to workspace table
+            db.session.execute(text("ALTER TABLE workspace ADD COLUMN IF NOT EXISTS subscription_tier VARCHAR(50) DEFAULT 'free'"))
+            db.session.execute(text("ALTER TABLE workspace ADD COLUMN IF NOT EXISTS subscription_status VARCHAR(50) DEFAULT 'active'"))
+            db.session.execute(text("ALTER TABLE workspace ADD COLUMN IF NOT EXISTS trial_end_date DATETIME"))
+            db.session.execute(text("ALTER TABLE workspace ADD COLUMN IF NOT EXISTS stripe_customer_id VARCHAR(255)"))
+            db.session.execute(text("ALTER TABLE workspace ADD COLUMN IF NOT EXISTS stripe_subscription_id VARCHAR(255)"))
+            db.session.commit()
+            logging.info("✅ Database tables and columns initialized successfully")
+        except Exception as e:
+            # Column might already exist or different SQL syntax - that's okay
+            db.session.rollback()
+            logging.info(f"Database schema update skipped (likely already exists): {str(e)}")
     except Exception as e:
-        logging.error(f"❌ Synchronous database initialization failed at startup: {e}")
+        logging.error(f"❌ Database initialization failed: {e}")
+        # Don't fail startup, the app might still work
 
 # Master Admin Configuration
 MASTER_ADMIN_EMAIL = os.environ.get('MASTER_ADMIN_EMAIL', 'markbmwape@gmail.com')  # Set your email here

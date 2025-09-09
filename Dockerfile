@@ -25,18 +25,13 @@ USER appuser
 # Expose port
 EXPOSE 8080
 
-# Create startup script that initializes database then starts the app
-RUN echo '#!/bin/bash\n\
-    echo "🚀 Starting Casual Worker Manager..."\n\
-    echo "🔧 Initializing database..."\n\
-    if python3 database_init.py; then\n\
-        echo "✅ Database initialization completed"\n\
-    else\n\
-        echo "⚠️ Database initialization failed, continuing startup"\n\
-    fi\n\
-    echo "🌐 Starting web server..."\n\
-    exec gunicorn wsgi:app -b 0.0.0.0:$PORT --workers=1 --timeout=300\n' > /app/start.sh \
-    && chmod +x /app/start.sh
+# Create startup script
+RUN echo '#!/bin/bash' > /app/start.sh && \
+    echo 'echo "🚀 Starting Casual Worker Manager..."' >> /app/start.sh && \
+    echo 'python3 database_init_minimal.py' >> /app/start.sh && \
+    echo 'echo "🌐 Starting web server..."' >> /app/start.sh && \
+    echo 'exec gunicorn wsgi:app -b 0.0.0.0:$PORT --workers=1 --timeout=300 --preload' >> /app/start.sh && \
+    chmod +x /app/start.sh
 
 # Use the startup script
 ENTRYPOINT ["/app/start.sh"]

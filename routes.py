@@ -1958,8 +1958,11 @@ def import_mapped_workers():
         if not os.path.exists(file_path):
             return jsonify({'error': 'File not found'}), 400
             
-        df = pd.read_excel(file_path, na_filter=False)
-        df = df.dropna(how='all')
+        df = pd.read_excel(file_path, na_filter=True)  # Allow NaN values to be detected
+        df = df.dropna(how='all')  # Drop completely empty rows
+        
+        # Replace NaN values with empty strings for safer text processing
+        df = df.fillna('')
         
         # Log the mapping for debugging
         logging.info(f"Column mapping: {mapping}")
@@ -1984,26 +1987,54 @@ def import_mapped_workers():
         # Process each row individually
         for index, row in df.iterrows():
             try:
+                # Check if this is an empty row - skip if all mapped values are empty
+                row_has_data = False
+                for field, excel_col in mapping.items():
+                    cell_value = str(row[excel_col]).strip()
+                    if cell_value and cell_value.lower() not in ['nan', 'nat', 'none']:
+                        row_has_data = True
+                        break
+                
+                if not row_has_data:
+                    logging.info(f"Skipping empty row {index + 1}")
+                    continue
+                
                 # Create new worker with mapped data
                 worker_data = {}
                 custom_field_data = {}
                 
                 for field, excel_col in mapping.items():
-                    if pd.notna(row[excel_col]):
-                        # Separate worker fields from custom fields
-                        if field in ['first_name', 'last_name', 'date_of_birth']:
-                            value = str(row[excel_col]).strip()
-                            if field == 'date_of_birth':
-                                try:
-                                    value = pd.to_datetime(value).date()
-                                except Exception as e:
-                                    logging.warning(f"Could not parse date_of_birth: {value}")
+                    cell_value = str(row[excel_col]).strip()
+                    
+                    # Skip empty or NaN cells
+                    if not cell_value or cell_value.lower() in ['nan', 'nat', 'none']:
+                        continue
+                        
+                    # Separate worker fields from custom fields
+                    if field in ['first_name', 'last_name', 'date_of_birth']:
+                        if field == 'date_of_birth':
+                            try:
+                                # Parse date value
+                                parsed_date = pd.to_datetime(cell_value)
+                                if pd.isna(parsed_date):
                                     value = None
-                            worker_data[field] = value
+                                else:
+                                    value = parsed_date.date()
+                            except Exception as e:
+                                logging.warning(f"Could not parse date_of_birth '{cell_value}': {str(e)}")
+                                value = None
                         else:
-                            custom_field_data[field] = str(row[excel_col]).strip()
+                            value = cell_value
+                        worker_data[field] = value
+                    else:
+                        custom_field_data[field] = cell_value
                 
                 logging.debug(f"Processed data for row {index + 1}: {worker_data}")
+
+                # Skip row if required fields are missing
+                if not worker_data.get('first_name') and not worker_data.get('last_name'):
+                    logging.info(f"Skipping row {index + 1} - no first name or last name provided")
+                    continue
 
                 # Duplicate check – skip if a worker with the same first & last name already exists for this company
                 if worker_data.get('first_name') and worker_data.get('last_name'):
@@ -2021,10 +2052,20 @@ def import_mapped_workers():
                 savepoint = db.session.begin_nested()
                 
                 try:
+                    # Clean and validate all worker data
+                    first_name = worker_data.get('first_name', '').strip()
+                    last_name = worker_data.get('last_name', '').strip()
+                    date_of_birth = worker_data.get('date_of_birth', None)
+                    
+                    # Ensure no NaT or invalid date values
+                    if date_of_birth is not None:
+                        if pd.isna(date_of_birth) or str(date_of_birth).lower() in ['nat', 'nan', 'none', '']:
+                            date_of_birth = None
+                    
                     new_worker = Worker(
-                        first_name=worker_data.get('first_name', ''),
-                        last_name=worker_data.get('last_name', ''),
-                        date_of_birth=worker_data.get('date_of_birth', None),
+                        first_name=first_name,
+                        last_name=last_name,
+                        date_of_birth=date_of_birth,
                         company_id=company.id,
                         user_id=user.id
                     )

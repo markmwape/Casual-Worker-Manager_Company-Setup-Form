@@ -697,145 +697,25 @@ def handle_checkout_session_completed(session):
         logging.error(traceback.format_exc())
 
 # Frontend Checkout Endpoints
-@app.route('/api/validate-workspace', methods=['POST'])
-def validate_workspace():
-    """Validate workspace code before checkout"""
-    try:
-        data = request.get_json()
-        workspace_code = data.get('workspace_code')
-        
-        if not workspace_code:
-            return jsonify({'error': 'Workspace code required'}), 400
-        
-        workspace = Workspace.query.filter_by(workspace_code=workspace_code).first()
-        
-        if workspace:
-            return jsonify({
-                'valid': True,
-                'workspace_name': workspace.name,
-                'current_tier': workspace.subscription_tier or 'trial',
-                'subscription_status': workspace.subscription_status or 'trial'
-            })
-        else:
-            return jsonify({'valid': False, 'error': 'Invalid workspace code'}), 404
-            
-    except Exception as e:
-        logging.error(f"Error validating workspace: {str(e)}")
-        return jsonify({'error': 'Validation failed'}), 500
-
-@app.route('/api/create-checkout', methods=['POST'])
-def create_checkout_session():
-    """Create Stripe checkout session with workspace code"""
-    try:
-        # Handle both JSON (API) and form data (simple upgrade page)
-        if request.is_json:
-            data = request.get_json()
-            workspace_code = data.get('workspace_code')
-            price_id = data.get('price_id')
-            tier = data.get('tier')
-        else:
-            # Form data from simple upgrade page
-            workspace_code = request.form.get('workspace_code')
-            tier = request.form.get('tier')
-            price_id = None
-        
-        if not workspace_code:
-            return jsonify({'error': 'Workspace code required'}), 400
-        
-        # Get price ID from tier if not provided directly
-        if not price_id and tier:
-            from tier_config import get_price_id_for_tier
-            price_id = get_price_id_for_tier(tier, 'monthly')
-        
-        if not price_id:
-            return jsonify({'error': 'Price ID or tier required'}), 400
-        
-        # Validate workspace exists
-        workspace = Workspace.query.filter_by(workspace_code=workspace_code).first()
-        if not workspace:
-            return jsonify({'error': 'Invalid workspace code'}), 400
-        
-        # Create checkout session
-        checkout_session = stripe.checkout.Session.create(
-            mode='subscription',
-            line_items=[{
-                'price': price_id,
-                'quantity': 1,
-            }],
-            success_url=f"{request.host_url}success?session_id={{CHECKOUT_SESSION_ID}}",
-            cancel_url=f"{request.host_url}cancel",
-            custom_fields=[
-                {
-                    'key': 'workspacecode',
-                    'label': {'type': 'custom', 'custom': 'Workspace Code'},
-                    'type': 'text',
-                    'optional': False,
-                    'text': {'default_value': workspace_code}  # Pre-fill the code
-                }
-            ],
-            allow_promotion_codes=True,
-            metadata={
-                'workspace_code': workspace_code,
-                'workspace_id': str(workspace.id)
-            }
-        )
-        
-        # Return appropriate response based on request type
-        if request.is_json:
-            return jsonify({'checkout_url': checkout_session.url})
-        else:
-            # Form submission - redirect directly to Stripe
-            return redirect(checkout_session.url)
-        
-    except Exception as e:
-        logging.error(f"Error creating checkout session: {str(e)}")
-        if request.is_json:
-            return jsonify({'error': str(e)}), 500
-        else:
-            # For form submissions, redirect back with error message
-            return redirect(url_for('upgrade_workspace') + f'?error={str(e)}')
-
-@app.route('/success')
-def checkout_success():
-    """Checkout success page"""
-    session_id = request.args.get('session_id')
-    return render_template('checkout_success.html', session_id=session_id)
-
-@app.route('/cancel')  
-def checkout_cancel():
-    """Checkout cancelled page"""
-    return render_template('checkout_cancel.html')
+# =============================================================================
+# SIMPLIFIED SUBSCRIPTION MANAGEMENT
+# =============================================================================
+# All subscription management now handled directly by Stripe billing portal.
+# Local checkout/validation endpoints removed.
+# Subscription updates come via webhooks only.
+# 
+# Removed routes:
+# - /api/validate-workspace
+# - /api/create-checkout  
+# - /success
+# - /cancel
+# =============================================================================
 
 @app.route('/upgrade')
 def upgrade_workspace():
-    """Direct redirect to Stripe - no complex UI needed"""
-    # Get current workspace from session
-    current_workspace_id = session.get('current_workspace', {}).get('id')
-    if not current_workspace_id:
-        return redirect(url_for('home_route'))
-    
-    workspace = Workspace.query.get(current_workspace_id)
-    if not workspace:
-        return redirect(url_for('home_route'))
-    
-    # If they already have a Stripe customer ID, send to customer portal
-    if workspace.stripe_customer_id:
-        try:
-            portal_session = stripe.billing_portal.Session.create(
-                customer=workspace.stripe_customer_id,
-                return_url=request.url_root
-            )
-            return redirect(portal_session.url)
-        except Exception as e:
-            print(f"Stripe portal error: {e}")
-    
-    # Otherwise, show simple plan selection (much simpler than current page)
-    from tier_config import TIER_SPECS, STRIPE_PRICE_MAPPING
-    
-    return render_template('upgrade_simple.html', 
-                         workspace=workspace,
-                         tiers=TIER_SPECS,
-                         price_mapping=STRIPE_PRICE_MAPPING)
+    """Direct redirect to Stripe billing portal"""
+    stripe_billing_url = "https://billing.stripe.com/p/login/test_5kQaEX5Jg1o5g8lg0SgEg00"
+    return redirect(stripe_billing_url)
 
 def handle_payment_intent_succeeded(payment_intent):
     """Handle successful payment intent webhook - upgrade user to paid tier"""

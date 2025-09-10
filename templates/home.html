@@ -1375,14 +1375,14 @@
                     }
                 } else if (response.status === 402) {
                     // Payment required - trial expired
-                    window.location.href = '/subscription/upgrade';
+                    window.location.href = '/upgrade';
                 }
             } catch (error) {
                 console.error('Error loading trial info:', error);
                 
                 // If there's a 402 error (payment required), redirect to upgrade
                 if (error.message && error.message.includes('402')) {
-                    window.location.href = '/subscription/upgrade';
+                    window.location.href = '/upgrade';
                 }
             }
         }

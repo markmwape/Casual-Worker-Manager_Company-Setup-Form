@@ -39,17 +39,32 @@ def subscription_required(f):
             subscription_status = check_subscription_status(workspace)
             
             if subscription_status == 'expired':
-                # Trial has expired and no active subscription
+                # Trial has expired and no active subscription OR subscription canceled/failed
                 if request.is_json:
                     return jsonify({
                         'error': 'Subscription required',
                         'trial_expired': True,
-                        'message': 'Your free trial has expired. Please upgrade to continue using the service.'
+                        'message': 'Your subscription has expired. Please renew to continue using the service.'
                     }), 402  # Payment Required
                 
                 # For regular requests, show upgrade page
                 return render_template('subscription_required.html', workspace=workspace)
             
+            elif subscription_status == 'past_due':
+                # Payment failed - give 3-day grace period
+                if workspace.subscription_end_date:
+                    days_since_due = (datetime.utcnow() - workspace.subscription_end_date).days
+                    if days_since_due > 3:  # Grace period expired
+                        if request.is_json:
+                            return jsonify({
+                                'error': 'Payment overdue',
+                                'payment_failed': True,
+                                'message': 'Your payment has failed. Please update your payment method.'
+                            }), 402  # Payment Required
+                        
+                        return render_template('subscription_required.html', workspace=workspace)
+                    # Still in grace period - allow access but show warning
+                
             elif subscription_status == 'trial_expiring':
                 # Trial is expiring soon (1 day or less)
                 # Allow access but show warning
@@ -68,12 +83,22 @@ def check_subscription_status(workspace):
     """Check the subscription status of a workspace"""
     now = datetime.utcnow()
     
-    # Check if they have an active Stripe subscription
-    if workspace.stripe_subscription_id and workspace.subscription_status == 'active':
-        if workspace.subscription_end_date and workspace.subscription_end_date > now:
-            return 'active'
+    # Check subscription status from Stripe webhooks
+    if workspace.stripe_subscription_id:
+        if workspace.subscription_status == 'active':
+            # Check if subscription end date has passed
+            if workspace.subscription_end_date and workspace.subscription_end_date > now:
+                return 'active'
+            else:
+                return 'expired'  # Subscription end date has passed
+        elif workspace.subscription_status == 'past_due':
+            return 'past_due'  # Failed payment - give grace period
+        elif workspace.subscription_status == 'canceled':
+            return 'expired'  # Subscription was canceled
+        elif workspace.subscription_status in ['unpaid', 'incomplete']:
+            return 'expired'  # Payment issues
     
-    # Check trial status
+    # Check trial status (for users without paid subscriptions)
     if workspace.trial_end_date:
         days_left = (workspace.trial_end_date - now).days
         
@@ -82,11 +107,7 @@ def check_subscription_status(workspace):
         elif days_left >= 0:
             return 'trial_expiring'  # Last day
         else:
-            # Trial has expired, check if they have a subscription
-            if workspace.stripe_subscription_id:
-                return 'active'  # They have a subscription even if trial expired
-            else:
-                return 'expired'  # Trial expired and no subscription
+            return 'expired'  # Trial expired and no active subscription
     
     # Default case - no trial end date set, assume active for now
     return 'trial_active'

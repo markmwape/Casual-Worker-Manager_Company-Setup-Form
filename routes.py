@@ -1942,6 +1942,7 @@ def analyze_columns():
 @subscription_required
 @worker_limit_check
 def import_mapped_workers():
+    file_path = None
     try:
         mapping_str = request.form.get('mapping')
         if not mapping_str:
@@ -1952,11 +1953,17 @@ def import_mapped_workers():
         if not file_id:
             return jsonify({'error': 'File ID not provided'}), 400
         file_path = file_id  # The file_id we stored is the actual path on disk
+        
+        # Check if file exists
+        if not os.path.exists(file_path):
+            return jsonify({'error': 'File not found'}), 400
+            
         df = pd.read_excel(file_path, na_filter=False)
         df = df.dropna(how='all')
         
         # Log the mapping for debugging
         logging.info(f"Column mapping: {mapping}")
+        logging.info(f"Processing {len(df)} rows from Excel file")
         
         # Get current user and company
         user_email = session['user']['user_email']
@@ -1974,6 +1981,7 @@ def import_mapped_workers():
         error_records = 0
         error_details = []
         
+        # Process each row individually
         for index, row in df.iterrows():
             try:
                 # Create new worker with mapped data
@@ -1995,7 +2003,7 @@ def import_mapped_workers():
                         else:
                             custom_field_data[field] = str(row[excel_col]).strip()
                 
-                logging.info(f"Processed data for row {index}: {worker_data}")
+                logging.debug(f"Processed data for row {index + 1}: {worker_data}")
 
                 # Duplicate check – skip if a worker with the same first & last name already exists for this company
                 if worker_data.get('first_name') and worker_data.get('last_name'):
@@ -2006,77 +2014,102 @@ def import_mapped_workers():
                     ).first()
                     if duplicate:
                         duplicate_records += 1
+                        logging.info(f"Skipping duplicate worker: {worker_data.get('first_name')} {worker_data.get('last_name')}")
                         continue
                 
-                new_worker = Worker(
-                    first_name=worker_data.get('first_name', ''),
-                    last_name=worker_data.get('last_name', ''),
-                    date_of_birth=worker_data.get('date_of_birth', None),
-                    company_id=company.id,
-                    user_id=user.id
-                )
-                db.session.add(new_worker)
-                db.session.flush()
+                # Create a savepoint for this worker
+                savepoint = db.session.begin_nested()
                 
-                # Add custom field values
-                for field_name, value in custom_field_data.items():
-                    # If the mapping key is a numeric ID (as the UI sends for existing custom fields), use it directly
-                    if str(field_name).isdigit():
-                        import_field = ImportField.query.filter_by(
-                            id=int(field_name),
-                            company_id=company.id
-                        ).first()
-                    else:
-                        import_field = ImportField.query.filter_by(
-                            name=field_name,
-                            company_id=company.id
-                        ).first()
-                    
-                    if not import_field:
-                        import_field = ImportField(
-                            name=field_name, 
-                            company_id=company.id,
-                            field_type='text'  # Default type
-                        )
-                        db.session.add(import_field)
-                        db.session.flush()
-                    
-                    # Create custom field value
-                    custom_value = WorkerCustomFieldValue(
-                        worker_id=new_worker.id,
-                        custom_field_id=import_field.id,
-                        value=value
+                try:
+                    new_worker = Worker(
+                        first_name=worker_data.get('first_name', ''),
+                        last_name=worker_data.get('last_name', ''),
+                        date_of_birth=worker_data.get('date_of_birth', None),
+                        company_id=company.id,
+                        user_id=user.id
                     )
-                    db.session.add(custom_value)
-                
-                db.session.commit()
-                successful_imports += 1
-                logging.info(f"Successfully imported worker: {new_worker.first_name} {new_worker.last_name}")
-                
+                    db.session.add(new_worker)
+                    db.session.flush()
+                    
+                    # Add custom field values
+                    for field_name, value in custom_field_data.items():
+                        # If the mapping key is a numeric ID (as the UI sends for existing custom fields), use it directly
+                        if str(field_name).isdigit():
+                            import_field = ImportField.query.filter_by(
+                                id=int(field_name),
+                                company_id=company.id
+                            ).first()
+                        else:
+                            import_field = ImportField.query.filter_by(
+                                name=field_name,
+                                company_id=company.id
+                            ).first()
+                        
+                        if not import_field:
+                            import_field = ImportField(
+                                name=field_name, 
+                                company_id=company.id,
+                                field_type='text'  # Default type
+                            )
+                            db.session.add(import_field)
+                            db.session.flush()
+                        
+                        # Create custom field value
+                        custom_value = WorkerCustomFieldValue(
+                            worker_id=new_worker.id,
+                            custom_field_id=import_field.id,
+                            value=value
+                        )
+                        db.session.add(custom_value)
+                    
+                    # Commit the savepoint for this worker
+                    savepoint.commit()
+                    successful_imports += 1
+                    logging.info(f"Successfully imported worker: {new_worker.first_name} {new_worker.last_name}")
+                    
+                except Exception as worker_error:
+                    # Rollback this worker only
+                    savepoint.rollback()
+                    raise worker_error
+                    
             except Exception as e:
-                # If something goes wrong with this row, undo its partial changes but keep previous rows intact
-                db.session.rollback()  # rollback JUST the un-committed state for this iteration
+                # Log the specific error for this row
+                error_msg = f"Row {index + 2}: {str(e)}"
                 error_records += 1
-                error_details.append(f"Row {index + 2}: {str(e)}")
+                error_details.append(error_msg)
                 logging.error(f"Error processing row {index + 2}: {str(e)}")
-                continue  # proceed with next row
+                logging.error(f"Row data: {dict(row)}")
+                # Continue with next row
+                continue
         
+        # Commit the main transaction
         db.session.commit()
         
         # Create import log
-        import_log = WorkerImportLog(
-            company_id=company.id,
-            filename="Mapped Import",
-            total_records=total_records,
-            successful_imports=successful_imports,
-            duplicate_records=duplicate_records,
-            error_records=error_records,
-            error_details='\n'.join(error_details) if error_details else None
-        )
-        db.session.add(import_log)
-        db.session.commit()
+        try:
+            import_log = WorkerImportLog(
+                company_id=company.id,
+                filename="Mapped Import",
+                total_records=total_records,
+                successful_imports=successful_imports,
+                duplicate_records=duplicate_records,
+                error_records=error_records,
+                error_details='\n'.join(error_details) if error_details else None
+            )
+            db.session.add(import_log)
+            db.session.commit()
+            logging.info(f"Created import log: {successful_imports} successful, {error_records} errors, {duplicate_records} duplicates")
+        except Exception as e:
+            logging.error(f"Error creating import log: {str(e)}")
+            # Don't fail the entire import if we can't create the log
         
-        os.remove(file_path)
+        # Clean up the uploaded file
+        try:
+            if file_path and os.path.exists(file_path):
+                os.remove(file_path)
+                logging.info(f"Cleaned up uploaded file: {file_path}")
+        except Exception as e:
+            logging.warning(f"Could not remove uploaded file {file_path}: {str(e)}")
         
         return jsonify({
             'message': 'Import completed',
@@ -2086,10 +2119,21 @@ def import_mapped_workers():
             'error_records': error_records,
             'error_details': error_details
         }), 200
+        
     except Exception as e:
         logging.error(f"Error importing mapped workers: {str(e)}")
+        logging.error(f"Traceback: {traceback.format_exc()}")
+        
+        # Clean up the uploaded file even on error
+        try:
+            if file_path and os.path.exists(file_path):
+                os.remove(file_path)
+                logging.info(f"Cleaned up uploaded file after error: {file_path}")
+        except Exception as cleanup_error:
+            logging.warning(f"Could not remove uploaded file {file_path} after error: {str(cleanup_error)}")
+        
         db.session.rollback()
-        return jsonify({'error': 'Failed to import workers'}), 500
+        return jsonify({'error': f'Failed to import workers: {str(e)}'}), 500
 @app.route("/api/worker/<int:worker_id>", methods=['DELETE'])
 def delete_worker(worker_id):
     try:

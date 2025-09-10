@@ -906,6 +906,15 @@ window.importWithMapping = function() {
         }
     });
     
+    console.log('Starting import with mapping:', mapping);
+    console.log('File ID:', fileId);
+    
+    // Show loading state
+    const importButton = document.querySelector('button[onclick="importWithMapping()"]');
+    const originalText = importButton.textContent;
+    importButton.disabled = true;
+    importButton.innerHTML = '<i class="material-icons">hourglass_empty</i>Importing...';
+    
     fetch('/api/worker/import-mapped', {
         method: 'POST',
         headers: {
@@ -916,18 +925,46 @@ window.importWithMapping = function() {
             'file_id': fileId
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(result => {
+        console.log('Import result:', result);
+        
         if (result.error) {
-            alert(result.error);
+            alert(`Import failed: ${result.error}`);
         } else {
+            // Show success message with details
+            const successMsg = `Import completed successfully!\n\nTotal records: ${result.total_records}\nSuccessful imports: ${result.successful_imports}\nDuplicates skipped: ${result.duplicate_records}\nErrors: ${result.error_records}`;
+            
+            if (result.error_records > 0) {
+                const showDetails = confirm(successMsg + '\n\nWould you like to see the error details?');
+                if (showDetails && result.error_details) {
+                    alert('Error details:\n' + result.error_details.join('\n'));
+                }
+            } else {
+                alert(successMsg);
+            }
+            
+            // Switch to results view
             document.getElementById('columnMapping').classList.add('hidden');
             document.getElementById('importResults').classList.remove('hidden');
         }
     })
     .catch(error => {
         console.error('Error importing workers:', error);
-        alert('Failed to import workers');
+        alert(`Failed to import workers: ${error.message}\n\nPlease check the browser console for more details and try again.`);
+    })
+    .finally(() => {
+        // Reset button state
+        importButton.disabled = false;
+        importButton.innerHTML = originalText;
     });
 }
 

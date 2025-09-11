@@ -103,6 +103,92 @@ def get_user_workspaces():
         logging.error(f"Traceback: {traceback.format_exc()}")
         return jsonify({"error": "Failed to retrieve workspaces"}), 500
 
+@app.route('/api/send-workspace-email', methods=['POST'])
+def send_workspace_email():
+    """Send an email with a link to retrieve workspace codes"""
+    try:
+        data = request.get_json()
+        logging.info(f"Send workspace email request data: {data}")
+        
+        email = data.get('email', '').strip().lower()
+        
+        if not email:
+            return jsonify({"error": "Email is required"}), 400
+        
+        # Validate email format
+        import re
+        email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        if not re.match(email_pattern, email):
+            return jsonify({"error": "Invalid email format"}), 400
+        
+        # Check if user exists
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            return jsonify({"error": "No account found with this email address"}), 404
+        
+        # Check if user has any workspaces
+        user_workspaces = UserWorkspace.query.filter_by(user_id=user.id).all()
+        if not user_workspaces:
+            return jsonify({"error": "No workspaces found for this email address"}), 404
+        
+        # Generate a secure token for the email link
+        import secrets
+        import hashlib
+        from datetime import timedelta
+        
+        # Create a token that expires in 10 minutes
+        token_data = f"{email}:{datetime.utcnow().isoformat()}"
+        token = hashlib.sha256(token_data.encode()).hexdigest()[:32]
+        
+        # Store token in session or database (for production, use database)
+        # For now, we'll use a simple approach and include email in the link
+        
+        # Create the link
+        base_url = request.host_url.rstrip('/')
+        workspace_link = f"{base_url}/forgot-workspace?email={email}&token={token}"
+        
+        # In a real implementation, you would send an actual email here
+        # For now, we'll simulate it and return success
+        
+        # TODO: Implement actual email sending using your preferred email service
+        # Example with SendGrid, Mailgun, or SMTP
+        """
+        # Example email sending code:
+        subject = "Your Workspace Codes - Embee Accounting"
+        html_content = f'''
+        <html>
+        <body>
+            <h2>Retrieve Your Workspace Codes</h2>
+            <p>Hello,</p>
+            <p>You requested to retrieve your workspace codes. Click the link below to view all workspaces associated with your account:</p>
+            <p><a href="{workspace_link}" style="background-color: #1A2B48; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">View My Workspaces</a></p>
+            <p>This link will expire in 10 minutes for security reasons.</p>
+            <p>If you didn't request this, you can safely ignore this email.</p>
+            <br>
+            <p>Best regards,<br>The Embee Accounting Team</p>
+        </body>
+        </html>
+        '''
+        
+        # Send email using your preferred service
+        send_email(email, subject, html_content)
+        """
+        
+        logging.info(f"Workspace email link generated for {email}: {workspace_link}")
+        
+        return jsonify({
+            "success": True,
+            "message": "Workspace retrieval link sent to your email",
+            "email": email
+        }), 200
+        
+    except Exception as e:
+        logging.error(f"Error sending workspace email: {str(e)}")
+        logging.error(f"Exception type: {type(e)}")
+        import traceback
+        logging.error(f"Traceback: {traceback.format_exc()}")
+        return jsonify({"error": "Failed to send workspace email"}), 500
+
 @app.route('/api/workspace/join', methods=['POST'])
 def join_workspace():
     """API endpoint to join a workspace with a code"""

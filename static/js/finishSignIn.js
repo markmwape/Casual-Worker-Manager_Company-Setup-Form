@@ -48,12 +48,77 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 
                 if (response.ok) {
-                    console.log('Session set successfully, redirecting to home');
-                    // Clear workspace data from sessionStorage
+                    console.log('Session set successfully');
+                    
                     if (workspaceData) {
+                        // User has workspace data, clear it and go to home
                         sessionStorage.removeItem('pending_workspace');
+                        console.log('Redirecting to home (user has workspace)');
+                        window.location.href = '/home';
+                    } else {
+                        // No workspace data - check if user came from email link and auto-select workspace if they have only one
+                        console.log('No workspace data, checking user workspaces...');
+                        
+                        try {
+                            const workspacesResponse = await fetch('/api/user/workspaces', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({ email: user.email })
+                            });
+                            
+                            if (workspacesResponse.ok) {
+                                const workspacesData = await workspacesResponse.json();
+                                
+                                if (workspacesData.success && workspacesData.workspaces && workspacesData.workspaces.length === 1) {
+                                    // User has exactly one workspace, auto-select it
+                                    const workspace = workspacesData.workspaces[0];
+                                    console.log('Auto-selecting single workspace:', workspace.name);
+                                    
+                                    const selectResponse = await fetch('/api/workspace/join', {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json'
+                                        },
+                                        body: JSON.stringify({
+                                            workspace_code: workspace.code
+                                        })
+                                    });
+                                    
+                                    if (selectResponse.ok) {
+                                        const selectData = await selectResponse.json();
+                                        // Set session with the workspace
+                                        const sessionResponse2 = await fetch('/set_session', {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json'
+                                            },
+                                            body: JSON.stringify({
+                                                email: user.email,
+                                                displayName: user.displayName || '',
+                                                photoURL: user.photoURL || '',
+                                                uid: user.uid,
+                                                workspace_data: selectData.workspace
+                                            })
+                                        });
+                                        
+                                        if (sessionResponse2.ok) {
+                                            console.log('Auto-selected workspace successfully, redirecting to home');
+                                            window.location.href = '/home';
+                                            return;
+                                        }
+                                    }
+                                }
+                            }
+                        } catch (error) {
+                            console.error('Error checking user workspaces:', error);
+                        }
+                        
+                        // Fallback: redirect to workspace selection
+                        console.log('Redirecting to workspace selection');
+                        window.location.href = '/workspace-selection';
                     }
-                    window.location.href = '/home';
                 } else {
                     const errorData = await response.json();
                     console.error('Failed to set session:', errorData);

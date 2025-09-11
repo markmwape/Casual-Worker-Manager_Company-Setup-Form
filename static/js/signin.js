@@ -83,12 +83,18 @@ function setupEventListeners() {
                 });
                 
                 if (sessionResponse.ok) {
-                    console.log('Session set successfully, redirecting to home');
-                    // Clear workspace data from sessionStorage
+                    console.log('Session set successfully');
+                    
                     if (workspaceData) {
+                        // User has workspace data, clear it and go to home
                         sessionStorage.removeItem('pending_workspace');
+                        console.log('Redirecting to home (user has workspace)');
+                        window.location.href = '/home';
+                    } else {
+                        // No workspace data - redirect to workspace selection
+                        console.log('Redirecting to workspace selection (no workspace data)');
+                        window.location.href = '/workspace-selection';
                     }
-                    window.location.href = '/home';
                 } else {
                     const errorData = await sessionResponse.json();
                     console.error('Failed to set session:', errorData);

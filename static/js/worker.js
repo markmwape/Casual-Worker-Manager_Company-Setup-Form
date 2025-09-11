@@ -1,18 +1,3 @@
-function toggleEditWorkersMode() {
-    const deleteColumns = document.querySelectorAll('[id^="deleteColumn-"]');
-    const deleteColumnHeader = document.getElementById('deleteColumnHeader');
-    const editToggleButton = document.getElementById('editWorkersToggle');
-    const deleteAllBtn = document.getElementById('deleteAllBtn');
-
-    deleteColumns.forEach(column => {
-        column.classList.toggle('hidden');
-    });
-
-    deleteColumnHeader.classList.toggle('hidden');
-    deleteAllBtn.classList.toggle('hidden');
-    editToggleButton.classList.toggle('btn-outline');
-}
-
 function openDeleteWorkerModal(workerId) {
     document.getElementById('delete-worker-id').value = workerId;
     document.getElementById('delete-worker-modal').showModal();
@@ -65,6 +50,39 @@ function deleteAllWorkers() {
     })
     .finally(() => {
         document.getElementById('delete-all-workers-modal').close();
+    });
+}
+
+function deleteSelectedWorkers() {
+    const checkboxes = document.querySelectorAll('.worker-checkbox');
+    const selectedIds = Array.from(checkboxes)
+        .filter(cb => cb.checked)
+        .map(cb => cb.getAttribute('data-worker-id'));
+    
+    if (selectedIds.length === 0) {
+        alert('Please select workers to delete');
+        return;
+    }
+    
+    if (!confirm(`Are you sure you want to delete ${selectedIds.length} selected worker(s)?`)) {
+        return;
+    }
+    
+    fetch('/api/worker/bulk-delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ worker_ids: selectedIds })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.error) {
+            alert(result.error);
+        } else {
+            window.location.reload();
+        }
+    })
+    .catch(error => {
+        alert('Error deleting selected workers: ' + error.message);
     });
 }
 

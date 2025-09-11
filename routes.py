@@ -2419,6 +2419,39 @@ def bulk_delete_workers():
         db.session.rollback()
         return jsonify({'error': 'Failed to bulk delete workers'}), 500
 
+@app.route("/api/worker/delete-all", methods=['DELETE'])
+@subscription_required
+@feature_required('bulk_operations')
+def delete_all_workers():
+    try:
+        # Get current company from workspace
+        company = get_current_company()
+        if not company:
+            return jsonify({'error': 'Company not found'}), 404
+
+        # Get all workers for this company
+        workers = Worker.query.filter_by(company_id=company.id).all()
+        worker_ids = [worker.id for worker in workers]
+        
+        if not worker_ids:
+            return jsonify({'message': 'No workers to delete'}), 200
+
+        # Delete related custom field values and attendance records
+        WorkerCustomFieldValue.query.filter(WorkerCustomFieldValue.worker_id.in_(worker_ids)).delete(synchronize_session=False)
+        Attendance.query.filter(Attendance.worker_id.in_(worker_ids)).delete(synchronize_session=False)
+        
+        # Delete all workers for this company
+        Worker.query.filter_by(company_id=company.id).delete(synchronize_session=False)
+        
+        db.session.commit()
+        logging.info(f"All {len(worker_ids)} workers deleted from company {company.id}")
+        return jsonify({'message': f'All {len(worker_ids)} workers deleted successfully'}), 200
+        
+    except Exception as e:
+        logging.error(f"Error deleting all workers: {str(e)}")
+        db.session.rollback()
+        return jsonify({'error': 'Failed to delete all workers'}), 500
+
 @app.route("/api/task/<int:task_id>/update-date", methods=['POST'])
 def update_task_date(task_id):
     try:

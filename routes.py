@@ -48,6 +48,61 @@ def workspace_selection_route():
     """Route for workspace selection page"""
     return render_template('workspace_selection.html')
 
+@app.route('/forgot-workspace')
+def forgot_workspace_route():
+    """Route for forgot workspace page"""
+    return render_template('forgot_workspace.html')
+
+@app.route('/api/user/workspaces', methods=['POST'])
+def get_user_workspaces():
+    """Get all workspaces associated with a user's email"""
+    try:
+        data = request.get_json()
+        logging.info(f"Get user workspaces request data: {data}")
+        
+        email = data.get('email', '').strip().lower()
+        
+        if not email:
+            return jsonify({"error": "Email is required"}), 400
+        
+        # Find user by email
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            return jsonify({"error": "No account found with this email address"}), 404
+        
+        # Get all workspaces this user has access to
+        user_workspaces = UserWorkspace.query.filter_by(user_id=user.id).all()
+        
+        if not user_workspaces:
+            return jsonify({"error": "No workspaces found for this email address"}), 404
+        
+        workspaces_data = []
+        for uw in user_workspaces:
+            workspace = uw.workspace
+            if workspace:
+                workspaces_data.append({
+                    "id": workspace.id,
+                    "name": workspace.name,
+                    "code": workspace.workspace_code,
+                    "role": uw.role,
+                    "country": workspace.country,
+                    "industry": workspace.industry_type,
+                    "created_at": workspace.created_at.strftime('%Y-%m-%d') if workspace.created_at else None
+                })
+        
+        return jsonify({
+            "success": True,
+            "workspaces": workspaces_data,
+            "user_email": email
+        }), 200
+        
+    except Exception as e:
+        logging.error(f"Error getting user workspaces: {str(e)}")
+        logging.error(f"Exception type: {type(e)}")
+        import traceback
+        logging.error(f"Traceback: {traceback.format_exc()}")
+        return jsonify({"error": "Failed to retrieve workspaces"}), 500
+
 @app.route('/api/workspace/join', methods=['POST'])
 def join_workspace():
     """API endpoint to join a workspace with a code"""

@@ -20,6 +20,25 @@ document.addEventListener('DOMContentLoaded', function() {
     const joinError = document.getElementById('join-error');
     const createError = document.getElementById('create-error');
 
+    // Check for workspace code in URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const workspaceCodeFromUrl = urlParams.get('code');
+    
+    if (workspaceCodeFromUrl) {
+        const workspaceCodeInput = document.getElementById('workspace-code');
+        workspaceCodeInput.value = workspaceCodeFromUrl.toUpperCase();
+        // Scroll to the join form
+        joinForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Highlight the join form temporarily
+        const joinCard = joinForm.closest('.card');
+        if (joinCard) {
+            joinCard.style.boxShadow = '0 0 20px rgba(16, 185, 129, 0.3)';
+            setTimeout(() => {
+                joinCard.style.boxShadow = '';
+            }, 3000);
+        }
+    }
+
     // Format workspace code input
     const workspaceCodeInput = document.getElementById('workspace-code');
     workspaceCodeInput.addEventListener('input', function(e) {

@@ -12,6 +12,23 @@ from datetime import datetime, timedelta
 
 # Tier Specifications - Simplified: Primary differentiator is worker limit!
 TIER_SPECS = {
+    'trial': {
+        'name': '🎉 Free Trial',
+        'description': '30-day free trial with full access',
+        'price_monthly_usd': 0,
+        'price_yearly_usd': 0,
+        'worker_limit': None,  # Unlimited during trial
+        'features': {
+            'worker_management': True,
+            'task_management': True, 
+            'attendance_tracking': True,
+            'reporting': True,
+        },
+        'limits': {
+            'max_workers': None,  # Unlimited during trial
+        }
+    },
+    
     'starter': {
         'name': '👥 Starter',
         'description': 'Up to 50 workers',
@@ -152,7 +169,7 @@ STRIPE_PRICE_MAPPING = {
 # Helper Functions
 def get_tier_spec(tier_name):
     """Get complete tier specification"""
-    return TIER_SPECS.get(tier_name.lower(), TIER_SPECS['starter'])
+    return TIER_SPECS.get(tier_name.lower(), TIER_SPECS['trial'])
 
 def get_worker_limit(tier_name):
     """Get worker limit for tier (None = unlimited)"""
@@ -184,7 +201,7 @@ def get_price_by_product_and_amount(product_id, amount_cents):
         'prod_T1EOEHvwiG2NHk': 'growth',
         'prod_T1EQLnddFuPiqg': 'enterprise',  # Default for shared product ID
     }
-    return product_to_tier.get(product_id, 'starter')
+    return product_to_tier.get(product_id, 'trial')
 
 def get_all_tiers():
     """Get list of all available tiers"""
@@ -206,7 +223,7 @@ def get_tier_from_price_id(price_id):
     for price_key, price_info in STRIPE_PRICE_MAPPING.items():
         if price_info['price_id'] == price_id:
             return price_info['tier']
-    return 'starter'  # Default fallback
+    return 'trial'  # Default fallback for trial users
 
 def get_price_id_for_tier(tier_name, billing='monthly'):
     """Get Stripe price ID for a tier and billing period"""
@@ -219,7 +236,7 @@ def validate_tier_access(workspace, worker_count=None):
     Simplified tier validation - primarily focused on worker limits
     Returns: (is_allowed, reason)
     """
-    tier = workspace.subscription_tier or 'starter'
+    tier = workspace.subscription_tier or 'trial'
     
     # Primary validation: Check worker limit
     if worker_count is not None:

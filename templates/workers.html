@@ -17,9 +17,11 @@
     <div class="card bg-base-100 shadow-2xl rounded-2xl overflow-hidden">
         <div class="card-body">
             <div class="flex justify-between mb-4 items-center">
-                <div class="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border-2 border-black">
-                    <input type="checkbox" id="selectAllWorkers" class="checkbox checkbox-lg checkbox-primary align-middle">
-                    <label for="selectAllWorkers" class="font-semibold text-blue-900 cursor-pointer">Select All Workers</label>
+                <div class="flex items-center gap-3">
+                    <div class="border border-blue-200 rounded p-1">
+                        <input type="checkbox" id="selectAllWorkers" class="checkbox checkbox-primary align-middle">
+                    </div>
+                    <label for="selectAllWorkers" class="font-semibold text-blue-900 cursor-pointer">Select All</label>
                     <button id="deleteSelectedBtn" class="gradient-circle-btn-red ml-4 hidden" title="Delete Selected" onclick="deleteSelectedWorkers()">
                         <i data-feather="trash-2"></i>
                     </button>
@@ -42,7 +44,7 @@
                         {% for worker in workers %}
                         <tr class="hover:bg-blue-50/60 transition-colors duration-150 {% if loop.index0 % 2 == 0 %}bg-white{% else %}bg-blue-50/40{% endif %}">
                             <td class="text-center align-middle">
-                                <input type="checkbox" class="worker-checkbox checkbox" data-worker-id="{{ worker.id }}">
+                                <input type="checkbox" class="worker-checkbox checkbox checkbox-primary" data-worker-id="{{ worker.id }}">
                             </td>
                             {% for field in all_fields %}
                             <td class="py-3 px-4 align-middle">

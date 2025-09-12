@@ -55,11 +55,24 @@ async function initializeApp() {
 function setupEventListeners() {
     const googleButton = document.getElementById('google-signin');
     const provider = new GoogleAuthProvider();
+    let isSigningIn = false; // Prevent multiple simultaneous sign-in attempts
 
-    googleButton.addEventListener('click', () => {
+    googleButton.addEventListener('click', async () => {
+        if (isSigningIn) {
+            console.log('Sign-in already in progress, ignoring click');
+            return;
+        }
+
         console.log('Google sign-in button clicked');
-        signInWithPopup(window.firebaseAuth, provider)
-        .then(async (result) => {
+        isSigningIn = true;
+        
+        // Update button state
+        const originalText = googleButton.innerHTML;
+        googleButton.disabled = true;
+        googleButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Signing in...';
+        
+        try {
+            const result = await signInWithPopup(window.firebaseAuth, provider);
             console.log('Google sign-in successful:', result.user);
             const user = result.user;
             
@@ -104,15 +117,46 @@ function setupEventListeners() {
                     } else {
                         alert('Failed to complete sign-in. Please try again.');
                     }
+                    
+                    // Reset button state on error
+                    isSigningIn = false;
+                    googleButton.disabled = false;
+                    googleButton.innerHTML = originalText;
                 }
             } catch (error) {
                 console.error('Error setting session:', error);
                 alert('Failed to complete sign-in. Please try again.');
+                
+                // Reset button state on error
+                isSigningIn = false;
+                googleButton.disabled = false;
+                googleButton.innerHTML = originalText;
             }
-        }).catch((error) => {
+        } catch (error) {
             console.error('Error during Google sign in:', error.message);
-            alert('Sign-in failed: ' + error.message);
-        });
+            
+            // Handle specific Firebase errors
+            if (error.code === 'auth/cancelled-popup-request') {
+                console.log('Sign-in popup was cancelled or another popup was already open');
+                // Don't show error for cancelled popups as it's user action
+            } else if (error.code === 'auth/popup-blocked') {
+                alert('Sign-in popup was blocked by your browser. Please allow popups for this site and try again.');
+            } else if (error.code === 'auth/popup-closed-by-user') {
+                console.log('Sign-in popup was closed by user');
+                // Don't show error for user-closed popups
+            } else if (error.code === 'auth/network-request-failed') {
+                alert('Network error occurred. Please check your internet connection and try again.');
+            } else if (error.message && error.message.includes('certificate')) {
+                alert('SSL certificate error. Please make sure you are accessing the site via HTTPS or contact support.');
+            } else {
+                alert('Sign-in failed: ' + error.message);
+            }
+            
+            // Reset button state
+            isSigningIn = false;
+            googleButton.disabled = false;
+            googleButton.innerHTML = originalText;
+        }
     });
 
     document.getElementById('signin-form').addEventListener('submit', async (e) => {

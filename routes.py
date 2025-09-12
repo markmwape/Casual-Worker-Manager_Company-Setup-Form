@@ -4098,10 +4098,21 @@ def get_firebase_config():
         if firebase_config_str:
             firebase_config = json.loads(firebase_config_str)
         else:
+            # Get the current domain for authDomain
+            current_domain = request.host
+            auth_domain = "ember-accounting.firebaseapp.com"
+            
+            # For local development, use localhost
+            if 'localhost' in current_domain or '127.0.0.1' in current_domain:
+                auth_domain = "ember-accounting.firebaseapp.com"
+            # For production, you might want to use your custom domain
+            elif 'run.app' in current_domain:
+                auth_domain = "ember-accounting.firebaseapp.com"  # Keep Firebase domain for now
+            
             # New Firebase configuration for ember-accounting project
             firebase_config = {
                 "apiKey": "AIzaSyD9_N_0ve9ABFwwnTBn1N2oxlUs6xbT-No",
-                "authDomain": "ember-accounting.firebaseapp.com",
+                "authDomain": auth_domain,
                 "projectId": "ember-accounting",
                 "storageBucket": "ember-accounting.firebasestorage.app",
                 "messagingSenderId": "328324461979",
@@ -4109,6 +4120,7 @@ def get_firebase_config():
                 "measurementId": "G-F1XTE0TP63"
             }
         
+        logging.info(f"Firebase config authDomain: {firebase_config.get('authDomain')}")
         return jsonify(firebase_config)
     except Exception as e:
         logging.error(f"Error retrieving Firebase config: {str(e)}")

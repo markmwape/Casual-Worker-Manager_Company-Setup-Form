@@ -19,11 +19,17 @@ COPY . /app
 
 # Create a non-root user for security
 RUN adduser --disabled-password --gecos '' appuser
+
+# Copy startup script before changing ownership
+COPY startup.sh /app/startup.sh
+RUN chmod +x /app/startup.sh
+
+# Change ownership after copying everything
 RUN chown -R appuser:appuser /app
 USER appuser
 
 # Expose port
 EXPOSE 8080
 
-# Start Gunicorn directly on the correct port
-ENTRYPOINT ["bash", "-lc", "python3 -m alembic upgrade head && exec gunicorn wsgi:app -b 0.0.0.0:8080 --workers 1 --timeout 300 --log-level info --access-logfile - --error-logfile -"]
+# Start with the startup script
+ENTRYPOINT ["/app/startup.sh"]

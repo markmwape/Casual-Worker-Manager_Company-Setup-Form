@@ -203,6 +203,9 @@ class Task(db.Model):
     per_part_rate = db.Column(db.Float, nullable=True)
     per_part_payout = db.Column(db.Float, nullable=True)  # Alias for per_part_rate, for template compatibility
     per_part_currency = db.Column(db.String(10), nullable=True)
+    # Per-day payment fields
+    per_day_payout = db.Column(db.Float, nullable=True)  # Individual daily payout for this task
+    per_day_currency = db.Column(db.String(10), nullable=True)  # Currency for daily payout
     # Relationships
     attendance_records = db.relationship('Attendance', backref='task', lazy=True, cascade='all, delete-orphan')
 

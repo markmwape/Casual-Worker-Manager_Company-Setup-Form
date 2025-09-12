@@ -34,7 +34,7 @@
                             </label>
                             <ul tabindex="0" class="dropdown-content menu p-2 shadow-lg bg-white rounded-lg w-52 text-sm border border-gray-200" style="position: absolute; z-index: 100000; right: 0; top: 100%; margin-top: 0.5rem; min-width: 160px; overflow: visible;">
                                 <li>
-                                    <a href='javascript:void(0);' onclick='openEditTaskModal({{ task.id|tojson }}, {{ task.name|tojson }}, {{ task.description|tojson }}, {{ task.start_date.strftime("%Y-%m-%d")|tojson }}, {{ task.payment_type|tojson }}, {{ task.per_part_payout|tojson }}, {{ task.per_part_currency|tojson }})' class="hover:bg-gray-50">
+                                    <a href='javascript:void(0);' onclick='openEditTaskModal({{ task.id|tojson }}, {{ task.name|tojson }}, {{ task.description|tojson }}, {{ task.start_date.strftime("%Y-%m-%d")|tojson }}, {{ task.payment_type|tojson }}, {{ task.per_part_payout|tojson }}, {{ task.per_part_currency|tojson }}, {{ task.per_day_payout|tojson }}, {{ task.per_day_currency|tojson }})' class="hover:bg-gray-50">
                                         <i class="fas fa-edit w-4 h-4"></i>Edit Task
                                     </a>
                                 </li>
@@ -58,6 +58,13 @@
                         <div class="flex items-center text-blue-700 font-medium">
                             <i class="fas fa-coins mr-2 text-blue-600"></i>
                             <span class="text-sm">Payout per unit: {{ task.per_part_payout }} {{ task.per_part_currency or '' }}</span>
+                        </div>
+                    </div>
+                    {% elif task.payment_type == 'per_day' and task.per_day_payout %}
+                    <div class="mb-4 p-3 bg-green-50 rounded-lg border border-green-100">
+                        <div class="flex items-center text-green-700 font-medium">
+                            <i class="fas fa-calendar-day mr-2 text-green-600"></i>
+                            <span class="text-sm">Daily payout per worker: {{ task.per_day_payout }} {{ task.per_day_currency or '' }}</span>
                         </div>
                     </div>
                     {% endif %}
@@ -222,7 +229,7 @@
         });
     }
 
-    function openEditTaskModal(taskId, name, description, startDate, paymentType, perPartPayout, perPartCurrency) {
+    function openEditTaskModal(taskId, name, description, startDate, paymentType, perPartPayout, perPartCurrency, perDayPayout, perDayCurrency) {
         closeAllDropdowns();
         setDropdownsDisabled(true);
         const modal = document.getElementById('edit-task-modal');
@@ -232,17 +239,22 @@
         // Set the start date value
         const startDateInput = document.getElementById('edit-task-start-date');
         startDateInput.value = startDate;
-        // Set payment type
+        // Set payment type and show appropriate group
         if (paymentType === 'per_part') {
             document.getElementById('edit-payment-type-part').checked = true;
             document.getElementById('edit-per-part-payout-group').style.display = '';
+            document.getElementById('edit-per-day-payout-group').style.display = 'none';
         } else {
             document.getElementById('edit-payment-type-day').checked = true;
             document.getElementById('edit-per-part-payout-group').style.display = 'none';
+            document.getElementById('edit-per-day-payout-group').style.display = '';
         }
         // Set per-part payout and currency
         document.getElementById('edit-per-part-payout').value = perPartPayout || '';
         document.getElementById('edit-per-part-currency').value = perPartCurrency || '';
+        // Set per-day payout and currency
+        document.getElementById('edit-per-day-payout').value = perDayPayout || '';
+        document.getElementById('edit-per-day-currency').value = perDayCurrency || '';
         // Setup toggle
         setupEditPaymentTypeToggle();
         modal.classList.add('modal-open');
@@ -255,13 +267,17 @@
 
     function setupEditPaymentTypeToggle() {
         const perPartGroup = document.getElementById('edit-per-part-payout-group');
+        const perDayGroup = document.getElementById('edit-per-day-payout-group');
         const radios = document.querySelectorAll('input[name="edit_payment_type"]');
+        
         radios.forEach(radio => {
             radio.addEventListener('change', function() {
                 if (this.value === 'per_part') {
                     perPartGroup.style.display = '';
+                    perDayGroup.style.display = 'none';
                 } else {
                     perPartGroup.style.display = 'none';
+                    perDayGroup.style.display = '';
                 }
             });
         });
@@ -280,6 +296,9 @@
         const paymentType = formData.get('edit_payment_type') || 'per_day';
         let perPartPayout = null;
         let perPartCurrency = null;
+        let perDayPayout = null;
+        let perDayCurrency = null;
+        
         if (paymentType === 'per_part') {
             perPartPayout = formData.get('edit_per_part_payout');
             perPartCurrency = formData.get('edit_per_part_currency');
@@ -293,7 +312,21 @@
                 document.getElementById('edit-per-part-currency').focus();
                 return;
             }
+        } else {
+            perDayPayout = formData.get('edit_per_day_payout');
+            perDayCurrency = formData.get('edit_per_day_currency');
+            if (!perDayPayout || isNaN(perDayPayout) || Number(perDayPayout) <= 0) {
+                alert('Please enter a valid daily payout per worker.');
+                document.getElementById('edit-per-day-payout').focus();
+                return;
+            }
+            if (!perDayCurrency || perDayCurrency.trim() === '') {
+                alert('Please select a currency for daily payout.');
+                document.getElementById('edit-per-day-currency').focus();
+                return;
+            }
         }
+        
         fetch(`/api/task/${taskId}`, {
             method: 'PUT',
             headers: {
@@ -305,7 +338,9 @@
                 start_date: formData.get('start_date'),
                 payment_type: paymentType,
                 per_part_payout: perPartPayout,
-                per_part_currency: perPartCurrency
+                per_part_currency: perPartCurrency,
+                per_day_payout: perDayPayout,
+                per_day_currency: perDayCurrency
             })
         })
         .then(response => response.json())

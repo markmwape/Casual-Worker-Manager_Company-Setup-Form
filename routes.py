@@ -1211,7 +1211,9 @@ def create_task():
             status=status,
             payment_type=data.get('payment_type', 'per_day'),
             per_part_payout=data.get('per_part_payout'),
-            per_part_currency=data.get('per_part_currency')
+            per_part_currency=data.get('per_part_currency'),
+            per_day_payout=data.get('per_day_payout'),
+            per_day_currency=data.get('per_day_currency')
         )
         db.session.add(new_task)
         db.session.commit()
@@ -2629,8 +2631,8 @@ def update_task_date(task_id):
         db.session.rollback()
         return jsonify({'error': 'Failed to update task date'}), 500
 
-@app.route("/api/task/<int:task_id>", methods=['DELETE'])
-def delete_task(task_id):
+@app.route("/api/task/<int:task_id>", methods=['DELETE', 'PUT'])
+def manage_task(task_id):
     try:
         # Get current company from workspace
         company = get_current_company()
@@ -2643,22 +2645,54 @@ def delete_task(task_id):
         
         if not task:
             return jsonify({'error': 'Task not found'}), 404
+        
+        if request.method == 'DELETE':
+            # Delete attendance records for this task
+            Attendance.query.filter_by(
+                task_id=task.id
+            ).delete()
             
-        # Delete attendance records for this task
-        Attendance.query.filter_by(
-            task_id=task.id
-        ).delete()
-        
-        # Delete task
-        db.session.delete(task)
-        db.session.commit()
-        
-        return jsonify({'message': 'Task deleted successfully'}), 200
+            # Delete task
+            db.session.delete(task)
+            db.session.commit()
+            
+            return jsonify({'message': 'Task deleted successfully'}), 200
+            
+        elif request.method == 'PUT':
+            # Update task
+            data = request.get_json()
+            
+            # Validate required fields
+            if not data.get('name'):
+                return jsonify({'error': 'Task name is required'}), 400
+            if not data.get('start_date'):
+                return jsonify({'error': 'Start date is required'}), 400
+            
+            try:
+                # Parse start date
+                start_date = datetime.fromisoformat(data['start_date'])
+            except ValueError as e:
+                logging.error(f"Invalid date format: {data['start_date']}")
+                return jsonify({'error': 'Invalid date format. Use YYYY-MM-DD'}), 400
+            
+            # Update task fields
+            task.name = data['name']
+            task.description = data.get('description', '')
+            task.start_date = start_date
+            task.payment_type = data.get('payment_type', 'per_day')
+            task.per_part_payout = data.get('per_part_payout')
+            task.per_part_currency = data.get('per_part_currency')
+            task.per_day_payout = data.get('per_day_payout')
+            task.per_day_currency = data.get('per_day_currency')
+            
+            db.session.commit()
+            
+            return jsonify({'message': 'Task updated successfully'}), 200
         
     except Exception as e:
-        logging.error(f"Error deleting task: {str(e)}")
+        logging.error(f"Error managing task: {str(e)}")
         db.session.rollback()
-        return jsonify({'error': 'Failed to delete task'}), 500
+        return jsonify({'error': 'Failed to manage task'}), 500
 
 @app.route("/api/task/<int:task_id>/status", methods=['POST'])
 def update_task_status(task_id):

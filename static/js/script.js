@@ -269,7 +269,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('Response status:', response.status);
                 return response.json();
             })
-            .then(result => {
+            .then result => {
                 console.log('Response result:', result);
                 if (result.error) {
                     showToast(result.error, 'error');
@@ -425,13 +425,29 @@ function closeAddTaskModal() {
 // Payment type logic for add task modal
 function setupPaymentTypeToggle() {
     const perPartGroup = document.getElementById('per-part-payout-group');
+    const perDayGroup = document.getElementById('per-day-payout-group');
     const radios = document.querySelectorAll('input[name="payment_type"]');
+    
     radios.forEach(radio => {
         radio.addEventListener('change', function() {
             if (this.value === 'per_part') {
                 perPartGroup.style.display = '';
+                perDayGroup.style.display = 'none';
+                // Make per-part fields required
+                document.getElementById('per-part-payout').required = true;
+                document.getElementById('per-part-currency').required = true;
+                // Make per-day fields not required
+                document.getElementById('per-day-payout').required = false;
+                document.getElementById('per-day-currency').required = false;
             } else {
                 perPartGroup.style.display = 'none';
+                perDayGroup.style.display = '';
+                // Make per-day fields required
+                document.getElementById('per-day-payout').required = true;
+                document.getElementById('per-day-currency').required = true;
+                // Make per-part fields not required
+                document.getElementById('per-part-payout').required = false;
+                document.getElementById('per-part-currency').required = false;
             }
         });
     });
@@ -473,6 +489,9 @@ function createTask(event) {
     const paymentType = formData.get('payment_type') || 'per_day';
     let perPartPayout = null;
     let perPartCurrency = null;
+    let perDayPayout = null;
+    let perDayCurrency = null;
+    
     if (paymentType === 'per_part') {
         perPartPayout = formData.get('per_part_payout');
         perPartCurrency = formData.get('per_part_currency');
@@ -488,6 +507,21 @@ function createTask(event) {
             document.getElementById('per-part-currency').focus();
             return;
         }
+    } else {
+        perDayPayout = formData.get('per_day_payout');
+        perDayCurrency = formData.get('per_day_currency');
+        if (!perDayPayout || isNaN(perDayPayout) || Number(perDayPayout) <= 0) {
+            errorDiv.textContent = 'Please enter a valid daily payout per worker.';
+            errorDiv.style.display = '';
+            document.getElementById('per-day-payout').focus();
+            return;
+        }
+        if (!perDayCurrency || perDayCurrency.trim() === '') {
+            errorDiv.textContent = 'Please enter a currency for daily payout.';
+            errorDiv.style.display = '';
+            document.getElementById('per-day-currency').focus();
+            return;
+        }
     }
     fetch('/api/task', {
         method: 'POST',
@@ -501,7 +535,9 @@ function createTask(event) {
             status: status,
             payment_type: paymentType,
             per_part_payout: perPartPayout,
-            per_part_currency: perPartCurrency
+            per_part_currency: perPartCurrency,
+            per_day_payout: perDayPayout,
+            per_day_currency: perDayCurrency
         })
     })
     .then(response => response.json())
@@ -519,330 +555,7 @@ function createTask(event) {
     });
 }
 
-function openEditPayoutModal() {
-    document.getElementById('edit-payout-modal').showModal();
-}
-
-function closeEditPayoutModal() {
-    document.getElementById('edit-payout-modal').close();
-}
-
-function resetImportForm() {
-    window.location.reload();
-}
-
-// Keyboard navigation improvements
-document.addEventListener('DOMContentLoaded', function() {
-    // Close modals with Escape key
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            const modals = document.querySelectorAll('.modal');
-            modals.forEach(modal => {
-                if (modal.open) {
-                    modal.close();
-                }
-            });
-        }
-    });
-    
-    // Form validation improvements
-    const inputs = document.querySelectorAll('input, textarea, select');
-    inputs.forEach(input => {
-        input.addEventListener('blur', function() {
-            if (this.hasAttribute('required') && !this.value.trim()) {
-                this.classList.add('error');
-            } else {
-                this.classList.remove('error');
-                if (this.value.trim()) {
-                    this.classList.add('success');
-                }
-            }
-        });
-        
-        input.addEventListener('input', function() {
-            if (this.classList.contains('error') && this.value.trim()) {
-                this.classList.remove('error');
-                this.classList.add('success');
-            }
-        });
-    });
-    
-    // Auto-focus first input in modals
-    const modals = document.querySelectorAll('.modal');
-    modals.forEach(modal => {
-        modal.addEventListener('show', function() {
-            const firstInput = this.querySelector('input, textarea, select');
-            if (firstInput) {
-                setTimeout(() => firstInput.focus(), 100);
-            }
-        });
-    });
-});
-
-function saveNewField() {
-    console.log('saveNewField called');
-    const fieldName = document.getElementById('newFieldName').value.trim();
-    
-    console.log('Field name:', fieldName);
-    
-    if (!fieldName) {
-        alert('Please enter a field name');
-        return;
-    }
-    
-    console.log('Sending request to /api/import-field');
-    
-    // Save field to database
-    fetch('/api/import-field', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            name: fieldName
-        })
-    })
-    .then(response => {
-        console.log('Response status:', response.status);
-        if (response.status === 401 || response.status === 403) {
-            throw new Error('Authentication required. Please log in again.');
-        }
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-    })
-    .then(result => {
-        console.log('Response result:', result);
-        if (result.error) {
-            alert(result.error);
-        } else {
-            // Add to current fields list
-            const currentFields = document.getElementById('currentFields');
-            const fieldDiv = document.createElement('div');
-            fieldDiv.className = 'bg-blue-100 p-2 rounded-lg text-blue-700 font-medium truncate flex justify-between items-center';
-            fieldDiv.setAttribute('data-field', result.id);
-            fieldDiv.innerHTML = `
-                <span>${fieldName}</span>
-                <button type="button" class="btn btn-ghost btn-sm" onclick="removeCustomField(${result.id})">
-                    <i class="material-icons text-error">delete</i>
-                </button>
-            `;
-            currentFields.appendChild(fieldDiv);
-            
-            // Reset new field form
-            document.getElementById('newFieldName').value = '';
-            
-            // Show success message
-            showToast('Field added successfully!', 'success');
-        }
-    })
-    .catch(error => {
-        console.error('Error adding field:', error);
-        if (error.message.includes('Authentication required')) {
-            alert('Please log in again to use this feature.');
-            window.location.href = '/';
-        } else {
-            alert('Failed to add field: ' + error.message);
-        }
-    });
-}
-
-function removeCustomField(fieldId) {
-    // Confirmation prompt
-    if (!confirm('Are you sure you want to delete this field?')) {
-        return;
-    }
-    console.log('Removing field:', fieldId);
-    // Delete field from database
-    fetch(`/api/import-field/${fieldId}`, {
-        method: 'DELETE'
-    })
-    .then(response => {
-        console.log('Delete field response status:', response.status);
-        if (response.status === 401 || response.status === 403) {
-            throw new Error('Authentication required. Please log in again.');
-        }
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-    })
-    .then(result => {
-        console.log('Delete field result:', result);
-        if (result.error) {
-            alert(result.error);
-        } else {
-            // Remove field element if it exists
-            const fieldElement = document.querySelector(`[data-field="${fieldId}"]`);
-            if (fieldElement) {
-                fieldElement.remove();
-                showToast('Field deleted successfully!', 'success');
-            }
-        }
-    })
-    .catch(error => {
-        console.error('Error deleting field:', error);
-        if (error.message.includes('Authentication required')) {
-            alert('Please log in again to use this feature.');
-            window.location.href = '/';
-        } else {
-            alert('Failed to delete field: ' + error.message);
-        }
-    });
-}
-
-// Handle payout rate form submission
-document.addEventListener('DOMContentLoaded', function() {
-    const payoutForm = document.getElementById('payoutForm');
-    if (payoutForm) {
-        payoutForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const newRate = document.getElementById('payoutRateInput').value;
-            const selectedCurrency = document.querySelector('input[name="currency"]:checked');
-            
-            if (!selectedCurrency) {
-                showToast('Please select a currency', 'error');
-                return;
-            }
-            
-            const currency = selectedCurrency.value;
-            const symbol = selectedCurrency.dataset.symbol;
-            
-            try {
-                const response = await fetch('/api/company/payout-rate', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        rate: newRate,
-                        currency: currency,
-                        symbol: symbol
-                    })
-                });
-
-                const result = await response.json();
-                
-                if (response.ok && result.new_rate) {
-                    // Update displayed rate and currency
-                    document.getElementById('payoutRate').innerHTML = `<span id="currencySymbol">${result.symbol}</span>${result.new_rate}`;
-                    // Show success message
-                    showToast('Payout rate updated successfully', 'success');
-                    // Close the modal
-                    const modal = document.getElementById('edit-payout-modal');
-                    if (modal) {
-                        modal.close();
-                    }
-                } else {
-                    throw new Error(result.error || 'Failed to update payout rate');
-                }
-            } catch (error) {
-                console.error('Error updating payout rate:', error);
-                showToast(error.message || 'Failed to update payout rate', 'error');
-            }
-        });
-    }
-});
-
-function openEditRoleModal(userId, email, role) {
-    const form = document.getElementById('editRoleForm');
-    form.querySelector('[name="user_id"]').value = userId;
-    form.querySelector('[name="email"]').value = email;
-    form.querySelector('[name="role"]').value = role;
-    document.getElementById('edit-role-modal').showModal();
-}
-
-function closeEditRoleModal() {
-    document.getElementById('edit-role-modal').close();
-}
-
-function updateRole(event) {
-    event.preventDefault();
-    const form = event.target;
-    const formData = new FormData(form);
-    
-    const userId = formData.get('user_id');
-    const newRole = formData.get('role');
-    
-    fetch(`/api/team-member/${userId}/role`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            role: newRole
-        })
-    })
-    .then(response => response.json())
-    .then(result => {
-        if (result.error) {
-            alert(result.error);
-        } else {
-            // Update the role in the table
-            const row = document.querySelector(`tr[data-user-id="${userId}"]`);
-            if (row) {
-                const roleCell = row.querySelector('td:nth-child(2) span');
-                if (roleCell) {
-                    roleCell.textContent = newRole;
-                }
-            }
-            closeEditRoleModal();
-            
-            // Reinitialize Feather icons
-            reinitializeFeatherIcons();
-            
-            // Show success message
-            showToast('Role updated successfully!', 'success');
-        }
-    })
-    .catch(error => {
-        console.error('Error updating role:', error);
-        alert('Failed to update role');
-    });
-}
-
-function openRemoveTeamMemberModal(userId, email) {
-    document.getElementById('remove-member-id').value = userId;
-    document.getElementById('remove-member-email').textContent = email;
-    document.getElementById('remove-team-member-modal').showModal();
-}
-
-function closeRemoveTeamMemberModal() {
-    document.getElementById('remove-team-member-modal').close();
-}
-
-function removeTeamMember() {
-    const userId = document.getElementById('remove-member-id').value;
-    
-    fetch(`/api/team-member/${userId}`, {
-        method: 'DELETE'
-    })
-    .then(response => response.json())
-    .then(result => {
-        if (result.error) {
-            alert(result.error);
-        } else {
-            // Remove the row from the table
-            const row = document.querySelector(`tr[data-user-id="${userId}"]`) || 
-                         document.querySelector(`tr:has(button[onclick*="${userId}"])`);
-            if (row) {
-                row.remove();
-            }
-            closeRemoveTeamMemberModal();
-            
-            // Reload the page to ensure consistency
-            window.location.reload();
-        }
-    })
-    .catch(error => {
-        console.error('Error removing team member:', error);
-        alert('Failed to remove team member');
-    });
-}
-
-// Make functions available globally
+// Expose modal functions globally
 window.openLogoutModal = openLogoutModal;
 window.closeLogoutModal = closeLogoutModal;
 window.openAddWorkerModal = openAddWorkerModal;
@@ -850,8 +563,6 @@ window.closeAddWorkerModal = closeAddWorkerModal;
 window.openAddTaskModal = openAddTaskModal;
 window.closeAddTaskModal = closeAddTaskModal;
 window.createTask = createTask;
-window.openEditPayoutModal = openEditPayoutModal;
-window.closeEditPayoutModal = closeEditPayoutModal;
 window.openImportWorkersModal = openImportWorkersModal;
 window.closeImportWorkersModal = closeImportWorkersModal;
 window.loadImportFields = loadImportFields;

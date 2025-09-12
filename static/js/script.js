@@ -269,7 +269,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('Response status:', response.status);
                 return response.json();
             })
-            .then result => {
+            .then(result => {
                 console.log('Response result:', result);
                 if (result.error) {
                     showToast(result.error, 'error');

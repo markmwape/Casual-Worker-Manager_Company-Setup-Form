@@ -101,7 +101,17 @@ def init_database_safely():
             except Exception as commit_error:
                 db.session.rollback()
                 logging.warning(f"Database commit failed, rolling back: {str(commit_error)}")
-                
+
+            # Automatically apply Alembic migrations
+            try:
+                from alembic.config import Config
+                from alembic import command
+                alembic_cfg = Config(os.path.join(os.getcwd(), 'alembic.ini'))
+                command.upgrade(alembic_cfg, 'head')
+                logging.info("✅ Alembic migrations applied successfully")
+            except Exception as alembic_error:
+                logging.error(f"❌ Failed to apply Alembic migrations: {alembic_error}")
+                logging.error(traceback.format_exc())
     except Exception as e:
         logging.error(f"❌ Database initialization failed: {e}")
         logging.error("App will continue without database initialization")

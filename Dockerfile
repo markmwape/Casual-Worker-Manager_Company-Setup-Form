@@ -26,4 +26,4 @@ USER appuser
 EXPOSE 8080
 
 # Start Gunicorn directly on the correct port
-ENTRYPOINT ["gunicorn", "wsgi:app", "-b", "0.0.0.0:8080", "--workers", "1", "--timeout", "300", "--log-level", "info", "--access-logfile", "-", "--error-logfile", "-"]
+ENTRYPOINT ["bash", "-lc", "python3 -m alembic upgrade head && exec gunicorn wsgi:app -b 0.0.0.0:8080 --workers 1 --timeout 300 --log-level info --access-logfile - --error-logfile -"]

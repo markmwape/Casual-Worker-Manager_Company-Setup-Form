@@ -26,19 +26,24 @@ if config.config_file_name is not None:
 # Set the database URL from environment variables
 def get_database_url():
     """Get database URL from environment variables"""
-    if os.environ.get('GAE_ENV', '').startswith('standard') or os.environ.get('CLOUD_SQL_CONNECTION_NAME'):
-        # Production: Use Cloud SQL
-        db_user = os.environ.get('DB_USER', 'postgres')
-        db_pass = os.environ.get('DB_PASS', '')
-        db_name = os.environ.get('DB_NAME', 'casual_worker_db')
-        
-        # For Cloud SQL Proxy
-        if os.environ.get('CLOUD_SQL_CONNECTION_NAME'):
-            # Use the Cloud SQL connection format
-            connection_name = os.environ.get('CLOUD_SQL_CONNECTION_NAME')
-            return f'postgresql://{db_user}:{db_pass}@/{db_name}?host=/cloudsql/{connection_name}'
-        else:
-            db_host = os.environ.get('DB_HOST', 'localhost')
+    # Allow explicit DATABASE_URL override
+    if os.environ.get('DATABASE_URL'):
+        return os.environ.get('DATABASE_URL')
+    # Production via Cloud Run when DB_HOST or Cloud SQL connection is configured
+    if os.environ.get('DB_HOST') or os.environ.get('CLOUD_SQL_CONNECTION_NAME') or os.environ.get('INSTANCE_CONNECTION_NAME'):
+         # Production: Use Cloud SQL
+         db_user = os.environ.get('DB_USER', 'postgres')
+         db_pass = os.environ.get('DB_PASS', '')
+         db_name = os.environ.get('DB_NAME', 'casual_worker_db')
+         
+         # For Cloud SQL Proxy
+         # Prefer INSTANCE_CONNECTION_NAME for Cloud Run compatibility
+         connection_name = os.environ.get('INSTANCE_CONNECTION_NAME') or os.environ.get('CLOUD_SQL_CONNECTION_NAME')
+         if connection_name:
+             # Use the Cloud SQL connection format
+             return f'postgresql://{db_user}:{db_pass}@/{db_name}?host=/cloudsql/{connection_name}'
+         else:
+            db_host = os.environ.get('DB_HOST')
             return f'postgresql://{db_user}:{db_pass}@{db_host}/{db_name}'
     else:
         # Development: Use SQLite

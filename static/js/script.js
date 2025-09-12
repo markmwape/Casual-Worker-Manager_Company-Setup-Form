@@ -380,6 +380,12 @@ function openAddTaskModal() {
         // Update status indicator
         updateTaskStatusIndicator();
         
+        // Set up payment type change handlers
+        setupPaymentTypeHandlers();
+        
+        // Initialize with default payment type (per_day)
+        updatePayoutLabels('per_day');
+        
         // Debug the form when modal is opened
         const taskForm = document.getElementById('taskForm');
         if (taskForm) {
@@ -387,6 +393,36 @@ function openAddTaskModal() {
             console.log('Form onsubmit:', taskForm.onsubmit);
         } else {
             console.log('Task form not found when modal opened');
+        }
+    }
+}
+
+function setupPaymentTypeHandlers() {
+    const paymentTypeInputs = document.querySelectorAll('input[name="payment_type"]');
+    paymentTypeInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            updatePayoutLabels(this.value);
+        });
+    });
+}
+
+function updatePayoutLabels(paymentType) {
+    const payoutLabel = document.getElementById('payout-label');
+    const payoutInput = document.getElementById('per-day-payout');
+    
+    if (paymentType === 'per_day') {
+        if (payoutLabel) {
+            payoutLabel.innerHTML = 'Daily payout per worker <span class="text-xs text-gray-400">(e.g., 25$ , 60 Kwacha)</span>';
+        }
+        if (payoutInput) {
+            payoutInput.placeholder = 'Enter daily payout per worker';
+        }
+    } else if (paymentType === 'per_part') {
+        if (payoutLabel) {
+            payoutLabel.innerHTML = 'Payout per part <span class="text-xs text-gray-400">(e.g., 25$ , 60 Kwacha)</span>';
+        }
+        if (payoutInput) {
+            payoutInput.placeholder = 'Enter payout per part';
         }
     }
 }
@@ -563,6 +599,9 @@ window.closeAddWorkerModal = closeAddWorkerModal;
 window.openAddTaskModal = openAddTaskModal;
 window.closeAddTaskModal = closeAddTaskModal;
 window.createTask = createTask;
+window.setupPaymentTypeHandlers = setupPaymentTypeHandlers;
+window.updatePayoutLabels = updatePayoutLabels;
+// ...existing code...
 window.openImportWorkersModal = openImportWorkersModal;
 window.closeImportWorkersModal = closeImportWorkersModal;
 window.loadImportFields = loadImportFields;

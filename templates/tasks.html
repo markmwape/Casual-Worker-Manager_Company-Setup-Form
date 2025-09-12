@@ -255,8 +255,9 @@
         // Set per-day payout and currency
         document.getElementById('edit-per-day-payout').value = perDayPayout || '';
         document.getElementById('edit-per-day-currency').value = perDayCurrency || '';
-        // Setup toggle
+        // Setup toggle and update labels
         setupEditPaymentTypeToggle();
+        updateEditPayoutLabels(paymentType);
         modal.classList.add('modal-open');
         setTimeout(() => {
             if (startDateInput.datePickerInstance) {
@@ -279,8 +280,30 @@
                     perPartGroup.style.display = 'none';
                     perDayGroup.style.display = '';
                 }
+                updateEditPayoutLabels(this.value);
             });
         });
+    }
+
+    function updateEditPayoutLabels(paymentType) {
+        const payoutLabel = document.getElementById('edit-payout-label');
+        const payoutInput = document.getElementById('edit-per-day-payout');
+        
+        if (paymentType === 'per_day') {
+            if (payoutLabel) {
+                payoutLabel.innerHTML = 'Daily payout per worker <span class="text-xs text-gray-400">(e.g., 25$ , 60 Kwacha)</span>';
+            }
+            if (payoutInput) {
+                payoutInput.placeholder = 'Enter daily payout per worker';
+            }
+        } else if (paymentType === 'per_part') {
+            if (payoutLabel) {
+                payoutLabel.innerHTML = 'Payout per part <span class="text-xs text-gray-400">(e.g., 25$ , 60 Kwacha)</span>';
+            }
+            if (payoutInput) {
+                payoutInput.placeholder = 'Enter payout per part';
+            }
+        }
     }
 
     function closeEditTaskModal() {

@@ -1,4 +1,4 @@
-import { sendSignInLinkToEmail, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { sendSignInLinkToEmail, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 let runtimeAppSettingsURL = '';
 
@@ -92,46 +92,57 @@ function setupEventListeners() {
     let isSigningIn = false; // Prevent multiple simultaneous sign-in attempts
 
     googleButton.addEventListener('click', async () => {
-        if (isSigningIn) {
-            console.log('Sign-in already in progress, ignoring click');
-            return;
-        }
-
         console.log('Google sign-in button clicked');
-        isSigningIn = true;
-        
-        // Update button state
         const originalText = googleButton.innerHTML;
         googleButton.disabled = true;
         googleButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Signing in...';
-        
         try {
             const result = await signInWithPopup(window.firebaseAuth, provider);
-            processSignIn(result.user);
+            console.log('Google sign-in successful:', result.user);
+            const user = result.user;
+            const pendingWorkspace = sessionStorage.getItem('pending_workspace');
+            const workspaceData = pendingWorkspace ? JSON.parse(pendingWorkspace) : null;
+
+            try {
+                const sessionResponse = await fetch('/set_session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: user.email,
+                        displayName: user.displayName || '',
+                        photoURL: user.photoURL || '',
+                        uid: user.uid,
+                        workspace_data: workspaceData
+                    })
+                });
+                if (sessionResponse.ok) {
+                    console.log('Session set successfully');
+                    if (workspaceData) {
+                        sessionStorage.removeItem('pending_workspace');
+                        window.location.href = '/home';
+                    } else {
+                        window.location.href = '/workspace-selection';
+                    }
+                } else {
+                    const errorData = await sessionResponse.json();
+                    console.error('Failed to set session:', errorData);
+                    if (sessionResponse.status === 403 && errorData.error && errorData.error.includes('not authorized')) {
+                        alert('Access Denied: You are not authorized to access this workspace. Please make sure your admin has added your email to the workspace team members.');
+                    } else {
+                        alert('Failed to complete sign-in. Please try again.');
+                    }
+                    googleButton.disabled = false;
+                    googleButton.innerHTML = originalText;
+                }
+            } catch (innerError) {
+                console.error('Error setting session:', innerError);
+                alert('Failed to complete sign-in. Please try again.');
+                googleButton.disabled = false;
+                googleButton.innerHTML = originalText;
+            }
         } catch (error) {
             console.error('Error during Google sign in:', error.message);
-            
-            // Handle specific Firebase errors
-            if (error.code === 'auth/cancelled-popup-request') {
-                console.log('Sign-in popup was cancelled or another popup was already open');
-                // Don't show error for cancelled popups as it's user action
-            } else if (error.code === 'auth/popup-blocked') {
-                alert('Sign-in popup was blocked by your browser. Please allow popups for this site and try again.');
-            } else if (error.code === 'auth/popup-closed-by-user') {
-                console.log('Sign-in popup was closed by user');
-                // Don't show error for user-closed popups
-            } else if (error.code === 'auth/network-request-failed') {
-                alert('Network error occurred. Please check your internet connection and try again.');
-            } else if (error.message && error.message.includes('certificate')) {
-                console.warn('SSL certificate error, falling back to redirect');
-                signInWithRedirect(window.firebaseAuth, provider);
-                return;
-            } else {
-                alert('Sign-in failed: ' + error.message);
-            }
-            
-            // Reset button state
-            isSigningIn = false;
+            alert('Sign-in failed: ' + error.message);
             googleButton.disabled = false;
             googleButton.innerHTML = originalText;
         }
@@ -203,13 +214,3 @@ function setupEventListeners() {
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', initializeApp);
-
-// Handle redirect results if using redirect flow
-try {
-    const redirectResult = await getRedirectResult(window.firebaseAuth);
-    if (redirectResult && redirectResult.user) {
-        processSignIn(redirectResult.user);
-    }
-} catch (e) {
-    console.error('Redirect sign-in error:', e);
-}

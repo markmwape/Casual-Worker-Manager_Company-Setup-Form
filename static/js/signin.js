@@ -1,4 +1,4 @@
-import { sendSignInLinkToEmail, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { sendSignInLinkToEmail, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 let runtimeAppSettingsURL = '';
 
@@ -52,6 +52,40 @@ async function initializeApp() {
     }
 }
 
+// Helper to handle a signed-in user (popup or redirect)
+async function processSignIn(user) {
+    try {
+        const pendingWorkspace = sessionStorage.getItem('pending_workspace');
+        const workspaceData = pendingWorkspace ? JSON.parse(pendingWorkspace) : null;
+        const response = await fetch('/set_session', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                email: user.email,
+                displayName: user.displayName || '',
+                photoURL: user.photoURL || '',
+                uid: user.uid,
+                workspace_data: workspaceData
+            })
+        });
+        if (response.ok) {
+            if (workspaceData) {
+                sessionStorage.removeItem('pending_workspace');
+                window.location.href = '/home';
+            } else {
+                window.location.href = '/workspace-selection';
+            }
+        } else {
+            const err = await response.json();
+            console.error('Session set error', err);
+            alert('Failed to complete sign-in.');
+        }
+    } catch(e) {
+        console.error('Error setting session', e);
+        alert('Failed to complete sign-in.');
+    }
+}
+
 function setupEventListeners() {
     const googleButton = document.getElementById('google-signin');
     const provider = new GoogleAuthProvider();
@@ -73,65 +107,7 @@ function setupEventListeners() {
         
         try {
             const result = await signInWithPopup(window.firebaseAuth, provider);
-            console.log('Google sign-in successful:', result.user);
-            const user = result.user;
-            
-            // Get workspace info from sessionStorage
-            const pendingWorkspace = sessionStorage.getItem('pending_workspace');
-            const workspaceData = pendingWorkspace ? JSON.parse(pendingWorkspace) : null;
-            
-            try {
-                const sessionResponse = await fetch('/set_session', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        email: user.email,
-                        displayName: user.displayName || '',
-                        photoURL: user.photoURL || '',
-                        uid: user.uid,
-                        workspace_data: workspaceData
-                    })
-                });
-                
-                if (sessionResponse.ok) {
-                    console.log('Session set successfully');
-                    
-                    if (workspaceData) {
-                        // User has workspace data, clear it and go to home
-                        sessionStorage.removeItem('pending_workspace');
-                        console.log('Redirecting to home (user has workspace)');
-                        window.location.href = '/home';
-                    } else {
-                        // No workspace data - redirect to workspace selection
-                        console.log('Redirecting to workspace selection (no workspace data)');
-                        window.location.href = '/workspace-selection';
-                    }
-                } else {
-                    const errorData = await sessionResponse.json();
-                    console.error('Failed to set session:', errorData);
-                    
-                    if (sessionResponse.status === 403 && errorData.error && errorData.error.includes('not authorized')) {
-                        alert('Access Denied: You are not authorized to access this workspace. Please make sure your admin has added your email to the workspace team members.');
-                    } else {
-                        alert('Failed to complete sign-in. Please try again.');
-                    }
-                    
-                    // Reset button state on error
-                    isSigningIn = false;
-                    googleButton.disabled = false;
-                    googleButton.innerHTML = originalText;
-                }
-            } catch (error) {
-                console.error('Error setting session:', error);
-                alert('Failed to complete sign-in. Please try again.');
-                
-                // Reset button state on error
-                isSigningIn = false;
-                googleButton.disabled = false;
-                googleButton.innerHTML = originalText;
-            }
+            processSignIn(result.user);
         } catch (error) {
             console.error('Error during Google sign in:', error.message);
             
@@ -147,7 +123,9 @@ function setupEventListeners() {
             } else if (error.code === 'auth/network-request-failed') {
                 alert('Network error occurred. Please check your internet connection and try again.');
             } else if (error.message && error.message.includes('certificate')) {
-                alert('SSL certificate error. Please make sure you are accessing the site via HTTPS or contact support.');
+                console.warn('SSL certificate error, falling back to redirect');
+                signInWithRedirect(window.firebaseAuth, provider);
+                return;
             } else {
                 alert('Sign-in failed: ' + error.message);
             }
@@ -225,3 +203,13 @@ function setupEventListeners() {
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', initializeApp);
+
+// Handle redirect results if using redirect flow
+try {
+    const redirectResult = await getRedirectResult(window.firebaseAuth);
+    if (redirectResult && redirectResult.user) {
+        processSignIn(redirectResult.user);
+    }
+} catch (e) {
+    console.error('Redirect sign-in error:', e);
+}

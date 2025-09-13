@@ -2,7 +2,7 @@
     <div class="modal-box">
         <h3 class="font-bold text-lg">Create New Task</h3>
         <div id="task-date-error" class="alert alert-error mb-2" style="display:none;"></div>
-        <form id="taskForm">
+        <form id="taskForm" onsubmit="createTask(event)">
             <div class="form-control w-full">
                 <label class="label">
                     <span class="label-text">Task Name</span>

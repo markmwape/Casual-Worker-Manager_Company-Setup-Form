@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Get workspace data from URL parameters
             const urlParams = new URLSearchParams(window.location.search);
             const workspaceCode = urlParams.get('workspace');
+            const fromForgotWorkspace = urlParams.get('from') === 'forgot-workspace';
             const pendingWorkspace = sessionStorage.getItem('pending_workspace');
             const workspaceData = pendingWorkspace ? JSON.parse(pendingWorkspace) : null;
             
@@ -50,13 +51,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (response.ok) {
                     console.log('Session set successfully');
                     
+                    // Check if this is from forgot workspace page
+                    if (fromForgotWorkspace) {
+                        console.log('User came from forgot workspace, redirecting back with workspaces');
+                        // Redirect back to forgot workspace page to show workspaces
+                        window.location.href = '/forgot-workspace?signed_in=true&email=' + encodeURIComponent(user.email);
+                        return;
+                    }
+                    
                     if (workspaceData) {
                         // User has workspace data, clear it and go to home
                         sessionStorage.removeItem('pending_workspace');
                         console.log('Redirecting to home (user has workspace)');
                         window.location.href = '/home';
                     } else {
-                        // No workspace data - check if user came from email link and auto-select workspace if they have only one
+                        // No workspace data - check if user has workspaces and auto-select
                         console.log('No workspace data, checking user workspaces...');
                         
                         try {
@@ -71,43 +80,50 @@ document.addEventListener('DOMContentLoaded', function() {
                             if (workspacesResponse.ok) {
                                 const workspacesData = await workspacesResponse.json();
                                 
-                                if (workspacesData.success && workspacesData.workspaces && workspacesData.workspaces.length === 1) {
-                                    // User has exactly one workspace, auto-select it
-                                    const workspace = workspacesData.workspaces[0];
-                                    console.log('Auto-selecting single workspace:', workspace.name);
-                                    
-                                    const selectResponse = await fetch('/api/workspace/join', {
-                                        method: 'POST',
-                                        headers: {
-                                            'Content-Type': 'application/json'
-                                        },
-                                        body: JSON.stringify({
-                                            workspace_code: workspace.code
-                                        })
-                                    });
-                                    
-                                    if (selectResponse.ok) {
-                                        const selectData = await selectResponse.json();
-                                        // Set session with the workspace
-                                        const sessionResponse2 = await fetch('/set_session', {
+                                if (workspacesData.success && workspacesData.workspaces && workspacesData.workspaces.length > 0) {
+                                    if (workspacesData.workspaces.length === 1) {
+                                        // User has exactly one workspace, auto-select it
+                                        const workspace = workspacesData.workspaces[0];
+                                        console.log('Auto-selecting single workspace:', workspace.name);
+                                        
+                                        const selectResponse = await fetch('/api/workspace/join', {
                                             method: 'POST',
                                             headers: {
                                                 'Content-Type': 'application/json'
                                             },
                                             body: JSON.stringify({
-                                                email: user.email,
-                                                displayName: user.displayName || '',
-                                                photoURL: user.photoURL || '',
-                                                uid: user.uid,
-                                                workspace_data: selectData.workspace
+                                                workspace_code: workspace.code
                                             })
                                         });
                                         
-                                        if (sessionResponse2.ok) {
-                                            console.log('Auto-selected workspace successfully, redirecting to home');
-                                            window.location.href = '/home';
-                                            return;
+                                        if (selectResponse.ok) {
+                                            const selectData = await selectResponse.json();
+                                            // Set session with the workspace
+                                            const sessionResponse2 = await fetch('/set_session', {
+                                                method: 'POST',
+                                                headers: {
+                                                    'Content-Type': 'application/json'
+                                                },
+                                                body: JSON.stringify({
+                                                    email: user.email,
+                                                    displayName: user.displayName || '',
+                                                    photoURL: user.photoURL || '',
+                                                    uid: user.uid,
+                                                    workspace_data: selectData.workspace
+                                                })
+                                            });
+                                            
+                                            if (sessionResponse2.ok) {
+                                                console.log('Auto-selected workspace successfully, redirecting to home');
+                                                window.location.href = '/home';
+                                                return;
+                                            }
                                         }
+                                    } else {
+                                        // User has multiple workspaces, show workspace selection
+                                        console.log(`User has ${workspacesData.workspaces.length} workspaces, redirecting to workspace selection`);
+                                        window.location.href = '/workspace-selection';
+                                        return;
                                     }
                                 }
                             }
@@ -115,8 +131,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             console.error('Error checking user workspaces:', error);
                         }
                         
-                        // Fallback: redirect to workspace selection
-                        console.log('Redirecting to workspace selection');
+                        // Fallback: redirect to workspace selection (no workspaces found or error)
+                        console.log('No workspaces found or error occurred, redirecting to workspace selection');
                         window.location.href = '/workspace-selection';
                     }
                 } else {

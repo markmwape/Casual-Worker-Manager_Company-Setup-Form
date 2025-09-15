@@ -21,7 +21,6 @@ from tier_config import get_tier_spec, get_price_by_product_and_amount, STRIPE_P
 import stripe
 import hmac
 import hashlib
-
 # Configure Stripe
 stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
 STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET')
@@ -150,10 +149,6 @@ def send_workspace_email():
         # In a real implementation, you would send an actual email here
         # For now, we'll simulate it and return success
         
-        # TODO: Implement actual email sending using your preferred email service
-        # Example with SendGrid, Mailgun, or SMTP
-        """
-        # Example email sending code:
         subject = "Your Workspace Codes - Embee Accounting"
         html_content = f'''
         <html>
@@ -170,15 +165,13 @@ def send_workspace_email():
         </html>
         '''
         
-        # Send email using your preferred service
-        send_email(email, subject, html_content)
-        """
-        
-        logging.info(f"Workspace email link generated for {email}: {workspace_link}")
+        # Since Firebase handles authentication emails, we don't need custom email sending
+        # Instead, return success and let Firebase handle the sign-in link
+        logging.info(f"Firebase will handle authentication email for {email}")
         
         return jsonify({
             "success": True,
-            "message": "Workspace retrieval link sent to your email",
+            "message": "Sign-in link will be sent via Firebase authentication",
             "email": email
         }), 200
         

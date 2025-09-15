@@ -273,6 +273,19 @@
             const errorDiv = document.getElementById('forgot-workspace-error');
             const emailSentNotification = document.getElementById('email-sent-notification');
 
+            // Check if user just signed in and show their workspaces
+            const urlSearchParams = new URLSearchParams(window.location.search);
+            const signedIn = urlSearchParams.get('signed_in');
+            const emailParam = urlSearchParams.get('email');
+            
+            if (signedIn === 'true' && emailParam) {
+                // User just signed in from email link, show their workspaces
+                showLoading();
+                getUserWorkspaces(decodeURIComponent(emailParam));
+                // Clean up URL
+                window.history.replaceState({}, document.title, '/forgot-workspace');
+            }
+
             // Google Sign-In
             googleSignInButton.addEventListener('click', async function() {
                 try {
@@ -325,8 +338,8 @@
                 try {
                     hideError();
                     
-                    // Send email with workspace link
-                    const response = await fetch('/api/send-workspace-email', {
+                    // First check if user exists and has workspaces
+                    const workspacesResponse = await fetch('/api/user/workspaces', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -334,34 +347,39 @@
                         body: JSON.stringify({ email: email })
                     });
 
-                    const data = await response.json();
-
-                    if (!response.ok) {
-                        throw new Error(data.error || 'Failed to send email');
+                    if (!workspacesResponse.ok) {
+                        const errorData = await workspacesResponse.json();
+                        throw new Error(errorData.error || 'No workspaces found for this email address');
                     }
 
+                    // User exists and has workspaces, send Firebase sign-in link
+                    if (!window.firebaseAuth) {
+                        throw new Error('Firebase not initialized');
+                    }
+
+                    const { sendSignInLinkToEmail } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js');
+                    
+                    // Get runtime URL for the finish signin page
+                    const urlResponse = await fetch('/url');
+                    const urlData = await urlResponse.json();
+                    const baseUrl = urlData.url;
+                    
+                    const actionCodeSettings = {
+                        url: `${baseUrl}/finishSignin?email=${encodeURIComponent(email)}&from=forgot-workspace`,
+                        handleCodeInApp: true,
+                    };
+
+                    await sendSignInLinkToEmail(window.firebaseAuth, email, actionCodeSettings);
+                    
+                    // Store email for later verification
+                    window.localStorage.setItem('emailForSignIn', email);
+                    
                     // Show email sent notification
                     showEmailSentNotification(email);
                     
-                    // Note: In a real implementation, the user would click the email link
-                    // For development/testing, we can also directly show workspaces after a delay
-                    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-                        // Development mode - auto-show workspaces after showing email notification
-                        setTimeout(async () => {
-                            try {
-                                showLoading();
-                                hideEmailNotification();
-                                await getUserWorkspaces(email);
-                            } catch (error) {
-                                hideLoading();
-                                showError('Failed to retrieve workspaces for this email address.');
-                            }
-                        }, 3000); // Show notification for 3 seconds, then auto-proceed
-                    }
-                    
                 } catch (error) {
                     console.error('Email sign-in error:', error);
-                    showError(error.message || 'Failed to send workspace email. Please try again.');
+                    showError(error.message || 'Failed to send sign-in link. Please try again.');
                 }
             });
 

@@ -467,10 +467,10 @@
                                     </div>
                                     <p class="text-xs text-brand-gray-500 mt-1">Click to copy</p>
                                 </div>
-                                <a href="/workspace-selection?code=${workspace.code}" 
+                                <button onclick="joinWorkspace('${workspace.code}', '${escapeHtml(workspace.name)}')" 
                                    class="btn btn-primary btn-sm bg-gradient-to-r from-emerald-500 to-green-600 border-0 text-white shadow-md hover:shadow-lg">
                                     <i class="fas fa-sign-in-alt mr-2"></i>Join Workspace
-                                </a>
+                                </button>
                             </div>
                         </div>
                     `;
@@ -481,6 +481,65 @@
                 // Show workspaces section, hide signin section
                 signinSection.classList.add('hidden');
                 workspacesSection.classList.remove('hidden');
+            }
+
+            async function joinWorkspace(workspaceCode, workspaceName) {
+                try {
+                    if (!currentUser) {
+                        showError('Please sign in first to join a workspace');
+                        return;
+                    }
+
+                    showLoading();
+                    hideError();
+
+                    // First join the workspace
+                    const joinResponse = await fetch('/api/workspace/join', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            workspace_code: workspaceCode
+                        })
+                    });
+
+                    if (!joinResponse.ok) {
+                        const errorData = await joinResponse.json();
+                        throw new Error(errorData.error || 'Failed to join workspace');
+                    }
+
+                    const joinData = await joinResponse.json();
+
+                    // Set session with the workspace
+                    const sessionResponse = await fetch('/set_session', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            email: currentUser.email,
+                            displayName: currentUser.displayName || '',
+                            photoURL: currentUser.photoURL || '',
+                            uid: currentUser.uid,
+                            workspace_data: joinData.workspace
+                        })
+                    });
+
+                    if (sessionResponse.ok) {
+                        console.log(`Successfully joined workspace: ${workspaceName}`);
+                        // Redirect to home
+                        window.location.href = '/home';
+                    } else {
+                        const errorData = await sessionResponse.json();
+                        throw new Error(errorData.error || 'Failed to set session');
+                    }
+
+                } catch (error) {
+                    console.error('Error joining workspace:', error);
+                    hideLoading();
+                    showError(error.message || 'Failed to join workspace. Please try again.');
+                }
             }
 
             function showError(message) {

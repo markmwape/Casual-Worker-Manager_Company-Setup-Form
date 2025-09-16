@@ -159,15 +159,9 @@
                             <i class="fas fa-search text-3xl text-white"></i>
                         </div>
                         <h2 class="card-title text-3xl font-bold text-brand-navy-600 mb-3">Find Your Workspaces</h2>
-                        <p class="text-brand-gray-600 mb-8 text-lg">Sign in with Google or use email link to see all workspaces linked to your account</p>
+                        <p class="text-brand-gray-600 mb-8 text-lg">Sign in with email link or Google to see all workspaces linked to your account</p>
                         
-                        <button id="google-signin-forgot" type="button" class="btn btn-primary w-full max-w-md mb-4 flex items-center justify-center gap-2 text-lg bg-gradient-to-r from-brand-navy-500 to-brand-navy-600 border-0 shadow-lg text-white hover:from-brand-navy-600 hover:to-brand-navy-700">
-                            <i class="fab fa-google"></i> Sign in with Google
-                        </button>
-                        
-                        <div class="divider text-gray-400 max-w-md mx-auto">or</div>
-                        
-                        <form id="email-signin-form" class="w-full max-w-md mx-auto space-y-4">
+                        <form id="email-signin-form" class="w-full max-w-md mx-auto space-y-4 mb-4">
                             <div class="form-control">
                                 <label class="label">
                                     <span class="label-text font-semibold text-brand-navy-600">Email Address</span>
@@ -184,6 +178,12 @@
                                 <i class="fas fa-envelope mr-2"></i>Send Sign-in Link
                             </button>
                         </form>
+                        
+                        <div class="divider text-gray-400 max-w-md mx-auto">or</div>
+                        
+                        <button id="google-signin-forgot" type="button" class="btn btn-primary w-full max-w-md mb-4 flex items-center justify-center gap-2 text-lg bg-gradient-to-r from-brand-navy-500 to-brand-navy-600 border-0 shadow-lg text-white hover:from-brand-navy-600 hover:to-brand-navy-700">
+                            <i class="fab fa-google"></i> Sign in with Google
+                        </button>
                         
                         <!-- Email sent notification -->
                         <div id="email-sent-notification" class="hidden bg-green-50 border border-green-200 rounded-lg p-4 mt-6 max-w-md mx-auto">

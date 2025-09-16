@@ -263,6 +263,99 @@
 
         let currentUser = null;
 
+        // Global function for joining workspace (accessible to onclick)
+        window.joinWorkspace = async function(workspaceCode, workspaceName) {
+            try {
+                if (!currentUser) {
+                    showError('Please sign in first to join a workspace');
+                    return;
+                }
+
+                showLoading();
+                hideError();
+
+                // First join the workspace
+                const joinResponse = await fetch('/api/workspace/join', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        workspace_code: workspaceCode
+                    })
+                });
+
+                if (!joinResponse.ok) {
+                    const errorData = await joinResponse.json();
+                    throw new Error(errorData.error || 'Failed to join workspace');
+                }
+
+                const joinData = await joinResponse.json();
+
+                // Set session with the workspace
+                const sessionResponse = await fetch('/set_session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: currentUser.email,
+                        displayName: currentUser.displayName || '',
+                        photoURL: currentUser.photoURL || '',
+                        uid: currentUser.uid,
+                        workspace_data: joinData.workspace
+                    })
+                });
+
+                if (sessionResponse.ok) {
+                    console.log(`Successfully joined workspace: ${workspaceName}`);
+                    // Redirect to home
+                    window.location.href = '/home';
+                } else {
+                    const errorData = await sessionResponse.json();
+                    throw new Error(errorData.error || 'Failed to set session');
+                }
+
+            } catch (error) {
+                console.error('Error joining workspace:', error);
+                hideLoading();
+                showError(error.message || 'Failed to join workspace. Please try again.');
+            }
+        };
+
+        // Global helper functions (accessible to other functions)
+        window.showError = function(message) {
+            const errorDiv = document.getElementById('forgot-workspace-error');
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+        };
+
+        window.hideError = function() {
+            const errorDiv = document.getElementById('forgot-workspace-error');
+            errorDiv.classList.add('hidden');
+            errorDiv.textContent = '';
+        };
+
+        window.showLoading = function() {
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const googleSignInButton = document.getElementById('google-signin-forgot');
+            const emailSignInForm = document.getElementById('email-signin-form');
+            
+            loadingIndicator.classList.remove('hidden');
+            googleSignInButton.disabled = true;
+            emailSignInForm.querySelector('button[type="submit"]').disabled = true;
+        };
+
+        window.hideLoading = function() {
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const googleSignInButton = document.getElementById('google-signin-forgot');
+            const emailSignInForm = document.getElementById('email-signin-form');
+            
+            loadingIndicator.classList.add('hidden');
+            googleSignInButton.disabled = false;
+            emailSignInForm.querySelector('button[type="submit"]').disabled = false;
+        };
+
         document.addEventListener('DOMContentLoaded', function() {
             const googleSignInButton = document.getElementById('google-signin-forgot');
             const emailSignInForm = document.getElementById('email-signin-form');
@@ -483,66 +576,7 @@
                 workspacesSection.classList.remove('hidden');
             }
 
-            async function joinWorkspace(workspaceCode, workspaceName) {
-                try {
-                    if (!currentUser) {
-                        showError('Please sign in first to join a workspace');
-                        return;
-                    }
-
-                    showLoading();
-                    hideError();
-
-                    // First join the workspace
-                    const joinResponse = await fetch('/api/workspace/join', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            workspace_code: workspaceCode
-                        })
-                    });
-
-                    if (!joinResponse.ok) {
-                        const errorData = await joinResponse.json();
-                        throw new Error(errorData.error || 'Failed to join workspace');
-                    }
-
-                    const joinData = await joinResponse.json();
-
-                    // Set session with the workspace
-                    const sessionResponse = await fetch('/set_session', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            email: currentUser.email,
-                            displayName: currentUser.displayName || '',
-                            photoURL: currentUser.photoURL || '',
-                            uid: currentUser.uid,
-                            workspace_data: joinData.workspace
-                        })
-                    });
-
-                    if (sessionResponse.ok) {
-                        console.log(`Successfully joined workspace: ${workspaceName}`);
-                        // Redirect to home
-                        window.location.href = '/home';
-                    } else {
-                        const errorData = await sessionResponse.json();
-                        throw new Error(errorData.error || 'Failed to set session');
-                    }
-
-                } catch (error) {
-                    console.error('Error joining workspace:', error);
-                    hideLoading();
-                    showError(error.message || 'Failed to join workspace. Please try again.');
-                }
-            }
-
-            function showError(message) {
+            function showEmailSentNotification(email) {
                 errorDiv.textContent = message;
                 errorDiv.classList.remove('hidden');
             }

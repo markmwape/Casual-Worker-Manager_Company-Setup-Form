@@ -98,6 +98,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                         
                                         if (selectResponse.ok) {
                                             const selectData = await selectResponse.json();
+                                            console.log('Workspace join response:', selectData);
+                                            
                                             // Set session with the workspace
                                             const sessionResponse2 = await fetch('/set_session', {
                                                 method: 'POST',
@@ -113,9 +115,18 @@ document.addEventListener('DOMContentLoaded', function() {
                                                 })
                                             });
                                             
+                                            console.log('Second session response status:', sessionResponse2.status);
                                             if (sessionResponse2.ok) {
+                                                const sessionResult = await sessionResponse2.json();
+                                                console.log('Second session response:', sessionResult);
                                                 console.log('Auto-selected workspace successfully, redirecting to home');
                                                 window.location.href = '/home';
+                                                return;
+                                            } else {
+                                                const sessionError = await sessionResponse2.json();
+                                                console.error('Second session failed:', sessionError);
+                                                // Fallback to workspace selection
+                                                window.location.href = '/workspace-selection';
                                                 return;
                                             }
                                         }

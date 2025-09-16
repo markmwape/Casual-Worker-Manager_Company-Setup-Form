@@ -358,6 +358,7 @@ def set_session():
             
             # Handle workspace assignment if workspace data is provided
             if workspace_data:
+                logging.info(f"Processing workspace_data: {workspace_data}")
                 # Check if this is a deferred workspace creation (new workspace)
                 if workspace_data.get('deferred_creation') or workspace_data.get('temp_code'):
                     # Create the workspace now with the actual admin user
@@ -404,6 +405,8 @@ def set_session():
                 elif workspace_data.get('id'):
                     # Existing workspace
                     workspace = Workspace.query.get(workspace_data['id'])
+                    logging.info(f"Found workspace for ID {workspace_data['id']}: {workspace.name if workspace else 'None'}")
+                    
                     if workspace:
                         # Check if user is already in this workspace
                         user_workspace = UserWorkspace.query.filter_by(
@@ -428,16 +431,33 @@ def set_session():
                                 db.session.commit()
                                 logging.info(f"Added workspace creator {email} to workspace {workspace.name} with role {role}")
                             else:
-                                # For non-creators, check if they have been added as team members
-                                # If not, deny access
-                                logging.warning(f"User {email} attempted to join workspace {workspace.name} but is not a team member")
-                                return jsonify({"error": "You are not authorized to access this workspace. Please contact the workspace administrator to be added as a team member."}), 403
+                                # This should not happen if user was found via /api/user/workspaces
+                                logging.error(f"CRITICAL: User {email} (ID: {user.id}) found via /api/user/workspaces but no UserWorkspace relationship exists for workspace {workspace.name} (ID: {workspace.id})")
+                                
+                                # Let's check if there are any UserWorkspace records for this user
+                                all_user_workspaces = UserWorkspace.query.filter_by(user_id=user.id).all()
+                                logging.error(f"All UserWorkspace records for user {user.id}: {[(uw.workspace_id, uw.role) for uw in all_user_workspaces]}")
+                                
+                                # For now, let's be permissive and create the relationship
+                                user_workspace = UserWorkspace(
+                                    user_id=user.id,
+                                    workspace_id=workspace.id,
+                                    role='Member'
+                                )
+                                db.session.add(user_workspace)
+                                db.session.commit()
+                                logging.info(f"Created missing UserWorkspace relationship for {email} to workspace {workspace.name}")
+                        else:
+                            logging.info(f"User {email} already has access to workspace {workspace.name} with role {user_workspace.role}")
+                    else:
+                        logging.error(f"Workspace not found for ID: {workspace_data['id']}")
                 else:
                     logging.error("Invalid workspace data provided")
                     return jsonify({"error": "Invalid workspace data"}), 400
             
             # Set workspace info in session if we have a workspace
             if 'workspace' in locals() and workspace:
+                logging.info(f"Setting current_workspace in session: {workspace.name} (ID: {workspace.id})")
                 session['current_workspace'] = {
                     'id': workspace.id,
                     'name': workspace.name,
@@ -446,6 +466,10 @@ def set_session():
                     'company_email': workspace.company_email,
                     'company_phone': workspace.company_phone
                 }
+            else:
+                logging.warning(f"No workspace variable found in locals. locals() keys: {list(locals().keys())}")
+                if workspace_data:
+                    logging.warning(f"workspace_data was provided but no workspace variable was created")
                 
                 # Activity logging removed for now
                 

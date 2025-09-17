@@ -2,12 +2,12 @@
 
 /* Enhanced drawer overlay for better mobile interaction */
 @media (max-width: 1023px) {
-    /* Ensure drawer overlay covers entire screen and is clickable */
+    /* Adjust drawer overlay to not cover the sidebar */
     .drawer-overlay {
         position: fixed;
         top: 0;
-        left: 0;
-        width: 100vw;
+        left: 20rem; /* width of the sidebar (w-80 = 20rem) */
+        width: calc(100vw - 20rem);
         height: 100vh;
         background-color: rgba(0, 0, 0, 0.4);
         z-index: 90;
@@ -15,10 +15,9 @@
         touch-action: manipulation;
     }
     
-    /* Ensure drawer side has proper z-index and touch handling */
+    /* Ensure sidebar remains above overlay */
     .drawer-side {
         z-index: 100;
-        touch-action: manipulation;
     }
     
     /* Mobile menu toggle button with enhanced touch target */

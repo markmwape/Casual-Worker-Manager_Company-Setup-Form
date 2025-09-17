@@ -12,16 +12,76 @@
         background-color: rgba(0, 0, 0, 0.4);
         z-index: 90;
         cursor: pointer;
+        touch-action: manipulation;
     }
     
-    /* Ensure drawer side has proper z-index */
+    /* Ensure drawer side has proper z-index and touch handling */
     .drawer-side {
         z-index: 100;
+        touch-action: manipulation;
     }
     
-    /* Mobile menu toggle button */
+    /* Mobile menu toggle button with enhanced touch target */
     .mobile-sidebar-toggle {
         z-index: 110;
+        touch-action: manipulation;
+    }
+    
+    .mobile-sidebar-toggle .btn {
+        min-width: 48px;
+        min-height: 48px;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    /* Enhanced sidebar menu items for mobile */
+    .sidebar-menu-item {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
+        user-select: none;
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    /* Add touch feedback for menu items */
+    .sidebar-menu-item:active {
+        background-color: rgba(255, 255, 255, 0.15) !important;
+        transform: scale(0.98);
+        transition: all 0.1s ease;
+    }
+    
+    /* Ensure menu icons and text don't interfere with touch */
+    .sidebar-menu-item span,
+    .sidebar-menu-item .material-icons {
+        pointer-events: none;
+        user-select: none;
+    }
+    
+    /* Fix menu container touch handling */
+    .menu {
+        touch-action: manipulation;
+    }
+    
+    .menu li {
+        touch-action: manipulation;
+    }
+}
+
+/* Enhanced mobile responsiveness for smaller screens */
+@media (max-width: 480px) {
+    /* Larger touch targets for very small screens */
+    .sidebar-menu-item {
+        min-height: 52px;
+        padding: 16px !important;
+        font-size: 16px;
+    }
+    
+    .mobile-sidebar-toggle .btn {
+        min-width: 52px;
+        min-height: 52px;
     }
 }
 
@@ -90,6 +150,61 @@
         width: 100%;
         margin-bottom: 0.5rem;
     }
+    
+    /* Subscription status section mobile improvements */
+    .subscription-status-mobile {
+        padding: 1.5rem !important;
+    }
+    
+    .subscription-status-mobile .space-y-3 > * + * {
+        margin-top: 1rem;
+    }
+    
+    /* Enhanced subscription badges mobile styling */
+    .subscription-status-mobile .bg-green-100,
+    .subscription-status-mobile .bg-blue-100 {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        line-height: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Subscription info cards mobile styling */
+    .subscription-status-mobile .bg-white\/70 {
+        background-color: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(4px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 12px;
+        padding: 1rem 1.25rem;
+    }
+    
+    /* Subscription buttons mobile optimization */
+    .subscription-status-mobile a[href="/upgrade"] {
+        width: 100%;
+        justify-content: center;
+        padding: 1rem 1.5rem;
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transition: all 0.2s ease;
+    }
+    
+    .subscription-status-mobile a[href="/upgrade"]:active {
+        transform: scale(0.98);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    /* Text size improvements for mobile */
+    .subscription-status-mobile .text-lg {
+        font-size: 1.125rem;
+        font-weight: 700;
+    }
+    
+    .subscription-status-mobile .text-xs {
+        font-size: 0.75rem;
+        opacity: 0.8;
+    }
 }
 
 /* Additional mobile responsive fixes - target specific elements */
@@ -109,6 +224,42 @@
     .text-sm.text-gray-800.font-semibold {
         word-break: break-word;
         overflow-wrap: break-word;
+    }
+    
+    /* Very small screen subscription status improvements */
+    .subscription-status-mobile {
+        padding: 1rem !important;
+        margin: 0 0.5rem;
+    }
+    
+    .subscription-status-mobile .bg-green-100,
+    .subscription-status-mobile .bg-blue-100 {
+        padding: 0.5rem 1rem;
+        font-size: 0.95rem;
+    }
+    
+    .subscription-status-mobile .bg-white\/70 {
+        padding: 0.875rem 1rem;
+    }
+    
+    .subscription-status-mobile .text-lg {
+        font-size: 1rem;
+    }
+    
+    /* Header section mobile improvements */
+    .flex.items-center.justify-between.mb-8 {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+    
+    .text-right {
+        text-align: center !important;
+    }
+    
+    .text-3xl.font-bold.text-black.mb-2 {
+        font-size: 1.5rem;
+        line-height: 1.3;
     }
 }
 

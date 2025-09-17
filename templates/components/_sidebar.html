@@ -1,6 +1,6 @@
 <div class="mobile-sidebar-toggle fixed top-4 right-4 z-[110] lg:hidden">
-    <label for="my-drawer" class="btn btn-primary drawer-button shadow-lg">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <label for="my-drawer" class="btn btn-primary drawer-button shadow-lg touch-manipulation min-h-[48px] min-w-[48px] flex items-center justify-center cursor-pointer">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" />
         </svg>
     </label>
@@ -71,44 +71,44 @@
         
         <ul class="menu w-full space-y-2 mt-8">
                 <li class="w-full">
-                    <a href="{{ url_for('home_route') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-3 px-4 rounded-lg {% if request.endpoint == 'home_route' %}bg-white/20 text-white{% else %}text-white/90{% endif %} hover:bg-white/10 transition-all duration-200">
-                        <span class="material-icons mr-3">home</span> 
-                        <span class="font-medium">Dashboard</span>
+                    <a href="{{ url_for('home_route') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg {% if request.endpoint == 'home_route' %}bg-white/20 text-white{% else %}text-white/90{% endif %} hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline">
+                        <span class="material-icons mr-3 pointer-events-none">home</span> 
+                        <span class="font-medium pointer-events-none">Dashboard</span>
                     </a>
                 </li>
                 <li class="w-full">
-                    <a href="{{ url_for('workers_route') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-3 px-4 rounded-lg {% if request.endpoint == 'workers_route' %}bg-white/20 text-white{% else %}text-white/90{% endif %} hover:bg-white/10 transition-all duration-200">
-                        <span class="material-icons mr-3">group</span> 
-                        <span class="font-medium">Workers</span>
+                    <a href="{{ url_for('workers_route') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg {% if request.endpoint == 'workers_route' %}bg-white/20 text-white{% else %}text-white/90{% endif %} hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline">
+                        <span class="material-icons mr-3 pointer-events-none">group</span> 
+                        <span class="font-medium pointer-events-none">Workers</span>
                     </a>
                 </li>
                 <li class="w-full">
-                    <a href="{{ url_for('tasks_route') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-3 px-4 rounded-lg {% if request.endpoint == 'tasks_route' %}bg-white/20 text-white{% else %}text-white/90{% endif %} hover:bg-white/10 transition-all duration-200">
-                        <span class="material-icons mr-3">assignment</span> 
-                        <span class="font-medium">Tasks</span>
+                    <a href="{{ url_for('tasks_route') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg {% if request.endpoint == 'tasks_route' %}bg-white/20 text-white{% else %}text-white/90{% endif %} hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline">
+                        <span class="material-icons mr-3 pointer-events-none">assignment</span> 
+                        <span class="font-medium pointer-events-none">Tasks</span>
                     </a>
                 </li>
                 <li class="w-full">
-                    <a href="{{ url_for('reports_route') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-3 px-4 rounded-lg {% if request.endpoint == 'reports_route' %}bg-white/20 text-white{% else %}text-white/90{% endif %} hover:bg-white/10 transition-all duration-200">
-                        <span class="material-icons mr-3">bar_chart</span> 
-                        <span class="font-medium">Reports</span>
+                    <a href="{{ url_for('reports_route') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg {% if request.endpoint == 'reports_route' %}bg-white/20 text-white{% else %}text-white/90{% endif %} hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline">
+                        <span class="material-icons mr-3 pointer-events-none">bar_chart</span> 
+                        <span class="font-medium pointer-events-none">Reports</span>
                     </a>
                 </li>
                 
                 <!-- Payments/Billing menu item (admin only) -->
                 {% if session.get('current_workspace', {}).get('role') in ['Admin'] %}
                 <li class="w-full">
-                    <a href="https://billing.stripe.com/p/login/test_5kQaEX5Jg1o5g8lg0SgEg00" target="_blank" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-3 px-4 rounded-lg text-white/90 hover:bg-white/10 transition-all duration-200">
-                        <span class="material-icons mr-3">credit_card</span> 
-                        <span class="font-medium">Payments/Billing</span>
+                    <a href="https://billing.stripe.com/p/login/test_5kQaEX5Jg1o5g8lg0SgEg00" target="_blank" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg text-white/90 hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline">
+                        <span class="material-icons mr-3 pointer-events-none">credit_card</span> 
+                        <span class="font-medium pointer-events-none">Payments/Billing</span>
                     </a>
                 </li>
                 {% endif %}
                 
                 <li class="w-full mt-8">
-                    <a href="{{ url_for('signout') }}" class="w-full sidebar-menu-item whitespace-nowrap flex items-center py-3 px-4 rounded-lg text-white/90 hover:bg-white/10 transition-all duration-200">
-                        <span class="material-icons mr-3">logout</span> 
-                        <span class="font-medium">Sign Out</span>
+                    <a href="{{ url_for('signout') }}" class="w-full sidebar-menu-item whitespace-nowrap flex items-center py-4 px-4 rounded-lg text-white/90 hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline">
+                        <span class="material-icons mr-3 pointer-events-none">logout</span> 
+                        <span class="font-medium pointer-events-none">Sign Out</span>
                     </a>
                 </li>
             </ul>

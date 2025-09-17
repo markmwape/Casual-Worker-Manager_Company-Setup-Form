@@ -6,12 +6,13 @@
     .drawer-overlay {
         position: fixed;
         top: 0;
-        left: 20rem; /* width of the sidebar (w-80 = 20rem) */
-        width: calc(100vw - 20rem);
+        left: 0;
+        clip-path: inset(0 0 0 20rem) !important; /* Clip overlay to start after sidebar (20rem) */
+        width: 100vw;
         height: 100vh;
-        /* place overlay under the menu (sidebar at z-index 100, toggle at 110) */
-        z-index: 50;
-        background-color: rgba(0, 0, 0, 0.2);
+        /* retain full viewport size for background color but clipped region only */
+        z-index: 50 !important;
+        background-color: rgba(0, 0, 0, 0.2) !important;
         cursor: pointer;
         touch-action: manipulation;
     }

@@ -894,30 +894,69 @@
             const mobileToggleButton = document.querySelector('.mobile-sidebar-toggle');
             const menuItems = document.querySelectorAll('.sidebar-menu-item');
 
-            // Simple mobile menu item click handling - let normal navigation work
+            // Enhanced mobile menu item click handling
             menuItems.forEach(item => {
-                // Add visual feedback without interfering with navigation
-                item.addEventListener('click', function(e) {
-                    // Only close mobile menu on mobile devices
-                    if (window.innerWidth < 1024 && drawerToggle) {
-                        // Small delay to show visual feedback before closing menu
-                        setTimeout(() => {
-                            drawerToggle.checked = false;
-                        }, 150);
-                    }
-                    // Let the normal link navigation happen
-                });
-                
-                // Add touch feedback for better UX without preventing navigation
-                item.addEventListener('touchstart', function() {
+                // Add touch event listeners for better mobile interaction
+                item.addEventListener('touchstart', function(e) {
+                    // Prevent default to avoid ghost clicks
+                    e.preventDefault();
+                    // Add visual feedback
                     this.style.transform = 'scale(0.98)';
                     this.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
-                }, { passive: true });
+                }, { passive: false });
                 
-                item.addEventListener('touchend', function() {
+                item.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    // Remove visual feedback
                     this.style.transform = '';
                     this.style.backgroundColor = '';
-                }, { passive: true });
+                    
+                    // Navigate after a short delay to ensure visual feedback is seen
+                    setTimeout(() => {
+                        // Close the mobile menu before navigation
+                        if (window.innerWidth < 1024 && drawerToggle) {
+                            drawerToggle.checked = false;
+                        }
+                        
+                        // Navigate to the href
+                        const href = this.getAttribute('href');
+                        if (href && href !== '#') {
+                            if (this.getAttribute('target') === '_blank') {
+                                window.open(href, '_blank');
+                            } else {
+                                window.location.href = href;
+                            }
+                        }
+                    }, 100);
+                }, { passive: false });
+                
+                // Fallback for regular clicks (desktop)
+                item.addEventListener('click', function(e) {
+                    // Only handle if not on mobile or if touch events didn't fire
+                    if (window.innerWidth >= 1024) {
+                        return; // Let normal navigation happen
+                    }
+                    
+                    // On mobile, prevent default and handle manually
+                    e.preventDefault();
+                    
+                    const href = this.getAttribute('href');
+                    if (href && href !== '#') {
+                        // Close mobile menu
+                        if (drawerToggle) {
+                            drawerToggle.checked = false;
+                        }
+                        
+                        // Navigate
+                        setTimeout(() => {
+                            if (this.getAttribute('target') === '_blank') {
+                                window.open(href, '_blank');
+                            } else {
+                                window.location.href = href;
+                            }
+                        }, 200);
+                    }
+                });
             });
 
             // Close menu when clicking on drawer content (main content area) on mobile
@@ -933,14 +972,24 @@
                 });
             }
 
-            // Close menu when clicking on overlay
-            const drawerOverlay = document.querySelector('.drawer-overlay');
-            if (drawerOverlay) {
-                drawerOverlay.addEventListener('click', function() {
-                    if (drawerToggle && drawerToggle.checked) {
-                        drawerToggle.checked = false;
-                    }
-                });
+            // Enhanced touch/click handling for mobile overlay
+            if (window.innerWidth < 1024) {
+                const drawerOverlay = document.querySelector('.drawer-overlay');
+                if (drawerOverlay) {
+                    drawerOverlay.addEventListener('touchstart', function(e) {
+                        e.preventDefault();
+                        if (drawerToggle && drawerToggle.checked) {
+                            drawerToggle.checked = false;
+                        }
+                    }, { passive: false });
+                    
+                    drawerOverlay.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        if (drawerToggle && drawerToggle.checked) {
+                            drawerToggle.checked = false;
+                        }
+                    });
+                }
             }
 
             // Handle window resize to ensure proper behavior
@@ -949,23 +998,20 @@
                     drawerToggle.checked = false;
                 }
             });
+            
+            // Prevent iOS safari zoom on double tap for menu items
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', function (event) {
+                const now = (new Date()).getTime();
+                if (now - lastTouchEnd <= 300) {
+                    event.preventDefault();
+                }
+                lastTouchEnd = now;
+            }, false);
         }
 
         // Initialize mobile menu close functionality
         initializeMobileMenuClose();
-        
-        // Debug: Check if menu items are clickable (remove in production)
-        if (window.innerWidth < 1024) {
-            console.log('Mobile device detected. Checking menu items...');
-            const menuItems = document.querySelectorAll('.sidebar-menu-item');
-            menuItems.forEach((item, index) => {
-                console.log(`Menu item ${index + 1}:`, {
-                    href: item.getAttribute('href'),
-                    clickable: item.style.pointerEvents !== 'none',
-                    visible: window.getComputedStyle(item).display !== 'none'
-                });
-            });
-        }
 
         // Subscription Success Confetti Animation
         {% if subscription_updated %}

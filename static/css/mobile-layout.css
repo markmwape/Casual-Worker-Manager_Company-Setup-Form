@@ -278,8 +278,18 @@
 
 /* Square select-all checkbox on mobile */
 @media (max-width: 768px) {
-    .select-all-wrapper .checkbox {
+    .select-all-wrapper {
+        padding: 0 !important;
+        width: 2rem !important;
+        height: 2rem !important;
         border-radius: 0 !important;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .select-all-wrapper .checkbox {
+        margin: 0;
         width: 1.25rem !important;
         height: 1.25rem !important;
     }

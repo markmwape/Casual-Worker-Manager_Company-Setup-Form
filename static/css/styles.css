@@ -45,6 +45,38 @@
     --gradient-gray: linear-gradient(135deg, var(--secondary-gray) 0%, var(--secondary-gray-light) 100%);
 }
 
+/* Global override for DaisyUI primary color -> Brand Navy */
+.btn-primary,
+.bg-primary,
+.border-primary,
+.text-primary,
+.link-primary {
+    background-color: var(--primary-navy) !important;
+    border-color: var(--primary-navy) !important;
+    color: #ffffff !important;
+}
+.btn-primary:hover,
+.bg-primary:hover {
+    background-color: var(--primary-navy-dark) !important;
+    border-color: var(--primary-navy-dark) !important;
+}
+.text-primary,
+.link-primary {
+    background-color: transparent !important;
+    color: var(--primary-navy) !important;
+}
+.border-primary {
+    background-color: transparent !important;
+}
+.checkbox-primary:checked {
+    background-color: var(--primary-navy) !important;
+    border-color: var(--primary-navy) !important;
+}
+.checkbox-primary:indeterminate {
+    background-color: var(--primary-navy) !important;
+    border-color: var(--primary-navy) !important;
+}
+
 /* Enhanced Status Dropdown Styles */
 .status-dropdown {
     position: relative;
@@ -1530,4 +1562,20 @@ input[type="date"]::-webkit-date-and-time-value {
         font-size: 12px;
         min-width: 80px;
     }
+}
+
+/* Override DaisyUI checkbox-primary to use brand blue for checked state */
+input[type="checkbox"].checkbox-primary:checked {
+    --tw-bg-opacity: 1;
+    background-color: var(--primary-navy) !important;
+    border-color: var(--primary-navy) !important;
+}
+/* Focus state uses ring color */
+input[type="checkbox"].checkbox-primary:focus {
+    --tw-ring-color: var(--primary-navy) !important;
+}
+/* Adjust indeterminate state color */
+input[type="checkbox"].checkbox-primary:indeterminate {
+    background-color: var(--primary-navy) !important;
+    border-color: var(--primary-navy) !important;
 }

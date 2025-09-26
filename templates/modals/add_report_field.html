@@ -377,16 +377,16 @@ function addCustomFieldPerDay() {
     })
     .then(async response => {
         let result = {};
-        try { result = await response.json(); } catch (e) { alert('Server error.'); return; }
+        try { result = await response.json(); } catch (e) { showCustomModal('Server Error', 'Server error.', 'error'); return; }
         if (response.status === 201 || response.status === 200) {
-            alert('Custom field saved successfully!');
+            showCustomModal('Success', 'Custom field saved successfully!', 'success');
             closeAddReportFieldModalPerDay();
             window.location.reload();
         } else {
-            alert(result.error || 'Failed to save custom field');
+            showCustomModal('Save Error', result.error || 'Failed to save custom field', 'error');
         }
     })
-    .catch(error => { alert('Failed to save custom field: ' + error); });
+    .catch(error => { showCustomModal('Save Error', 'Failed to save custom field: ' + error, 'error'); });
 }
 function closeAddReportFieldModalPerDay() {
     document.getElementById('add-report-field-modal-per-day').close();
@@ -428,16 +428,16 @@ function addCustomFieldPerUnit() {
     })
     .then(async response => {
         let result = {};
-        try { result = await response.json(); } catch (e) { alert('Server error.'); return; }
+        try { result = await response.json(); } catch (e) { showCustomModal('Server Error', 'Server error.', 'error'); return; }
         if (response.status === 201 || response.status === 200) {
-            alert('Custom field saved successfully!');
+            showCustomModal('Success', 'Custom field saved successfully!', 'success');
             closeAddReportFieldModalPerUnit();
             window.location.reload();
         } else {
-            alert(result.error || 'Failed to save custom field');
+            showCustomModal('Save Error', result.error || 'Failed to save custom field', 'error');
         }
     })
-    .catch(error => { alert('Failed to save custom field: ' + error); });
+    .catch(error => { showCustomModal('Save Error', 'Failed to save custom field: ' + error, 'error'); });
 }
 function closeAddReportFieldModalPerUnit() {
     document.getElementById('add-report-field-modal-per-unit').close();

@@ -1,3 +1,80 @@
+// Custom Modal Functions
+function showCustomModal(title, message, type = 'info') {
+    return new Promise((resolve) => {
+        const modal = document.createElement('dialog');
+        modal.className = 'modal';
+        
+        let iconClass = 'fas fa-info-circle text-blue-500';
+        if (type === 'success') {
+            iconClass = 'fas fa-check-circle text-green-500';
+        } else if (type === 'error') {
+            iconClass = 'fas fa-exclamation-circle text-red-500';
+        } else if (type === 'warning') {
+            iconClass = 'fas fa-exclamation-triangle text-yellow-500';
+        }
+        
+        modal.innerHTML = `
+            <div class="modal-box">
+                <h3 class="font-bold text-lg flex items-center gap-2">
+                    <i class="${iconClass}"></i>
+                    <span>${title}</span>
+                </h3>
+                <p class="py-4">${message}</p>
+                <div class="modal-action">
+                    <button type="button" class="btn btn-primary" onclick="this.closest('dialog').close(); this.closest('dialog').remove();">OK</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        const okBtn = modal.querySelector('.btn-primary');
+        okBtn.addEventListener('click', () => {
+            modal.remove();
+            resolve(true);
+        });
+        
+        modal.showModal();
+    });
+}
+
+function showCustomConfirm(title, message) {
+    return new Promise((resolve) => {
+        const modal = document.createElement('dialog');
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-box">
+                <h3 class="font-bold text-lg flex items-center gap-2">
+                    <i class="fas fa-question-circle text-blue-500"></i>
+                    <span>${title}</span>
+                </h3>
+                <p class="py-4">${message}</p>
+                <div class="modal-action">
+                    <button type="button" class="btn btn-ghost cancel-btn">Cancel</button>
+                    <button type="button" class="btn btn-primary confirm-btn">Confirm</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        const cancelBtn = modal.querySelector('.cancel-btn');
+        const confirmBtn = modal.querySelector('.confirm-btn');
+        
+        cancelBtn.addEventListener('click', () => {
+            modal.remove();
+            resolve(false);
+        });
+        
+        confirmBtn.addEventListener('click', () => {
+            modal.remove();
+            resolve(true);
+        });
+        
+        modal.showModal();
+    });
+}
+
 function openDeleteWorkerModal(workerId) {
     document.getElementById('delete-worker-id').value = workerId;
     document.getElementById('delete-worker-modal').showModal();
@@ -16,13 +93,13 @@ function deleteWorker() {
     .then(response => response.json())
     .then(result => {
         if (result.error) {
-            alert(result.error);
+            showCustomModal('Error', result.error, 'error');
         } else {
             window.location.reload();
         }
     })
     .catch(error => {
-        alert('Error deleting worker: ' + error.message);
+        showCustomModal('Error', 'Error deleting worker: ' + error.message, 'error');
     })
     .finally(() => {
         closeDeleteWorkerModal();
@@ -40,31 +117,32 @@ function deleteAllWorkers() {
     .then(response => response.json())
     .then(result => {
         if (result.error) {
-            alert(result.error);
+            showCustomModal('Error', result.error, 'error');
         } else {
             window.location.reload();
         }
     })
     .catch(error => {
-        alert('Error deleting all workers: ' + error.message);
+        showCustomModal('Error', 'Error deleting all workers: ' + error.message, 'error');
     })
     .finally(() => {
         document.getElementById('delete-all-workers-modal').close();
     });
 }
 
-function deleteSelectedWorkers() {
+async function deleteSelectedWorkers() {
     const checkboxes = document.querySelectorAll('.worker-checkbox');
     const selectedIds = Array.from(checkboxes)
         .filter(cb => cb.checked)
         .map(cb => cb.getAttribute('data-worker-id'));
     
     if (selectedIds.length === 0) {
-        alert('Please select workers to delete');
+        showCustomModal('Selection Required', 'Please select workers to delete', 'warning');
         return;
     }
     
-    if (!confirm(`Are you sure you want to delete ${selectedIds.length} selected worker(s)?`)) {
+    const confirmed = await showCustomConfirm('Confirm Delete', `Are you sure you want to delete ${selectedIds.length} selected worker(s)?`);
+    if (!confirmed) {
         return;
     }
     
@@ -76,13 +154,13 @@ function deleteSelectedWorkers() {
     .then(response => response.json())
     .then(result => {
         if (result.error) {
-            alert(result.error);
+            showCustomModal('Error', result.error, 'error');
         } else {
             window.location.reload();
         }
     })
     .catch(error => {
-        alert('Error deleting selected workers: ' + error.message);
+        showCustomModal('Error', 'Error deleting selected workers: ' + error.message, 'error');
     });
 }
 
@@ -117,12 +195,15 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     if (deleteSelectedBtn) {
-        deleteSelectedBtn.addEventListener('click', function() {
+        deleteSelectedBtn.addEventListener('click', async function() {
             const selectedIds = Array.from(checkboxes)
                 .filter(cb => cb.checked)
                 .map(cb => cb.getAttribute('data-worker-id'));
             if (selectedIds.length === 0) return;
-            if (!confirm('Are you sure you want to delete the selected workers?')) return;
+            
+            const confirmed = await showCustomConfirm('Confirm Delete', 'Are you sure you want to delete the selected workers?');
+            if (!confirmed) return;
+            
             fetch('/api/worker/bulk-delete', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -131,13 +212,13 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(res => res.json())
             .then(result => {
                 if (result.error) {
-                    alert(result.error);
+                    showCustomModal('Error', result.error, 'error');
                 } else {
                     window.location.reload();
                 }
             })
             .catch(error => {
-                alert('Error deleting selected workers: ' + error.message);
+                showCustomModal('Error', 'Error deleting selected workers: ' + error.message, 'error');
             });
         });
     }

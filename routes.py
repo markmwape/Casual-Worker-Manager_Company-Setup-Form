@@ -1620,7 +1620,16 @@ def home_route():
         company = Company.query.filter_by(workspace_id=workspace_id).first()
 
         if not company:
-            return render_template('home.html', company=None, total_workers=0, total_tasks=0, team_members=[])
+            return render_template('home.html', company=None, total_workers=0, total_tasks=0, team_members=[], all_fields=[])
+
+        # Get custom fields for add worker modal
+        custom_fields = ImportField.query.filter_by(company_id=company.id).all()
+        default_fields = [
+            {'name': 'First Name', 'type': 'text', 'id': 'first_name'},
+            {'name': 'Last Name', 'type': 'text', 'id': 'last_name'},
+            {'name': 'Date of Birth', 'type': 'date', 'id': 'date_of_birth'}
+        ]
+        all_fields = default_fields + [{'name': field.name, 'type': field.field_type or 'text', 'id': field.id} for field in custom_fields]
 
         # Calculate total workers for the company
         total_workers = Worker.query.filter_by(company_id=company.id).count()
@@ -1697,7 +1706,8 @@ def home_route():
                              activity_stats=activity_stats,
                              subscription_info=subscription_info,
                              usage_stats=usage_stats,
-                             subscription_updated=subscription_updated)
+                             subscription_updated=subscription_updated,
+                             all_fields=all_fields)
     except Exception as e:
         logging.error(f"Error fetching home data: {str(e)}")
         import traceback

@@ -326,12 +326,12 @@
             perPartPayout = formData.get('edit_per_part_payout');
             perPartCurrency = formData.get('edit_per_part_currency');
             if (!perPartPayout || isNaN(perPartPayout) || Number(perPartPayout) <= 0) {
-                alert('Please enter a valid payout per part.');
+                showCustomModal('Validation Error', 'Please enter a valid payout per part.', 'warning');
                 document.getElementById('edit-per-part-payout').focus();
                 return;
             }
             if (!perPartCurrency || perPartCurrency.trim() === '') {
-                alert('Please select a currency for payout per part.');
+                showCustomModal('Validation Error', 'Please select a currency for payout per part.', 'warning');
                 document.getElementById('edit-per-part-currency').focus();
                 return;
             }
@@ -339,12 +339,12 @@
             perDayPayout = formData.get('edit_per_day_payout');
             perDayCurrency = formData.get('edit_per_day_currency');
             if (!perDayPayout || isNaN(perDayPayout) || Number(perDayPayout) <= 0) {
-                alert('Please enter a valid daily payout per worker.');
+                showCustomModal('Validation Error', 'Please enter a valid daily payout per worker.', 'warning');
                 document.getElementById('edit-per-day-payout').focus();
                 return;
             }
             if (!perDayCurrency || perDayCurrency.trim() === '') {
-                alert('Please select a currency for daily payout.');
+                showCustomModal('Validation Error', 'Please select a currency for daily payout.', 'warning');
                 document.getElementById('edit-per-day-currency').focus();
                 return;
             }
@@ -369,7 +369,7 @@
         .then(response => response.json())
         .then(result => {
             if (result.error) {
-                alert(result.error);
+                showCustomModal('Error', result.error, 'error');
             } else {
                 closeEditTaskModal();
                 window.location.reload();
@@ -377,7 +377,7 @@
         })
         .catch(error => {
             console.error('Error updating task:', error);
-            alert('Failed to update task');
+            showCustomModal('Error', 'Failed to update task', 'error');
         });
     }
 
@@ -402,14 +402,14 @@
         .then(response => response.json())
         .then(result => {
             if (result.error) {
-                alert(result.error);
+                showCustomModal('Error', result.error, 'error');
             } else {
                 window.location.reload();
             }
         })
         .catch(error => {
             console.error('Error deleting task:', error);
-            alert('Failed to delete task');
+            showCustomModal('Error', 'Failed to delete task', 'error');
         });
     }
 
@@ -418,7 +418,7 @@
         const currentDate = new Date().toISOString().split('T')[0];
         
         if (newStatus !== 'Pending' && taskDate > currentDate) {
-            alert('Cannot set status to "' + newStatus + '" for tasks with future start dates. Only "Pending" is allowed until the start date is reached.');
+            showCustomModal('Status Update Error', 'Cannot set status to "' + newStatus + '" for tasks with future start dates. Only "Pending" is allowed until the start date is reached.', 'warning');
             return;
         }
         
@@ -430,7 +430,7 @@
         const currentDate = new Date().toISOString().split('T')[0];
         
         if (taskDate <= currentDate) {
-            alert('Cannot set status to "Pending" for tasks where the start date has already passed. Only "In Progress" or "Completed" are allowed.');
+            showCustomModal('Status Update Error', 'Cannot set status to "Pending" for tasks where the start date has already passed. Only "In Progress" or "Completed" are allowed.', 'warning');
             return;
         }
         
@@ -450,14 +450,14 @@
         .then(response => response.json())
         .then(result => {
             if (result.error) {
-                alert(result.error);
+                showCustomModal('Update Error', result.error, 'error');
             } else {
                 window.location.reload(); // Refresh to show updated status and completion date
             }
         })
         .catch(error => {
             console.error('Error updating task status:', error);
-            alert('Failed to update task status');
+            showCustomModal('Update Error', 'Failed to update task status', 'error');
         });
     }
     
@@ -474,7 +474,7 @@
                 item.onclick = function(e) {
                     e.preventDefault();
                     e.stopPropagation();
-                    alert('Cannot set status for tasks with future start dates. Only "Pending" is allowed until the start date is reached.');
+                    showCustomModal('Status Update Error', 'Cannot set status for tasks with future start dates. Only "Pending" is allowed until the start date is reached.', 'warning');
                 };
             }
         });

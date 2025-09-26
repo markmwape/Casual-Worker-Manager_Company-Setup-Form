@@ -393,7 +393,7 @@
         }
         
         if (new Date(endDate) < new Date(startDate)) {
-            alert('End date cannot be before start date');
+            showCustomModal('Date Validation', 'End date cannot be before start date', 'warning');
             // Set end date to 1 day after start date
             const newEndDate = new Date(startDate);
             newEndDate.setDate(newEndDate.getDate() + 1);
@@ -497,8 +497,8 @@
         insertAtCursor(formulaBuilder, ` ${op} `);
     }
 
-    function insertNumber() {
-        const number = prompt('Enter a number:');
+    async function insertNumber() {
+        const number = await showCustomConfirm('Input Required', 'Enter a number:');
         if (number && !isNaN(number)) {
             const formulaBuilder = document.getElementById('formulaBuilder');
             insertAtCursor(formulaBuilder, ` ${number} `);
@@ -610,22 +610,23 @@
         });
     }
 
-    function deleteReportField(fieldId) {
-        if (confirm('Are you sure you want to delete this field?')) {
+    async function deleteReportField(fieldId) {
+        const confirmed = await showCustomConfirm('Confirm Delete', 'Are you sure you want to delete this field?');
+        if (confirmed) {
             fetch(`/api/report-field?id=${fieldId}`, {
                 method: 'DELETE'
             })
             .then(response => response.json())
             .then(result => {
                 if (result.error) {
-                    alert(result.error);
+                    showCustomModal('Delete Error', result.error, 'error');
                 } else {
                     window.location.reload();
                 }
             })
             .catch(error => {
                 console.error('Error deleting report field:', error);
-                alert('Failed to delete report field');
+                showCustomModal('Delete Error', 'Failed to delete report field', 'error');
             });
         }
     }
@@ -701,7 +702,7 @@
         .then(response => response.json())
         .then(result => {
             if (result.error) {
-                alert(result.error);
+                showCustomModal('Save Error', result.error, 'error');
             } else {
                 closeAddReportFieldModal();
                 window.location.reload();
@@ -709,7 +710,7 @@
         })
         .catch(error => {
             console.error('Error saving report field:', error);
-            alert('Failed to save report field');
+            showCustomModal('Save Error', 'Failed to save report field', 'error');
         });
     });
 

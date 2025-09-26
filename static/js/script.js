@@ -1,4 +1,80 @@
-// UX Improvements
+// UX Improvements - Custom Modal System
+function showCustomModal(title, message, type = 'info') {
+    return new Promise((resolve) => {
+        const modal = document.createElement('dialog');
+        modal.className = 'modal';
+        
+        let iconClass = 'fas fa-info-circle text-blue-500';
+        if (type === 'success') {
+            iconClass = 'fas fa-check-circle text-green-500';
+        } else if (type === 'error') {
+            iconClass = 'fas fa-exclamation-circle text-red-500';
+        } else if (type === 'warning') {
+            iconClass = 'fas fa-exclamation-triangle text-yellow-500';
+        }
+        
+        modal.innerHTML = `
+            <div class="modal-box">
+                <h3 class="font-bold text-lg flex items-center gap-2">
+                    <i class="${iconClass}"></i>
+                    <span>${title}</span>
+                </h3>
+                <p class="py-4">${message}</p>
+                <div class="modal-action">
+                    <button type="button" class="btn btn-primary" onclick="this.closest('dialog').close(); this.closest('dialog').remove();">OK</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        const okBtn = modal.querySelector('.btn-primary');
+        okBtn.addEventListener('click', () => {
+            modal.remove();
+            resolve(true);
+        });
+        
+        modal.showModal();
+    });
+}
+
+function showCustomConfirm(title, message) {
+    return new Promise((resolve) => {
+        const modal = document.createElement('dialog');
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-box">
+                <h3 class="font-bold text-lg flex items-center gap-2">
+                    <i class="fas fa-question-circle text-blue-500"></i>
+                    <span>${title}</span>
+                </h3>
+                <p class="py-4">${message}</p>
+                <div class="modal-action">
+                    <button type="button" class="btn btn-ghost cancel-btn">Cancel</button>
+                    <button type="button" class="btn btn-primary confirm-btn">Confirm</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        const cancelBtn = modal.querySelector('.cancel-btn');
+        const confirmBtn = modal.querySelector('.confirm-btn');
+        
+        cancelBtn.addEventListener('click', () => {
+            modal.remove();
+            resolve(false);
+        });
+        
+        confirmBtn.addEventListener('click', () => {
+            modal.remove();
+            resolve(true);
+        });
+        
+        modal.showModal();
+    });
+}
+
 function showToast(message, type = 'success') {
     const toast = document.createElement('div');
     toast.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 transform translate-x-full`;
@@ -193,7 +269,7 @@ function loadImportFields() {
     .catch(error => {
         console.error('Error loading import fields:', error);
         if (error.message.includes('Authentication required')) {
-            alert('Please log in again to use this feature.');
+            showCustomModal('Session Expired', 'Please log in again to use this feature.', 'error');
             window.location.href = '/';
         } else {
             console.error('Failed to load import fields:', error.message);
@@ -579,7 +655,7 @@ function createTask(event) {
     .then(response => response.json())
     .then(result => {
         if (result.error) {
-            alert(result.error);
+            showCustomModal('Error', result.error, 'error');
         } else {
             closeAddTaskModal();
             window.location.reload();
@@ -587,7 +663,7 @@ function createTask(event) {
     })
     .catch(error => {
         console.error('Error creating task:', error);
-        alert('Failed to create task');
+        showCustomModal('Error', 'Failed to create task', 'error');
     });
 }
 
@@ -644,7 +720,7 @@ function createMappingRow(field, columns) {
 }
 
 // Function to handle importing workers with column mapping
-window.importWithMapping = function() {
+window.importWithMapping = async function() {
     const fileId = document.getElementById('columnMapping').dataset.fileId;
     const mapping = {};
     
@@ -688,18 +764,18 @@ window.importWithMapping = function() {
         console.log('Import result:', result);
         
         if (result.error) {
-            alert(`Import failed: ${result.error}`);
+            showCustomModal('Import Failed', `Import failed: ${result.error}`, 'error');
         } else {
             // Show success message with details
             const successMsg = `Import completed successfully!\n\nTotal records: ${result.total_records}\nSuccessful imports: ${result.successful_imports}\nDuplicates skipped: ${result.duplicate_records}\nErrors: ${result.error_records}`;
             
             if (result.error_records > 0) {
-                const showDetails = confirm(successMsg + '\n\nWould you like to see the error details?');
+                const showDetails = await showCustomConfirm('Import Completed', successMsg + '\n\nWould you like to see the error details?');
                 if (showDetails && result.error_details) {
-                    alert('Error details:\n' + result.error_details.join('\n'));
+                    showCustomModal('Error Details', 'Error details:\n' + result.error_details.join('\n'), 'warning');
                 }
             } else {
-                alert(successMsg);
+                showCustomModal('Import Success', successMsg, 'success');
             }
             
             // Switch to results view
@@ -709,7 +785,7 @@ window.importWithMapping = function() {
     })
     .catch(error => {
         console.error('Error importing workers:', error);
-        alert(`Failed to import workers: ${error.message}\n\nPlease check the browser console for more details and try again.`);
+        showCustomModal('Import Error', `Failed to import workers: ${error.message}\n\nPlease check the browser console for more details and try again.`, 'error');
     })
     .finally(() => {
         // Reset button state

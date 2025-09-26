@@ -75,7 +75,7 @@
         if (!startDate || !endDate) return;
         
         if (new Date(endDate) < new Date(startDate)) {
-            alert('End date cannot be before start date');
+            showCustomModal('Date Validation', 'End date cannot be before start date', 'warning');
             // Set end date to 1 day after start date
             const newEndDate = new Date(startDate);
             newEndDate.setDate(newEndDate.getDate() + 1);

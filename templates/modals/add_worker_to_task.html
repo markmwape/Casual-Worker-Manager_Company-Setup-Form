@@ -136,7 +136,7 @@
         const workerName = document.getElementById('workerSearch').value;
 
         if (!workerId || !lastDropdownSelection) {
-            alert('Please select a valid worker from the list');
+            showCustomModal('Validation Error', 'Please select a valid worker from the list', 'warning');
             return;
         }
 
@@ -152,15 +152,15 @@
         .then(response => response.json())
         .then(result => {
             if (result.error) {
-                alert(result.error);
+                showCustomModal('Error', result.error, 'error');
             } else {
-                alert('Worker added to task successfully');
+                showCustomModal('Success', 'Worker added to task successfully', 'success');
                 window.location.reload();
             }
         })
         .catch(error => {
             console.error('Error adding worker to task:', error);
-            alert('Failed to add worker to task');
+            showCustomModal('Error', 'Failed to add worker to task', 'error');
         });
     }
 </script>

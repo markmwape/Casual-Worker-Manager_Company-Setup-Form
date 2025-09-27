@@ -674,7 +674,7 @@
                             // Show warning color if trial is expiring soon (7 days or less)
                             if (daysLeft <= 7) {e) {
                                 element.classList.remove('text-green-700');ys-left');
-                                element.classList.add('text-yellow-700');elector('a[href*="billing.stripe.com"]') : null;
+                                element.classList.add('text-yellow-700');select('a[href*="billing.stripe.com"]') : null;
                                 const parentCard = element.closest('.bg-gradient-to-r');
                                 if (parentCard) {lay in the subscription info bar (both desktop and mobile)
                                     parentCard.classList.remove('from-green-50', 'to-emerald-50', 'border-green-200');
@@ -787,14 +787,7 @@
             document.body.appendChild(modal);
         }           <div class="p-6">
                         <p class="text-gray-600 mb-4">Your free trial has ended. Upgrade now to continue using all features.</p>
-        // Create Stripe checkout sessiongap-3">
-        async function createCheckoutSession() {ateCheckoutSession()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg">
-            try {               Upgrade Now
-                // Get Stripe config>
-                const configResponse = await fetch('/api/stripe/config');e()" class="flex-1 border border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold py-2 px-4 rounded-lg">
-                const config = await configResponse.json();
-                const stripe = Stripe(config.publishable_key);
-                        </div>
+        // Create Stripe checkout session
                 const response = await fetch('/api/create-checkout-session', {
                     method: 'POST',
                     headers: {
@@ -1047,155 +1040,6 @@
             // Clear input
             input.value = '';
         }   
-    </script>/ Third burst from the right
-</body>     setTimeout(() => {
-</html>         confetti({
-                    particleCount: 50,
-                    angle: 120,
-                    spread: 55,
-                    origin: { x: 1 },
-                    colors: ['#EF4444', '#8B5CF6', '#10B981']
-                });
-            }, 500);
-        }
-
-        // Trigger confetti when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            // Small delay to ensure everything is loaded
-            setTimeout(triggerSuccessConfetti, 300);
-            
-            // Auto-hide success alert after 10 seconds
-            setTimeout(function() {
-                const alert = document.getElementById('subscription-success-alert');
-                if (alert) {
-                    alert.style.opacity = '0';
-                    alert.style.transform = 'translateY(-20px)';
-                    setTimeout(() => alert.remove(), 500);
-                }
-            }, 10000);
-        });
-
-        function closeSuccessAlert() {
-            const alert = document.getElementById('subscription-success-alert');
-            if (alert) {
-                alert.style.transition = 'all 0.3s ease-out';
-                alert.style.opacity = '0';
-                alert.style.transform = 'translateY(-20px)';
-                setTimeout(() => alert.remove(), 300);
-            }
-        }
-        {% endif %}
-
-        // Shared function to add new custom field to both single-add and import modals
-        function saveNewField() {
-            const input = document.getElementById('newFieldName');
-            const fieldName = input.value.trim();
-            if (!fieldName) return;
-            const fieldKey = fieldName.replace(/\s+/g, '_');
-
-            // Add to import modal current fields list
-            const importFields = document.getElementById('currentFields');
-            if (importFields) {
-                const div = document.createElement('div');
-                div.className = 'bg-blue-100 p-2 rounded-lg text-blue-700 font-medium truncate';
-                div.dataset.field = fieldKey;
-                div.textContent = fieldName;
-                importFields.appendChild(div);
-            }
-
-            // Add to single-add custom fields section
-            const singleContainer = document.getElementById('customFieldsSingle');
-            if (singleContainer) {
-                const wrapper = document.createElement('div');
-                wrapper.className = 'form-control w-full';
-                wrapper.innerHTML = `
-                    <label class="label">
-                        <span class="label-text">${fieldName}</span>
-                    </label>
-                    <input type="text" name="custom_${fieldKey}" class="input input-bordered w-full">
-                `;
-                singleContainer.appendChild(wrapper);
-            }
-
-            // Clear input
-            input.value = '';
-        }
-
-        // Custom Modal System
-        function showCustomModal(title, message, type = 'info') {
-            const modal = document.getElementById('custom-notification-modal');
-            const titleText = document.getElementById('custom-notification-title-text');
-            const icon = document.getElementById('custom-notification-icon');
-            const messageEl = document.getElementById('custom-notification-message');
-            
-            titleText.textContent = title;
-            messageEl.textContent = message;
-            
-            // Set icon based on type
-            icon.className = '';
-            if (type === 'success') {
-                icon.className = 'fas fa-check-circle text-green-500';
-            } else if (type === 'error') {
-                icon.className = 'fas fa-exclamation-circle text-red-500';
-            } else if (type === 'warning') {
-                icon.className = 'fas fa-exclamation-triangle text-yellow-500';
-            } else {
-                icon.className = 'fas fa-info-circle text-blue-500';
-            }
-            
-            modal.showModal();
-        }
-
-        function closeCustomNotificationModal() {
-            const modal = document.getElementById('custom-notification-modal');
-            modal.close();
-        }
-        
-        // Override alert function
-        window.alert = function(message) {
-            showCustomModal('Alert', message, 'info');
-        };
-        
-        // Override confirm function with custom modal
-        window.originalConfirm = window.confirm;
-        window.confirm = function(message) {
-            return new Promise((resolve) => {
-                const modal = document.createElement('dialog');
-                modal.className = 'modal';
-                modal.innerHTML = `
-                    <div class="modal-box">
-                        <h3 class="font-bold text-lg flex items-center gap-2">
-                            <i class="fas fa-question-circle text-blue-500"></i>
-                            <span>Confirm</span>
-                        </h3>
-                        <p class="py-4">${message}</p>
-                        <div class="modal-action">
-                            <button type="button" class="btn btn-ghost" onclick="this.closest('dialog').close(); this.closest('dialog').remove();">Cancel</button>
-                            <button type="button" class="btn btn-primary" onclick="this.closest('dialog').close(); this.closest('dialog').remove();">OK</button>
-                        </div>
-                    </div>
-                `;
-                
-                document.body.appendChild(modal);
-                
-                // Handle button clicks
-                const cancelBtn = modal.querySelector('.btn-ghost');
-                const okBtn = modal.querySelector('.btn-primary');
-                
-                cancelBtn.addEventListener('click', () => {
-                    modal.remove();
-                    resolve(false);
-                });
-                
-                okBtn.addEventListener('click', () => {
-                    modal.remove();
-                    resolve(true);
-                });
-                
-                modal.showModal();
-            });
-        };
-
     </script>
 </body>
 </html>

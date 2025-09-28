@@ -559,11 +559,10 @@
                   </div>t symbol = selectedOption.dataset.symbol;
                 </dialog>tedCurrencySymbol.textContent = symbol;
             </div>;
-            {% endblock %}tial currency symbol
-            {% block scripts %}{% endblock %}ySelect.options[currencySelect.selectedIndex];
+            <!-- removed stray Jinja endblock/block tags causing syntax errors -->
+            {% include 'components/_sidebar.html' %}
         </div>  if (initialOption) {
-        {% include 'components/_sidebar.html' %}ontent = initialOption.dataset.symbol;
-    </div>      }
+        {% endblock %}
     <script>}
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize Feather Icons

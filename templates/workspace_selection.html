@@ -105,6 +105,12 @@
             pointer-events: none;
             z-index: 1;
         }
+        body {
+            margin-top: 2rem;
+        }
+        .btn {
+            margin: 0.5rem;
+        }
     </style>
 </head>
 <body class="font-inter bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen relative py-8">
@@ -351,137 +357,4 @@
                                     <option value="Saint Vincent and the Grenadines">Saint Vincent and the Grenadines</option>
                                     <option value="Samoa">Samoa</option>
                                     <option value="San Marino">San Marino</option>
-                                    <option value="Sao Tome and Principe">Sao Tome and Principe</option>
-                                    <option value="Saudi Arabia">Saudi Arabia</option>
-                                    <option value="Senegal">Senegal</option>
-                                    <option value="Serbia">Serbia</option>
-                                    <option value="Seychelles">Seychelles</option>
-                                    <option value="Sierra Leone">Sierra Leone</option>
-                                    <option value="Singapore">Singapore</option>
-                                    <option value="Slovakia">Slovakia</option>
-                                    <option value="Slovenia">Slovenia</option>
-                                    <option value="Solomon Islands">Solomon Islands</option>
-                                    <option value="Somalia">Somalia</option>
-                                    <option value="South Africa">South Africa</option>
-                                    <option value="South Korea">South Korea</option>
-                                    <option value="South Sudan">South Sudan</option>
-                                    <option value="Spain">Spain</option>
-                                    <option value="Sri Lanka">Sri Lanka</option>
-                                    <option value="Sudan">Sudan</option>
-                                    <option value="Suriname">Suriname</option>
-                                    <option value="Sweden">Sweden</option>
-                                    <option value="Switzerland">Switzerland</option>
-                                    <option value="Syria">Syria</option>
-                                    <option value="Taiwan">Taiwan</option>
-                                    <option value="Tajikistan">Tajikistan</option>
-                                    <option value="Tanzania">Tanzania</option>
-                                    <option value="Thailand">Thailand</option>
-                                    <option value="Togo">Togo</option>
-                                    <option value="Tonga">Tonga</option>
-                                    <option value="Trinidad and Tobago">Trinidad and Tobago</option>
-                                    <option value="Tunisia">Tunisia</option>
-                                    <option value="Turkey">Turkey</option>
-                                    <option value="Turkmenistan">Turkmenistan</option>
-                                    <option value="Tuvalu">Tuvalu</option>
-                                    <option value="Uganda">Uganda</option>
-                                    <option value="Ukraine">Ukraine</option>
-                                    <option value="United Arab Emirates">United Arab Emirates</option>
-                                    <option value="United Kingdom">United Kingdom</option>
-                                    <option value="United States">United States</option>
-                                    <option value="Uruguay">Uruguay</option>
-                                    <option value="Uzbekistan">Uzbekistan</option>
-                                    <option value="Vanuatu">Vanuatu</option>
-                                    <option value="Vatican City">Vatican City</option>
-                                    <option value="Venezuela">Venezuela</option>
-                                    <option value="Vietnam">Vietnam</option>
-                                    <option value="Yemen">Yemen</option>
-                                    <option value="Zambia">Zambia</option>
-                                    <option value="Zimbabwe">Zimbabwe</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-control">
-                                <label class="label">
-                                    <span class="label-text font-semibold text-brand-navy-600 text-lg">Industry Type</span>
-                                </label>
-                                <select id="industry-type" 
-                                        name="industry_type" 
-                                        required 
-                                        class="select select-bordered w-full text-lg input-focus bg-white border-2 border-blue-200 focus:border-brand-navy-500 focus:ring-2 focus:ring-blue-200">
-                                    <option value="">Select industry</option>
-                                    <option value="Construction">Construction</option>
-                                    <option value="Agriculture">Agriculture</option>
-                                    <option value="Retail">Retail</option>
-                                    <option value="Manufacturing">Manufacturing</option>
-                                    <option value="Mining">Mining</option>
-                                    <option value="Transportation">Transportation</option>
-                                    <option value="Hospitality">Hospitality</option>
-                                    <option value="Healthcare">Healthcare</option>
-                                    <option value="Education">Education</option>
-                                    <option value="Technology">Technology</option>
-                                    <option value="Financial Services">Financial Services</option>
-                                    <option value="Real Estate">Real Estate</option>
-                                    <option value="Energy">Energy</option>
-                                    <option value="Telecommunications">Telecommunications</option>
-                                    <option value="Food & Beverage">Food & Beverage</option>
-                                    <option value="Textiles">Textiles</option>
-                                    <option value="Other">Other</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-control">
-                                <label class="label">
-                                    <span class="label-text font-semibold text-brand-navy-600 text-lg">Company Phone Number (with Country Code)</span>
-                                </label>
-                                <input type="tel" 
-                                       id="company-phone" 
-                                       name="company_phone" 
-                                       placeholder="e.g., +260 971 234 567" 
-                                       required 
-                                       class="input input-bordered w-full text-lg input-focus bg-white border-2 border-blue-200 focus:border-brand-navy-500 focus:ring-2 focus:ring-blue-200">
-                                <label class="label">
-                                    <span class="label-text-alt text-brand-gray-500">Include country code (e.g., +260 for Zambia, +1 for US)</span>
-                                </label>
-                            </div>
-                            
-                            <div class="form-control">
-                                <label class="label">
-                                    <span class="label-text font-semibold text-brand-navy-600 text-lg">Company Email Address</span>
-                                </label>
-                                <input type="email" 
-                                       id="company-email" 
-                                       name="company_email" 
-                                       placeholder="Enter company email address" 
-                                       required 
-                                       class="input input-bordered w-full text-lg input-focus bg-white border-2 border-blue-200 focus:border-brand-navy-500 focus:ring-2 focus:ring-blue-200">
-                            </div>
-                            
-                            <button type="submit" class="btn btn-primary w-full text-lg font-semibold btn-hover bg-gradient-to-r from-brand-navy-500 to-brand-navy-600 border-0 shadow-lg text-white hover:from-brand-navy-600 hover:to-brand-navy-700">
-                                <i class="fas fa-plus mr-3"></i>Create Workspace
-                            </button>
-                        </form>
-                        
-                        <div id="create-error" class="text-error text-center mt-4 hidden"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Trial Info -->
-        <div class="text-center">
-            <div class="alert bg-gradient-to-r from-brand-navy-500 to-brand-navy-600 text-white border-0 shadow-xl max-w-4xl mx-auto rounded-2xl">
-                <div class="flex items-center justify-center gap-3">
-                    <i class="fas fa-gift text-2xl"></i>
-                    <div class="text-left">
-                        <span class="font-bold text-lg">🎉 30-Day Free Trial</span>
-                        <br>
-                        <span class="text-blue-100">All new workspaces come with a 30-day free trial. No credit card required to get started.</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script src="/static/js/workspace_selection.js" type="module"></script>
-</body>
-</html> 
+   

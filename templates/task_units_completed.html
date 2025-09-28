@@ -8,7 +8,7 @@
             Units Completed: {{ task.name }}
         </div>
         <div class="flex gap-2">
-            <button onclick="openAddWorkerToTaskModal({{ task.id }})" class="btn btn-primary">
+            <button onclick="openAddWorkerToTaskModal('{{ task.id }}')" class="btn btn-primary">
                 <i data-feather="plus" class="mr-2"></i>Add Worker
             </button>
             <a href="{{ url_for('tasks_route') }}" class="btn btn-ghost">
@@ -33,7 +33,7 @@
         </div>
         <!-- Sticky action buttons below title on mobile -->
         <div class="sticky top-[64px] left-0 w-full z-40 flex flex-col items-center bg-white/95 py-3 border-b border-blue-50 shadow rounded-b-2xl gap-2 px-4">
-            <button onclick="openAddWorkerToTaskModal({{ task.id }})" class="btn btn-primary w-full max-w-xs shadow-md text-base py-2">
+            <button onclick="openAddWorkerToTaskModal('{{ task.id }}')" class="btn btn-primary w-full max-w-xs shadow-md text-base py-2">
                 <i data-feather="plus" class="mr-2"></i>Add Worker
             </button>
             <a href="{{ url_for('tasks_route') }}" class="btn w-full max-w-xs border border-blue-400 text-blue-700 bg-white hover:bg-blue-50 shadow-sm text-base py-2 flex items-center justify-center transition-all duration-150">
@@ -140,7 +140,7 @@
                         </tbody>
                     </table>
                     <div class="mt-4 flex justify-end">
-                        <button type="button" onclick="saveUnitsCompleted({{ task.id }})" class="btn btn-primary">
+                        <button type="button" onclick="saveUnitsCompleted('{{ task.id }}')" class="btn btn-primary">
                             <i data-feather="save" class="mr-2"></i>Save
                         </button>
                     </div>
@@ -156,6 +156,7 @@
 
     {% include 'modals/add_worker_to_task.html' %}
 </div>
+{% include 'components/_sidebar.html' %}
 {% endblock %}
 
 {% block scripts %}
@@ -164,7 +165,7 @@ function saveUnitsCompleted(taskId) {
     const attendanceData = [];
     const rows = document.querySelectorAll('#unitsForm tbody tr');
     const selectedDate = document.getElementById('taskDateInput').value;
-    const taskStartDate = '{{ task.start_date.strftime('%Y-%m-%d') }}';
+    const taskStartDate = "{{ task.start_date.strftime('%Y-%m-%d') }}"; // Fixed syntax
     // Check if selected date is before task start date
     if (selectedDate < taskStartDate) {
         const warning = document.getElementById('units-date-error');
@@ -266,4 +267,4 @@ function onUnitsDateChange() {
     window.location.href = url.toString();
 }
 </script>
-{% endblock %} 
+{% endblock %}

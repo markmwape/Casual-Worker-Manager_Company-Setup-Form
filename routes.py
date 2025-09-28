@@ -3644,7 +3644,9 @@ def master_dashboard_route():
                              
                              # Management
                              master_admins_count=master_admins_count,
-                             
+                            stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
+                            STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY')
+                            STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET')                             
                              # Enhanced Task Analytics
                              task_worker_analytics=task_worker_analytics,
                              top_tasks_by_workers=top_tasks_by_workers,

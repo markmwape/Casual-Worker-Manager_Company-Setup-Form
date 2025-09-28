@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signing In...</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.24/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/date-picker.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        window.firebaseApp = initializeApp({
+            apiKey: "AIzaSyD9_N_0ve9ABFwwnTBn1N2oxlUs6xbT-No",
+            authDomain: "ember-accounting.firebaseapp.com",
+            projectId: "ember-accounting",
+            storageBucket: "ember-accounting.firebasestorage.app",
+            messagingSenderId: "328324461979",
+            appId: "1:328324461979:web:0cc9ddad6aa3f157359d3e",
+            measurementId: "G-F1XTE0TP63"
+        });
+        window.firebaseAuth = getAuth(window.firebaseApp);
+    </script>
+</head>
+<body class="font-inter bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex items-center justify-center">
+    <div class="w-full max-w-md mx-auto p-6">
+        <div class="card bg-gradient-to-br from-blue-50 to-indigo-100 shadow-2xl border-0">
+            <div class="card-body p-8 flex flex-col items-center">
+                <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mb-4 shadow-lg animate-pulse">
+                    <i class="fas fa-spinner fa-spin text-3xl text-white"></i>
+                </div>
+                <h1 class="card-title text-2xl font-bold text-blue-800 mb-2">Signing In...</h1>
+                <p class="text-gray-600 text-center">Please wait while we sign you into your account.</p>
+            </div>
+        </div>
+    </div>
+    <script src="/static/js/finishSignIn.js" type="module"></script>
+</body>
+</html>

@@ -1,0 +1,166 @@
+<dialog id="add-worker-to-task-modal" class="modal">
+    <div class="modal-box">
+        <h3 class="font-bold text-lg">Add Worker to Task</h3>
+        <form id="addWorkerToTaskForm">
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text">Search Worker</span>
+                </label>
+                <div class="relative">
+                    <input type="text" 
+                           id="workerSearch" 
+                           class="input input-bordered w-full" 
+                           placeholder="Type to search workers..."
+                           autocomplete="off"
+                           required>
+                    <div id="workersDropdown" class="absolute left-0 right-0 bg-white border border-blue-200 rounded-lg shadow z-50 mt-1 hidden max-h-56 overflow-y-auto"></div>
+                    <input type="hidden" id="selectedWorkerId">
+                </div>
+            </div>
+            <div class="modal-action">
+                <button type="button" class="btn btn-ghost" onclick="closeAddWorkerToTaskModal()">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="addWorkerToTask()">Add Worker</button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
+<script>
+    // Prepare all workers data for search (rendered as a JS array)
+    const allWorkers = [
+        {% for worker in available_workers %}
+        {
+            id: "{{ worker.id }}",
+            name: "{{ worker.first_name }} {{ worker.last_name }}",
+            {% if worker.date_of_birth %}date_of_birth: "{{ worker.date_of_birth.strftime('%Y-%m-%d') }}",{% endif %}
+            {% for cf in worker.custom_field_values %}
+            custom_{{ cf.custom_field_id }}: "{{ cf.value }}",
+            {% endfor %}
+            all_fields: "{{ worker.first_name }} {{ worker.last_name }}{% if worker.date_of_birth %} {{ worker.date_of_birth.strftime('%Y-%m-%d') }}{% endif %} {% for cf in worker.custom_field_values %} {{ cf.value }}{% endfor %} {{ worker.id }}"
+        },
+        {% endfor %}
+    ];
+
+    function openAddWorkerToTaskModal(taskId) {
+        document.getElementById('add-worker-to-task-modal').showModal();
+        document.getElementById('addWorkerToTaskForm').dataset.taskId = taskId;
+        document.getElementById('workerSearch').value = '';
+        document.getElementById('selectedWorkerId').value = '';
+        document.getElementById('workersDropdown').classList.add('hidden');
+        renderWorkerDropdown('');
+    }
+
+    function closeAddWorkerToTaskModal() {
+        document.getElementById('add-worker-to-task-modal').close();
+    }
+
+    let lastDropdownSelection = false;
+
+    document.getElementById('workerSearch').addEventListener('input', function(e) {
+        const searchValue = e.target.value.toLowerCase();
+        lastDropdownSelection = false;
+        document.getElementById('selectedWorkerId').value = '';
+        console.log('Input changed:', searchValue); // Debug log
+        renderWorkerDropdown(searchValue);
+    });
+
+    let currentDropdownIndex = -1;
+
+    function renderWorkerDropdown(searchValue) {
+        const dropdown = document.getElementById('workersDropdown');
+        dropdown.innerHTML = '';
+        if (!searchValue) {
+            dropdown.classList.add('hidden');
+            currentDropdownIndex = -1;
+            return;
+        }
+        const matches = allWorkers.filter(worker => worker.all_fields.toLowerCase().includes(searchValue));
+        console.log('Rendering dropdown, matches:', matches.map(w => w.name)); // Debug log
+        if (matches.length === 0) {
+            dropdown.innerHTML = '<div class="px-4 py-2 text-gray-400">No workers found</div>';
+            currentDropdownIndex = -1;
+        } else {
+            matches.forEach((worker, idx) => {
+                const div = document.createElement('div');
+                div.className = 'px-4 py-2 hover:bg-blue-50 cursor-pointer';
+                div.textContent = worker.name;
+                div.onclick = function() {
+                    const input = document.getElementById('workerSearch');
+                    input.value = worker.name;
+                    document.getElementById('selectedWorkerId').value = worker.id;
+                    dropdown.classList.add('hidden');
+                    lastDropdownSelection = true;
+                    input.blur();
+                    console.log('Selected worker:', worker.name, 'ID:', worker.id); // Debug log
+                };
+                div.setAttribute('data-index', idx);
+                dropdown.appendChild(div);
+            });
+            currentDropdownIndex = -1;
+        }
+        dropdown.classList.remove('hidden');
+    }
+
+    document.getElementById('workerSearch').addEventListener('blur', function() {
+        setTimeout(() => {
+            document.getElementById('workersDropdown').classList.add('hidden');
+        }, 200);
+    });
+
+    document.getElementById('workerSearch').addEventListener('keydown', function(e) {
+        const dropdown = document.getElementById('workersDropdown');
+        const items = dropdown.querySelectorAll('div[data-index]');
+        if (!items.length || dropdown.classList.contains('hidden')) return;
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            currentDropdownIndex = (currentDropdownIndex + 1) % items.length;
+            items.forEach((item, idx) => {
+                item.classList.toggle('bg-blue-100', idx === currentDropdownIndex);
+            });
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            currentDropdownIndex = (currentDropdownIndex - 1 + items.length) % items.length;
+            items.forEach((item, idx) => {
+                item.classList.toggle('bg-blue-100', idx === currentDropdownIndex);
+            });
+        } else if (e.key === 'Enter') {
+            if (currentDropdownIndex >= 0 && currentDropdownIndex < items.length) {
+                items[currentDropdownIndex].click();
+            }
+        }
+    });
+
+    function addWorkerToTask() {
+        const taskId = document.getElementById('addWorkerToTaskForm').dataset.taskId;
+        const workerId = document.getElementById('selectedWorkerId').value;
+        const workerName = document.getElementById('workerSearch').value;
+
+        if (!workerId || !lastDropdownSelection) {
+            showCustomModal('Validation Error', 'Please select a valid worker from the list', 'warning');
+            return;
+        }
+
+        fetch(`/api/task/${taskId}/add-worker`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                worker_id: workerId
+            })
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.error) {
+                showCustomModal('Error', result.error, 'error');
+            } else {
+                showCustomModal('Success', 'Worker added to task successfully', 'success');
+                window.location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Error adding worker to task:', error);
+            showCustomModal('Error', 'Failed to add worker to task', 'error');
+        });
+    }
+</script>

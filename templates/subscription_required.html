@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription Required - Embee Accounting</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.24/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script async src="https://js.stripe.com/v3/pricing-table.js"></script>
+</head>
+<body class="font-inter bg-gradient-to-br from-gray-50 to-blue-50">
+    
+    <!-- Navigation -->
+    <nav class="bg-white/90 backdrop-blur-md shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="flex items-center">
+                        <img src="{{ url_for('static', filename='img/logo + text.png') }}" alt="Embee Accounting" class="h-12 w-auto">
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    {% if session.current_workspace %}
+                    <span class="text-sm text-gray-600">{{ session.current_workspace.name }}</span>
+                    {% endif %}
+                    <a href="{{ url_for('logout_route') }}" class="btn btn-ghost btn-sm">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-2xl w-full">
+            <!-- Trial Expired Card -->
+            <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+                <!-- Header -->
+                <div class="bg-gradient-to-r from-red-500 to-pink-600 px-8 py-6">
+                    <div class="flex items-center">
+                        <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-clock text-white text-2xl"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-2xl font-bold text-white">Trial Expired</h1>
+                            <p class="text-red-100">Your 30-day free trial has ended</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Content -->
+                <div class="px-8 py-6">
+                    <div class="text-center mb-8">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-4">
+                            Ready to Continue Your Workforce Management Journey?
+                        </h2>
+                        <p class="text-gray-600 text-lg leading-relaxed">
+                            Your free trial for <strong>{{ workspace.name }}</strong> (Code: <span class="font-mono bg-gray-100 px-2 py-1 rounded text-sm">{{ workspace.workspace_code }}</span>) has expired. 
+                            Choose the plan that fits your business needs and continue managing your workforce.
+                        </p>
+                    </div>
+
+                    <!-- Features Reminder -->
+                    <div class="bg-gray-50 rounded-xl p-6 mb-8">
+                        <h3 class="font-semibold text-gray-900 mb-4 flex items-center">
+                            <i class="fas fa-star text-yellow-500 mr-2"></i>
+                            What You'll Keep With A Subscription:
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div class="flex items-center text-sm text-gray-700">
+                                <i class="fas fa-check text-green-500 mr-2"></i>
+                                Unlimited worker management
+                            </div>
+                            <div class="flex items-center text-sm text-gray-700">
+                                <i class="fas fa-check text-green-500 mr-2"></i>
+                                Advanced reporting & analytics
+                            </div>
+                            <div class="flex items-center text-sm text-gray-700">
+                                <i class="fas fa-check text-green-500 mr-2"></i>
+                                Task assignment & tracking
+                            </div>
+                            <div class="flex items-center text-sm text-gray-700">
+                                <i class="fas fa-check text-green-500 mr-2"></i>
+                                Team collaboration tools
+                            </div>
+                            <div class="flex items-center text-sm text-gray-700">
+                                <i class="fas fa-check text-green-500 mr-2"></i>
+                                Attendance monitoring
+                            </div>
+                            <div class="flex items-center text-sm text-gray-700">
+                                <i class="fas fa-check text-green-500 mr-2"></i>
+                                Priority customer support
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stripe Pricing Table -->
+                    <div class="mb-8">
+                        <div class="text-center mb-6">
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">Simple, Transparent Pricing</h3>
+                            <p class="text-gray-600">Choose the plan that fits your business needs. All plans include our core features.</p>
+                        </div>
+                        
+                        <stripe-pricing-table 
+                            pricing-table-id="prctbl_1S5C12F93s78OlJMeND7RU2l"
+                            publishable-key="pk_test_51S5BnwF93s78OlJMAySZCn4asUYyem8VoyxXyzHQVx5izpRIEBtKBop9GP6yCcRweKtpJHhZvRfHXUCANL6Ge3rV00gCUoyuMW">
+                        </stripe-pricing-table>
+
+                        <!-- Bottom section with testimonial reference -->
+                        <div class="mt-8 text-center">
+                            <h4 class="text-lg font-semibold text-gray-900 mb-2">Loved by Accounting Professionals</h4>
+                            <p class="text-gray-600 text-sm">Join dozens of accountants who've transformed their workforce management workflow</p>
+                            
+                            <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
+                                <div class="flex items-start">
+                                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3 mt-1">
+                                        <i class="fas fa-chart-line text-blue-600 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="font-semibold text-gray-900 text-sm">85% Faster Data Entry</h5>
+                                        <p class="text-gray-600 text-xs">Automated time tracking and payroll calculations eliminate manual data entry, letting accountants focus on strategic work instead of repetitive tasks.</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3 mt-1">
+                                        <i class="fas fa-file-alt text-green-600 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="font-semibold text-gray-900 text-sm">Seamless Client Reporting</h5>
+                                        <p class="text-gray-600 text-xs">Generate comprehensive workforce reports in seconds. Our system produces accurate, professional reports that clients love.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Action -->
+                    <div class="text-center">
+                        <p class="text-sm text-gray-600 mb-3">
+                            Already have an account or need to manage your billing?
+                        </p>
+                        <a href="https://billing.stripe.com/p/login/test_5kQaEX5Jg1o5g8lg0SgEg00" 
+                           class="inline-flex items-center border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-2 px-4 rounded-lg transition duration-200">
+                            <i class="fas fa-cog mr-2"></i>
+                            Manage Existing Billing
+                        </a>
+                    </div>
+
+                    <!-- Help Text -->
+                    <div class="mt-6 text-center">
+                        <p class="text-sm text-gray-500">
+                            Need help? <a href="mailto:support@embeeaccounting.com" class="text-blue-600 hover:underline">Contact our support team</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Temporary Access -->
+            <div class="mt-6 text-center">
+                <p class="text-sm text-gray-600 mb-3">
+                    Need more time to decide? 
+                </p>
+                <button onclick="requestExtension()" 
+                        class="text-blue-600 hover:text-blue-700 text-sm font-medium underline">
+                    Request 3-day extension (one-time only)
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+
+    <script>
+        // Simple redirect function for trial extension (if needed)
+        async function requestExtension() {
+            if (!confirm('Are you sure you want to request a 3-day extension? This can only be used once.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/request-trial-extension', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    alert('Extension granted! You have 3 additional days to try our service.');
+                    window.location.href = '/home';
+                } else {
+                    throw new Error(result.error || 'Failed to request extension');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

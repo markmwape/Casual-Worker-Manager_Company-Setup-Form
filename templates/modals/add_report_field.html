@@ -1,0 +1,464 @@
+<dialog id="add-report-field-modal-per-day" class="modal">
+    <div class="modal-box">
+        <h3 class="font-bold text-lg">Add Custom Report Field (Per Day)</h3>
+        <form id="reportFieldFormPerDay" onsubmit="return false;">
+            <input type="hidden" name="payout_type" id="payoutTypeInputPerDay" value="per_day">
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text">Field Name</span>
+                </label>
+                <input type="text" name="name" class="input input-bordered w-full" required pattern="[A-Za-z_]+" title="Only letters and underscores allowed" oninput="this.value = this.value.replace(/\s+/g, '_').replace(/[^A-Za-z_]/g, ''); document.getElementById('nameErrorPerDay').classList.add('hidden');">
+                <div class="text-xs text-orange-500 mt-1">Only text input is allowed for the custom field name (letters and underscores only).</div>
+                <div id="nameErrorPerDay" class="text-error text-sm mt-1 hidden">Field name must be unique and only letters/underscores are allowed.</div>
+            </div>
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text">Formula Builder</span>
+                    <div class="tooltip tooltip-left" data-tip="You can use arithmetic formulas with +, −, ×, ÷, and parentheses (). Example: (Field1 * Field2) / Field3">
+                        <i class="fas fa-question-circle text-info"></i>
+                    </div>
+                </label>
+                <div class="flex flex-wrap gap-2 mb-2">
+                    <select id="fieldPickerPerDay" class="select select-bordered min-w-[200px] max-w-xs whitespace-normal">
+                        <option value="">Select Field</option>
+                        <optgroup label="System Fields">
+                            <option value="attendance_days">Days Worked</option>
+                            <option value="daily_rate">Daily Payout</option>
+                            <option value="age">Age</option>
+                        </optgroup>
+                        {% if custom_fields %}
+                        <optgroup label="Custom Fields">
+                            {% for field in custom_fields if field.payout_type == 'per_day' or field.payout_type == 'both' %}
+                            <option value="{{ field.name }}">{{ field.name }}</option>
+                            {% endfor %}
+                        </optgroup>
+                        {% endif %}
+                    </select>
+                    <button type="button" class="btn btn-square" onclick="insertOperator('(', 'PerDay')">(</button>
+                    <button type="button" class="btn btn-square" onclick="insertOperator(')', 'PerDay')">)</button>
+                    <button type="button" class="btn btn-square" onclick="insertOperator('+', 'PerDay')">+</button>
+                    <button type="button" class="btn btn-square" onclick="insertOperator('-', 'PerDay')">−</button>
+                    <button type="button" class="btn btn-square" onclick="insertOperator('*', 'PerDay')">×</button>
+                    <button type="button" class="btn btn-square" onclick="insertOperator('/', 'PerDay')">/</button>
+                    <button type="button" class="btn btn-square" onclick="insertNumber('PerDay')">123</button>
+                </div>
+                <textarea id="formulaBuilderPerDay" name="formula" class="textarea textarea-bordered w-full font-mono" required></textarea>
+                <div id="formulaErrorPerDay" class="text-error text-sm mt-1 hidden">Invalid formula</div>
+            </div>
+            <div class="form-control w-full mt-4">
+                <div class="flex items-center gap-3">
+                    <label class="cursor-pointer flex items-center gap-2 mb-0">
+                        <input type="checkbox" id="enableMaxLimitPerDay" class="checkbox checkbox-primary">
+                        <span class="label-text font-semibold">Maximum Limit</span>
+                    </label>
+                    <div id="maxLimitInputWrapperPerDay" class="flex-1 flex items-center gap-2 hidden">
+                        <input type="number" step="any" min="0" id="maxLimitValuePerDay" name="max_limit" class="input input-bordered w-full max-w-xs" placeholder="Enter max value...">
+                    </div>
+                </div>
+                <div id="maxLimitHelperPerDay" class="text-xs text-gray-500 mt-2 ml-7">Set the max value this formula can reach. Excess values will be capped.</div>
+            </div>
+            <div class="form-control w-full mt-4">
+                <div class="flex items-center gap-3">
+                    <label class="cursor-pointer flex items-center gap-2 mb-0">
+                        <input type="checkbox" id="enableAgeConditionPerDay" class="checkbox checkbox-primary">
+                        <span class="label-text font-semibold">Add Age Condition</span>
+                    </label>
+                </div>
+                <div id="ageConditionWrapperPerDay" class="mt-2 hidden">
+                    <div class="flex flex-wrap gap-2 items-center">
+                        <span class="label-text">When age&nbsp;</span>
+                        <select id="ageOperatorPerDay" class="select select-bordered">
+                            <option value=">">&gt;</option>
+                            <option value=">=">&ge;</option>
+                            <option value="<">&lt;</option>
+                            <option value="<=">&le;</option>
+                            <option value="=">=</option>
+                        </select>
+                        <input type="number" id="ageValuePerDay" class="input input-bordered w-20" placeholder="Age" min="0">
+                        <span class="label-text">set value to</span>
+                        <input type="number" step="any" id="ageConditionValuePerDay" class="input input-bordered w-28" placeholder="Value">
+                    </div>
+                    <div class="text-xs text-gray-500 mt-2 ml-1">Example: When age ≥ 55, set value to 0</div>
+                </div>
+            </div>
+            <input type="hidden" name="field_id">
+            <div class="modal-action">
+                <button type="button" class="btn btn-ghost" onclick="closeAddReportFieldModalPerDay()">Cancel</button>
+                <button type="button" class="btn btn-secondary" onclick="addCustomFieldPerDay()">
+                    <i data-feather="plus" class="mr-2"></i>Add Custom Field
+                </button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
+<dialog id="add-report-field-modal-per-unit" class="modal">
+    <div class="modal-box">
+        <h3 class="font-bold text-lg">Add Custom Report Field (Per Unit)</h3>
+        <form id="reportFieldFormPerUnit" onsubmit="return false;">
+            <input type="hidden" name="payout_type" id="payoutTypeInputPerUnit" value="per_part">
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text">Field Name</span>
+                </label>
+                <input type="text" name="name" class="input input-bordered w-full" required pattern="[A-Za-z_]+" title="Only letters and underscores allowed" oninput="this.value = this.value.replace(/\s+/g, '_').replace(/[^A-Za-z_]/g, ''); document.getElementById('nameErrorPerUnit').classList.add('hidden');">
+                <div class="text-xs text-orange-500 mt-1">Only text input is allowed for the custom field name (letters and underscores only).</div>
+                <div id="nameErrorPerUnit" class="text-error text-sm mt-1 hidden">Field name must be unique and only letters/underscores are allowed.</div>
+            </div>
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text">Formula Builder</span>
+                    <div class="tooltip tooltip-left" data-tip="You can use arithmetic formulas with +, −, ×, ÷, and parentheses (). Example: (Field1 * Field2) / Field3">
+                        <i class="fas fa-question-circle text-info"></i>
+                    </div>
+                </label>
+                <div class="flex flex-wrap gap-2 mb-2">
+                    <select id="fieldPickerPerUnit" class="select select-bordered min-w-[200px] max-w-xs whitespace-normal">
+                        <option value="">Select Field</option>
+                        <optgroup label="System Fields">
+                            <option value="units_completed">Units Completed</option>
+                            <option value="per_part_rate">Per Unit Rate</option>
+                            <option value="age">Age</option>
+                        </optgroup>
+                        {% if custom_fields %}
+                        <optgroup label="Custom Fields">
+                            {% for field in custom_fields if field.payout_type == 'per_part' or field.payout_type == 'both' %}
+                            <option value="{{ field.name }}">{{ field.name }}</option>
+                            {% endfor %}
+                        </optgroup>
+                        {% endif %}
+                    </select>
+                    <button type="button" class="btn btn-square" onclick="insertOperator('(', 'PerUnit')">(</button>
+                    <button type="button" class="btn btn-square" onclick="insertOperator(')', 'PerUnit')">)</button>
+                    <button type="button" class="btn btn-square" onclick="insertOperator('+', 'PerUnit')">+</button>
+                    <button type="button" class="btn btn-square" onclick="insertOperator('-', 'PerUnit')">−</button>
+                    <button type="button" class="btn btn-square" onclick="insertOperator('*', 'PerUnit')">×</button>
+                    <button type="button" class="btn btn-square" onclick="insertOperator('/', 'PerUnit')">/</button>
+                    <button type="button" class="btn btn-square" onclick="insertNumber('PerUnit')">123</button>
+                </div>
+                <textarea id="formulaBuilderPerUnit" name="formula" class="textarea textarea-bordered w-full font-mono" required></textarea>
+                <div id="formulaErrorPerUnit" class="text-error text-sm mt-1 hidden">Invalid formula</div>
+            </div>
+            <div class="form-control w-full mt-4">
+                <div class="flex items-center gap-3">
+                    <label class="cursor-pointer flex items-center gap-2 mb-0">
+                        <input type="checkbox" id="enableMaxLimitPerUnit" class="checkbox checkbox-primary">
+                        <span class="label-text font-semibold">Maximum Limit</span>
+                    </label>
+                    <div id="maxLimitInputWrapperPerUnit" class="flex-1 flex items-center gap-2 hidden">
+                        <input type="number" step="any" min="0" id="maxLimitValuePerUnit" name="max_limit" class="input input-bordered w-full max-w-xs" placeholder="Enter max value...">
+                    </div>
+                </div>
+                <div id="maxLimitHelperPerUnit" class="text-xs text-gray-500 mt-2 ml-7">Set the max value this formula can reach. Excess values will be capped.</div>
+            </div>
+            <div class="form-control w-full mt-4">
+                <div class="flex items-center gap-3">
+                    <label class="cursor-pointer flex items-center gap-2 mb-0">
+                        <input type="checkbox" id="enableAgeConditionPerUnit" class="checkbox checkbox-primary">
+                        <span class="label-text font-semibold">Add Age Condition</span>
+                    </label>
+                </div>
+                <div id="ageConditionWrapperPerUnit" class="mt-2 hidden">
+                    <div class="flex flex-wrap gap-2 items-center">
+                        <span class="label-text">When age&nbsp;</span>
+                        <select id="ageOperatorPerUnit" class="select select-bordered">
+                            <option value=">">&gt;</option>
+                            <option value=">=">&ge;</option>
+                            <option value="<">&lt;</option>
+                            <option value="<=">&le;</option>
+                            <option value="=">=</option>
+                        </select>
+                        <input type="number" id="ageValuePerUnit" class="input input-bordered w-20" placeholder="Age" min="0">
+                        <span class="label-text">set value to</span>
+                        <input type="number" step="any" id="ageConditionValuePerUnit" class="input input-bordered w-28" placeholder="Value">
+                    </div>
+                    <div class="text-xs text-gray-500 mt-2 ml-1">Example: When age ≥ 55, set value to 0</div>
+                </div>
+            </div>
+            <input type="hidden" name="field_id">
+            <div class="modal-action">
+                <button type="button" class="btn btn-ghost" onclick="closeAddReportFieldModalPerUnit()">Cancel</button>
+                <button type="button" class="btn btn-secondary" onclick="addCustomFieldPerUnit()">
+                    <i data-feather="plus" class="mr-2"></i>Add Custom Field
+                </button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
+<script>
+// Helper to insert text at cursor position in a textarea
+function insertAtCursor(textarea, text) {
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const before = textarea.value.substring(0, start);
+    const after = textarea.value.substring(end);
+    textarea.value = before + text + after;
+    textarea.selectionStart = textarea.selectionEnd = start + text.length;
+    textarea.focus();
+}
+
+function registerFormulaBuilderEvents() {
+    // Remove and re-add field pickers to clear old listeners
+    ['PerDay', 'PerUnit'].forEach(type => {
+        const pickerId = `fieldPicker${type}`;
+        const picker = document.getElementById(pickerId);
+        if (picker) {
+            const newPicker = picker.cloneNode(true);
+            picker.parentNode.replaceChild(newPicker, picker);
+        }
+    });
+    // Field pickers
+    const fieldPickerPerDay = document.getElementById('fieldPickerPerDay');
+    if (fieldPickerPerDay) {
+        fieldPickerPerDay.addEventListener('change', function() {
+            const field = this.value;
+            if (field) {
+                const textarea = document.getElementById('formulaBuilderPerDay');
+                insertAtCursor(textarea, ` ${field} `);
+                this.selectedIndex = 0;
+            }
+        });
+    }
+    const fieldPickerPerUnit = document.getElementById('fieldPickerPerUnit');
+    if (fieldPickerPerUnit) {
+        fieldPickerPerUnit.addEventListener('change', function() {
+            const field = this.value;
+            if (field) {
+                const textarea = document.getElementById('formulaBuilderPerUnit');
+                insertAtCursor(textarea, ` ${field} `);
+                this.selectedIndex = 0;
+            }
+        });
+    }
+    // Operator buttons
+    [
+        {id: 'PerDay', ops: ['(', ')', '+', '-', '*', '/']},
+        {id: 'PerUnit', ops: ['(', ')', '+', '-', '*', '/']}
+    ].forEach(group => {
+        group.ops.forEach(op => {
+            const btns = document.querySelectorAll(`button[onclick="insertOperator('${op}', '${group.id}')"]`);
+            btns.forEach(btn => {
+                btn.onclick = function() {
+                    const textarea = document.getElementById(`formulaBuilder${group.id}`);
+                    insertAtCursor(textarea, ` ${op} `);
+                };
+            });
+        });
+    });
+    // Number buttons
+    ['PerDay', 'PerUnit'].forEach(type => {
+        const btns = document.querySelectorAll(`button[onclick="insertNumber('${type}')"]`);
+        btns.forEach(btn => {
+            btn.onclick = function() {
+                const textarea = document.getElementById(`formulaBuilder${type}`);
+                insertAtCursor(textarea, '1');
+            };
+        });
+    });
+    console.log('Formula builder event listeners registered');
+}
+
+window.addEventListener('DOMContentLoaded', function() {
+    registerFormulaBuilderEvents();
+    // Max limit toggle for Per Day
+    const maxLimitCheckboxPerDay = document.getElementById('enableMaxLimitPerDay');
+    const maxLimitInputWrapperPerDay = document.getElementById('maxLimitInputWrapperPerDay');
+    const maxLimitValuePerDay = document.getElementById('maxLimitValuePerDay');
+    if (maxLimitCheckboxPerDay && maxLimitInputWrapperPerDay && maxLimitValuePerDay) {
+        maxLimitCheckboxPerDay.addEventListener('change', function() {
+            if (this.checked) {
+                maxLimitInputWrapperPerDay.classList.remove('hidden');
+            } else {
+                maxLimitInputWrapperPerDay.classList.add('hidden');
+                maxLimitValuePerDay.value = '';
+            }
+        });
+    }
+    // Max limit toggle for Per Unit
+    const maxLimitCheckboxPerUnit = document.getElementById('enableMaxLimitPerUnit');
+    const maxLimitInputWrapperPerUnit = document.getElementById('maxLimitInputWrapperPerUnit');
+    const maxLimitValuePerUnit = document.getElementById('maxLimitValuePerUnit');
+    if (maxLimitCheckboxPerUnit && maxLimitInputWrapperPerUnit && maxLimitValuePerUnit) {
+        maxLimitCheckboxPerUnit.addEventListener('change', function() {
+            if (this.checked) {
+                maxLimitInputWrapperPerUnit.classList.remove('hidden');
+            } else {
+                maxLimitInputWrapperPerUnit.classList.add('hidden');
+                maxLimitValuePerUnit.value = '';
+            }
+        });
+    }
+    // Age condition toggle listeners
+    const ageCheckboxPerDay = document.getElementById('enableAgeConditionPerDay');
+    const ageWrapperPerDay = document.getElementById('ageConditionWrapperPerDay');
+    if (ageCheckboxPerDay && ageWrapperPerDay) {
+        ageCheckboxPerDay.addEventListener('change', function() {
+            if (this.checked) {
+                ageWrapperPerDay.classList.remove('hidden');
+            } else {
+                ageWrapperPerDay.classList.add('hidden');
+            }
+        });
+    }
+    const ageCheckboxPerUnit = document.getElementById('enableAgeConditionPerUnit');
+    const ageWrapperPerUnit = document.getElementById('ageConditionWrapperPerUnit');
+    if (ageCheckboxPerUnit && ageWrapperPerUnit) {
+        ageCheckboxPerUnit.addEventListener('change', function() {
+            if (this.checked) {
+                ageWrapperPerUnit.classList.remove('hidden');
+            } else {
+                ageWrapperPerUnit.classList.add('hidden');
+            }
+        });
+    }
+});
+// Also call when modals are opened
+window.openAddReportFieldModalPerDayV2 = function() {
+    document.getElementById('reportFieldFormPerDay').reset();
+    document.getElementById('add-report-field-modal-per-day').showModal();
+    document.getElementById('maxLimitInputWrapperPerDay').classList.add('hidden');
+    document.getElementById('enableMaxLimitPerDay').checked = false;
+    document.getElementById('payoutTypeInputPerDay').value = 'per_day';
+    // Reset age condition controls
+    document.getElementById('ageConditionWrapperPerDay').classList.add('hidden');
+    document.getElementById('enableAgeConditionPerDay').checked = false;
+    document.getElementById('ageValuePerDay').value = '';
+    document.getElementById('ageConditionValuePerDay').value = '';
+    registerFormulaBuilderEvents();
+};
+window.openAddReportFieldModalPerUnitV2 = function() {
+    document.getElementById('reportFieldFormPerUnit').reset();
+    document.getElementById('add-report-field-modal-per-unit').showModal();
+    document.getElementById('maxLimitInputWrapperPerUnit').classList.add('hidden');
+    document.getElementById('enableMaxLimitPerUnit').checked = false;
+    document.getElementById('payoutTypeInputPerUnit').value = 'per_part';
+    // Reset age condition controls
+    document.getElementById('ageConditionWrapperPerUnit').classList.add('hidden');
+    document.getElementById('enableAgeConditionPerUnit').checked = false;
+    document.getElementById('ageValuePerUnit').value = '';
+    document.getElementById('ageConditionValuePerUnit').value = '';
+    registerFormulaBuilderEvents();
+};
+// Per Day modal logic
+function addCustomFieldPerDay() {
+    const fieldName = document.querySelector('#reportFieldFormPerDay input[name="name"]').value;
+    const fieldId = document.querySelector('#reportFieldFormPerDay input[name="field_id"]').value;
+    const formula = document.getElementById('formulaBuilderPerDay').value;
+    const enableMaxLimit = document.getElementById('enableMaxLimitPerDay').checked;
+    const maxLimit = enableMaxLimit ? parseFloat(document.getElementById('maxLimitValuePerDay').value) : null;
+    const payoutType = document.getElementById('payoutTypeInputPerDay').value || 'per_day';
+    if (!/^[A-Za-z_]+$/.test(fieldName)) {
+        document.getElementById('nameErrorPerDay').classList.remove('hidden');
+        return;
+    } else {
+        document.getElementById('nameErrorPerDay').classList.add('hidden');
+    }
+    const enableAgeCondition = document.getElementById('enableAgeConditionPerDay').checked;
+    let finalFormula = formula;
+    if (enableAgeCondition) {
+        const op = document.getElementById('ageOperatorPerDay').value;
+        const ageVal = document.getElementById('ageValuePerDay').value;
+        const condVal = document.getElementById('ageConditionValuePerDay').value || 0;
+        finalFormula = `${condVal} if age ${op} ${ageVal} else (${formula})`;
+    }
+    const method = fieldId ? 'PUT' : 'POST';
+    const url = fieldId ? `/api/report-field?id=${fieldId}` : '/api/report-field';
+    fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            name: fieldName,
+            formula: finalFormula,
+            field_type: 'numeric',
+            max_limit: enableMaxLimit ? maxLimit : null,
+            payout_type: payoutType
+        })
+    })
+    .then(async response => {
+        let result = {};
+        try { result = await response.json(); } catch (e) { showCustomModal('Server Error', 'Server error.', 'error'); return; }
+        if (response.status === 201 || response.status === 200) {
+            showCustomModal('Success', 'Custom field saved successfully!', 'success');
+            closeAddReportFieldModalPerDay();
+            window.location.reload();
+        } else {
+            showCustomModal('Save Error', result.error || 'Failed to save custom field', 'error');
+        }
+    })
+    .catch(error => { showCustomModal('Save Error', 'Failed to save custom field: ' + error, 'error'); });
+}
+function closeAddReportFieldModalPerDay() {
+    document.getElementById('add-report-field-modal-per-day').close();
+}
+// Per Unit modal logic
+function addCustomFieldPerUnit() {
+    const fieldName = document.querySelector('#reportFieldFormPerUnit input[name="name"]').value;
+    const fieldId = document.querySelector('#reportFieldFormPerUnit input[name="field_id"]').value;
+    const formula = document.getElementById('formulaBuilderPerUnit').value;
+    const enableMaxLimit = document.getElementById('enableMaxLimitPerUnit').checked;
+    const maxLimit = enableMaxLimit ? parseFloat(document.getElementById('maxLimitValuePerUnit').value) : null;
+    const payoutType = document.getElementById('payoutTypeInputPerUnit').value || 'per_part';
+    if (!/^[A-Za-z_]+$/.test(fieldName)) {
+        document.getElementById('nameErrorPerUnit').classList.remove('hidden');
+        return;
+    } else {
+        document.getElementById('nameErrorPerUnit').classList.add('hidden');
+    }
+    const enableAgeConditionUnit = document.getElementById('enableAgeConditionPerUnit').checked;
+    let finalFormulaUnit = formula;
+    if (enableAgeConditionUnit) {
+        const op = document.getElementById('ageOperatorPerUnit').value;
+        const ageVal = document.getElementById('ageValuePerUnit').value;
+        const condVal = document.getElementById('ageConditionValuePerUnit').value || 0;
+        finalFormulaUnit = `${condVal} if age ${op} ${ageVal} else (${formula})`;
+    }
+    const method = fieldId ? 'PUT' : 'POST';
+    const url = fieldId ? `/api/report-field?id=${fieldId}` : '/api/report-field';
+    fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            name: fieldName,
+            formula: finalFormulaUnit,
+            field_type: 'numeric',
+            max_limit: enableMaxLimit ? maxLimit : null,
+            payout_type: payoutType
+        })
+    })
+    .then(async response => {
+        let result = {};
+        try { result = await response.json(); } catch (e) { showCustomModal('Server Error', 'Server error.', 'error'); return; }
+        if (response.status === 201 || response.status === 200) {
+            showCustomModal('Success', 'Custom field saved successfully!', 'success');
+            closeAddReportFieldModalPerUnit();
+            window.location.reload();
+        } else {
+            showCustomModal('Save Error', result.error || 'Failed to save custom field', 'error');
+        }
+    })
+    .catch(error => { showCustomModal('Save Error', 'Failed to save custom field: ' + error, 'error'); });
+}
+function closeAddReportFieldModalPerUnit() {
+    document.getElementById('add-report-field-modal-per-unit').close();
+}
+// Operator/number insert helpers for each modal
+function insertOperator(op, type) {
+    if (type === 'PerDay') {
+        const textarea = document.getElementById('formulaBuilderPerDay');
+        insertAtCursor(textarea, op);
+    } else if (type === 'PerUnit') {
+        const textarea = document.getElementById('formulaBuilderPerUnit');
+        insertAtCursor(textarea, op);
+    }
+}
+function insertNumber(type) {
+    if (type === 'PerDay') {
+        const textarea = document.getElementById('formulaBuilderPerDay');
+        insertAtCursor(textarea, '1');
+    } else if (type === 'PerUnit') {
+        const textarea = document.getElementById('formulaBuilderPerUnit');
+        insertAtCursor(textarea, '1');
+    }
+}
+</script>

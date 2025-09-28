@@ -1,0 +1,45 @@
+<dialog id="add-worker-modal" class="modal">
+    <div class="modal-box">
+        <h3 class="font-bold text-lg">Add New Worker</h3>
+        <form id="workerForm">
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text">First Name</span>
+                </label>
+                <input type="text" name="first_name" class="input input-bordered w-full">
+            </div>
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text">Last Name</span>
+                </label>
+                <input type="text" name="last_name" class="input input-bordered w-full">
+            </div>
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text">Date of Birth</span>
+                </label>
+                <input type="date" name="date_of_birth" class="input input-bordered w-full">
+            </div>
+            <!-- Custom fields -->
+            <div id="customFieldsSingle" class="space-y-4">
+                <h4 class="text-lg font-semibold text-gray-700 mt-6 mb-4">Custom Fields</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {% for field in all_fields %}
+                        {% if field.id is not string %}
+                            <div class="form-control w-full">
+                                <label class="label">
+                                    <span class="label-text">{{ field.name }}</span>
+                                </label>
+                                <input type="text" name="custom_{{ field.name|replace(' ', '_') }}" class="input input-bordered w-full">
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="modal-action">
+                <button type="button" class="btn btn-ghost" onclick="closeAddWorkerModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary">Add Worker</button>
+            </div>
+        </form>
+    </div>
+</dialog>

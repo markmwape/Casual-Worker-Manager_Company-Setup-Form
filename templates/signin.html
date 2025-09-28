@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.24/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        window.tailwind = window.tailwind || {};
+        window.tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-navy': {
+                            '50': '#f8fafc',
+                            '100': '#e2e8f0',
+                            '200': '#cbd5e1',
+                            '300': '#94a3b8',
+                            '400': '#64748b',
+                            '500': '#1A2B48',
+                            '600': '#0f1a2e',
+                            '700': '#0a1424',
+                            '800': '#050a12',
+                            '900': '#020508'
+                        },
+                        'brand-gold': {
+                            '50': '#fefce8',
+                            '100': '#fef3c7',
+                            '200': '#fde68a',
+                            '300': '#fcd34d',
+                            '400': '#fbbf24',
+                            '500': '#E5B23A',
+                            '600': '#d4a02a',
+                            '700': '#b45309',
+                            '800': '#92400e',
+                            '900': '#78350f'
+                        },
+                        'brand-gray': {
+                            '50': '#f8fafc',
+                            '100': '#f1f5f9',
+                            '200': '#e2e8f0',
+                            '300': '#cbd5e1',
+                            '400': '#94a3b8',
+                            '500': '#7C8A9A',
+                            '600': '#5a6778',
+                            '700': '#475569',
+                            '800': '#334155',
+                            '900': '#1e293b'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/date-picker.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        
+        // Load Firebase configuration from server
+        async function initializeFirebase() {
+            try {
+                const response = await fetch('/firebase_config');
+                const firebaseConfig = await response.json();
+                
+                // Fallback configuration if server config is incomplete
+                if (!firebaseConfig.apiKey) {
+                    firebaseConfig.apiKey = "AIzaSyD9_N_0ve9ABFwwnTBn1N2oxlUs6xbT-No";
+                    firebaseConfig.authDomain = "ember-accounting.firebaseapp.com";
+                    firebaseConfig.projectId = "ember-accounting";
+                    firebaseConfig.storageBucket = "ember-accounting.firebasestorage.app";
+                    firebaseConfig.messagingSenderId = "328324461979";
+                    firebaseConfig.appId = "1:328324461979:web:0cc9ddad6aa3f157359d3e";
+                    firebaseConfig.measurementId = "G-F1XTE0TP63";
+                }
+                
+                window.firebaseApp = initializeApp(firebaseConfig);
+                window.firebaseAuth = getAuth(window.firebaseApp);
+                console.log('Firebase initialized successfully');
+            } catch (error) {
+                console.error('Error initializing Firebase:', error);
+                // Show user-friendly error message
+                const errorDiv = document.getElementById('signin-error');
+                if (errorDiv) {
+                    errorDiv.textContent = 'Firebase configuration error. Please contact support.';
+                    errorDiv.style.color = 'red';
+                    errorDiv.style.display = 'block';
+                }
+            }
+        }
+        
+        // Initialize Firebase when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initializeFirebase);
+    </script>
+</head>
+<body class="font-inter bg-gradient-to-br from-brand-navy-50 to-brand-gray-100 min-h-screen flex items-center justify-center">
+    <div class="w-full max-w-md mx-auto p-6">
+        <div class="card bg-gradient-to-br from-brand-navy-50 to-brand-gray-100 shadow-2xl border-0">
+            <div class="card-body p-8">
+                <div class="flex flex-col items-center">
+                    <div class="w-16 h-16 bg-brand-navy-500 rounded-full flex items-center justify-center mb-4 shadow-lg">
+                        <i class="fas fa-user-lock text-3xl text-white"></i>
+                    </div>
+                    
+                    <!-- Workspace Info (shown when joining) -->
+                    <div id="workspace-info" class="hidden w-full mb-6 p-4 bg-brand-navy-50 rounded-lg border border-brand-navy-200">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-building text-brand-navy-500 text-xl"></i>
+                            <div>
+                                <h3 class="font-semibold text-brand-navy-800" id="workspace-name">Workspace Name</h3>
+                                <p class="text-sm text-brand-navy-500" id="workspace-code">Code: XXXXXXXX</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h1 class="card-title text-3xl font-bold text-brand-navy-800 mb-2">Sign In</h1>
+                    <p class="text-gray-600 mb-6 text-center" id="signin-subtitle">Access your workforce dashboard securely</p>
+                    
+                    <form id="signin-form" class="w-full flex flex-col gap-4">
+                        <input type="email" name="email" id="user-email" placeholder="Enter your email" required class="input input-bordered w-full text-lg" autocomplete="email">
+                        <button type="submit" class="btn btn-primary w-full text-lg">Send Sign-in Link</button>
+                        <div id="signin-error" class="text-error text-center mt-2"></div>
+                        
+                        <!-- Email sent notification with spam folder reminder -->
+                        <div id="email-sent-notification" class="hidden bg-green-50 border border-green-200 rounded-lg p-4 mt-4">
+                            <div class="flex items-start gap-3">
+                                <i class="fas fa-check-circle text-green-600 text-xl mt-1"></i>
+                                <div>
+                                    <h4 class="font-semibold text-green-800 mb-2">Email Sent Successfully!</h4>
+                                    <p class="text-green-700 text-sm mb-2">
+                                        We've sent a sign-in link to your email address.
+                                    </p>
+                                    <div class="bg-yellow-50 border border-yellow-200 rounded-md p-3 mt-3">
+                                        <div class="flex items-start gap-2">
+                                            <i class="fas fa-exclamation-triangle text-yellow-600 text-sm mt-0.5"></i>
+                                            <div>
+                                                <p class="text-yellow-800 text-sm font-medium">Don't see the email?</p>
+                                                <p class="text-yellow-700 text-xs mt-1">
+                                                    <strong>Check your spam/junk folder</strong> - sign-in emails sometimes end up there. 
+                                                    You can also check your promotions tab if using Gmail.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p class="text-green-600 text-xs mt-3">
+                                        <i class="fas fa-clock mr-1"></i>
+                                        The sign-in link will expire in 10 minutes for security.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                    <div class="divider text-gray-400">or</div>
+                    <button id="google-signin" type="button" class="btn btn-primary w-full mb-4 flex items-center justify-center gap-2 text-lg">
+                        <i class="fab fa-google"></i> Sign in with Google
+                    </button>
+                    
+                    <!-- Back to workspace selection -->
+                    <div class="mt-6 text-center space-y-2">
+                        <a href="/workspace-selection" class="text-brand-navy-500 hover:text-brand-navy-700 text-sm block">
+                            <i class="fas fa-arrow-left mr-1"></i>Back to workspace selection
+                        </a>
+                        <a href="/forgot-workspace" class="text-emerald-600 hover:text-emerald-700 text-sm block">
+                            <i class="fas fa-question-circle mr-1"></i>Forgot your workspace code?
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/static/js/firebase.js" type="module"></script>
+    <script src="/static/js/runtime_app_settings.js" type="module"></script>
+    <script src="/static/js/signin.js" type="module"></script>
+    <script>
+        // Check for workspace parameter in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const workspaceCode = urlParams.get('workspace');
+        
+        if (workspaceCode) {
+            // Show workspace info
+            const workspaceInfo = document.getElementById('workspace-info');
+            const workspaceName = document.getElementById('workspace-name');
+            const workspaceCodeElement = document.getElementById('workspace-code');
+            const signinSubtitle = document.getElementById('signin-subtitle');
+            
+            // Get workspace info from sessionStorage
+            const pendingWorkspace = sessionStorage.getItem('pending_workspace');
+            if (pendingWorkspace) {
+                const workspace = JSON.parse(pendingWorkspace);
+                workspaceName.textContent = workspace.name;
+                workspaceCodeElement.textContent = `Code: ${workspace.code}`;
+                signinSubtitle.textContent = `Log in to join ${workspace.name}'s workspace`;
+            }
+            
+            workspaceInfo.classList.remove('hidden');
+        }
+        
+        // Add link to finishSignin route
+        document.getElementById('signin-form').addEventListener('submit', function(e) {
+            e.preventDefault(); // Prevent default form submission
+            
+            const email = document.getElementById('user-email').value;
+            const submitButton = e.target.querySelector('button[type="submit"]');
+            const emailNotification = document.getElementById('email-sent-notification');
+            const signinError = document.getElementById('signin-error');
+            
+            // Clear any previous errors
+            signinError.style.display = 'none';
+            signinError.textContent = '';
+            
+            // Disable submit button and show loading state
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Sending...';
+            
+            // Store email for sign in
+            localStorage.setItem('emailForSignIn', email);
+            
+            // Simulate email sending (replace with actual email sending logic)
+            setTimeout(() => {
+                // Re-enable submit button
+                submitButton.disabled = false;
+                submitButton.innerHTML = 'Send Sign-in Link';
+                
+                // Show success notification with spam folder reminder
+                emailNotification.classList.remove('hidden');
+                
+                // Scroll to notification
+                emailNotification.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                
+                // Update the email address in the notification
+                const emailText = emailNotification.querySelector('.text-green-700');
+                emailText.innerHTML = `We've sent a sign-in link to <strong>${email}</strong>. Click the link in the email to continue.`;
+                
+            }, 1000); // 1 second delay to simulate processing
+        });
+        
+        // Add error handling for authentication
+        window.addEventListener('error', function(e) {
+            console.error('Global error:', e.error);
+        });
+        
+        // Add unhandled promise rejection handling
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('Unhandled promise rejection:', e.reason);
+        });
+    </script>
+</body>
+</html>

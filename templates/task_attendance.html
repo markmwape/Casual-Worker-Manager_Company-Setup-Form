@@ -1,0 +1,346 @@
+{% extends "home.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 w-full max-w-6xl">
+    <!-- Desktop header and actions -->
+    <div class="hidden lg:flex items-center justify-between mb-6">
+        <div class="text-2xl font-bold text-black">
+            Task Attendance: {{ task.name }}
+        </div>
+        <div class="flex gap-2">
+            <button onclick="openAddWorkerToTaskModal({{ task.id }})" class="btn btn-primary">
+                <i data-feather="plus" class="mr-2"></i>Add Worker
+            </button>
+            <a href="{{ url_for('tasks_route') }}" class="btn btn-ghost">
+                <i data-feather="arrow-left" class="mr-2"></i>Back to Tasks
+            </a>
+        </div>
+    </div>
+    <!-- Sticky header for mobile -->
+    <div class="relative lg:hidden">
+        <div class="sticky top-0 left-0 w-full z-50 bg-white/95 border-b border-blue-100 flex flex-col items-start gap-0 shadow-lg rounded-b-2xl px-4 pt-4 pb-2">
+            <!-- Hamburger menu (absolute, top right) -->
+            <div class="mobile-sidebar-toggle absolute top-4 right-4 z-[110] lg:hidden"></div>
+            <!-- Title and subtitle -->
+            <h1 class="text-lg font-bold text-black truncate w-full pr-16 mb-1">{{ task.name }}</h1>
+            <p class="text-xs text-gray-500 mb-1 w-full pr-16">View and manage attendance details for this task</p>
+        </div>
+        <!-- Sticky action buttons below title on mobile -->
+        <div class="sticky top-[64px] left-0 w-full z-40 flex flex-col items-center bg-white/95 py-3 border-b border-blue-50 shadow rounded-b-2xl gap-2 px-4">
+            <button onclick="openAddWorkerToTaskModal({{ task.id }})" class="btn btn-primary w-full max-w-xs shadow-md text-base py-2">
+                <i data-feather="plus" class="mr-2"></i>Add Worker
+            </button>
+            <a href="{{ url_for('tasks_route') }}" class="btn w-full max-w-xs border border-blue-400 text-blue-700 bg-white hover:bg-blue-50 shadow-sm text-base py-2 flex items-center justify-center transition-all duration-150">
+                <i data-feather="arrow-left" class="mr-2"></i>Back to Tasks
+            </a>
+        </div>
+    </div>
+    <!-- Add margin below sticky action bar so content is never overlapped -->
+    <div class="mb-6 lg:mb-0"></div>
+
+    {% if selected_date < task.start_date.date() %}
+        <div class="alert alert-error mb-4">
+            <i class="fas fa-exclamation-triangle mr-2"></i>
+            {% if task.payment_type == 'per_part' %}
+                Units cannot be recorded before the task’s start date.
+            {% else %}
+                Attendance cannot be recorded before the task’s start date.
+            {% endif %}
+        </div>
+        <div class="flex justify-center mb-8">
+            <a href="{{ url_for('task_attendance_route', task_id=task.id, date=task.start_date.strftime('%Y-%m-%d')) }}" class="btn btn-primary">
+                <i class="fas fa-calendar-day mr-2"></i>Back to Today
+            </a>
+        </div>
+    {% elif task.status in ['In Progress', 'Completed'] %}
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <div class="text-center mb-4 flex flex-col items-center justify-center">
+                    <div class="flex items-center space-x-6 justify-center w-full">
+                        <button 
+                            onclick="changeDate(-1)" 
+                            class="gradient-circle-btn shadow-md flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            aria-label="Previous Day"
+                        >
+                            <i data-feather="chevron-left" class="w-6 h-6"></i>
+                        </button>
+                        <h2 class="text-2xl font-bold text-black mx-4">
+                            <span id="localDate">{{ selected_date.strftime('%A, %B %d, %Y') }}</span>
+                        </h2>
+                        <button 
+                            onclick="changeDate(1)" 
+                            class="gradient-circle-btn shadow-md flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            aria-label="Next Day"
+                        >
+                            <i data-feather="chevron-right" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                    <input 
+                        type="date" 
+                        id="taskDateInput" 
+                        class="input input-bordered mt-2" 
+                        value="{{ selected_date.strftime('%Y-%m-%d') }}"
+                        min="{{ task_start_date }}"
+                        placeholder="Select task date"
+                        onchange="onAttendanceDateChange()"
+                    >
+                    <!-- Search icon and bar (moved here, responsive for mobile) -->
+                    <div class="flex flex-col sm:flex-row justify-end items-stretch sm:items-center mt-2 w-full gap-2">
+                        <div class="flex justify-end items-center w-full sm:max-w-xs mx-auto">
+                            <button id="showSearchBtn" class="p-2 rounded-full hover:bg-blue-50 focus:outline-none" onclick="toggleAttendanceSearch()">
+                                <i data-feather="search"></i>
+                            </button>
+                            <div id="attendanceSearchBar" class="hidden ml-2 w-full sm:max-w-xs">
+                                <div class="flex items-center bg-white border border-blue-200 rounded-lg px-2 py-1 shadow">
+                                    <input id="attendanceSearchInput" type="text" class="flex-1 outline-none bg-transparent px-2 py-1 text-sm" placeholder="Search by any field..." oninput="filterAttendanceRows()">
+                                    <button class="ml-2 text-gray-400 hover:text-blue-600" onclick="toggleAttendanceSearch()" type="button"><i data-feather="x"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Add error div above the form -->
+                <div id="attendance-date-error" class="alert alert-error mb-4 hidden" style="display:none;">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    You cannot select a date before the task's start date ({{ task_start_date }}).
+                </div>
+                <form id="attendanceForm" data-per-part="{{ 'true' if task.payment_type == 'per_part' else 'false' }}">
+                    <table class="table w-full">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                {% if task.payment_type == 'per_part' %}
+                                    <th>Units Completed</th>
+                                {% else %}
+                                    <th>Present</th>
+                                    <th>Absent</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in attendance_records %}
+                            <tr
+                                data-worker-fields="{{ record.worker.first_name }} {{ record.worker.last_name }}{% if record.worker.date_of_birth %} {{ record.worker.date_of_birth.strftime('%Y-%m-%d') }}{% endif %} {% for cf in record.worker.custom_field_values %} {{ cf.value }}{% endfor %} {{ record.worker.id }}"
+                            >
+                                <td>{{ record.worker.first_name }} {{ record.worker.last_name }}</td>
+                                {% if task.payment_type == 'per_part' %}
+                                    <td>
+                                        <input type="number" min="0" step="1" name="units_{{ record.worker.id }}" class="input input-bordered w-32" value="{{ (record.units_completed or '')|int if record.units_completed is not none else '' }}" placeholder="e.g. 5" inputmode="numeric" pattern="[0-9]*">
+                                    </td>
+                                {% else %}
+                                    <td>
+                                        <label class="flex items-center justify-center cursor-pointer">
+                                            <input type="radio" 
+                                                   name="attendance_{{ record.worker.id }}" 
+                                                   class="sr-only" 
+                                                   value="present"
+                                                   {{ 'checked' if record.status == 'Present' else '' }}>
+                                            <div class="attendance-btn present-btn {{ 'active' if record.status == 'Present' else '' }}">
+                                                <i class="fas fa-check mr-1"></i>
+                                                Present
+                                            </div>
+                                        </label>
+                                    </td>
+                                    <td>
+                                        <label class="flex items-center justify-center cursor-pointer">
+                                            <input type="radio" 
+                                                   name="attendance_{{ record.worker.id }}" 
+                                                   class="sr-only" 
+                                                   value="absent"
+                                                   {{ 'checked' if record.status == 'Absent' else '' }}>
+                                            <div class="attendance-btn absent-btn {{ 'active' if record.status == 'Absent' else '' }}">
+                                                <i class="fas fa-times mr-1"></i>
+                                                Absent
+                                            </div>
+                                        </label>
+                                    </td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <div class="mt-4 flex justify-end">
+                        <button type="button" onclick="saveAttendance({{ task.id }})" class="btn btn-primary">
+                            <i data-feather="save" class="mr-2"></i>Save
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-info mt-8">
+            <i class="fas fa-info-circle mr-2"></i>
+            Attendance is only available for tasks that are In Progress or Completed.
+        </div>
+    {% endif %}
+
+    {% include 'modals/add_worker_to_task.html' %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function saveAttendance(taskId) {
+        const attendanceData = [];
+        const rows = document.querySelectorAll('#attendanceForm tbody tr');
+        const selectedDate = document.getElementById('taskDateInput').value;
+        const taskStartDate = '{{ task_start_date }}';
+        // Check if selected date is before task start date
+        if (selectedDate < taskStartDate) {
+            const warning = document.getElementById('attendance-date-error');
+            warning.style.display = '';
+            warning.classList.remove('hidden');
+            warning.scrollIntoView({behavior: 'smooth'});
+            return;
+        } else {
+            const warning = document.getElementById('attendance-date-error');
+            warning.style.display = 'none';
+            warning.classList.add('hidden');
+        }
+        
+        const isPerPart = document.getElementById('attendanceForm').dataset.perPart === 'true';
+        rows.forEach(row => {
+            const workerNameCell = row.querySelector('td:first-child');
+            if (isPerPart) {
+                // For per_part, get units completed
+                const unitsInput = row.querySelector('input[type="number"]');
+                if (unitsInput) {
+                    const units = unitsInput.value ? parseInt(unitsInput.value, 10) || 0 : 0;
+                    attendanceData.push({
+                        worker_id: unitsInput.name.split('_')[1],
+                        units_completed: units
+                    });
+                }
+            } else {
+                // For per_day, get present/absent
+                const presentRadio = row.querySelector('input[value="present"]');
+                const absentRadio = row.querySelector('input[value="absent"]');
+                if (presentRadio) {
+                    const workerId = presentRadio.getAttribute('name').split('_')[1];
+                    const status = presentRadio.checked ? 'Present' : 'Absent';
+                    attendanceData.push({
+                        worker_id: workerId,
+                        status: status
+                    });
+                }
+            }
+        });
+
+        fetch(`/api/task/${taskId}/attendance`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                attendance_data: attendanceData,
+                date: selectedDate
+            })
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.error) {
+                alert(result.error);
+            } else {
+                alert('Saved successfully');
+            }
+        })
+        .catch(error => {
+            console.error('Error saving attendance:', error);
+            alert('Failed to save');
+        });
+    }
+
+    function onAttendanceDateChange() {
+        const dateInput = document.getElementById('taskDateInput');
+        const selected = dateInput.value;
+        if (selected) {
+            window.location.href = `?date=${selected}`;
+        }
+    }
+
+    function changeDate(direction) {
+        const currentDate = new Date(document.getElementById('taskDateInput').value);
+        const minDate = new Date('{{ task_start_date }}');
+        currentDate.setDate(currentDate.getDate() + direction);
+        if (currentDate < minDate) {
+            showAttendanceDateError();
+            return;
+        }
+        const formattedDate = currentDate.toISOString().split('T')[0];
+        window.location.href = `?date=${formattedDate}`;
+    }
+
+    function showAttendanceDateError() {
+        const errorDiv = document.getElementById('attendance-date-error');
+        errorDiv.style.display = '';
+        errorDiv.classList.remove('hidden');
+        errorDiv.scrollIntoView({behavior: 'smooth'});
+        setTimeout(() => {
+            errorDiv.style.display = 'none';
+            errorDiv.classList.add('hidden');
+        }, 3500);
+    }
+
+    // Search functionality
+    function toggleAttendanceSearch() {
+        const searchBar = document.getElementById('attendanceSearchBar');
+        const searchInput = document.getElementById('attendanceSearchInput');
+        const showSearchBtn = document.getElementById('showSearchBtn');
+
+        if (searchBar.classList.contains('hidden')) {
+            searchBar.classList.remove('hidden');
+            searchInput.focus();
+            showSearchBtn.innerHTML = '<i data-feather="x"></i>';
+        } else {
+            searchBar.classList.add('hidden');
+            searchInput.value = ''; // Clear search input
+            showSearchBtn.innerHTML = '<i data-feather="search"></i>';
+        }
+    }
+
+    function filterAttendanceRows() {
+        const searchInput = document.getElementById('attendanceSearchInput');
+        const searchTerm = searchInput.value.toLowerCase();
+        const rows = document.querySelectorAll('#attendanceForm tbody tr');
+
+        rows.forEach(row => {
+            const allFields = row.getAttribute('data-worker-fields') || '';
+            if (allFields.toLowerCase().includes(searchTerm)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    // Handle attendance button clicks
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add click handlers to all attendance buttons
+        document.querySelectorAll('.attendance-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const label = this.closest('label');
+                const radio = label.querySelector('input[type="radio"]');
+                const workerButtons = document.querySelectorAll(`input[name="${radio.name}"]`);
+                
+                // Uncheck all radio buttons for this worker
+                workerButtons.forEach(r => {
+                    r.checked = false;
+                    r.closest('label').querySelector('.attendance-btn').classList.remove('active');
+                });
+                
+                // Check the clicked radio and activate its button
+                radio.checked = true;
+                this.classList.add('active');
+            });
+        });
+
+        // Initialize button states based on current radio button values
+        document.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
+            const btn = radio.closest('label').querySelector('.attendance-btn');
+            if (btn) {
+                btn.classList.add('active');
+            }
+        });
+    });
+</script>
+{% endblock %}

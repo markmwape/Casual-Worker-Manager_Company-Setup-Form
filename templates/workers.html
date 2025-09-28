@@ -1,0 +1,89 @@
+{% extends "home.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 w-full max-w-6xl">
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+        <h1 class="text-3xl font-bold text-black">Workers</h1>
+        <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <button onclick="openImportWorkersModal()" class="btn btn-secondary w-full sm:w-auto">
+                <i data-feather="upload" class="mr-2"></i>Import Workers
+            </button>
+            <button onclick="openAddWorkerModal()" class="btn btn-primary w-full sm:w-auto">
+                <i data-feather="plus" class="mr-2"></i>Add Worker
+            </button>
+        </div>
+    </div>
+
+    <div class="card bg-base-100 shadow-2xl rounded-2xl overflow-hidden">
+        <div class="card-body">
+            <div class="flex justify-between mb-4 items-center">
+                <div class="flex items-center gap-3">
+                    <div class="border border-blue-200 rounded p-1">
+                        <input type="checkbox" id="selectAllWorkers" class="checkbox checkbox-primary align-middle">
+                    </div>
+                    <label for="selectAllWorkers" class="font-semibold text-blue-900 cursor-pointer">Select All</label>
+                    <button id="deleteSelectedBtn" class="gradient-circle-btn-red ml-4 hidden" title="Delete Selected" onclick="deleteSelectedWorkers()">
+                        <i data-feather="trash-2"></i>
+                    </button>
+                </div>
+                <!-- Removed Edit button from here -->
+            </div>
+            <div class="overflow-x-auto rounded-xl">
+                <table class="table w-full text-base text-gray-800">
+                    <thead class="bg-gradient-to-r from-blue-50 to-blue-100 sticky top-0 z-10">
+                        <tr>
+                            <th class="w-12"></th> <!-- Checkbox column -->
+                            {% for field in all_fields %}
+                            <th class="py-3 px-4 font-semibold text-blue-900 whitespace-nowrap">{{ field.name }}</th>
+                            {% endfor %}
+                            <th class="py-3 px-4 font-semibold text-blue-900 whitespace-nowrap">Created At</th>
+                            <th class="py-3 px-4 font-semibold text-blue-900 whitespace-nowrap text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-blue-50">
+                        {% for worker in workers %}
+                        <tr class="hover:bg-blue-50/60 transition-colors duration-150 {% if loop.index0 % 2 == 0 %}bg-white{% else %}bg-blue-50/40{% endif %}">
+                            <td class="text-center align-middle">
+                                <input type="checkbox" class="worker-checkbox checkbox checkbox-primary" data-worker-id="{{ worker.id }}">
+                            </td>
+                            {% for field in all_fields %}
+                            <td class="py-3 px-4 align-middle">
+                                {% if field.id is string %}
+                                    {% if field.id == 'first_name' %}
+                                        {{ worker.first_name or 'N/A' }}
+                                    {% elif field.id == 'last_name' %}
+                                        {{ worker.last_name or 'N/A' }}
+                                    {% elif field.id == 'date_of_birth' %}
+                                        {{ worker.date_of_birth.strftime('%Y-%m-%d') if worker.date_of_birth else 'N/A' }}
+                                    {% endif %}
+                                {% else %}
+                                    {% set custom_value = worker.custom_field_values|selectattr('custom_field_id', 'equalto', field.id)|first %}
+                                    {{ custom_value.value if custom_value else 'N/A' }}
+                                {% endif %}
+                            </td>
+                            {% endfor %}
+                            <td class="py-3 px-4 align-middle">{{ worker.created_at.strftime('%Y-%m-%d') if worker.created_at else 'N/A' }}</td>
+                            <td class="py-3 px-4 align-middle text-center flex gap-2 justify-center">
+                                <button class="gradient-circle-btn" title="Edit Worker" onclick="openEditWorkerModal({{ worker.id }})">
+                                    <i data-feather="edit-2"></i>
+                                </button>
+                                <button onclick="openDeleteWorkerModal({{ worker.id }})" class="gradient-circle-btn-red" title="Delete Worker">
+                                    <i data-feather="trash-2"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% include 'modals/add_worker.html' %}
+    {% include 'modals/import_workers.html' %}
+    {% include 'modals/delete_worker.html' %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/worker.js') }}"></script>
+{% endblock %}

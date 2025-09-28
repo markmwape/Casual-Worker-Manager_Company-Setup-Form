@@ -1,0 +1,71 @@
+name: Deploy to Cloud Run
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - id: auth
+        name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: embee-accounting101
+
+      - name: Configure Docker for GCR
+        run: |
+          gcloud auth configure-docker
+
+      - name: Build and Push Container
+        run: |
+          gcloud builds submit --config cloudbuild.yaml .
+
+      - name: Deploy to Cloud Run
+        env:
+          GCLOUD_PROJECT: embee-accounting101
+          INSTANCE_CONNECTION_NAME: ${{ secrets.CLOUD_SQL_CONNECTION_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASS: ${{ secrets.DB_PASS }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+        run: |
+          SERVICE_URL=$(gcloud run deploy cw-manager-service \
+            --project $GCLOUD_PROJECT \
+            --region us-central1 \
+            --platform managed \
+            --image gcr.io/$GCLOUD_PROJECT/casual-worker-manager:latest \
+            --allow-unauthenticated \
+            --memory 4Gi \
+            --cpu 1 \
+            --timeout 300s \
+            --concurrency 80 \
+            --max-instances 10 \
+            --min-instances 0 \
+            --update-env-vars INSTANCE_CONNECTION_NAME=$INSTANCE_CONNECTION_NAME,DB_USER=$DB_USER,DB_PASS=$DB_PASS,DB_NAME=$DB_NAME \
+            --add-cloudsql-instances $INSTANCE_CONNECTION_NAME \
+            --format="value(status.url)")
+          echo "Service URL: $SERVICE_URL" 
+
+      - name: Wait for Service Readiness
+        run: sleep 10
+
+      - name: Run Database Migrations
+        run: |
+          curl -fS "$SERVICE_URL/run_migrations"
+
+      - name: Health Check
+        run: curl -fS "$SERVICE_URL/health"

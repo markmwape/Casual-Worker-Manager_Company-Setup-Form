@@ -1,0 +1,27 @@
+# Ignore Python cache and virtual environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+ENV/
+
+# Ignore OS files
+.DS_Store
+
+# Ignore Git
+git/
+.git
+
+# Ignore IDE files
+.vscode/
+.idea/
+
+# Ignore Dockerfile artifacts
+docker-compose.override.yml
+
+# Ignore database and environment files
+*.sqlite
+.env
+
+# Exclude test files from Docker build
+test_*.py

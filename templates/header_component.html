@@ -1,0 +1,12 @@
+<div>Lazy AI Test Website</div>
+{% if user %}
+<div class="header-buttons">
+    <button class="profile-button" id="profile-button">My Profile</button>
+    <button class="signout-button" id="signout-button">Sign Out</button>
+</div>
+{% else %}
+<div>
+    <button class="signin-button" onclick="location.href='/signin'">Sign In</button>
+</div>
+{% endif %}
+</header>

@@ -1,0 +1,128 @@
+<div class="mobile-sidebar-toggle fixed top-4 right-4 z-[110] lg:hidden">
+    <label for="my-drawer" class="btn btn-primary drawer-button shadow-lg touch-manipulation min-h-[48px] min-w-[48px] flex items-center justify-center cursor-pointer">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" />
+        </svg>
+    </label>
+</div>
+<div class="drawer-side fixed inset-y-0 left-0 w-80 h-screen z-[100]">
+    <!-- Drawer overlay to close the sidebar when clicking outside on mobile -->
+    <label for="my-drawer" class="drawer-overlay"></label>
+        <div class="p-4 w-80 h-screen flex flex-col bg-gradient-to-b from-brand-navy-500 to-brand-navy-700 text-white overflow-y-auto overflow-x-hidden">
+        <!-- Header Section -->
+        <div class="mb-8">
+            <div class="flex items-center justify-center mb-6 mt-4">
+                <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center mr-3 shadow-lg">
+                    <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Embee Bee Logo" class="w-8 h-8 object-contain" />
+                </div>
+                <h2 class="text-lg font-bold text-white">My Workspace</h2>
+            </div>
+            
+            <!-- User Profile Section -->
+            <div class="bg-white/10 rounded-xl p-5 backdrop-blur-sm border border-white/20">
+                <div class="flex items-center space-x-4">
+                    {% if session.get('user', {}).get('photo_url') %}
+                        <div class="avatar">
+                            <div class="w-12 h-12 rounded-full shadow-lg ring-2 ring-white/30">
+                                <img src="{{ session['user']['photo_url'] }}" alt="Profile Picture" class="object-cover rounded-full" />
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="avatar placeholder">
+                            <div class="bg-white/20 text-white rounded-full w-12 h-12 shadow-lg ring-2 ring-white/30 flex items-center justify-center">
+                                <span class="text-lg font-bold">
+                                    {% set display_name = session.get('user', {}).get('display_name', '') %}
+                                    {% set user_email = session.get('user', {}).get('user_email', '') %}
+                                    {% if display_name %}
+                                        {{ display_name[0] | upper }}
+                                    {% elif user_email %}
+                                        {{ user_email.split('@')[0][0] | upper }}
+                                    {% else %}
+                                        U
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="flex-1 min-w-0">
+                        <h3 class="text-sm font-semibold text-white truncate mb-1">
+                            {% set display_name = session.get('user', {}).get('display_name', '') %}
+                            {% set user_email = session.get('user', {}).get('user_email', '') %}
+                            {% if display_name %}
+                                {{ display_name }}
+                            {% elif user_email %}
+                                {{ user_email.split('@')[0] | title }}
+                            {% else %}
+                                User
+                            {% endif %}
+                        </h3>
+                        <p class="text-xs text-white/70">
+                            {% if session.get('current_workspace', {}).get('role') %}
+                                {{ session.get('current_workspace', {}).get('role') }}
+                            {% else %}
+                                Administrator
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <ul class="menu w-full space-y-2 mt-8">
+                <li class="w-full">
+                    <a href="{{ url_for('home_route') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg {% if request.endpoint == 'home_route' %}bg-white/20 text-white{% else %}text-white/90{% endif %} hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline">
+                        <span class="material-icons mr-3 pointer-events-none">home</span> 
+                        <span class="font-medium pointer-events-none">Dashboard</span>
+                    </a>
+                </li>
+                <li class="w-full">
+                    <a href="{{ url_for('workers_route') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg {% if request.endpoint == 'workers_route' %}bg-white/20 text-white{% else %}text-white/90{% endif %} hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline">
+                        <span class="material-icons mr-3 pointer-events-none">group</span> 
+                        <span class="font-medium pointer-events-none">Workers</span>
+                    </a>
+                </li>
+                <li class="w-full">
+                    <a href="{{ url_for('tasks_route') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg {% if request.endpoint == 'tasks_route' %}bg-white/20 text-white{% else %}text-white/90{% endif %} hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline">
+                        <span class="material-icons mr-3 pointer-events-none">assignment</span> 
+                        <span class="font-medium pointer-events-none">Tasks</span>
+                    </a>
+                </li>
+                <li class="w-full">
+                    <a href="{{ url_for('reports_route') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg {% if request.endpoint == 'reports_route' %}bg-white/20 text-white{% else %}text-white/90{% endif %} hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline">
+                        <span class="material-icons mr-3 pointer-events-none">bar_chart</span> 
+                        <span class="font-medium pointer-events-none">Reports</span>
+                    </a>
+                </li>
+                
+                <!-- Payments/Billing menu item (admin only) -->
+                {% if session.get('current_workspace', {}).get('role') in ['Admin'] %}
+                <li class="w-full">
+                    <a href="https://billing.stripe.com/p/login/test_5kQaEX5Jg1o5g8lg0SgEg00" target="_blank" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg text-white/90 hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline">
+                        <span class="material-icons mr-3 pointer-events-none">credit_card</span> 
+                        <span class="font-medium pointer-events-none">Payments/Billing</span>
+                    </a>
+                </li>
+                {% endif %}
+                
+                <li class="w-full mt-8">
+                    <a href="{{ url_for('signout') }}" class="w-full sidebar-menu-item whitespace-nowrap flex items-center py-4 px-4 rounded-lg text-white/90 hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline">
+                        <span class="material-icons mr-3 pointer-events-none">logout</span> 
+                        <span class="font-medium pointer-events-none">Sign Out</span>
+                    </a>
+                </li>
+            </ul>
+    </div>
+
+    <!-- Logout Confirmation Modal -->
+    <div id="logout-modal" class="modal">
+        <div class="modal-box">
+            <h3 class="font-bold text-lg">Confirm Logout</h3>
+            <p class="py-4">Are you sure you want to logout?</p>
+            <div class="modal-action">
+                <a href="#" class="btn btn-ghost" onclick="closeLogoutModal()">Cancel</a>
+                <a href="{{ url_for('logout_route') }}" class="btn btn-primary">Confirm</a>
+            </div>
+        </div>
+    </div>
+</div>

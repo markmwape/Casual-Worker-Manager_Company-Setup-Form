@@ -1,0 +1,93 @@
+{% extends "home.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 w-full max-w-6xl">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-black">Attendance Records</h1>
+    </div>
+
+    <div class="card bg-base-100 shadow-xl mb-6">
+        <div class="card-body">
+            <h2 class="card-title mb-4">Attendance Date Range</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium text-gray-700">Start Date</span>
+                    </label>
+                    <input type="date" id="startDate" class="input input-bordered" value="{{ start_date.strftime('%Y-%m-%d') }}" onchange="updateAttendancePreview()" placeholder="Select start date">
+                </div>
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium text-gray-700">End Date</span>
+                    </label>
+                    <input type="date" id="endDate" class="input input-bordered" value="{{ end_date.strftime('%Y-%m-%d') }}" onchange="updateAttendancePreview()" placeholder="Select end date">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+            <h2 class="card-title mb-4">Attendance Records</h2>
+            {% if attendance_records %}
+            <div class="overflow-x-auto">
+                <table class="table w-full">
+                    <thead>
+                        <tr>
+                            <th>Worker</th>
+                            <th>Task</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Check-in Time</th>
+                            <th>Check-out Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in attendance_records %}
+                        <tr>
+                            <td>{{ record.worker.first_name }} {{ record.worker.last_name }}</td>
+                            <td>{{ record.task.name }}</td>
+                            <td>{{ record.date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ record.status }}</td>
+                            <td>{{ record.check_in_time.strftime('%H:%M:%S') if record.check_in_time else 'N/A' }}</td>
+                            <td>{{ record.check_out_time.strftime('%H:%M:%S') if record.check_out_time else 'N/A' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4 text-gray-500">
+                No attendance records found for the selected date range.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function updateAttendancePreview() {
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        
+        if (!startDate || !endDate) return;
+        
+        if (new Date(endDate) < new Date(startDate)) {
+            showCustomModal('Date Validation', 'End date cannot be before start date', 'warning');
+            // Set end date to 1 day after start date
+            const newEndDate = new Date(startDate);
+            newEndDate.setDate(newEndDate.getDate() + 1);
+            const formattedEndDate = newEndDate.toISOString().split('T')[0];
+            document.getElementById('endDate').value = formattedEndDate;
+            
+            // Update attendance with the corrected date
+            window.location.href = `/attendance?start_date=${startDate}&end_date=${formattedEndDate}`;
+            return;
+        }
+        
+        window.location.href = `/attendance?start_date=${startDate}&end_date=${endDate}`;
+    }
+</script>
+{% endblock %}

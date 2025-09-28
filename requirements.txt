@@ -1,0 +1,14 @@
+Flask==2.3.2
+Flask-SQLAlchemy
+SQLAlchemy
+flask-login
+flask-static-compress
+gunicorn==21.2.0
+pandas
+werkzeug==3.0.1
+openpyxl
+firebase-admin
+stripe
+psycopg2-binary
+alembic
+python-dotenv

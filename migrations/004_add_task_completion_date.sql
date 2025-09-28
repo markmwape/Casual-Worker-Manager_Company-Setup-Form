@@ -1,0 +1,1 @@
+ALTER TABLE task ADD COLUMN completion_date DATETIME DEFAULT NULL; 

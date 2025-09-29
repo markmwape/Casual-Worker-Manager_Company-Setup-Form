@@ -587,9 +587,9 @@
                 </dialog>
             </div>
             {% endblock %}
-            {% include 'components/_sidebar.html' %}
-        </div>
-    </div>
+        </div>  <!-- close drawer-content -->
+        {% include 'components/_sidebar.html' %}
+    </div>  <!-- close drawer -->
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {

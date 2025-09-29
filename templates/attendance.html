@@ -64,8 +64,6 @@
         </div>
     </div>
 </div>
-
-{% include 'components/_sidebar.html' %}
 {% endblock %}
 
 {% block scripts %}
@@ -78,13 +76,10 @@
         
         if (new Date(endDate) < new Date(startDate)) {
             showCustomModal('Date Validation', 'End date cannot be before start date', 'warning');
-            // Set end date to 1 day after start date
             const newEndDate = new Date(startDate);
             newEndDate.setDate(newEndDate.getDate() + 1);
             const formattedEndDate = newEndDate.toISOString().split('T')[0];
             document.getElementById('endDate').value = formattedEndDate;
-            
-            // Update attendance with the corrected date
             window.location.href = `/attendance?start_date=${startDate}&end_date=${formattedEndDate}`;
             return;
         }

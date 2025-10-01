@@ -12,59 +12,6 @@
     <script src="https://unpkg.com/feather-icons"></script>
     <!-- Confetti Animation Library -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <script>
-        window.tailwind = window.tailwind || {};
-        window.tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'brand-navy': {
-                            '50': '#f8fafc',
-                            '100': '#e2e8f0',
-                            '200': '#cbd5e1',
-                            '300': '#94a3b8',
-                            '400': '#64748b',
-                            '500': '#1A2B48',
-                            '600': '#0f1a2e',
-                            '700': '#0a1424',
-                            '800': '#050a12',
-                            '900': '#020508'
-                        },
-                        'brand-gold': {
-                            '50': '#fefce8',
-                            '100': '#fef3c7',
-                            '200': '#fde68a',
-                            '300': '#fcd34d',
-                            '400': '#fbbf24',
-                            '500': '#E5B23A',
-                            '600': '#d4a02a',
-                            '700': '#b45309',
-                            '800': '#92400e',
-                            '900': '#78350f'
-                        },
-                        'brand-gray': {
-                            '50': '#f8fafc',
-                            '100': '#f1f5f9',
-                            '200': '#e2e8f0',
-                            '300': '#cbd5e1',
-                            '400': '#94a3b8',
-                            '500': '#7C8A9A',
-                            '600': '#5a6778',
-                            '700': '#475569',
-                            '800': '#334155',
-                            '900': '#1e293b'
-                        }
-                    },
-                    boxShadow: {
-                        '3xl': '0 35px 60px -15px rgba(0, 0, 0, 0.3)',
-                    },
-                    perspective: {
-                        '1000': '1000px',
-                    },
-                }
-            }
-        }
-    </script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-layout.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-touch.css') }}">
@@ -149,7 +96,7 @@
     </style>
 </head>
 <body>
-    <div id="app-drawer" class="drawer lg:drawer-open">
+    <div class="drawer lg:drawer-open min-h-screen">
         <input id="my-drawer" type="checkbox" class="drawer-toggle" checked />
         <div class="drawer-content px-4 lg:px-8 pb-8 bg-brand-navy-50/80 min-h-screen">
             <!-- Mobile Menu Toggle Button -->
@@ -586,9 +533,9 @@
                 </dialog>
             </div>
             {% endblock %}
-        </div>  <!-- close drawer-content -->
+        </div>
         {% include 'components/_sidebar.html' %}
-    </div>  <!-- close drawer -->
+    </div>
     
     <!-- Logout Confirmation Modal -->
     <div id="logout-modal" class="modal">

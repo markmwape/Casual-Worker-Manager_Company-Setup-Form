@@ -324,6 +324,10 @@
     {% include 'modals/add_report_field.html' %}
 {% endblock %}
 
+{% block sidebar %}
+{% include 'components/_sidebar.html' %}
+{% endblock %}
+
 {% block scripts %}
 <script>
     function closeAddReportFieldModal() {

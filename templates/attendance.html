@@ -67,8 +67,11 @@
             </div>
         </div>
     </div>
-    {% include 'components/_sidebar.html' %}
 </div>
+{% endblock %}
+
+{% block sidebar %}
+{% include 'components/_sidebar.html' %}
 {% endblock %}
 
 {% block scripts %}

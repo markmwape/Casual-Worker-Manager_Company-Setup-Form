@@ -1390,8 +1390,11 @@ input[type="date"]::-webkit-date-and-time-value {
     left: 0;
     height: 100vh;
     width: 20rem;
-    z-index: 100;
+    z-index: 100 !important;
     overflow: hidden;
+    transform: translateX(0) !important;
+    visibility: visible !important;
+    opacity: 1 !important;
     /* Prevents page scroll from affecting sidebar */
   }
   .drawer .drawer-side > .menu {
@@ -1583,6 +1586,21 @@ input[type="checkbox"].checkbox-primary:indeterminate {
 /* Hide drawer overlay on desktop to ensure sidebar remains visible and clickable */
 @media (min-width: 1024px) {
     .drawer .drawer-overlay {
+        display: none !important;
+    }
+}
+
+/* Force sidebar visibility on desktop - specific for tasks page */
+@media (min-width: 1024px) {
+    .drawer-side {
+        display: block !important;
+        transform: translateX(0) !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+    
+    /* Ensure drawer overlay doesn't cover sidebar on desktop */
+    .drawer-overlay {
         display: none !important;
     }
 }

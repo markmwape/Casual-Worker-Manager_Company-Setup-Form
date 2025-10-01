@@ -49,7 +49,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 
                 if (response.ok) {
-                    console.log('Session set successfully');
+                    const sessionResult = await response.json();
+                    console.log('Session set successfully:', sessionResult);
+                    console.log('Workspace set in session:', sessionResult.workspace_set);
+                    console.log('Workspace name:', sessionResult.workspace_name);
                     
                     // Check if this is from forgot workspace page
                     if (fromForgotWorkspace) {
@@ -62,8 +65,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (workspaceData) {
                         // User has workspace data, clear it and go to home
                         sessionStorage.removeItem('pending_workspace');
-                        console.log('Redirecting to home (user has workspace)');
-                        window.location.href = '/home';
+                        
+                        // Verify workspace was actually set in session
+                        if (sessionResult.workspace_set) {
+                            console.log('Workspace confirmed in session, redirecting to home');
+                            window.location.href = '/home';
+                        } else {
+                            console.error('WARNING: Workspace data provided but not set in session!');
+                            console.error('Session result:', sessionResult);
+                            // Still redirect to home, let the home route handle it
+                            window.location.href = '/home';
+                        }
                     } else {
                         // No workspace data - check if user has workspaces and auto-select
                         console.log('No workspace data, checking user workspaces...');

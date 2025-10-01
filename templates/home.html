@@ -151,6 +151,12 @@
 <body>
     <div class="drawer lg:drawer-open">
         <input id="my-drawer" type="checkbox" class="drawer-toggle" />
+        <!-- Mobile Toggle Button for Drawer -->
+        <label for="my-drawer" class="btn btn-primary drawer-button lg:hidden fixed top-4 right-4 z-50">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" />
+            </svg>
+        </label>
         <div class="drawer-content px-4 lg:px-8 pb-8 bg-brand-navy-50/80 min-h-screen">
             <!-- page content -->
             {% block content %}

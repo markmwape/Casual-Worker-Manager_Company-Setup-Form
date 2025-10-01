@@ -1979,7 +1979,7 @@ def home_route():
             return render_template('500.html'), 500
 
         if not company:
-            return render_template('home.html', 
+            return render_template('dashboard.html', 
                                  company=None, 
                                  total_workers=0, 
                                  total_tasks=0, 
@@ -2125,7 +2125,7 @@ def home_route():
 
         logging.info(f"Home route completed successfully for user {user_email}, workspace {workspace.name}")
 
-        return render_template('home.html', 
+        return render_template('dashboard.html', 
                              company=company, 
                              total_workers=total_workers, 
                              total_tasks=total_tasks, 

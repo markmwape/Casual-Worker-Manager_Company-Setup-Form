@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="{{ theme }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Embee accounting - Dashboard{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.24/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/daisyui@4.4.24/dist/full.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <!-- Confetti Animation Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-layout.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-touch.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/date-picker.css') }}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="{{ url_for('static', filename='js/script.js') }}?v=1.1"></script>
+    <script src="{{ url_for('static', filename='js/date-picker.js') }}"></script>
+    <script>
+        // Pass user role to JavaScript
+        window.currentUserRole = "{{ session.get('current_workspace', {}).get('role', '') }}";
+    </script>
+    
+    <style>
+        /* Success Alert Animation Styles */
+        #subscription-success-alert {
+            animation: slideInDown 0.5s ease-out, pulse 2s ease-in-out infinite alternate;
+            background: linear-gradient(135deg, #10B981, #059669);
+            border: 2px solid #047857;
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+        }
+        
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            #subscription-success-alert {
+                margin: 1rem;
+                font-size: 0.9rem;
+            }
+            
+            #subscription-success-alert .h3 {
+                font-size: 1.1rem;
+            }
+            
+            .subscription-success-icon {
+                height: 1.5rem;
+                width: 1.5rem;
+            }
+        }
+        
+        @keyframes slideInDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+            }
+            100% {
+                box-shadow: 0 10px 35px rgba(16, 185, 129, 0.5);
+            }
+        }
+        
+        .subscription-success-icon {
+            animation: bounceIn 0.8s ease-out 0.3s both;
+        }
+        
+        @keyframes bounceIn {
+            0%, 20%, 40%, 60%, 80% {
+                transform: translateY(0);
+                animation-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+        
+        body {
+            margin-top: 2rem;
+        }
+        .btn {
+            margin: 0.5rem;
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <div class="drawer drawer-mobile lg:drawer-open">
+        <input id="my-drawer" type="checkbox" class="drawer-toggle" checked />
+        <div class="drawer-content px-4 lg:px-8 pb-8 bg-brand-navy-50/80 min-h-screen">
+            <!-- Mobile drawer toggle -->
+            <label for="my-drawer" class="btn btn-primary drawer-button fixed top-4 right-4 lg:hidden z-50">
+                <i class="fas fa-bars"></i>
+            </label>
+            {% block content %}
+            <!-- page content -->
+            {% endblock %}
+        </div>
+        {% include 'components/_sidebar.html' %}
+    </div>  <!-- close drawer -->
+    
+    <!-- Edit Contact Modal -->
+    <dialog id="edit-contact-modal" class="modal">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg">Edit Company Contact Information</h3>
+        <form id="contactForm">
+          <div class="form-control w-full">
+            <label class="label"><span class="label-text">Company Email</span></label>
+            <input type="email" id="companyEmailInput" name="email" class="input input-bordered w-full" value="{{ session.get('current_workspace', {}).get('company_email', '') }}" required>
+          </div>
+          <div class="form-control w-full">
+            <label class="label"><span class="label-text">Company Phone</span></label>
+            <input type="text" id="companyPhoneInput" name="phone" class="input input-bordered w-full" value="{{ session.get('current_workspace', {}).get('company_phone', '') }}" required>
+          </div>
+          <div class="modal-action">
+            <button type="button" class="btn btn-ghost" onclick="closeEditContactModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save</button>
+          </div>
+        </form>
+      </div>
+    </dialog>
+    
+    <!-- Custom Notification Modal -->
+    <dialog id="custom-notification-modal" class="modal">
+        <div class="modal-box">
+            <h3 class="font-bold text-lg flex items-center gap-2" id="custom-notification-title">
+                <i id="custom-notification-icon" class=""></i>
+                <span id="custom-notification-title-text"></span>
+            </h3>
+            <p class="py-4" id="custom-notification-message"></p>
+            <div class="modal-action">
+                <button type="button" class="btn btn-primary" onclick="closeCustomNotificationModal()">OK</button>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Logout Confirmation Modal -->
+    <div id="logout-modal" class="modal">
+        <div class="modal-box">
+            <h3 class="font-bold text-lg">Confirm Logout</h3>
+            <p class="py-4">Are you sure you want to logout?</p>
+            <div class="modal-action">
+                <a href="#" class="btn btn-ghost" onclick="closeLogoutModal()">Cancel</a>
+                <a href="{{ url_for('logout_route') }}" class="btn btn-primary">Confirm</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Modal -->
+    <dialog id="notification-modal" class="modal">
+        <div class="modal-box">
+            <h3 id="notification-title" class="font-bold text-lg"></h3>
+            <p id="notification-message" class="py-4"></p>
+            <div class="modal-action">
+                <button class="btn btn-primary" onclick="closeNotificationModal()">OK</button>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+            <button>close</button>
+        </form>
+    </dialog>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Feather Icons
+            feather.replace();
+            
+            // Re-run feather.replace() after any dynamic content changes
+            const observer = new MutationObserver(function(mutations) {
+                feather.replace();
+            });
+            
+            // Observe the entire document for changes
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+        });
+        
+        function copyWorkspaceCode() {
+            const workspaceCodeInput = document.querySelector('input[readonly]');
+            if (workspaceCodeInput) {
+                workspaceCodeInput.select();
+                workspaceCodeInput.setSelectionRange(0, 99999); // For mobile devices
+                try {
+                    document.execCommand('copy');
+                    showSuccess('Workspace code copied to clipboard!');
+                } catch (err) {
+                    console.error('Failed to copy: ', err);
+                    showError('Failed to copy workspace code');
+                }
+            }
+        }
+        
+        // Override notification functions to use custom modal
+        function showSuccess(message) {
+            openNotificationModal('Success', message);
+        }
+        
+        function showError(message) {
+            openNotificationModal('Error', message);
+        }
+        
+        // Create a modern notification modal
+        function openNotificationModal(title, message) {
+            const modal = document.getElementById('notification-modal');
+            const titleEl = document.getElementById('notification-title');
+            const messageEl = document.getElementById('notification-message');
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+            modal.showModal();
+        }
+        
+        function closeNotificationModal() {
+            const modal = document.getElementById('notification-modal');
+            modal.close();
+        }
+        
+        // Replace default alerts with custom modal
+        const originalAlert = window.alert;
+        window.alert = function(msg) {
+            showError(msg);
+        };
+        
+        // Load trial information for admin users
+        async function loadTrialInfo() {
+            try {
+                const response = await fetch('/api/workspace/payments');
+                const data = await response.json();
+                
+                if (response.ok && data.workspace) {
+                    const trialMessage = document.getElementById('trial-message');
+                    const trialDaysDisplay = document.getElementById('trial-days-display');
+                    const trialDaysDisplayMobile = document.getElementById('trial-days-display-mobile');
+                    const trialDaysLeft = document.getElementById('trial-days-left');
+                    const upgradeBtn = trialMessage ? trialMessage.querySelector('a[href*="billing.stripe.com"]') : null;
+                    
+                    // Update the trial days display in the subscription info bar (both desktop and mobile)
+                    const updateTrialDisplay = (element, isActive, daysLeft, subscriptionActive) => {
+                        if (element) {
+                            const icon = '<i class="fas fa-clock mr-1"></i>';
+                            if (subscriptionActive) {
+                                element.innerHTML = `${icon}Active subscription`;
+                                element.className = element.className.replace('text-green-700', 'text-blue-700');
+                            } else if (isActive && daysLeft > 0) {
+                                element.innerHTML = `${icon}${daysLeft} days left in trial`;
+                                if (daysLeft <= 7) {
+                                    element.className = element.className.replace('text-green-700', 'text-orange-700');
+                                }
+                            } else if (daysLeft <= 0) {
+                                element.innerHTML = `${icon}Trial expired`;
+                                element.className = element.className.replace('text-green-700', 'text-red-700');
+                            }
+                        }
+                    };
+                    
+                    // Update both desktop and mobile displays
+                    updateTrialDisplay(trialDaysDisplay, data.workspace.trial_active, data.workspace.trial_days_left, data.workspace.subscription_active);
+                    updateTrialDisplay(trialDaysDisplayMobile, data.workspace.trial_active, data.workspace.trial_days_left, data.workspace.subscription_active);
+                    
+                    // Update the trial message for admin users
+                    if (trialDaysLeft) {
+                        if (data.workspace.subscription_active) {
+                            trialDaysLeft.innerHTML = 'Active subscription - no trial needed';
+                            if (upgradeBtn) {
+                                upgradeBtn.innerHTML = '<i class="fas fa-cog mr-1"></i>Manage Billing';
+                                upgradeBtn.classList.remove('btn-success');
+                                upgradeBtn.classList.add('btn-primary');
+                            }
+                        } else if (data.workspace.trial_active && data.workspace.trial_days_left > 0) {
+                            trialDaysLeft.innerHTML = `${data.workspace.trial_days_left} days remaining in your free trial`;
+                            if (data.workspace.trial_days_left <= 7) {
+                                trialDaysLeft.classList.add('text-orange-600', 'font-semibold');
+                                if (trialMessage) {
+                                    trialMessage.classList.remove('from-green-50', 'to-emerald-50', 'border-green-200');
+                                    trialMessage.classList.add('from-orange-50', 'to-yellow-50', 'border-orange-200');
+                                }
+                                
+                                // Show upgrade modal after 3 seconds
+                                setTimeout(() => {
+                                    if (upgradeBtn) {
+                                        upgradeBtn.classList.add('animate-pulse', 'bg-orange-600', 'hover:bg-orange-700');
+                                        upgradeBtn.classList.remove('btn-success');
+                                    }
+                                }, 3000);
+                            }
+                        } else {
+                            trialDaysLeft.innerHTML = 'Your trial has expired - please upgrade to continue';
+                            trialDaysLeft.classList.add('text-red-600', 'font-bold');
+                            if (trialMessage) {
+                                trialMessage.classList.remove('from-green-50', 'to-emerald-50', 'border-green-200');
+                                trialMessage.classList.add('from-red-50', 'to-pink-50', 'border-red-200');
+                            }
+                            if (upgradeBtn) {
+                                upgradeBtn.innerHTML = '<i class="fas fa-exclamation-triangle mr-1"></i>Upgrade Required';
+                                upgradeBtn.classList.add('animate-pulse', 'bg-red-600', 'hover:bg-red-700');
+                                upgradeBtn.classList.remove('btn-success');
+                            }
+                        }
+                    }
+                } else {
+                    console.error('Failed to load trial information:', data.error || 'Unknown error');
+                }
+            } catch (error) {
+                console.error('Error loading trial information:', error);
+            }
+        }
+        
+        // Initialize mobile menu functionality
+        function initializeMobileMenuClose() {
+            const drawerToggle = document.getElementById('my-drawer');
+            const drawerContent = document.querySelector('.drawer-content');
+            const mobileToggleButton = document.querySelector('.drawer-button');
+            const sidebarMenuItems = document.querySelectorAll('.sidebar-menu-item');
+            
+            // Enhanced click handling for sidebar menu items on mobile
+            sidebarMenuItems.forEach(item => {
+                // Enhanced touch handling for mobile
+                item.addEventListener('touchstart', function(e) {
+                    // Prevent default touch behavior that might interfere
+                    e.preventDefault();
+                    
+                    // Add active state for visual feedback
+                    this.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
+                    this.style.transform = 'scale(0.98)';
+                    
+                    // Handle navigation after a short delay
+                    setTimeout(() => {
+                        // Reset visual state
+                        this.style.backgroundColor = '';
+                        this.style.transform = '';
+                        
+                        // Close mobile menu
+                        if (window.innerWidth < 1024 && drawerToggle) {
+                            drawerToggle.checked = false;
+                        }
+                        
+                        // Navigate
+                        const href = this.getAttribute('href');
+                        if (href && href !== '#') {
+                            if (this.getAttribute('target') === '_blank') {
+                                window.open(href, '_blank');
+                            } else {
+                                window.location.href = href;
+                            }
+                        }
+                    }, 100);
+                }, { passive: false });
+                
+                // Fallback for regular clicks (desktop)
+                item.addEventListener('click', function(e) {
+                    // Only handle if not on mobile or if touch events didn't fire
+                    if (window.innerWidth >= 1024) {
+                        return; // Let normal navigation happen
+                    }
+                    
+                    // On mobile, prevent default and handle manually
+                    e.preventDefault();
+                    
+                    const href = this.getAttribute('href');
+                    if (href && href !== '#') {
+                        // Close mobile menu
+                        if (drawerToggle) {
+                            drawerToggle.checked = false;
+                        }
+                        
+                        setTimeout(() => {
+                            if (this.getAttribute('target') === '_blank') {
+                                window.open(href, '_blank');
+                            } else {
+                                window.location.href = href;
+                            }
+                        }, 200);
+                    }
+                });
+            });
+            
+            // Close menu when clicking on drawer content (main content area) on mobile
+            if (drawerContent) {
+                drawerContent.addEventListener('click', function(e) {
+                    // Only close on mobile (when drawer is not open by default)
+                    if (window.innerWidth < 1024 && drawerToggle && drawerToggle.checked) {
+                        // Don't close if clicking on the mobile toggle button
+                        if (!mobileToggleButton || !mobileToggleButton.contains(e.target)) {
+                            drawerToggle.checked = false;
+                        }
+                    }
+                });
+            }
+            
+            // Enhanced touch/click handling for mobile overlay
+            if (window.innerWidth < 1024) {
+                const drawerOverlay = document.querySelector('.drawer-overlay');
+                if (drawerOverlay) {
+                    drawerOverlay.addEventListener('touchstart', function(e) {
+                        e.preventDefault();
+                        if (drawerToggle && drawerToggle.checked) {
+                            drawerToggle.checked = false;
+                        }
+                    }, { passive: false });
+                    
+                    drawerOverlay.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        if (drawerToggle && drawerToggle.checked) {
+                            drawerToggle.checked = false;
+                        }
+                    });
+                }
+            }
+            
+            // Handle window resize to ensure proper behavior
+            window.addEventListener('resize', function() {
+                if (window.innerWidth >= 1024 && drawerToggle) {
+                    drawerToggle.checked = false;
+                }
+            });
+            
+            // Prevent iOS safari zoom on double tap for menu items
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', function (event) {
+                const now = (new Date()).getTime();
+                if (now - lastTouchEnd <= 300) {
+                    event.preventDefault();
+                }
+                lastTouchEnd = now;
+            }, false);
+        }
+        
+        // Initialize mobile menu close functionality
+        initializeMobileMenuClose();
+        
+        // Shared function to add new custom field to both single-add and import modals
+        function saveNewField() {
+            const input = document.getElementById('newFieldName');
+            const fieldName = input.value.trim();
+            if (!fieldName) return;
+            const fieldKey = fieldName.replace(/\s+/g, '_');
+            
+            // Add to import modal current fields list
+            const importFields = document.getElementById('currentFields');
+            if (importFields) {
+                const div = document.createElement('div');
+                div.className = 'bg-blue-100 p-2 rounded-lg text-blue-700 font-medium truncate';
+                div.dataset.field = fieldKey;
+                div.textContent = fieldName;
+                importFields.appendChild(div);
+            }
+            
+            // Add to single-add custom fields section
+            const singleContainer = document.getElementById('customFieldsSingle');
+            if (singleContainer) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'form-control w-full';
+                wrapper.innerHTML = `
+                    <label class="label">
+                        <span class="label-text">${fieldName}</span>
+                    </label>
+                    <input type="text" name="custom_${fieldKey}" class="input input-bordered w-full">
+                `;
+                singleContainer.appendChild(wrapper);
+            }
+            
+            // Clear input
+            input.value = '';
+        }
+        
+        // Confetti animation for subscription success
+        function triggerConfetti() {
+            // First burst
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#10B981', '#3B82F6', '#F59E0B']
+            });
+            
+            // Second burst after delay
+            setTimeout(() => {
+                confetti({
+                    particleCount: 50,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 },
+                    colors: ['#10B981', '#3B82F6', '#F59E0B']
+                });
+            }, 200);
+            
+            // Third burst from the other side
+            setTimeout(() => {
+                confetti({
+                    particleCount: 50,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 },
+                    colors: ['#10B981', '#3B82F6', '#F59E0B']
+                });
+            }, 400);
+        }
+         
+         // Close success alert function
+         function closeSuccessAlert() {
+            const alert = document.getElementById('subscription-success-alert');
+            if (alert) {
+                alert.style.display = 'none';
+            }
+        }
+        
+        // Logout modal functions
+        function closeLogoutModal() {
+            const modal = document.getElementById('logout-modal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+        
+        // Custom modal functions (assuming they exist elsewhere)
+        function showCustomModal(title, message, type) {
+            // Implementation would depend on your modal system
+            console.log(`${type}: ${title} - ${message}`);
+        }
+    </script>
+    {% if subscription_updated %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            triggerConfetti();
+        });
+    </script>
+    {% endif %}
+    {% block scripts %}{% endblock %}
+ </body>
+ </html>

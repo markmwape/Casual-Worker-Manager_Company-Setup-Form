@@ -96,18 +96,13 @@
     </style>
 </head>
 <body>
-    <div class="drawer lg:drawer-open min-h-screen">
+    <div class="drawer drawer-mobile lg:drawer-open">
         <input id="my-drawer" type="checkbox" class="drawer-toggle" checked />
         <div class="drawer-content px-4 lg:px-8 pb-8 bg-brand-navy-50/80 min-h-screen">
-            <!-- Mobile Menu Toggle Button -->
-            <div class="mobile-sidebar-toggle fixed top-4 right-4 z-[110] lg:hidden">
-                <label for="my-drawer" class="btn btn-primary drawer-button shadow-lg touch-manipulation min-h-[48px] min-w-[48px] flex items-center justify-center cursor-pointer">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" />
-                    </svg>
-                </label>
-            </div>
-            <!-- page content -->
+            <!-- Mobile drawer toggle -->
+            <label for="my-drawer" class="btn btn-primary drawer-button fixed top-4 right-4 lg:hidden z-50">
+                <i class="fas fa-bars"></i>
+            </label>
             {% block content %}
             <div class="container mx-auto px-4 w-full max-w-6xl">
                 <!-- Subscription Update Success Message -->
@@ -483,60 +478,46 @@
                 </div>
                 {% include 'modals/team_member.html' %}
             </div>
-                <!-- Edit Contact Modal -->
-                <dialog id="edit-contact-modal" class="modal">
-                  <div class="modal-box">
-                    <h3 class="font-bold text-lg">Edit Company Contact Information</h3>
-                    <form id="contactForm">
-                      <div class="form-control w-full">
-                        <label class="label"><span class="label-text">Company Email</span></label>
-                        <input type="email" id="companyEmailInput" name="email" class="input input-bordered w-full" value="{{ session.get('current_workspace', {}).get('company_email', '') }}" required>
-                      </div>
-                      <div class="form-control w-full">
-                        <label class="label"><span class="label-text">Company Phone</span></label>
-                        <input type="text" id="companyPhoneInput" name="phone" class="input input-bordered w-full" value="{{ session.get('current_workspace', {}).get('company_phone', '') }}" required>
-                      </div>
-                      <div class="modal-action">
-                        <button type="button" class="btn btn-ghost" onclick="closeEditContactModal()">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Save</button>
-                      </div>
-                    </form>
-                  </div>
-                </dialog>
-                
-                <!-- Custom Notification Modal -->
-                <dialog id="custom-notification-modal" class="modal">
-                    <div class="modal-box">
-                        <h3 class="font-bold text-lg flex items-center gap-2" id="custom-notification-title">
-                            <i id="custom-notification-icon" class=""></i>
-                            <span id="custom-notification-title-text"></span>
-                        </h3>
-                        <p class="py-4" id="custom-notification-message"></p>
-                        <div class="modal-action">
-                            <button type="button" class="btn btn-primary" onclick="closeCustomNotificationModal()">OK</button>
-                        </div>
-                    </div>
-                </dialog>
-                
-                <!-- Standard Notification Modal -->
-                <dialog id="notification-modal" class="modal">
-                    <div class="modal-box">
-                        <h3 class="font-bold text-lg flex items-center gap-2" id="notification-title">
-                            <i class="fas fa-info-circle text-blue-600"></i>
-                            <span>Notification</span>
-                        </h3>
-                        <p class="py-4" id="notification-message"></p>
-                        <div class="modal-action">
-                            <button type="button" class="btn btn-primary" onclick="closeNotificationModal()">OK</button>
-                        </div>
-                    </div>
-                </dialog>
-            </div>
             {% endblock %}
         </div>
         {% include 'components/_sidebar.html' %}
-    </div>
+    </div>  <!-- close drawer -->
     
+    <!-- Edit Contact Modal -->
+    <dialog id="edit-contact-modal" class="modal">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg">Edit Company Contact Information</h3>
+        <form id="contactForm">
+          <div class="form-control w-full">
+            <label class="label"><span class="label-text">Company Email</span></label>
+            <input type="email" id="companyEmailInput" name="email" class="input input-bordered w-full" value="{{ session.get('current_workspace', {}).get('company_email', '') }}" required>
+          </div>
+          <div class="form-control w-full">
+            <label class="label"><span class="label-text">Company Phone</span></label>
+            <input type="text" id="companyPhoneInput" name="phone" class="input input-bordered w-full" value="{{ session.get('current_workspace', {}).get('company_phone', '') }}" required>
+          </div>
+          <div class="modal-action">
+            <button type="button" class="btn btn-ghost" onclick="closeEditContactModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save</button>
+          </div>
+        </form>
+      </div>
+    </dialog>
+    
+    <!-- Custom Notification Modal -->
+    <dialog id="custom-notification-modal" class="modal">
+        <div class="modal-box">
+            <h3 class="font-bold text-lg flex items-center gap-2" id="custom-notification-title">
+                <i id="custom-notification-icon" class=""></i>
+                <span id="custom-notification-title-text"></span>
+            </h3>
+            <p class="py-4" id="custom-notification-message"></p>
+            <div class="modal-action">
+                <button type="button" class="btn btn-primary" onclick="closeCustomNotificationModal()">OK</button>
+            </div>
+        </div>
+    </dialog>
+
     <!-- Logout Confirmation Modal -->
     <div id="logout-modal" class="modal">
         <div class="modal-box">
@@ -548,6 +529,20 @@
             </div>
         </div>
     </div>
+
+    <!-- Notification Modal -->
+    <dialog id="notification-modal" class="modal">
+        <div class="modal-box">
+            <h3 id="notification-title" class="font-bold text-lg"></h3>
+            <p id="notification-message" class="py-4"></p>
+            <div class="modal-action">
+                <button class="btn btn-primary" onclick="closeNotificationModal()">OK</button>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+            <button>close</button>
+        </form>
+    </dialog>
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -1031,18 +1026,19 @@
             }, 400);
         }
         
-        // Trigger confetti if subscription was just updated
-        {% if subscription_updated %}
-        document.addEventListener('DOMContentLoaded', function() {
-            triggerConfetti();
-        });
-        {% endif %}
-        
-        // Close success alert function
-        function closeSuccessAlert() {
+         // Close success alert function
+         function closeSuccessAlert() {
             const alert = document.getElementById('subscription-success-alert');
             if (alert) {
                 alert.style.display = 'none';
+            }
+        }
+        
+        // Logout modal functions
+        function closeLogoutModal() {
+            const modal = document.getElementById('logout-modal');
+            if (modal) {
+                modal.style.display = 'none';
             }
         }
         
@@ -1052,13 +1048,13 @@
             console.log(`${type}: ${title} - ${message}`);
         }
     </script>
+    {% if subscription_updated %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            triggerConfetti();
+        });
+    </script>
+    {% endif %}
     {% block scripts %}{% endblock %}
-    <style>
-      /* Fallback to ensure sidebar is visible on desktop and content is offset */
-      @media (min-width: 1024px) {
-        #app-drawer .drawer-side { display: block !important; transform: none !important; }
-        #app-drawer .drawer-content { margin-left: 20rem !important; width: calc(100vw - 20rem) !important; }
-      }
-    </style>
  </body>
  </html>

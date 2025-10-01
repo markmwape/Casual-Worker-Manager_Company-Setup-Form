@@ -1,9 +1,7 @@
-{% extends "base.html" %}
-
-{% block title %}Embee accounting - Tasks{% endblock %}
+{% extends "home.html" %}
 
 {% block content %}
-<div class="container mx-auto px-4 w-full max-w-6xl mt-4">
+<div class="container mx-auto px-4 w-full max-w-6xl">
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
         <h1 class="text-3xl font-bold text-black">Tasks</h1>
         <button onclick="openAddTaskModal()" class="btn btn-primary w-full sm:w-auto">
@@ -30,11 +28,11 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="dropdown dropdown-end flex-shrink-0" onclick="event.stopPropagation()" style="position: relative; z-index: 1000;">
+                        <div class="dropdown dropdown-end flex-shrink-0" onclick="event.stopPropagation()" style="position: relative; z-index: 100000;">
                             <label tabindex="0" class="btn btn-ghost btn-sm btn-circle hover:bg-gray-100">
                                 <i class="fas fa-ellipsis-v text-gray-600"></i>
                             </label>
-                            <ul tabindex="0" class="dropdown-content menu p-2 shadow-lg bg-white rounded-lg w-52 text-sm border border-gray-200" style="position: absolute; z-index: 1000; right: 0; top: 100%; margin-top: 0.5rem; min-width: 160px; overflow: visible;">
+                            <ul tabindex="0" class="dropdown-content menu p-2 shadow-lg bg-white rounded-lg w-52 text-sm border border-gray-200" style="position: absolute; z-index: 100000; right: 0; top: 100%; margin-top: 0.5rem; min-width: 160px; overflow: visible;">
                                 <li>
                                     <a href='javascript:void(0);' onclick='openEditTaskModal({{ task.id|tojson }}, {{ task.name|tojson }}, {{ task.description|tojson }}, {{ task.start_date.strftime("%Y-%m-%d")|tojson }}, {{ task.payment_type|tojson }}, {{ task.per_part_payout|tojson }}, {{ task.per_part_currency|tojson }}, {{ task.per_day_payout|tojson }}, {{ task.per_day_currency|tojson }})' class="hover:bg-gray-50">
                                         <i class="fas fa-edit w-4 h-4"></i>Edit Task
@@ -156,10 +154,6 @@
     {% include 'modals/delete_task.html' %}
     {% include 'modals/edit_task.html' %}
 </div>
-{% endblock %}
-
-{% block sidebar %}
-{% include 'components/_sidebar.html' %}
 {% endblock %}
 
 {% block scripts %}
@@ -487,3 +481,5 @@
     });
 </script>
 {% endblock %}
+
+{% include 'components/_sidebar.html' %}

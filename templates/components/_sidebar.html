@@ -1,7 +1,14 @@
-<div class="drawer-side z-[100]">
+<div class="mobile-sidebar-toggle fixed top-4 right-4 z-[110] lg:hidden">
+    <label for="my-drawer" class="btn btn-primary drawer-button shadow-lg touch-manipulation min-h-[48px] min-w-[48px] flex items-center justify-center cursor-pointer">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" />
+        </svg>
+    </label>
+</div>
+<div class="drawer-side fixed inset-y-0 left-0 w-80 h-screen z-[100]">
+    <!-- Drawer overlay to close the sidebar when clicking outside on mobile -->
     <label for="my-drawer" class="drawer-overlay"></label>
-    <aside class="bg-gradient-to-b from-brand-navy-500 to-brand-navy-700 text-white w-80 h-full flex flex-col z-[100]">
-        <div class="p-4 flex flex-col h-full overflow-y-auto overflow-x-hidden">
+        <div class="p-4 w-80 h-screen flex flex-col bg-gradient-to-b from-brand-navy-500 to-brand-navy-700 text-white overflow-y-auto overflow-x-hidden">
         <!-- Header Section -->
         <div class="mb-8">
             <div class="flex items-center justify-center mb-6 mt-4">
@@ -105,6 +112,17 @@
                     </a>
                 </li>
             </ul>
+    </div>
+
+    <!-- Logout Confirmation Modal -->
+    <div id="logout-modal" class="modal">
+        <div class="modal-box">
+            <h3 class="font-bold text-lg">Confirm Logout</h3>
+            <p class="py-4">Are you sure you want to logout?</p>
+            <div class="modal-action">
+                <a href="#" class="btn btn-ghost" onclick="closeLogoutModal()">Cancel</a>
+                <a href="{{ url_for('logout_route') }}" class="btn btn-primary">Confirm</a>
+            </div>
         </div>
-    </aside>
+    </div>
 </div>

@@ -1,9 +1,7 @@
-{% extends "base.html" %}
-
-{% block title %}Embee accounting - Workers{% endblock %}
+{% extends "home.html" %}
 
 {% block content %}
-<div class="container mx-auto px-4 w-full max-w-6xl mt-4">
+<div class="container mx-auto px-4 w-full max-w-6xl">
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
         <h1 class="text-3xl font-bold text-black">Workers</h1>
         <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
@@ -84,10 +82,6 @@
     {% include 'modals/import_workers.html' %}
     {% include 'modals/delete_worker.html' %}
 </div>
-{% endblock %}
-
-{% block sidebar %}
-{% include 'components/_sidebar.html' %}
 {% endblock %}
 
 {% block scripts %}

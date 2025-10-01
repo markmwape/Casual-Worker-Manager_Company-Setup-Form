@@ -444,7 +444,7 @@ function loadExcelColumns(columns) {
 function openAddTaskModal() {
     const modal = document.getElementById('add-task-modal');
     if (modal) {
-        modal.showModal();
+        modal.classList.add('modal-open');
         
         // Set default date to today
         const dateInput = document.getElementById('task-start-date');
@@ -531,10 +531,7 @@ function updateTaskStatusIndicator() {
 }
 
 function closeAddTaskModal() {
-    const modal = document.getElementById('add-task-modal');
-    if (modal) {
-        modal.close();
-    }
+    document.getElementById('add-task-modal').classList.remove('modal-open');
 }
 
 // Payment type logic for add task modal

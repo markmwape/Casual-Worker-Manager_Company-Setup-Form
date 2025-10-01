@@ -202,7 +202,7 @@
 }
 
 .dropdown-content {
-    z-index: 10 !important;
+    z-index: 10001 !important;
 }
 
 /* Specific styling for the three-dot menu dropdown */
@@ -237,7 +237,7 @@
 /* Force dropdown positioning to be above everything - only for drawer layouts */
 .drawer .dropdown-content {
     position: absolute !important;
-    z-index: 1500 !important;
+    z-index: 100000 !important;
     transform: none !important;
 }
 
@@ -260,7 +260,7 @@
     right: 0 !important;
     left: auto !important;
     transform: none !important;
-    z-index: 1500 !important;
+    z-index: 100000 !important;
     margin-top: 0.5rem !important;
     background: white !important;
     border-radius: 8px !important;
@@ -1390,11 +1390,8 @@ input[type="date"]::-webkit-date-and-time-value {
     left: 0;
     height: 100vh;
     width: 20rem;
-    z-index: 100 !important;
+    z-index: 100;
     overflow: hidden;
-    transform: translateX(0) !important;
-    visibility: visible !important;
-    opacity: 1 !important;
     /* Prevents page scroll from affecting sidebar */
   }
   .drawer .drawer-side > .menu {
@@ -1581,26 +1578,4 @@ input[type="checkbox"].checkbox-primary:focus {
 input[type="checkbox"].checkbox-primary:indeterminate {
     background-color: var(--primary-navy) !important;
     border-color: var(--primary-navy) !important;
-}
-
-/* Hide drawer overlay on desktop to ensure sidebar remains visible and clickable */
-@media (min-width: 1024px) {
-    .drawer .drawer-overlay {
-        display: none !important;
-    }
-}
-
-/* Force sidebar visibility on desktop - specific for tasks page */
-@media (min-width: 1024px) {
-    .drawer-side {
-        display: block !important;
-        transform: translateX(0) !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-    }
-    
-    /* Ensure drawer overlay doesn't cover sidebar on desktop */
-    .drawer-overlay {
-        display: none !important;
-    }
 }

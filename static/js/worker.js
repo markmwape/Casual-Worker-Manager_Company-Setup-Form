@@ -271,3 +271,25 @@ window.openEditWorkerModal = function(workerId) {
     // Show modal
     modal.showModal();
 };
+
+// Open/close Add Worker Modal
+function openAddWorkerModal() {
+    const modal = document.getElementById('add-worker-modal');
+    if (modal) modal.showModal();
+}
+
+function closeAddWorkerModal() {
+    const modal = document.getElementById('add-worker-modal');
+    if (modal) modal.close();
+}
+
+// Open/close Import Workers Modal
+function openImportWorkersModal() {
+    const modal = document.getElementById('import-workers-modal');
+    if (modal) modal.showModal();
+}
+
+function closeImportWorkersModal() {
+    const modal = document.getElementById('import-workers-modal');
+    if (modal) modal.close();
+}

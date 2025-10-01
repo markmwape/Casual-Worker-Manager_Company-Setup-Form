@@ -151,7 +151,7 @@
 <body>
     <div class="drawer lg:drawer-open">
         <input id="my-drawer" type="checkbox" class="drawer-toggle" />
-        <div class="drawer-content p-8 bg-brand-navy-50/80 min-h-screen">
+        <div class="drawer-content px-4 lg:px-8 pt-6 pb-8 bg-brand-navy-50/80 min-h-screen">
             <!-- Mobile Menu Button -->
             <div class="lg:hidden fixed top-4 right-4 z-50">
                 <label for="my-drawer" class="btn btn-primary drawer-button shadow-lg">
@@ -586,9 +586,9 @@
                     </div>
                 </dialog>
             </div>
-            {% include 'components/_sidebar.html' %}
             {% endblock %}
         </div>  <!-- close drawer-content -->
+        {% include 'components/_sidebar.html' %}
     </div>  <!-- close drawer -->
     
     <script>

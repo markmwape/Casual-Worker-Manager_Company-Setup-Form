@@ -1,14 +1,16 @@
-<div class="drawer-side">
+<!-- Mobile Menu Toggle Button - Outside sidebar so it's always visible -->
+<div class="mobile-sidebar-toggle fixed top-4 right-4 z-[110] lg:hidden">
+    <label for="my-drawer" class="btn btn-primary drawer-button shadow-lg touch-manipulation min-h-[48px] min-w-[48px] flex items-center justify-center cursor-pointer">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" />
+        </svg>
+    </label>
+</div>
+
+<div class="drawer-side z-40">
     <label for="my-drawer" class="drawer-overlay"></label>
-    <div class="p-4 w-80 h-screen flex flex-col bg-gradient-to-b from-brand-navy-500 to-brand-navy-700 text-white overflow-y-auto overflow-x-hidden">
-        <!-- Mobile Menu Toggle Button -->
-        <div class="mobile-sidebar-toggle fixed top-4 right-4 z-[110] lg:hidden">
-            <label for="my-drawer" class="btn btn-primary drawer-button shadow-lg touch-manipulation min-h-[48px] min-w-[48px] flex items-center justify-center cursor-pointer">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" />
-                </svg>
-            </label>
-        </div>
+    <aside class="bg-gradient-to-b from-brand-navy-500 to-brand-navy-700 text-white w-80 h-full flex flex-col">
+        <div class="p-4 flex flex-col h-full overflow-y-auto overflow-x-hidden">
         <!-- Header Section -->
         <div class="mb-8">
             <div class="flex items-center justify-center mb-6 mt-4">
@@ -112,5 +114,6 @@
                     </a>
                 </li>
             </ul>
-    </div>
+        </div>
+    </aside>
 </div>

@@ -99,6 +99,19 @@
             .drawer-button.lg\:hidden {
                 display: none !important;
             }
+            
+            /* Force sidebar to be visible on desktop */
+            .drawer-side {
+                transform: translateX(0) !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                z-index: 50 !important;
+            }
+            
+            /* Ensure drawer content has proper left margin for sidebar */
+            .drawer-content {
+                margin-left: 20rem !important;
+            }
         }
     </style>
     {% block extra_head %}{% endblock %}

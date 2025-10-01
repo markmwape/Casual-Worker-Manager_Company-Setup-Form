@@ -93,11 +93,14 @@
         .shadow-3xl {
             box-shadow: 0 35px 60px -15px rgba(0, 0, 0, 0.3);
         }
+        .border-3 {
+            border-width: 3px;
+        }
         .honeycomb-corner {
             position: absolute;
-            width: 100px;
-            height: 100px;
-            background: linear-gradient(45deg, rgba(26, 43, 72, 0.1) 0%, rgba(124, 138, 154, 0.05) 100%);
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(45deg, rgba(26, 43, 72, 0.08) 0%, rgba(124, 138, 154, 0.03) 100%);
             clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
             pointer-events: none;
             z-index: 1;
@@ -134,6 +137,70 @@
         body {
             font-family: 'Inter', sans-serif;
         }
+        
+        /* Enhanced input focus effects */
+        .input-focus:focus {
+            transform: translateY(-2px);
+            transition: all 0.3s ease;
+        }
+        
+        /* Improved card hover effects */
+        .card-hover:hover {
+            transform: translateY(-8px);
+            transition: all 0.4s ease;
+        }
+        
+        /* Enhanced button hover effects */
+        .btn-hover:hover {
+            transform: translateY(-3px);
+            transition: all 0.3s ease;
+        }
+        
+        /* Gradient background animation */
+        .gradient-bg {
+            background: linear-gradient(135deg, #1A2B48 0%, #2a3f5f 50%, #1A2B48 100%);
+            background-size: 200% 200%;
+            animation: gradientShift 8s ease infinite;
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* Floating animation enhancement */
+        .floating-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            25% { transform: translateY(-8px) rotate(1deg); }
+            50% { transform: translateY(-5px) rotate(0deg); }
+            75% { transform: translateY(-12px) rotate(-1deg); }
+        }
+        
+        /* Icon glow enhancement */
+        .icon-glow {
+            box-shadow: 0 0 30px rgba(26, 43, 72, 0.4);
+        }
+        
+        /* Enhanced form styling */
+        .form-control input:focus,
+        .form-control select:focus {
+            box-shadow: 0 0 0 4px rgba(26, 43, 72, 0.1);
+        }
+        
+        /* Mobile responsive enhancements */
+        @media (max-width: 768px) {
+            .card-hover:hover {
+                transform: translateY(-4px);
+            }
+            
+            .btn-hover:hover {
+                transform: translateY(-2px);
+            }
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen relative py-8">
@@ -146,12 +213,28 @@
     
     <div class="w-full max-w-6xl mx-auto relative z-10 px-4">
         <!-- Header Section -->
-        <div class="text-center mb-12">
-            <div class="inline-flex items-center justify-center mb-6">
-                <img src="{{ url_for('static', filename='img/logo + text.png') }}" alt="Embee Accounting Logo" class="h-24 w-auto object-contain floating-animation" />
+        <div class="text-center mb-16">
+            <div class="inline-flex items-center justify-center mb-8">
+                <img src="{{ url_for('static', filename='img/logo + text.png') }}" alt="Embee Accounting Logo" class="h-28 w-auto object-contain floating-animation" />
             </div>
-            <h1 class="text-4xl md:text-5xl font-bold text-brand-navy-600 mb-4">Welcome to Your Workspace</h1>
-            <p class="text-xl text-brand-gray-600 max-w-2xl mx-auto">Choose how you'd like to get started with your professional workforce management platform</p>
+            <h1 class="text-5xl md:text-6xl font-bold text-brand-navy-600 mb-6 leading-tight">Welcome to Your Workspace</h1>
+            <p class="text-xl md:text-2xl text-brand-gray-600 max-w-3xl mx-auto leading-relaxed">Choose how you'd like to get started with your professional workforce management platform</p>
+            
+            <!-- Trust indicators -->
+            <div class="flex flex-wrap justify-center items-center gap-8 mt-8 text-brand-gray-500">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-shield-alt text-green-500"></i>
+                    <span class="text-sm font-medium">Secure & Encrypted</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-users text-blue-500"></i>
+                    <span class="text-sm font-medium">Trusted by 1000+ Companies</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-clock text-purple-500"></i>
+                    <span class="text-sm font-medium">Setup in 2 Minutes</span>
+                </div>
+            </div>
         </div>
         
         <!-- Global Success/Error Messages -->
@@ -172,42 +255,45 @@
             </div>
         </div>
         
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
             <!-- Join Workspace Card -->
-            <div class="card bg-white/80 backdrop-blur-sm shadow-2xl border-0 card-hover border border-emerald-200/30 hover:shadow-3xl">
-                <div class="card-body p-8 md:p-10">
+            <div class="card bg-white/90 backdrop-blur-md shadow-3xl border-0 card-hover border-2 border-emerald-200/50 hover:border-emerald-300/70 hover:shadow-3xl overflow-hidden group">
+                <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-500 to-green-500"></div>
+                <div class="card-body p-10 md:p-12">
                     <div class="flex flex-col items-center text-center">
-                        <div class="w-20 h-20 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center mb-6 shadow-xl icon-glow">
-                            <i class="fas fa-users text-3xl text-white"></i>
+                        <div class="w-24 h-24 bg-gradient-to-br from-emerald-500 to-green-600 rounded-3xl flex items-center justify-center mb-8 shadow-2xl icon-glow group-hover:scale-110 transition-transform duration-300">
+                            <i class="fas fa-users text-4xl text-white"></i>
                         </div>
-                        <h2 class="card-title text-3xl font-bold text-brand-navy-600 mb-3">Join a Workspace</h2>
-                        <p class="text-brand-gray-600 mb-8 text-lg">Enter your workspace code to join an existing team</p>
-                        <form id="join-workspace-form" class="w-full space-y-6">
+                        <h2 class="card-title text-3xl md:text-4xl font-bold text-brand-navy-600 mb-4">Join a Workspace</h2>
+                        <p class="text-brand-gray-600 mb-10 text-lg leading-relaxed">Already have a workspace code? Enter it below to join your team and start collaborating instantly.</p>
+                        
+                        <form id="join-workspace-form" class="w-full space-y-8">
                             <div class="form-control">
                                 <label class="label">
-                                    <span class="label-text font-semibold text-brand-navy-600 text-lg">Workspace Code</span>
+                                    <span class="label-text font-bold text-brand-navy-600 text-xl">Workspace Code</span>
                                 </label>
                                 <input type="text" id="workspace-code" name="workspace_code" placeholder="Enter 16-character code" required 
-                                       class="input input-bordered w-full text-lg font-mono tracking-wider input-focus bg-white border-2 border-emerald-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200" 
-                                       maxlength="16" pattern="[A-Z0-9]{16}" style="text-transform: uppercase;">
+                                       class="input input-bordered w-full text-xl font-mono tracking-wider input-focus bg-white border-3 border-emerald-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-200 rounded-xl py-4 px-6 shadow-lg" 
+                                       maxlength="16" pattern="[A-Z0-9]{16}" style="text-transform: uppercase; height: 64px;">
                                 <label class="label">
-                                    <span class="label-text-alt text-brand-gray-500">Enter the 16-character workspace code provided by your administrator</span>
+                                    <span class="label-text-alt text-brand-gray-500 text-base leading-relaxed">Enter the 16-character workspace code provided by your administrator</span>
                                 </label>
                             </div>
-                            <button type="submit" id="join-btn" class="btn btn-success w-full text-lg font-semibold btn-hover bg-gradient-to-r from-emerald-500 to-green-600 border-0 shadow-lg">
+                            <button type="submit" id="join-btn" class="btn btn-success w-full text-xl font-bold btn-hover bg-gradient-to-r from-emerald-500 to-green-600 border-0 shadow-xl hover:shadow-2xl py-4 rounded-xl" style="height: 64px;">
                                 <span id="join-btn-text">
-                                    <i class="fas fa-sign-in-alt mr-3"></i>Join Workspace
+                                    <i class="fas fa-sign-in-alt mr-3 text-xl"></i>Join Workspace
                                 </span>
                                 <span id="join-btn-loading" class="hidden">
                                     <div class="loading-spinner inline-block mr-3"></div>Joining...
                                 </span>
                             </button>
                         </form>
-                        <div id="join-error" class="text-error text-center mt-4 hidden"></div>
+                        <div id="join-error" class="text-error text-center mt-6 hidden text-lg"></div>
+                        
                         <!-- Forgot workspace link -->
-                        <div class="text-center mt-6">
-                            <a href="/forgot-workspace" class="text-emerald-600 hover:text-emerald-700 text-sm font-medium transition-colors">
-                                <i class="fas fa-question-circle mr-1"></i>Forgot your workspace code?
+                        <div class="text-center mt-8">
+                            <a href="/forgot-workspace" class="text-emerald-600 hover:text-emerald-700 text-lg font-semibold transition-colors hover:underline">
+                                <i class="fas fa-question-circle mr-2"></i>Forgot your workspace code?
                             </a>
                         </div>
                     </div>
@@ -215,175 +301,334 @@
             </div>
             
             <!-- Create Workspace Card -->
-            <div class="card bg-white/80 backdrop-blur-sm shadow-2xl border-0 card-hover border border-blue-200/30 hover:shadow-3xl">
-                <div class="card-body p-8 md:p-10">
+            <div class="card bg-white/90 backdrop-blur-md shadow-3xl border-0 card-hover border-2 border-brand-navy-200/50 hover:border-brand-navy-300/70 hover:shadow-3xl overflow-hidden group">
+                <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-brand-navy-500 to-brand-navy-600"></div>
+                <div class="card-body p-10 md:p-12">
                     <div class="flex flex-col items-center text-center">
-                        <div class="w-20 h-20 bg-gradient-to-br from-brand-navy-500 to-brand-navy-600 rounded-2xl flex items-center justify-center mb-6 shadow-xl icon-glow">
-                            <i class="fas fa-building text-3xl text-white"></i>
+                        <div class="w-24 h-24 bg-gradient-to-br from-brand-navy-500 to-brand-navy-600 rounded-3xl flex items-center justify-center mb-8 shadow-2xl icon-glow group-hover:scale-110 transition-transform duration-300">
+                            <i class="fas fa-building text-4xl text-white"></i>
                         </div>
-                        <h2 class="card-title text-3xl font-bold text-brand-navy-600 mb-3">Create a Workspace</h2>
-                        <p class="text-brand-gray-600 mb-8 text-lg">Set up a new workspace for your organization</p>
+                        <h2 class="card-title text-3xl md:text-4xl font-bold text-brand-navy-600 mb-4">Create a Workspace</h2>
+                        <p class="text-brand-gray-600 mb-10 text-lg leading-relaxed">Set up a new workspace for your organization and start managing your workforce efficiently.</p>
+                        
                         <form id="create-workspace-form" class="w-full space-y-6">
                             <div class="form-control">
                                 <label class="label">
-                                    <span class="label-text font-semibold text-brand-navy-600 text-lg">Company Name</span>
+                                    <span class="label-text font-bold text-brand-navy-600 text-lg">Company Name</span>
                                 </label>
-                                <input type="text" id="company-name" name="company_name" placeholder="Enter company name" required 
-                                       class="input input-bordered w-full text-lg input-focus bg-white border-2 border-blue-200 focus:border-brand-navy-500 focus:ring-2 focus:ring-blue-200"
+                                <input type="text" id="company-name" name="company_name" placeholder="Enter your company name" required 
+                                       class="input input-bordered w-full text-lg input-focus bg-white border-3 border-brand-navy-200 focus:border-brand-navy-500 focus:ring-4 focus:ring-brand-navy-200 rounded-xl py-3 px-4 shadow-lg"
                                        minlength="2" maxlength="100">
                             </div>
 
                             <div class="form-control">
                                 <label class="label">
-                                    <span class="label-text font-semibold text-brand-navy-600 text-lg">Country</span>
+                                    <span class="label-text font-bold text-brand-navy-600 text-lg">Country</span>
                                 </label>
-                                <select id="country" name="country" required class="select select-bordered w-full text-lg input-focus bg-white border-2 border-blue-200 focus:border-brand-navy-500 focus:ring-2 focus:ring-blue-200">
+                                <select id="country" name="country" required class="select select-bordered w-full text-lg input-focus bg-white border-3 border-brand-navy-200 focus:border-brand-navy-500 focus:ring-4 focus:ring-brand-navy-200 rounded-xl shadow-lg">
                                     <option value="">Select country</option>
-                                    <option value="United States">United States</option>
-                                    <option value="United Kingdom">United Kingdom</option>
-                                    <option value="Canada">Canada</option>
-                                    <option value="Australia">Australia</option>
-                                    <option value="Germany">Germany</option>
-                                    <option value="France">France</option>
-                                    <option value="Spain">Spain</option>
-                                    <option value="Italy">Italy</option>
-                                    <option value="Netherlands">Netherlands</option>
-                                    <option value="Belgium">Belgium</option>
-                                    <option value="Switzerland">Switzerland</option>
-                                    <option value="Austria">Austria</option>
-                                    <option value="Sweden">Sweden</option>
-                                    <option value="Norway">Norway</option>
-                                    <option value="Denmark">Denmark</option>
-                                    <option value="Finland">Finland</option>
-                                    <option value="Ireland">Ireland</option>
-                                    <option value="Portugal">Portugal</option>
-                                    <option value="Poland">Poland</option>
-                                    <option value="Czech Republic">Czech Republic</option>
-                                    <option value="Hungary">Hungary</option>
-                                    <option value="Slovakia">Slovakia</option>
-                                    <option value="Slovenia">Slovenia</option>
-                                    <option value="Croatia">Croatia</option>
-                                    <option value="Estonia">Estonia</option>
-                                    <option value="Latvia">Latvia</option>
-                                    <option value="Lithuania">Lithuania</option>
-                                    <option value="South Africa">South Africa</option>
-                                    <option value="Nigeria">Nigeria</option>
-                                    <option value="Kenya">Kenya</option>
-                                    <option value="Ghana">Ghana</option>
-                                    <option value="Egypt">Egypt</option>
-                                    <option value="Morocco">Morocco</option>
-                                    <option value="Tunisia">Tunisia</option>
-                                    <option value="Algeria">Algeria</option>
-                                    <option value="Ethiopia">Ethiopia</option>
-                                    <option value="Tanzania">Tanzania</option>
-                                    <option value="Uganda">Uganda</option>
-                                    <option value="Rwanda">Rwanda</option>
-                                    <option value="Zambia">Zambia</option>
-                                    <option value="Zimbabwe">Zimbabwe</option>
-                                    <option value="Botswana">Botswana</option>
-                                    <option value="Namibia">Namibia</option>
-                                    <option value="India">India</option>
-                                    <option value="China">China</option>
-                                    <option value="Japan">Japan</option>
-                                    <option value="South Korea">South Korea</option>
-                                    <option value="Singapore">Singapore</option>
-                                    <option value="Malaysia">Malaysia</option>
-                                    <option value="Thailand">Thailand</option>
-                                    <option value="Philippines">Philippines</option>
-                                    <option value="Indonesia">Indonesia</option>
-                                    <option value="Vietnam">Vietnam</option>
-                                    <option value="Taiwan">Taiwan</option>
-                                    <option value="Hong Kong">Hong Kong</option>
-                                    <option value="Brazil">Brazil</option>
-                                    <option value="Mexico">Mexico</option>
-                                    <option value="Argentina">Argentina</option>
-                                    <option value="Chile">Chile</option>
-                                    <option value="Colombia">Colombia</option>
-                                    <option value="Peru">Peru</option>
-                                    <option value="Uruguay">Uruguay</option>
-                                    <option value="Ecuador">Ecuador</option>
-                                    <option value="Venezuela">Venezuela</option>
-                                    <option value="Costa Rica">Costa Rica</option>
-                                    <option value="Panama">Panama</option>
-                                    <option value="Other">Other</option>
+                                    <option value="Afghanistan">🇦🇫 Afghanistan</option>
+                                    <option value="Albania">🇦🇱 Albania</option>
+                                    <option value="Algeria">🇩🇿 Algeria</option>
+                                    <option value="Andorra">🇦🇩 Andorra</option>
+                                    <option value="Angola">🇦🇴 Angola</option>
+                                    <option value="Antigua and Barbuda">🇦🇬 Antigua and Barbuda</option>
+                                    <option value="Argentina">🇦🇷 Argentina</option>
+                                    <option value="Armenia">🇦🇲 Armenia</option>
+                                    <option value="Australia">🇦🇺 Australia</option>
+                                    <option value="Austria">🇦🇹 Austria</option>
+                                    <option value="Azerbaijan">🇦🇿 Azerbaijan</option>
+                                    <option value="Bahamas">🇧🇸 Bahamas</option>
+                                    <option value="Bahrain">🇧🇭 Bahrain</option>
+                                    <option value="Bangladesh">🇧🇩 Bangladesh</option>
+                                    <option value="Barbados">🇧🇧 Barbados</option>
+                                    <option value="Belarus">🇧🇾 Belarus</option>
+                                    <option value="Belgium">🇧🇪 Belgium</option>
+                                    <option value="Belize">🇧🇿 Belize</option>
+                                    <option value="Benin">🇧🇯 Benin</option>
+                                    <option value="Bhutan">🇧🇹 Bhutan</option>
+                                    <option value="Bolivia">🇧🇴 Bolivia</option>
+                                    <option value="Bosnia and Herzegovina">🇧🇦 Bosnia and Herzegovina</option>
+                                    <option value="Botswana">🇧🇼 Botswana</option>
+                                    <option value="Brazil">🇧🇷 Brazil</option>
+                                    <option value="Brunei">🇧🇳 Brunei</option>
+                                    <option value="Bulgaria">🇧🇬 Bulgaria</option>
+                                    <option value="Burkina Faso">🇧🇫 Burkina Faso</option>
+                                    <option value="Burundi">🇧🇮 Burundi</option>
+                                    <option value="Cambodia">🇰🇭 Cambodia</option>
+                                    <option value="Cameroon">🇨🇲 Cameroon</option>
+                                    <option value="Canada">🇨🇦 Canada</option>
+                                    <option value="Cape Verde">🇨🇻 Cape Verde</option>
+                                    <option value="Central African Republic">🇨🇫 Central African Republic</option>
+                                    <option value="Chad">🇹🇩 Chad</option>
+                                    <option value="Chile">🇨🇱 Chile</option>
+                                    <option value="China">🇨🇳 China</option>
+                                    <option value="Colombia">🇨🇴 Colombia</option>
+                                    <option value="Comoros">🇰🇲 Comoros</option>
+                                    <option value="Congo">🇨🇬 Congo</option>
+                                    <option value="Costa Rica">🇨🇷 Costa Rica</option>
+                                    <option value="Croatia">🇭🇷 Croatia</option>
+                                    <option value="Cuba">🇨🇺 Cuba</option>
+                                    <option value="Cyprus">🇨🇾 Cyprus</option>
+                                    <option value="Czech Republic">🇨🇿 Czech Republic</option>
+                                    <option value="Denmark">🇩🇰 Denmark</option>
+                                    <option value="Djibouti">🇩🇯 Djibouti</option>
+                                    <option value="Dominica">🇩🇲 Dominica</option>
+                                    <option value="Dominican Republic">🇩🇴 Dominican Republic</option>
+                                    <option value="DR Congo">🇨🇩 DR Congo</option>
+                                    <option value="Ecuador">🇪🇨 Ecuador</option>
+                                    <option value="Egypt">🇪🇬 Egypt</option>
+                                    <option value="El Salvador">🇸🇻 El Salvador</option>
+                                    <option value="Equatorial Guinea">🇬🇶 Equatorial Guinea</option>
+                                    <option value="Eritrea">🇪🇷 Eritrea</option>
+                                    <option value="Estonia">🇪🇪 Estonia</option>
+                                    <option value="Eswatini">🇸🇿 Eswatini</option>
+                                    <option value="Ethiopia">🇪🇹 Ethiopia</option>
+                                    <option value="Fiji">🇫🇯 Fiji</option>
+                                    <option value="Finland">🇫🇮 Finland</option>
+                                    <option value="France">🇫🇷 France</option>
+                                    <option value="Gabon">🇬🇦 Gabon</option>
+                                    <option value="Gambia">🇬🇲 Gambia</option>
+                                    <option value="Georgia">🇬🇪 Georgia</option>
+                                    <option value="Germany">🇩🇪 Germany</option>
+                                    <option value="Ghana">🇬🇭 Ghana</option>
+                                    <option value="Greece">🇬🇷 Greece</option>
+                                    <option value="Grenada">🇬🇩 Grenada</option>
+                                    <option value="Guatemala">🇬🇹 Guatemala</option>
+                                    <option value="Guinea">🇬🇳 Guinea</option>
+                                    <option value="Guinea-Bissau">🇬🇼 Guinea-Bissau</option>
+                                    <option value="Guyana">🇬🇾 Guyana</option>
+                                    <option value="Haiti">🇭🇹 Haiti</option>
+                                    <option value="Honduras">🇭🇳 Honduras</option>
+                                    <option value="Hong Kong">🇭🇰 Hong Kong</option>
+                                    <option value="Hungary">🇭🇺 Hungary</option>
+                                    <option value="Iceland">🇮🇸 Iceland</option>
+                                    <option value="India">🇮🇳 India</option>
+                                    <option value="Indonesia">🇮🇩 Indonesia</option>
+                                    <option value="Iran">🇮🇷 Iran</option>
+                                    <option value="Iraq">🇮🇶 Iraq</option>
+                                    <option value="Ireland">🇮🇪 Ireland</option>
+                                    <option value="Israel">🇮🇱 Israel</option>
+                                    <option value="Italy">🇮🇹 Italy</option>
+                                    <option value="Ivory Coast">🇨🇮 Ivory Coast</option>
+                                    <option value="Jamaica">🇯🇲 Jamaica</option>
+                                    <option value="Japan">🇯🇵 Japan</option>
+                                    <option value="Jordan">🇯🇴 Jordan</option>
+                                    <option value="Kazakhstan">🇰🇿 Kazakhstan</option>
+                                    <option value="Kenya">🇰🇪 Kenya</option>
+                                    <option value="Kiribati">🇰🇮 Kiribati</option>
+                                    <option value="Kosovo">🇽🇰 Kosovo</option>
+                                    <option value="Kuwait">🇰🇼 Kuwait</option>
+                                    <option value="Kyrgyzstan">🇰🇬 Kyrgyzstan</option>
+                                    <option value="Laos">🇱🇦 Laos</option>
+                                    <option value="Latvia">🇱🇻 Latvia</option>
+                                    <option value="Lebanon">🇱🇧 Lebanon</option>
+                                    <option value="Lesotho">🇱🇸 Lesotho</option>
+                                    <option value="Liberia">🇱🇷 Liberia</option>
+                                    <option value="Libya">🇱🇾 Libya</option>
+                                    <option value="Liechtenstein">🇱🇮 Liechtenstein</option>
+                                    <option value="Lithuania">🇱🇹 Lithuania</option>
+                                    <option value="Luxembourg">🇱🇺 Luxembourg</option>
+                                    <option value="Madagascar">🇲🇬 Madagascar</option>
+                                    <option value="Malawi">🇲🇼 Malawi</option>
+                                    <option value="Malaysia">🇲🇾 Malaysia</option>
+                                    <option value="Maldives">🇲🇻 Maldives</option>
+                                    <option value="Mali">🇲🇱 Mali</option>
+                                    <option value="Malta">🇲🇹 Malta</option>
+                                    <option value="Marshall Islands">🇲🇭 Marshall Islands</option>
+                                    <option value="Mauritania">🇲🇷 Mauritania</option>
+                                    <option value="Mauritius">🇲🇺 Mauritius</option>
+                                    <option value="Mexico">🇲🇽 Mexico</option>
+                                    <option value="Micronesia">🇫🇲 Micronesia</option>
+                                    <option value="Moldova">🇲🇩 Moldova</option>
+                                    <option value="Monaco">🇲🇨 Monaco</option>
+                                    <option value="Mongolia">🇲🇳 Mongolia</option>
+                                    <option value="Montenegro">🇲🇪 Montenegro</option>
+                                    <option value="Morocco">🇲🇦 Morocco</option>
+                                    <option value="Mozambique">🇲🇿 Mozambique</option>
+                                    <option value="Myanmar">🇲🇲 Myanmar</option>
+                                    <option value="Namibia">🇳🇦 Namibia</option>
+                                    <option value="Nauru">🇳🇷 Nauru</option>
+                                    <option value="Nepal">🇳🇵 Nepal</option>
+                                    <option value="Netherlands">🇳🇱 Netherlands</option>
+                                    <option value="New Zealand">🇳🇿 New Zealand</option>
+                                    <option value="Nicaragua">🇳🇮 Nicaragua</option>
+                                    <option value="Niger">🇳🇪 Niger</option>
+                                    <option value="Nigeria">🇳🇬 Nigeria</option>
+                                    <option value="North Korea">🇰🇵 North Korea</option>
+                                    <option value="North Macedonia">🇲🇰 North Macedonia</option>
+                                    <option value="Norway">🇳🇴 Norway</option>
+                                    <option value="Oman">🇴🇲 Oman</option>
+                                    <option value="Pakistan">🇵🇰 Pakistan</option>
+                                    <option value="Palau">🇵🇼 Palau</option>
+                                    <option value="Palestine">🇵🇸 Palestine</option>
+                                    <option value="Panama">🇵🇦 Panama</option>
+                                    <option value="Papua New Guinea">🇵🇬 Papua New Guinea</option>
+                                    <option value="Paraguay">🇵🇾 Paraguay</option>
+                                    <option value="Peru">🇵🇪 Peru</option>
+                                    <option value="Philippines">🇵🇭 Philippines</option>
+                                    <option value="Poland">🇵🇱 Poland</option>
+                                    <option value="Portugal">🇵🇹 Portugal</option>
+                                    <option value="Qatar">🇶🇦 Qatar</option>
+                                    <option value="Romania">🇷🇴 Romania</option>
+                                    <option value="Russia">🇷🇺 Russia</option>
+                                    <option value="Rwanda">🇷🇼 Rwanda</option>
+                                    <option value="Saint Kitts and Nevis">🇰🇳 Saint Kitts and Nevis</option>
+                                    <option value="Saint Lucia">🇱🇨 Saint Lucia</option>
+                                    <option value="Saint Vincent and the Grenadines">🇻🇨 Saint Vincent and the Grenadines</option>
+                                    <option value="Samoa">🇼🇸 Samoa</option>
+                                    <option value="San Marino">🇸🇲 San Marino</option>
+                                    <option value="Sao Tome and Principe">🇸🇹 Sao Tome and Principe</option>
+                                    <option value="Saudi Arabia">🇸🇦 Saudi Arabia</option>
+                                    <option value="Senegal">🇸🇳 Senegal</option>
+                                    <option value="Serbia">🇷🇸 Serbia</option>
+                                    <option value="Seychelles">🇸🇨 Seychelles</option>
+                                    <option value="Sierra Leone">🇸🇱 Sierra Leone</option>
+                                    <option value="Singapore">🇸🇬 Singapore</option>
+                                    <option value="Slovakia">🇸🇰 Slovakia</option>
+                                    <option value="Slovenia">🇸🇮 Slovenia</option>
+                                    <option value="Solomon Islands">🇸🇧 Solomon Islands</option>
+                                    <option value="Somalia">🇸🇴 Somalia</option>
+                                    <option value="South Africa">🇿🇦 South Africa</option>
+                                    <option value="South Korea">🇰🇷 South Korea</option>
+                                    <option value="South Sudan">🇸🇸 South Sudan</option>
+                                    <option value="Spain">🇪🇸 Spain</option>
+                                    <option value="Sri Lanka">🇱🇰 Sri Lanka</option>
+                                    <option value="Sudan">🇸🇩 Sudan</option>
+                                    <option value="Suriname">🇸🇷 Suriname</option>
+                                    <option value="Sweden">🇸🇪 Sweden</option>
+                                    <option value="Switzerland">🇨🇭 Switzerland</option>
+                                    <option value="Syria">🇸🇾 Syria</option>
+                                    <option value="Taiwan">🇹🇼 Taiwan</option>
+                                    <option value="Tajikistan">🇹🇯 Tajikistan</option>
+                                    <option value="Tanzania">🇹🇿 Tanzania</option>
+                                    <option value="Thailand">🇹🇭 Thailand</option>
+                                    <option value="Timor-Leste">🇹🇱 Timor-Leste</option>
+                                    <option value="Togo">🇹🇬 Togo</option>
+                                    <option value="Tonga">🇹🇴 Tonga</option>
+                                    <option value="Trinidad and Tobago">🇹🇹 Trinidad and Tobago</option>
+                                    <option value="Tunisia">🇹🇳 Tunisia</option>
+                                    <option value="Turkey">🇹🇷 Turkey</option>
+                                    <option value="Turkmenistan">🇹🇲 Turkmenistan</option>
+                                    <option value="Tuvalu">🇹🇻 Tuvalu</option>
+                                    <option value="Uganda">🇺🇬 Uganda</option>
+                                    <option value="Ukraine">🇺🇦 Ukraine</option>
+                                    <option value="United Arab Emirates">🇦🇪 United Arab Emirates</option>
+                                    <option value="United Kingdom">🇬🇧 United Kingdom</option>
+                                    <option value="United States">🇺🇸 United States</option>
+                                    <option value="Uruguay">🇺🇾 Uruguay</option>
+                                    <option value="Uzbekistan">🇺🇿 Uzbekistan</option>
+                                    <option value="Vanuatu">🇻🇺 Vanuatu</option>
+                                    <option value="Vatican City">🇻🇦 Vatican City</option>
+                                    <option value="Venezuela">🇻🇪 Venezuela</option>
+                                    <option value="Vietnam">🇻🇳 Vietnam</option>
+                                    <option value="Yemen">🇾🇪 Yemen</option>
+                                    <option value="Zambia">🇿🇲 Zambia</option>
+                                    <option value="Zimbabwe">🇿🇼 Zimbabwe</option>
                                 </select>
                             </div>
 
                             <div class="form-control">
                                 <label class="label">
-                                    <span class="label-text font-semibold text-brand-navy-600 text-lg">Industry Type</span>
+                                    <span class="label-text font-bold text-brand-navy-600 text-lg">Industry Type</span>
                                 </label>
-                                <select id="industry-type" name="industry_type" required class="select select-bordered w-full text-lg input-focus bg-white border-2 border-blue-200 focus:border-brand-navy-500 focus:ring-2 focus:ring-blue-200">
+                                <select id="industry-type" name="industry_type" required class="select select-bordered w-full text-lg input-focus bg-white border-3 border-brand-navy-200 focus:border-brand-navy-500 focus:ring-4 focus:ring-brand-navy-200 rounded-xl shadow-lg">
                                     <option value="">Select industry</option>
-                                    <option value="Construction">Construction</option>
-                                    <option value="Manufacturing">Manufacturing</option>
-                                    <option value="Agriculture">Agriculture</option>
-                                    <option value="Hospitality">Hospitality & Tourism</option>
-                                    <option value="Retail">Retail & Sales</option>
-                                    <option value="Healthcare">Healthcare</option>
-                                    <option value="Education">Education</option>
-                                    <option value="Transportation">Transportation & Logistics</option>
-                                    <option value="Food Service">Food Service</option>
-                                    <option value="Cleaning">Cleaning & Maintenance</option>
-                                    <option value="Security">Security Services</option>
-                                    <option value="Event Management">Event Management</option>
-                                    <option value="Technology">Technology</option>
-                                    <option value="Finance">Finance & Accounting</option>
-                                    <option value="Real Estate">Real Estate</option>
-                                    <option value="Entertainment">Entertainment & Media</option>
-                                    <option value="Non-Profit">Non-Profit</option>
-                                    <option value="Government">Government</option>
-                                    <option value="Other">Other</option>
+                                    <option value="Construction">🏗️ Construction</option>
+                                    <option value="Manufacturing">🏭 Manufacturing</option>
+                                    <option value="Agriculture">🌾 Agriculture</option>
+                                    <option value="Hospitality">🏨 Hospitality & Tourism</option>
+                                    <option value="Retail">🛒 Retail & Sales</option>
+                                    <option value="Healthcare">🏥 Healthcare</option>
+                                    <option value="Education">🎓 Education</option>
+                                    <option value="Transportation">🚛 Transportation & Logistics</option>
+                                    <option value="Food Service">🍽️ Food Service</option>
+                                    <option value="Cleaning">🧹 Cleaning & Maintenance</option>
+                                    <option value="Security">🔒 Security Services</option>
+                                    <option value="Event Management">🎉 Event Management</option>
+                                    <option value="Technology">💻 Technology</option>
+                                    <option value="Finance">💰 Finance & Accounting</option>
+                                    <option value="Real Estate">� Real Estate</option>
+                                    <option value="Entertainment">🎬 Entertainment & Media</option>
+                                    <option value="Non-Profit">🤝 Non-Profit</option>
+                                    <option value="Government">🏛️ Government</option>
+                                    <option value="Other">🏢 Other</option>
                                 </select>
                             </div>
 
                             <div class="form-control">
                                 <label class="label">
-                                    <span class="label-text font-semibold text-brand-navy-600 text-lg">Company Phone</span>
+                                    <span class="label-text font-bold text-brand-navy-600 text-lg">Company Phone</span>
                                 </label>
-                                <input type="tel" id="company-phone" name="company_phone" placeholder="Enter company phone number" required 
-                                       class="input input-bordered w-full text-lg input-focus bg-white border-2 border-blue-200 focus:border-brand-navy-500 focus:ring-2 focus:ring-blue-200">
+                                <input type="tel" id="company-phone" name="company_phone" placeholder="Enter company phone" required 
+                                       class="input input-bordered w-full text-lg input-focus bg-white border-3 border-brand-navy-200 focus:border-brand-navy-500 focus:ring-4 focus:ring-brand-navy-200 rounded-xl py-3 px-4 shadow-lg">
                             </div>
 
                             <div class="form-control">
                                 <label class="label">
-                                    <span class="label-text font-semibold text-brand-navy-600 text-lg">Company Email</span>
+                                    <span class="label-text font-bold text-brand-navy-600 text-lg">Company Email</span>
                                 </label>
-                                <input type="email" id="company-email" name="company_email" placeholder="Enter company email address" required 
-                                       class="input input-bordered w-full text-lg input-focus bg-white border-2 border-blue-200 focus:border-brand-navy-500 focus:ring-2 focus:ring-blue-200">
+                                <input type="email" id="company-email" name="company_email" placeholder="Enter company email" required 
+                                       class="input input-bordered w-full text-lg input-focus bg-white border-3 border-brand-navy-200 focus:border-brand-navy-500 focus:ring-4 focus:ring-brand-navy-200 rounded-xl py-3 px-4 shadow-lg">
                             </div>
 
-                            <button type="submit" id="create-btn" class="btn btn-primary w-full text-lg font-semibold btn-hover bg-gradient-to-r from-brand-navy-500 to-brand-navy-600 border-0 shadow-lg">
+                            <button type="submit" id="create-btn" class="btn btn-primary w-full text-xl font-bold btn-hover bg-gradient-to-r from-brand-navy-500 to-brand-navy-600 border-0 shadow-xl hover:shadow-2xl py-4 rounded-xl mt-8" style="height: 64px;">
                                 <span id="create-btn-text">
-                                    <i class="fas fa-plus mr-3"></i>Create Workspace
+                                    <i class="fas fa-plus mr-3 text-xl"></i>Create Workspace
                                 </span>
                                 <span id="create-btn-loading" class="hidden">
                                     <div class="loading-spinner inline-block mr-3"></div>Creating...
                                 </span>
                             </button>
                         </form>
-                        <div id="create-error" class="text-error text-center mt-4 hidden"></div>
-                        <div id="create-warning" class="text-warning text-center mt-4 hidden"></div>
+                        <div id="create-error" class="text-error text-center mt-6 hidden text-lg"></div>
+                        <div id="create-warning" class="text-warning text-center mt-6 hidden text-lg"></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Help Section -->
-        <div class="text-center">
-            <div class="card bg-white/60 backdrop-blur-sm shadow-lg border border-gray-200/50">
-                <div class="card-body p-6">
-                    <h3 class="text-2xl font-bold text-brand-navy-600 mb-4">Need Help?</h3>
-                    <p class="text-brand-gray-600 mb-4">Our support team is here to help you get started</p>
-                    <div class="flex flex-wrap justify-center gap-4">
-                        <a href="mailto:support@embeeaccounting.com" class="btn btn-outline btn-sm">
-                            <i class="fas fa-envelope mr-2"></i>Email Support
+        <!-- Enhanced Help Section -->
+        <div class="mt-12">
+            <div class="card bg-gradient-to-br from-white/95 to-brand-navy-50/70 backdrop-blur-md shadow-xl border border-brand-navy-200/40 rounded-2xl overflow-hidden max-w-5xl mx-auto">
+                <div class="card-body p-8 md:p-10">
+                    <!-- Header -->
+                    <div class="text-center mb-8">
+                        <div class="inline-flex items-center justify-center gap-3 mb-4">
+                            <div class="w-14 h-14 bg-gradient-to-br from-brand-gold-500 to-brand-gold-600 rounded-xl flex items-center justify-center shadow-lg">
+                                <i class="fas fa-life-ring text-white text-xl"></i>
+                            </div>
+                            <h3 class="text-2xl md:text-3xl font-bold text-brand-navy-600">Need Help Getting Started?</h3>
+                        </div>
+                        <p class="text-brand-gray-600 text-base md:text-lg leading-relaxed max-w-2xl mx-auto">
+                            Our support team is here to help you get started with your workforce management journey.
+                        </p>
+                    </div>
+                    
+                    <!-- Links Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                        <a href="mailto:support@embeeaccounting.com" class="group flex items-center justify-center gap-3 p-4 bg-white hover:bg-blue-50 border-2 border-blue-200 hover:border-blue-400 rounded-xl transition-all duration-300 hover:shadow-md">
+                            <i class="fas fa-envelope text-blue-600 text-xl group-hover:scale-110 transition-transform"></i>
+                            <div class="text-left">
+                                <div class="text-blue-700 font-semibold text-base">Email Support</div>
+                                <div class="text-blue-500 text-xs">support@embeeaccounting.com</div>
+                            </div>
                         </a>
-                        <a href="/terms-of-use" class="btn btn-outline btn-sm">
-                            <i class="fas fa-file-contract mr-2"></i>Terms of Use
+                        
+                        <a href="/terms-of-use" class="group flex items-center justify-center gap-3 p-4 bg-white hover:bg-green-50 border-2 border-green-200 hover:border-green-400 rounded-xl transition-all duration-300 hover:shadow-md">
+                            <i class="fas fa-file-contract text-green-600 text-xl group-hover:scale-110 transition-transform"></i>
+                            <div class="text-left">
+                                <div class="text-green-700 font-semibold text-base">Terms of Use</div>
+                                <div class="text-green-500 text-xs">Review our terms</div>
+                            </div>
                         </a>
-                        <a href="/privacy-policy" class="btn btn-outline btn-sm">
-                            <i class="fas fa-shield-alt mr-2"></i>Privacy Policy
+                        
+                        <a href="/privacy-policy" class="group flex items-center justify-center gap-3 p-4 bg-white hover:bg-purple-50 border-2 border-purple-200 hover:border-purple-400 rounded-xl transition-all duration-300 hover:shadow-md">
+                            <i class="fas fa-shield-alt text-purple-600 text-xl group-hover:scale-110 transition-transform"></i>
+                            <div class="text-left">
+                                <div class="text-purple-700 font-semibold text-base">Privacy Policy</div>
+                                <div class="text-purple-500 text-xs">Data protection info</div>
+                            </div>
                         </a>
                     </div>
                 </div>

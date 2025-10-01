@@ -594,7 +594,18 @@ def set_session():
 
         logging.info(f"Session set successfully: {session['user']}")
         logging.info(f"Session keys: {list(session.keys())}")
-        return jsonify({"status": "success"}), 200
+        
+        # Provide detailed response for debugging
+        workspace_set = 'current_workspace' in session
+        workspace_name = session.get('current_workspace', {}).get('name') if workspace_set else None
+        
+        return jsonify({
+            "status": "success",
+            "user_id": session['user'].get('user_email'),
+            "workspace_set": workspace_set,
+            "workspace_name": workspace_name,
+            "session_keys": list(session.keys())
+        }), 200
         
     except Exception as e:
         logging.error(f"Error setting session: {str(e)}")

@@ -158,6 +158,10 @@
 </div>
 {% endblock %}
 
+{% block sidebar %}
+{% include 'components/_sidebar.html' %}
+{% endblock %}
+
 {% block scripts %}
 <script>
     function navigateToTask(event, taskId) {

@@ -196,23 +196,23 @@
     transform: translateY(0);
 }
 
-/* Three-dot menu should have lower z-index */
+/* Three-dot menu should have higher z-index */
 .dropdown {
-    z-index: 999 !important;
+    z-index: 10000 !important;
 }
 
 .dropdown-content {
-    z-index: 1000 !important;
+    z-index: 10 !important;
 }
 
 /* Specific styling for the three-dot menu dropdown */
 .dropdown.dropdown-end {
-    z-index: 999 !important;
+    z-index: 10001 !important;
     position: relative;
 }
 
 .dropdown.dropdown-end .dropdown-content {
-    z-index: 1000 !important;
+    z-index: 10001 !important;
     position: absolute;
     top: 100%;
     right: 0;
@@ -1578,4 +1578,11 @@ input[type="checkbox"].checkbox-primary:focus {
 input[type="checkbox"].checkbox-primary:indeterminate {
     background-color: var(--primary-navy) !important;
     border-color: var(--primary-navy) !important;
-}/* This file is reserved for custom CSS styles for the application. *//* Add any custom styles, overrides, or additional design elements here. *//* Modern Financial UI with Navy Blue and Gold Theme */:root {    /* Primary Colors - Navy Blue */    --primary-navy: #1A2B48;    --primary-navy-dark: #0f1a2e;    --primary-navy-light: #2a3f5f;    --primary-navy-lighter: #3a4f6f;        /* Accent Colors - Deep Gold/Mustard Yellow (used sparingly) */    --accent-gold: #E5B23A;    --accent-gold-dark: #d4a02a;    --accent-gold-light: #f0c050;    --accent-gold-lighter: #f5d080;        /* Secondary Colors - Cool Gray */    --secondary-gray: #7C8A9A;    --secondary-gray-dark: #5a6778;    --secondary-gray-light: #9ba5b3;    --secondary-gray-lighter: #c1c8d1;        /* Neutral Colors */    --text-dark: #1f2937;    --text-light: #6b7280;    --bg-light: #f8fafc;    --bg-white: #ffffff;    --border-light: #e5e7eb;        /* Status Colors */    --success-green: #10b981;    --warning-orange: #f59e0b;    --error-red: #ef4444;        /* Shadows */    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);        /* Gradients */    --gradient-navy: linear-gradient(135deg, var(--primary-navy) 0%, var(--primary-navy-light) 100%);    --gradient-navy-light: linear-gradient(135deg, var(--primary-navy-light) 0%, var(--primary-navy-lighter) 100%);    --gradient-gold: linear-gradient(135deg, var(--accent-gold) 0%, var(--accent-gold-light) 100%);    --gradient-gray: linear-gradient(135deg, var(--secondary-gray) 0%, var(--secondary-gray-light) 100%);}/* Global override for DaisyUI primary color -> Brand Navy */.btn-primary,.bg-primary,.border-primary,.text-primary,.link-primary {    background-color: var(--primary-navy) !important;    border-color: var(--primary-navy) !important;    color: #ffffff !important;}.btn-primary:hover,.bg-primary:hover {    background-color: var(--primary-navy-dark) !important;    border-color: var(--primary-navy-dark) !important;}.text-primary,.link-primary {    background-color: transparent !important;    color: var(--primary-navy) !important;}.border-primary {    background-color: transparent !important;}.checkbox-primary:checked {    background-color: var(--primary-navy) !important;    border-color: var(--primary-navy) !important;}.checkbox-primary:indeterminate {    background-color: var(--primary-navy) !important;    border-color: var(--primary-navy) !important;}/* Enhanced Status Dropdown Styles */.status-dropdown {    position: relative;    display: inline-block;    z-index: 10;}.status-badge {    display: inline-flex;    align-items: center;    padding: 0.5rem 0.75rem;    border-radius: 50px;    font-size: 0.75rem;    font-weight: 600;    cursor: pointer;    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);    border: 2px solid transparent;    backdrop-filter: blur(8px);    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);    min-width: 120px;    justify-content: space-between;}.status-badge:hover {    transform: translateY(-2px);    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);}.status-badge:active {    transform: translateY(0);}/* Status Badge Variants */.status-badge.pending {    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);    color: #92400e;    border-color: #f59e0b;}.status-badge.pending:hover {    background: linear-gradient(135deg, #fde68a 0%, #f59e0b 100%);    border-color: #d97706;}.status-badge.in-progress {    background: linear-gradient(135deg, #dbeafe 0%, #93c5fd 100%);    color: #1e40af;    border-color: #3b82f6;}.status-badge.in-progress:hover {    background: linear-gradient(135deg, #93c5fd 0%, #2563eb 100%);    border-color: #1d4ed8;}.status-badge.completed {    background: linear-gradient(135deg, #dcfce7 0%, #86efac 100%);    color: #166534;    border-color: #22c55e;}.status-badge.completed:hover {    background: linear-gradient(135deg, #86efac 0%, #16a34a 100%);    border-color: #15803d;}/* Status Indicator Dot */.status-indicator {    width: 8px;    height: 8px;    border-radius: 50%;    margin-right: 0.5rem;    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.8);    animation: pulse 2s infinite;}.status-indicator.pending {    background: #f59e0b;    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.3);}.status-indicator.in-progress {    background: #3b82f6;    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);}.status-indicator.completed {    background: #22c55e;    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.3);}/* Dropdown Menu */.status-dropdown-menu {    position: absolute;    top: 100%;    left: 0;    z-index: 9999;    min-width: 220px;    background: white;    border-radius: 12px;    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);    border: 1px solid #e5e7eb;    padding: 0.75rem;    margin-top: 0.5rem;    opacity: 0;    visibility: hidden;    transform: translateY(-10px);    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);    backdrop-filter: blur(12px);    max-height: 300px;    overflow-y: auto;}.status-dropdown-menu.show {    opacity: 1;    visibility: visible;    transform: translateY(0);}/* Three-dot menu should have higher z-index */.dropdown {    z-index: 10000 !important;}.dropdown-content {    z-index: 10 !important;}/* Specific styling for the three-dot menu dropdown */.dropdown.dropdown-end {    z-index: 10001 !important;    position: relative;}.dropdown.dropdown-end .dropdown-content {    z-index: 10001 !important;    position: absolute;    top: 100%;    right: 0;    margin-top: 0.5rem;    background: white;    border-radius: 8px;
+}
+
+/* Hide drawer overlay on desktop to ensure sidebar remains visible and clickable */
+@media (min-width: 1024px) {
+    .drawer .drawer-overlay {
+        display: none !important;
+    }
+}

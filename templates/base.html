@@ -124,6 +124,12 @@
                 z-index: 99999 !important;
                 position: relative !important;
             }
+            
+            /* Hide overlay on desktop so sidebar is accessible */
+            .drawer-overlay {
+                display: none !important;
+                pointer-events: none !important;
+            }
         }
     </style>
     {% block extra_head %}{% endblock %}
@@ -140,7 +146,9 @@
             <!-- page content -->
             {% endblock %}
         </div>
+        {% block sidebar %}
         {% include 'components/_sidebar.html' %}
+        {% endblock %}
     </div>  <!-- close drawer -->
     
     <!-- Edit Contact Modal -->

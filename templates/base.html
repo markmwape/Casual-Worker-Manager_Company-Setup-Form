@@ -93,6 +93,13 @@
         .btn {
             margin: 0.5rem;
         }
+        
+        /* Ensure hamburger menu is hidden on desktop */
+        @media (min-width: 1024px) {
+            .drawer-button.lg\:hidden {
+                display: none !important;
+            }
+        }
     </style>
     {% block extra_head %}{% endblock %}
 </head>

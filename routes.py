@@ -61,40 +61,72 @@ def get_user_workspaces():
         data = request.get_json()
         logging.info(f"Get user workspaces request data: {data}")
         
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+        
         email = data.get('email', '').strip().lower()
         
         if not email:
             return jsonify({"error": "Email is required"}), 400
         
-        # Find user by email
-        user = User.query.filter_by(email=email).first()
-        if not user:
-            return jsonify({"error": "No account found with this email address"}), 404
+        # Enhanced email validation
+        import re
+        email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        if not re.match(email_pattern, email):
+            return jsonify({"error": "Please enter a valid email address"}), 400
         
-        # Get all workspaces this user has access to
-        user_workspaces = UserWorkspace.query.filter_by(user_id=user.id).all()
+        # Find user by email with error handling
+        try:
+            user = User.query.filter_by(email=email).first()
+        except Exception as db_error:
+            logging.error(f"Database error when searching for user: {str(db_error)}")
+            return jsonify({"error": "Database error occurred"}), 500
+            
+        if not user:
+            return jsonify({"error": "No account found with this email address. Please check your email or create a new account."}), 404
+        
+        # Get all workspaces this user has access to with error handling
+        try:
+            user_workspaces = UserWorkspace.query.filter_by(user_id=user.id).all()
+        except Exception as db_error:
+            logging.error(f"Database error when searching for user workspaces: {str(db_error)}")
+            return jsonify({"error": "Database error occurred"}), 500
         
         if not user_workspaces:
-            return jsonify({"error": "No workspaces found for this email address"}), 404
+            return jsonify({"error": "No workspaces found for this email address. You may need to join a workspace first."}), 404
         
         workspaces_data = []
         for uw in user_workspaces:
             workspace = uw.workspace
             if workspace:
-                workspaces_data.append({
+                workspace_info = {
                     "id": workspace.id,
                     "name": workspace.name,
                     "code": workspace.workspace_code,
                     "role": uw.role,
                     "country": workspace.country,
                     "industry": workspace.industry_type,
-                    "created_at": workspace.created_at.strftime('%Y-%m-%d') if workspace.created_at else None
-                })
+                    "created_at": workspace.created_at.strftime('%Y-%m-%d') if workspace.created_at else None,
+                    "subscription_status": workspace.subscription_status or 'trial',
+                    "subscription_tier": workspace.subscription_tier or 'trial'
+                }
+                
+                # Add trial information if applicable
+                if workspace.trial_end_date:
+                    from datetime import datetime
+                    days_left = (workspace.trial_end_date - datetime.utcnow()).days
+                    workspace_info["trial_days_left"] = max(0, days_left)
+                    workspace_info["is_trial_active"] = days_left > 0
+                
+                workspaces_data.append(workspace_info)
+        
+        logging.info(f"Found {len(workspaces_data)} workspaces for user {email}")
         
         return jsonify({
             "success": True,
             "workspaces": workspaces_data,
-            "user_email": email
+            "user_email": email,
+            "user_id": user.id
         }), 200
         
     except Exception as e:
@@ -102,7 +134,7 @@ def get_user_workspaces():
         logging.error(f"Exception type: {type(e)}")
         import traceback
         logging.error(f"Traceback: {traceback.format_exc()}")
-        return jsonify({"error": "Failed to retrieve workspaces"}), 500
+        return jsonify({"error": "Failed to retrieve workspaces. Please try again later."}), 500
 
 @app.route('/api/send-workspace-email', methods=['POST'])
 def send_workspace_email():
@@ -191,23 +223,42 @@ def join_workspace():
     db.create_all()
     try:
         data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+            
         logging.info(f"Join workspace request data: {data}")
         
         workspace_code = data.get('workspace_code', '').strip().upper()
         logging.info(f"Looking for workspace with code: {workspace_code}")
         
-        if not workspace_code or len(workspace_code) != 16:
-            logging.warning(f"Invalid workspace code format: {workspace_code}")
-            return jsonify({"error": "Invalid workspace code"}), 400
+        # Enhanced validation
+        if not workspace_code:
+            return jsonify({"error": "Workspace code is required"}), 400
         
-        # Find workspace by code
-        workspace = Workspace.query.filter_by(workspace_code=workspace_code).first()
+        if len(workspace_code) != 16:
+            return jsonify({"error": "Workspace code must be exactly 16 characters"}), 400
+            
+        if not workspace_code.replace(' ', '').isalnum():
+            return jsonify({"error": "Workspace code contains invalid characters"}), 400
+        
+        # Find workspace by code with better error handling
+        try:
+            workspace = Workspace.query.filter_by(workspace_code=workspace_code).first()
+        except Exception as db_error:
+            logging.error(f"Database error when searching for workspace: {str(db_error)}")
+            return jsonify({"error": "Database error occurred"}), 500
+            
         if not workspace:
             logging.warning(f"Workspace not found for code: {workspace_code}")
-            # Log all existing workspace codes for debugging
-            all_workspaces = Workspace.query.all()
-            logging.info(f"Available workspace codes: {[ws.workspace_code for ws in all_workspaces]}")
-            return jsonify({"error": "Workspace not found"}), 404
+            # Security: Don't reveal all workspace codes in production
+            if app.debug:
+                all_workspaces = Workspace.query.all()
+                logging.info(f"Available workspace codes: {[ws.workspace_code for ws in all_workspaces]}")
+            return jsonify({"error": "Invalid workspace code. Please check and try again."}), 404
+        
+        # Check if workspace is active (if we add status field later)
+        if hasattr(workspace, 'status') and workspace.status != 'active':
+            return jsonify({"error": "This workspace is currently inactive"}), 403
         
         logging.info(f"Found workspace: {workspace.name} (ID: {workspace.id})")
         
@@ -217,7 +268,9 @@ def join_workspace():
                 "id": workspace.id,
                 "name": workspace.name,
                 "code": workspace.workspace_code,
-                "address": workspace.address
+                "address": workspace.address or "",
+                "country": workspace.country,
+                "industry": workspace.industry_type
             }
         }), 200
         
@@ -226,7 +279,7 @@ def join_workspace():
         logging.error(f"Exception type: {type(e)}")
         import traceback
         logging.error(f"Traceback: {traceback.format_exc()}")
-        return jsonify({"error": "Failed to join workspace"}), 500
+        return jsonify({"error": "Failed to join workspace. Please try again later."}), 500
 
 @app.route('/api/workspace/create', methods=['POST'])
 def create_workspace():
@@ -251,8 +304,12 @@ def create_workspace():
             # Try to continue anyway - maybe the database will work for actual operations
         
         data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+            
         logging.info(f"Received workspace creation data: {data}")
         
+        # Enhanced data validation
         company_name = data.get('company_name', '').strip()
         country = data.get('country', '').strip()
         industry_type = data.get('industry_type', '').strip()
@@ -273,16 +330,32 @@ def create_workspace():
         if missing_fields:
             return jsonify({"error": f"Missing required fields: {', '.join(missing_fields)}"}), 400
         
+        # Enhanced validation
+        if len(company_name) < 2:
+            return jsonify({"error": "Company name must be at least 2 characters"}), 400
+        if len(company_name) > 100:
+            return jsonify({"error": "Company name cannot exceed 100 characters"}), 400
+            
         # Validate email format
         import re
         email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
         if not re.match(email_pattern, company_email):
-            return jsonify({"error": "Invalid email format"}), 400
+            return jsonify({"error": "Please enter a valid email address"}), 400
+            
+        # Validate phone format (basic validation)
+        phone_pattern = r'^[\+]?[1-9][\d]{0,15}$'
+        clean_phone = re.sub(r'[\s\-\(\)]', '', company_phone)
+        if not re.match(phone_pattern, clean_phone):
+            return jsonify({"error": "Please enter a valid phone number"}), 400
         
         # Validate expected workers format (if provided)
         valid_worker_ranges = ['below_100', '100_250', '251_500', '501_1000', 'above_1000', 'not_specified']
         if expected_workers not in valid_worker_ranges:
             expected_workers = 'not_specified'
+        
+        # Check for duplicate company names (optional warning, not blocking)
+        existing_workspace = Workspace.query.filter_by(name=company_name).first()
+        workspace_exists_warning = bool(existing_workspace)
         
         # Store workspace creation data in session for completion during sign-in
         # No system user needed - workspace will be created when admin signs in
@@ -301,7 +374,7 @@ def create_workspace():
         temp_code = ''.join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(16))
         
         # Return the workspace data for frontend to store
-        return jsonify({
+        response_data = {
             "success": True,
             "workspace": {
                 "temp_code": temp_code,
@@ -313,7 +386,12 @@ def create_workspace():
                 "company_email": company_email
             },
             "deferred_creation": True
-        }), 200
+        }
+        
+        if workspace_exists_warning:
+            response_data["warning"] = "A workspace with this name already exists"
+        
+        return jsonify(response_data), 200
         
     except Exception as e:
         logging.error(f"Error creating workspace: {str(e)}")
@@ -321,7 +399,7 @@ def create_workspace():
         import traceback
         logging.error(f"Traceback: {traceback.format_exc()}")
         db.session.rollback()
-        return jsonify({"error": "Failed to create workspace"}), 500
+        return jsonify({"error": "Failed to create workspace. Please try again later."}), 500
 
 @app.route('/set_session', methods=['POST'])
 def set_session():
@@ -333,168 +411,191 @@ def set_session():
             logging.error("No user data received")
             return jsonify({"error": "No user data provided"}), 400
         
-        # Extract email from user data
+        # Extract email from user data with better validation
         email = user_data.get('email') or user_data.get('user_email')
         if not email:
             logging.error("No email found in user data")
-            return jsonify({"error": "No email provided"}), 400
+            return jsonify({"error": "Email is required"}), 400
+        
+        # Validate email format
+        import re
+        email_pattern = r'^[^\s@]+@[^\s@]+\.[^\s@]+$'
+        if not re.match(email_pattern, email):
+            logging.error(f"Invalid email format: {email}")
+            return jsonify({"error": "Invalid email format"}), 400
         
         # Get workspace data if available
         workspace_data = user_data.get('workspace_data')
         
+        # Set user session with enhanced data
         session['user'] = {
             'user_email': email,
             'display_name': user_data.get('displayName', ''),
             'photo_url': user_data.get('photoURL', ''),
-            'uid': user_data.get('uid')
+            'uid': user_data.get('uid'),
+            'last_login': datetime.utcnow().isoformat()
         }
 
-        # Create or update user in database
-        with app.app_context():
-            user = User.query.filter_by(email=email).first()
-            if not user:
-                user = User(email=email, profile_picture=user_data.get('photoURL', ''))
-                db.session.add(user)
-                db.session.commit()
-                logging.info(f"Created new user: {email}")
-            
-            # Handle workspace assignment if workspace data is provided
-            if workspace_data:
-                logging.info(f"Processing workspace_data: {workspace_data}")
-                # Check if this is a deferred workspace creation (new workspace)
-                if workspace_data.get('deferred_creation') or workspace_data.get('temp_code'):
-                    # Create the workspace now with the actual admin user
-                    workspace = Workspace(
-                        name=workspace_data.get('company_name') or workspace_data.get('name'),
-                        country=workspace_data.get('country'),
-                        industry_type=workspace_data.get('industry_type'),
-                        expected_workers_string=workspace_data.get('expected_workers_string', 'not_specified'),
-                        expected_workers=0,
-                        company_phone=workspace_data.get('company_phone'),
-                        company_email=workspace_data.get('company_email'),
-                        address="",
-                        created_by=user.id  # Admin user is the creator
+        # Create or update user in database with transaction safety
+        try:
+            with app.app_context():
+                user = User.query.filter_by(email=email).first()
+                if not user:
+                    user = User(
+                        email=email, 
+                        profile_picture=user_data.get('photoURL', '')
                     )
-                    
-                    db.session.add(workspace)
-                    db.session.flush()  # Get the workspace ID
-                    
-                    # Create a company for this workspace
-                    company = Company(
-                        name=workspace_data.get('company_name') or workspace_data.get('name'),
-                        registration_number="",
-                        address="",
-                        industry=workspace_data.get('industry_type'),
-                        phone=workspace_data.get('company_phone'),
-                        created_by=user.id,
-                        workspace_id=workspace.id
-                    )
-                    db.session.add(company)
-                    
-                    # Add admin user to workspace
-                    user_workspace = UserWorkspace(
-                        user_id=user.id,
-                        workspace_id=workspace.id,
-                        role='Admin'
-                    )
-                    db.session.add(user_workspace)
-                    db.session.commit()
-                    
-                    # Activity logging removed for now
-                    
-                    logging.info(f"Created new workspace {workspace.name} with admin {email}")
-                    
-                elif workspace_data.get('id'):
-                    # Existing workspace
-                    workspace = Workspace.query.get(workspace_data['id'])
-                    logging.info(f"Found workspace for ID {workspace_data['id']}: {workspace.name if workspace else 'None'}")
-                    
-                    if workspace:
-                        # Check if user is already in this workspace
-                        user_workspace = UserWorkspace.query.filter_by(
-                            user_id=user.id, 
-                            workspace_id=workspace.id
-                        ).first()
-                        
-                        logging.info(f"Session setting - User ID: {user.id}, Workspace ID: {workspace.id}, Workspace created_by: {workspace.created_by}")
-                        logging.info(f"Session setting - Existing UserWorkspace: {user_workspace.role if user_workspace else 'None'}")
-                        
-                        if not user_workspace:
-                            # Check if user is the workspace creator (admin)
-                            if workspace.created_by == user.id:
-                                # Workspace creator gets admin access
-                                role = 'Admin'
-                                user_workspace = UserWorkspace(
-                                    user_id=user.id,
-                                    workspace_id=workspace.id,
-                                    role=role
-                                )
-                                db.session.add(user_workspace)
-                                db.session.commit()
-                                logging.info(f"Added workspace creator {email} to workspace {workspace.name} with role {role}")
-                            else:
-                                # This should not happen if user was found via /api/user/workspaces
-                                logging.error(f"CRITICAL: User {email} (ID: {user.id}) found via /api/user/workspaces but no UserWorkspace relationship exists for workspace {workspace.name} (ID: {workspace.id})")
-                                
-                                # Let's check if there are any UserWorkspace records for this user
-                                all_user_workspaces = UserWorkspace.query.filter_by(user_id=user.id).all()
-                                logging.error(f"All UserWorkspace records for user {user.id}: {[(uw.workspace_id, uw.role) for uw in all_user_workspaces]}")
-                                
-                                # For now, let's be permissive and create the relationship
-                                user_workspace = UserWorkspace(
-                                    user_id=user.id,
-                                    workspace_id=workspace.id,
-                                    role='Member'
-                                )
-                                db.session.add(user_workspace)
-                                db.session.commit()
-                                logging.info(f"Created missing UserWorkspace relationship for {email} to workspace {workspace.name}")
-                        else:
-                            logging.info(f"User {email} already has access to workspace {workspace.name} with role {user_workspace.role}")
-                    else:
-                        logging.error(f"Workspace not found for ID: {workspace_data['id']}")
+                    db.session.add(user)
+                    db.session.flush()  # Get the ID without committing
+                    logging.info(f"Created new user: {email}")
                 else:
-                    logging.error("Invalid workspace data provided")
-                    return jsonify({"error": "Invalid workspace data"}), 400
-            
-            # Set workspace info in session if we have a workspace
-            if 'workspace' in locals() and workspace:
-                logging.info(f"Setting current_workspace in session: {workspace.name} (ID: {workspace.id})")
-                session['current_workspace'] = {
-                    'id': workspace.id,
-                    'name': workspace.name,
-                    'code': workspace.workspace_code,
-                    'role': user_workspace.role if user_workspace else 'Admin',
-                    'company_email': workspace.company_email,
-                    'company_phone': workspace.company_phone
-                }
-            else:
-                logging.warning(f"No workspace variable found in locals. locals() keys: {list(locals().keys())}")
+                    # Update profile picture if changed
+                    if user.profile_picture != user_data.get('photoURL', ''):
+                        user.profile_picture = user_data.get('photoURL', '')
+                        logging.info(f"Updated profile picture for user: {email}")
+                
+                # Handle workspace assignment if workspace data is provided
                 if workspace_data:
-                    logging.warning(f"workspace_data was provided but no workspace variable was created")
+                    logging.info(f"Processing workspace_data: {workspace_data}")
+                    
+                    # Check if this is a deferred workspace creation (new workspace)
+                    if workspace_data.get('deferred_creation') or workspace_data.get('temp_code'):
+                        # Create the workspace now with the actual admin user
+                        workspace = Workspace(
+                            name=workspace_data.get('company_name') or workspace_data.get('name'),
+                            country=workspace_data.get('country'),
+                            industry_type=workspace_data.get('industry_type'),
+                            expected_workers_string=workspace_data.get('expected_workers_string', 'not_specified'),
+                            expected_workers=0,
+                            company_phone=workspace_data.get('company_phone'),
+                            company_email=workspace_data.get('company_email'),
+                            address=workspace_data.get('address', ''),
+                            created_by=user.id  # Admin user is the creator
+                        )
+                        
+                        db.session.add(workspace)
+                        db.session.flush()  # Get the workspace ID
+                        
+                        # Create a company for this workspace
+                        company = Company(
+                            name=workspace_data.get('company_name') or workspace_data.get('name'),
+                            registration_number=workspace_data.get('registration_number', ''),
+                            address=workspace_data.get('address', ''),
+                            industry=workspace_data.get('industry_type'),
+                            phone=workspace_data.get('company_phone'),
+                            created_by=user.id,
+                            workspace_id=workspace.id
+                        )
+                        db.session.add(company)
+                        
+                        # Add admin user to workspace
+                        user_workspace = UserWorkspace(
+                            user_id=user.id,
+                            workspace_id=workspace.id,
+                            role='Admin'
+                        )
+                        db.session.add(user_workspace)
+                        
+                        logging.info(f"Created new workspace {workspace.name} with admin {email}")
+                        
+                    elif workspace_data.get('id'):
+                        # Existing workspace
+                        workspace = Workspace.query.get(workspace_data['id'])
+                        logging.info(f"Found workspace for ID {workspace_data['id']}: {workspace.name if workspace else 'None'}")
+                        
+                        if workspace:
+                            # Check if user is already in this workspace
+                            user_workspace = UserWorkspace.query.filter_by(
+                                user_id=user.id, 
+                                workspace_id=workspace.id
+                            ).first()
+                            
+                            logging.info(f"Session setting - User ID: {user.id}, Workspace ID: {workspace.id}, Workspace created_by: {workspace.created_by}")
+                            logging.info(f"Session setting - Existing UserWorkspace: {user_workspace.role if user_workspace else 'None'}")
+                            
+                            if not user_workspace:
+                                # Check if user is the workspace creator (admin)
+                                if workspace.created_by == user.id:
+                                    # Workspace creator gets admin access
+                                    role = 'Admin'
+                                    user_workspace = UserWorkspace(
+                                        user_id=user.id,
+                                        workspace_id=workspace.id,
+                                        role=role
+                                    )
+                                    db.session.add(user_workspace)
+                                    logging.info(f"Added workspace creator {email} to workspace {workspace.name} with role {role}")
+                                else:
+                                    # This should not happen if user was found via /api/user/workspaces
+                                    logging.error(f"CRITICAL: User {email} (ID: {user.id}) found via /api/user/workspaces but no UserWorkspace relationship exists for workspace {workspace.name} (ID: {workspace.id})")
+                                    
+                                    # Let's check if there are any UserWorkspace records for this user
+                                    all_user_workspaces = UserWorkspace.query.filter_by(user_id=user.id).all()
+                                    logging.error(f"All UserWorkspace records for user {user.id}: {[(uw.workspace_id, uw.role) for uw in all_user_workspaces]}")
+                                    
+                                    # For now, let's be permissive and create the relationship
+                                    user_workspace = UserWorkspace(
+                                        user_id=user.id,
+                                        workspace_id=workspace.id,
+                                        role='Member'
+                                    )
+                                    db.session.add(user_workspace)
+                                    logging.info(f"Created missing UserWorkspace relationship for {email} to workspace {workspace.name}")
+                            else:
+                                logging.info(f"User {email} already has access to workspace {workspace.name} with role {user_workspace.role}")
+                        else:
+                            logging.error(f"Workspace not found for ID: {workspace_data['id']}")
+                            return jsonify({"error": "Workspace not found"}), 404
+                    else:
+                        logging.error("Invalid workspace data provided")
+                        return jsonify({"error": "Invalid workspace data"}), 400
                 
-                # Activity logging removed for now
+                # Commit all changes together
+                db.session.commit()
                 
-                # Ensure a company exists for this workspace
-                existing_company = Company.query.filter_by(workspace_id=workspace.id).first()
-                if not existing_company:
-                    # Create a company for this workspace
-                    new_company = Company(
-                        name=workspace.name,
-                        registration_number="",
-                        address="",
-                        industry=workspace.industry_type,
-                        phone=workspace.company_phone,
-                        created_by=user.id,
-                        workspace_id=workspace.id
-                    )
-                    db.session.add(new_company)
-                    db.session.commit()
-                    logging.info(f"Created company for existing workspace: {workspace.name}")
+                # Set workspace info in session if we have a workspace
+                if 'workspace' in locals() and workspace:
+                    logging.info(f"Setting current_workspace in session: {workspace.name} (ID: {workspace.id})")
+                    session['current_workspace'] = {
+                        'id': workspace.id,
+                        'name': workspace.name,
+                        'code': workspace.workspace_code,
+                        'role': user_workspace.role if user_workspace else 'Admin',
+                        'company_email': workspace.company_email,
+                        'company_phone': workspace.company_phone
+                    }
+                    
+                    # Ensure a company exists for this workspace
+                    if not Company.query.filter_by(workspace_id=workspace.id).first():
+                        # Create a company for this workspace
+                        new_company = Company(
+                            name=workspace.name,
+                            registration_number="",
+                            address="",
+                            industry=workspace.industry_type,
+                            phone=workspace.company_phone,
+                            created_by=user.id,
+                            workspace_id=workspace.id
+                        )
+                        db.session.add(new_company)
+                        db.session.commit()
+                        logging.info(f"Created company for workspace: {workspace.name}")
+                else:
+                    logging.warning(f"No workspace variable found in locals. locals() keys: {list(locals().keys())}")
+                    if workspace_data:
+                        logging.warning(f"workspace_data was provided but no workspace variable was created")
+
+        except Exception as db_error:
+            logging.error(f"Database error in set_session: {str(db_error)}")
+            import traceback
+            logging.error(f"Traceback: {traceback.format_exc()}")
+            db.session.rollback()
+            return jsonify({"error": "Database error occurred"}), 500
 
         logging.info(f"Session set successfully: {session['user']}")
         logging.info(f"Session keys: {list(session.keys())}")
         return jsonify({"status": "success"}), 200
+        
     except Exception as e:
         logging.error(f"Error setting session: {str(e)}")
         logging.error(f"Exception type: {type(e)}")
@@ -1103,10 +1204,48 @@ def get_time_ago(date_time):
         return "Just now"
 logger = logging.getLogger(__name__)
 
+@app.errorhandler(400)
+def bad_request(error):
+    logger.error(f"400 error: {str(error)}")
+    if request.path.startswith('/api/'):
+        return jsonify({'error': 'Bad request'}), 400
+    return render_template('400.html'), 400
+
+@app.errorhandler(403)
+def forbidden(error):
+    logger.error(f"403 error: {str(error)}")
+    if request.path.startswith('/api/'):
+        return jsonify({'error': 'Access forbidden'}), 403
+    return render_template('403.html'), 403
+
+@app.errorhandler(404)
+def not_found(error):
+    logger.error(f"404 error: {str(error)}")
+    if request.path.startswith('/api/'):
+        return jsonify({'error': 'Resource not found'}), 404
+    return render_template('404.html'), 404
+
+@app.errorhandler(429)
+def rate_limit_exceeded(error):
+    logger.error(f"429 error: {str(error)}")
+    if request.path.startswith('/api/'):
+        return jsonify({'error': 'Rate limit exceeded. Please try again later.'}), 429
+    return render_template('429.html'), 429
+
 @app.errorhandler(500)
 def internal_server_error(error):
     logger.error(f"500 error: {str(error)}\n{traceback.format_exc()}")
+    db.session.rollback()  # Rollback any pending transactions
+    if request.path.startswith('/api/'):
+        return jsonify({'error': 'Internal server error. Please try again later.'}), 500
     return render_template('500.html'), 500
+
+@app.errorhandler(503)
+def service_unavailable(error):
+    logger.error(f"503 error: {str(error)}")
+    if request.path.startswith('/api/'):
+        return jsonify({'error': 'Service temporarily unavailable. Please try again later.'}), 503
+    return render_template('503.html'), 503
 
 @app.route("/")
 def landing_route():
@@ -1141,62 +1280,176 @@ def create_worker():
     try:
         data = request.get_json()
         
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+        
         # Get current company from workspace
         company = get_current_company()
         
         if not company:
             return jsonify({'error': 'Company not found'}), 404
         
-        # Handle date_of_birth
+        # Enhanced validation
+        first_name = data.get('first_name', '').strip()
+        last_name = data.get('last_name', '').strip()
+        
+        if not first_name and not last_name:
+            return jsonify({'error': 'At least first name or last name is required'}), 400
+        
+        if first_name and len(first_name) > 50:
+            return jsonify({'error': 'First name cannot exceed 50 characters'}), 400
+            
+        if last_name and len(last_name) > 50:
+            return jsonify({'error': 'Last name cannot exceed 50 characters'}), 400
+        
+        # Handle date_of_birth with better validation
         date_of_birth = None
         if data.get('date_of_birth'):
             try:
-                date_of_birth = datetime.strptime(data['date_of_birth'], '%Y-%m-%d').date()
-            except ValueError:
-                pass  # Keep date_of_birth as None if invalid format
+                from datetime import datetime, date
+                parsed_date = datetime.strptime(data['date_of_birth'], '%Y-%m-%d').date()
                 
+                # Validate age constraints (reasonable age range)
+                today = date.today()
+                age = today.year - parsed_date.year - ((today.month, today.day) < (parsed_date.month, parsed_date.day))
+                
+                if age < 16:
+                    return jsonify({'error': 'Worker must be at least 16 years old'}), 400
+                if age > 80:
+                    return jsonify({'error': 'Worker age cannot exceed 80 years'}), 400
+                    
+                date_of_birth = parsed_date
+            except ValueError:
+                return jsonify({'error': 'Invalid date format. Please use YYYY-MM-DD'}), 400
+        
+        # Check for duplicate workers (same first name, last name, and date of birth)
+        existing_worker = None
+        if first_name and last_name and date_of_birth:
+            existing_worker = Worker.query.filter_by(
+                company_id=company.id,
+                first_name=first_name,
+                last_name=last_name,
+                date_of_birth=date_of_birth
+            ).first()
+        elif first_name and last_name:
+            existing_worker = Worker.query.filter_by(
+                company_id=company.id,
+                first_name=first_name,
+                last_name=last_name
+            ).first()
+        
+        if existing_worker:
+            return jsonify({'error': 'A worker with the same name and details already exists'}), 409
+                
+        # Create new worker
         new_worker = Worker(
-            first_name=data.get('first_name', ''),
-            last_name=data.get('last_name', ''),
+            first_name=first_name,
+            last_name=last_name,
             date_of_birth=date_of_birth,
             company_id=company.id
         )
+        
         db.session.add(new_worker)
         db.session.flush()  # Ensure new_worker.id is available
-        # Handle custom fields
+        
+        # Handle custom fields with validation
         import_fields = ImportField.query.filter_by(company_id=company.id).all()
+        custom_field_errors = []
+        
         for field in import_fields:
             if field.name in data:
+                field_value = str(data[field.name]).strip()
+                
+                # Validate field value based on type
+                if field.field_type == 'email' and field_value:
+                    import re
+                    email_pattern = r'^[^\s@]+@[^\s@]+\.[^\s@]+$'
+                    if not re.match(email_pattern, field_value):
+                        custom_field_errors.append(f'{field.name} must be a valid email address')
+                        continue
+                
+                if field.field_type == 'number' and field_value:
+                    try:
+                        float(field_value)
+                    except ValueError:
+                        custom_field_errors.append(f'{field.name} must be a valid number')
+                        continue
+                
+                if field.field_type == 'phone' and field_value:
+                    clean_phone = re.sub(r'[\s\-\(\)]', '', field_value)
+                    if not re.match(r'^[\+]?[1-9][\d]{0,15}$', clean_phone):
+                        custom_field_errors.append(f'{field.name} must be a valid phone number')
+                        continue
+                
+                # Check field value length
+                if len(field_value) > 255:
+                    custom_field_errors.append(f'{field.name} cannot exceed 255 characters')
+                    continue
+                
                 custom_value = WorkerCustomFieldValue(
                     worker_id=new_worker.id,
                     custom_field_id=field.id,
-                    value=data[field.name]
+                    value=field_value
                 )
                 db.session.add(custom_value)
         
+        # If there are custom field errors, rollback and return errors
+        if custom_field_errors:
+            db.session.rollback()
+            return jsonify({'error': '; '.join(custom_field_errors)}), 400
+        
         db.session.commit()
         
-        # Activity logging removed for now
         worker_name = f"{new_worker.first_name} {new_worker.last_name}".strip()
+        if not worker_name:
+            worker_name = "New Worker"
         
-        return jsonify({'message': 'Worker added successfully'}), 201
+        logging.info(f"Successfully created worker: {worker_name} (ID: {new_worker.id})")
+        
+        return jsonify({
+            'message': 'Worker added successfully',
+            'worker': {
+                'id': new_worker.id,
+                'name': worker_name,
+                'first_name': new_worker.first_name,
+                'last_name': new_worker.last_name,
+                'date_of_birth': new_worker.date_of_birth.isoformat() if new_worker.date_of_birth else None
+            }
+        }), 201
         
     except Exception as e:
         logging.error(f"Error creating worker: {str(e)}")
+        import traceback
+        logging.error(f"Traceback: {traceback.format_exc()}")
         db.session.rollback()
-        return jsonify({'error': 'Failed to add worker'}), 500
+        return jsonify({'error': 'Failed to add worker. Please try again.'}), 500
 
 @app.route("/api/task", methods=['POST'])
 @subscription_required
 def create_task():
     try:
         data = request.get_json()
+        
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+            
         logging.info(f"Received task creation data: {data}")
         
-        # Validate required fields
-        if not data.get('name'):
+        # Enhanced validation
+        task_name = data.get('name', '').strip()
+        if not task_name:
             return jsonify({'error': 'Task name is required'}), 400
-        if not data.get('start_date'):
+        if len(task_name) < 3:
+            return jsonify({'error': 'Task name must be at least 3 characters'}), 400
+        if len(task_name) > 100:
+            return jsonify({'error': 'Task name cannot exceed 100 characters'}), 400
+            
+        description = data.get('description', '').strip()
+        if len(description) > 1000:
+            return jsonify({'error': 'Task description cannot exceed 1000 characters'}), 400
+        
+        start_date_str = data.get('start_date')
+        if not start_date_str:
             return jsonify({'error': 'Start date is required'}), 400
         
         # Get current company from workspace
@@ -1205,52 +1458,127 @@ def create_task():
         if not company:
             logging.error(f"Company not found for current workspace")
             return jsonify({'error': 'Company not found'}), 404
+            
+        # Parse and validate start date
         try:
-            # Parse start date
-            start_date = datetime.fromisoformat(data['start_date'])
+            start_date = datetime.fromisoformat(start_date_str.replace('Z', '+00:00'))
+            # Convert to local datetime if needed
+            if start_date.tzinfo:
+                start_date = start_date.replace(tzinfo=None)
         except ValueError as e:
-            logging.error(f"Invalid date format: {data['start_date']}")
-            return jsonify({'error': 'Invalid date format. Use YYYY-MM-DD'}), 400
-        # Date validation: start date cannot be in the past
-        today = datetime.now().date()
-        if start_date.date() < today:
+            logging.error(f"Invalid date format: {start_date_str}")
+            return jsonify({'error': 'Invalid date format. Please use a valid ISO date format'}), 400
+        
+        # Enhanced date validation
+        from datetime import datetime, timedelta
+        now = datetime.now()
+        today = now.date()
+        start_date_only = start_date.date()
+        
+        # Allow creating tasks for today and future dates
+        if start_date_only < today:
             return jsonify({'error': 'Start date cannot be in the past.'}), 400
+        
+        # Prevent creating tasks too far in the future (1 year limit)
+        max_future_date = today + timedelta(days=365)
+        if start_date_only > max_future_date:
+            return jsonify({'error': 'Start date cannot be more than 1 year in the future.'}), 400
+        
+        # Validate payment information
+        payment_type = data.get('payment_type', 'per_day')
+        if payment_type not in ['per_day', 'per_part']:
+            return jsonify({'error': 'Payment type must be either "per_day" or "per_part"'}), 400
+        
+        per_part_payout = None
+        per_part_currency = None
+        per_day_payout = None
+        per_day_currency = None
+        
+        if payment_type == 'per_part':
+            per_part_payout = data.get('per_part_payout')
+            per_part_currency = data.get('per_part_currency', 'USD')
+            
+            if per_part_payout is not None:
+                try:
+                    per_part_payout = float(per_part_payout)
+                    if per_part_payout < 0:
+                        return jsonify({'error': 'Per part payout cannot be negative'}), 400
+                    if per_part_payout > 10000:
+                        return jsonify({'error': 'Per part payout cannot exceed 10,000'}), 400
+                except (ValueError, TypeError):
+                    return jsonify({'error': 'Per part payout must be a valid number'}), 400
+        
+        if payment_type == 'per_day':
+            per_day_payout = data.get('per_day_payout')
+            per_day_currency = data.get('per_day_currency', 'USD')
+            
+            if per_day_payout is not None:
+                try:
+                    per_day_payout = float(per_day_payout)
+                    if per_day_payout < 0:
+                        return jsonify({'error': 'Per day payout cannot be negative'}), 400
+                    if per_day_payout > 10000:
+                        return jsonify({'error': 'Per day payout cannot exceed 10,000'}), 400
+                except (ValueError, TypeError):
+                    return jsonify({'error': 'Per day payout must be a valid number'}), 400
+        
         # Set status based on date
         status = data.get('status', 'Pending')
-        if start_date.date() == today:
+        if start_date_only == today:
             status = 'In Progress'
-        elif start_date.date() > today:
+        elif start_date_only > today:
             status = 'Pending'
+        
+        # Check for duplicate task names (optional warning)
+        existing_task = Task.query.filter_by(
+            name=task_name, 
+            company_id=company.id
+        ).first()
+        
+        task_exists_warning = bool(existing_task)
+        
         # Create new task
         new_task = Task(
-            name=data['name'],
-            description=data.get('description', ''),
+            name=task_name,
+            description=description,
             start_date=start_date,
             company_id=company.id,
             status=status,
-            payment_type=data.get('payment_type', 'per_day'),
-            per_part_payout=data.get('per_part_payout'),
-            per_part_currency=data.get('per_part_currency'),
-            per_day_payout=data.get('per_day_payout'),
-            per_day_currency=data.get('per_day_currency')
+            payment_type=payment_type,
+            per_part_payout=per_part_payout,
+            per_part_currency=per_part_currency,
+            per_day_payout=per_day_payout,
+            per_day_currency=per_day_currency
         )
+        
         db.session.add(new_task)
         db.session.commit()
         
-        # Activity logging removed for now
+        logging.info(f"Successfully created task: {new_task.id} - {task_name}")
         
-        logging.info(f"Successfully created task: {new_task.id}")
-        
-        # Activity logging removed for now
-        
-        return jsonify({
+        response_data = {
             'message': 'Task created successfully',
-            'task_id': new_task.id
-        }), 201
+            'task': {
+                'id': new_task.id,
+                'name': new_task.name,
+                'description': new_task.description,
+                'status': new_task.status,
+                'start_date': new_task.start_date.isoformat(),
+                'payment_type': new_task.payment_type,
+                'per_part_payout': new_task.per_part_payout,
+                'per_day_payout': new_task.per_day_payout
+            }
+        }
+        
+        if task_exists_warning:
+            response_data['warning'] = 'A task with this name already exists'
+        
+        return jsonify(response_data), 201
+        
     except Exception as e:
         logging.error(f"Error creating task: {str(e)}\n{traceback.format_exc()}")
         db.session.rollback()
-        return jsonify({'error': f'Failed to create task: {str(e)}'}), 500
+        return jsonify({'error': f'Failed to create task. Please try again.'}), 500
 
 @app.route("/api/company", methods=['POST'])
 def create_company():
@@ -1588,12 +1916,17 @@ def home_route():
             logging.info("User not authenticated, redirecting to signin")
             return redirect(url_for('signin_route'))
         
-        # Get current user and workspace
+        # Get current user and workspace with improved error handling
         user_email = session['user']['user_email']
-        user = User.query.filter_by(email=user_email).first()
+        try:
+            user = User.query.filter_by(email=user_email).first()
+        except Exception as db_error:
+            logging.error(f"Database error when fetching user: {str(db_error)}")
+            return render_template('500.html'), 500
         
         if not user:
             logging.error(f"User not found in database: {user_email}")
+            session.clear()  # Clear invalid session
             return redirect(url_for('signin_route'))
         
         if 'current_workspace' not in session:
@@ -1601,31 +1934,58 @@ def home_route():
             return redirect(url_for('workspace_selection_route'))
         
         workspace_id = session['current_workspace']['id']
-        workspace = Workspace.query.get(workspace_id)
+        try:
+            workspace = Workspace.query.get(workspace_id)
+        except Exception as db_error:
+            logging.error(f"Database error when fetching workspace: {str(db_error)}")
+            return render_template('500.html'), 500
         
         if not workspace:
             logging.error(f"Workspace not found: {workspace_id}")
             session.pop('current_workspace', None)
             return redirect(url_for('workspace_selection_route'))
         
-        # Check if user has access to this workspace
-        user_workspace = UserWorkspace.query.filter_by(
-            user_id=user.id,
-            workspace_id=workspace_id
-        ).first()
+        # Check if user has access to this workspace with improved error handling
+        try:
+            user_workspace = UserWorkspace.query.filter_by(
+                user_id=user.id,
+                workspace_id=workspace_id
+            ).first()
+        except Exception as db_error:
+            logging.error(f"Database error when checking workspace access: {str(db_error)}")
+            return render_template('500.html'), 500
         
         if not user_workspace:
             logging.error(f"User {user_email} does not have access to workspace {workspace_id}")
             session.pop('current_workspace', None)
             return redirect(url_for('workspace_selection_route'))
         
-        company = Company.query.filter_by(workspace_id=workspace_id).first()
+        # Get company with error handling
+        try:
+            company = Company.query.filter_by(workspace_id=workspace_id).first()
+        except Exception as db_error:
+            logging.error(f"Database error when fetching company: {str(db_error)}")
+            return render_template('500.html'), 500
 
         if not company:
-            return render_template('home.html', company=None, total_workers=0, total_tasks=0, team_members=[], all_fields=[])
+            return render_template('home.html', 
+                                 company=None, 
+                                 total_workers=0, 
+                                 total_tasks=0, 
+                                 team_members=[], 
+                                 all_fields=[],
+                                 subscription_info={'tier': 'trial', 'status': 'trial'},
+                                 usage_stats={'workers_used': 0, 'tasks_used': 0},
+                                 recent_activities=[],
+                                 activity_stats={})
 
-        # Get custom fields for add worker modal
-        custom_fields = ImportField.query.filter_by(company_id=company.id).all()
+        # Get custom fields for add worker modal with error handling
+        try:
+            custom_fields = ImportField.query.filter_by(company_id=company.id).all()
+        except Exception as db_error:
+            logging.error(f"Database error when fetching custom fields: {str(db_error)}")
+            custom_fields = []
+            
         default_fields = [
             {'name': 'First Name', 'type': 'text', 'id': 'first_name'},
             {'name': 'Last Name', 'type': 'text', 'id': 'last_name'},
@@ -1633,26 +1993,35 @@ def home_route():
         ]
         all_fields = default_fields + [{'name': field.name, 'type': field.field_type or 'text', 'id': field.id} for field in custom_fields]
 
-        # Calculate total workers for the company
-        total_workers = Worker.query.filter_by(company_id=company.id).count()
+        # Calculate statistics with error handling
+        try:
+            total_workers = Worker.query.filter_by(company_id=company.id).count()
+            total_tasks = Task.query.filter_by(company_id=company.id).count()
+        except Exception as db_error:
+            logging.error(f"Database error when calculating statistics: {str(db_error)}")
+            total_workers = 0
+            total_tasks = 0
 
-        # Calculate total tasks for the company
-        total_tasks = Task.query.filter_by(company_id=company.id).count()
+        # Get team members for this workspace with error handling
+        try:
+            user_workspaces = UserWorkspace.query.filter_by(workspace_id=workspace_id).all()
+            team_members = []
+            for uw in user_workspaces:
+                user_obj = User.query.get(uw.user_id)
+                if user_obj:
+                    team_members.append({
+                        'id': user_obj.id,
+                        'email': user_obj.email,
+                        'role': uw.role,
+                        'joined_at': uw.joined_at.strftime('%Y-%m-%d') if uw.joined_at else None
+                    })
+        except Exception as db_error:
+            logging.error(f"Database error when fetching team members: {str(db_error)}")
+            team_members = []
 
-        # Get team members for this workspace
-        user_workspaces = UserWorkspace.query.filter_by(workspace_id=workspace_id).all()
-        team_members = []
-        for uw in user_workspaces:
-            user_obj = User.query.get(uw.user_id)
-            if user_obj:
-                team_members.append({
-                    'id': user_obj.id,
-                    'email': user_obj.email,
-                    'role': uw.role
-                })
-
-        # Get subscription information
+        # Get subscription information with enhanced details
         from tier_config import get_tier_spec, format_price
+        from datetime import datetime
         
         subscription_info = {
             'tier': workspace.subscription_tier or 'trial',
@@ -1661,6 +2030,13 @@ def home_route():
             'subscription_end': workspace.subscription_end_date,
             'trial_end': workspace.trial_end_date
         }
+        
+        # Calculate trial status
+        if workspace.trial_end_date and workspace.subscription_status == 'trial':
+            days_left = (workspace.trial_end_date - datetime.utcnow()).days
+            subscription_info['trial_days_left'] = max(0, days_left)
+            subscription_info['is_trial_active'] = days_left > 0
+            subscription_info['trial_expired'] = days_left <= 0
         
         # Get tier details
         tier_spec = get_tier_spec(subscription_info['tier'])
@@ -1672,24 +2048,34 @@ def home_route():
             'features': tier_spec['features']
         })
         
-        # Calculate usage - simplified to focus on workers only
+        # Calculate usage statistics
         usage_stats = {
             'workers_used': total_workers,
             'workers_limit': tier_spec.get('worker_limit'),
             'tasks_used': total_tasks,
-            'tasks_limit': None  # Removed task limits since they're not the main differentiator
+            'tasks_limit': None,  # No task limits in current tier system
+            'workers_percentage': 0,
+            'storage_used': 0,  # Placeholder for future storage tracking
+            'storage_limit': tier_spec.get('storage_limit', 1000)  # MB
         }
+        
+        # Calculate usage percentages
+        if usage_stats['workers_limit']:
+            usage_stats['workers_percentage'] = min(100, (total_workers / usage_stats['workers_limit']) * 100)
 
-        # Activity logging removed for now
+        # Get recent activities (simplified for performance)
         recent_activities = []
-        activity_stats = {}
+        activity_stats = {
+            'total_activities': 0,
+            'activities_today': 0,
+            'activities_this_week': 0
+        }
 
         # Check if this is a subscription update success
         subscription_updated = request.args.get('subscription_updated', False)
         
         # Prevent repeated confetti - only show once per session
         if subscription_updated and subscription_updated != 'false':
-            # Mark as shown in session to prevent repeated displays
             session_key = f"subscription_success_shown_{workspace_id}"
             if not session.get(session_key, False):
                 session[session_key] = True
@@ -1698,6 +2084,35 @@ def home_route():
                 subscription_updated = False
         else:
             subscription_updated = False
+
+        # Prepare dashboard metrics
+        dashboard_metrics = {
+            'workers_growth': 0,  # Placeholder for future analytics
+            'tasks_completed_today': 0,
+            'attendance_rate': 0,
+            'recent_activity_count': len(recent_activities)
+        }
+
+        # Calculate attendance rate for today (if attendance data exists)
+        try:
+            from datetime import date
+            today = date.today()
+            total_attendance_today = Attendance.query.filter(
+                Attendance.company_id == company.id,
+                Attendance.date == today
+            ).count()
+            present_today = Attendance.query.filter(
+                Attendance.company_id == company.id,
+                Attendance.date == today,
+                Attendance.status == 'Present'
+            ).count()
+            
+            if total_attendance_today > 0:
+                dashboard_metrics['attendance_rate'] = round((present_today / total_attendance_today) * 100, 1)
+        except Exception as attendance_error:
+            logging.warning(f"Could not calculate attendance rate: {str(attendance_error)}")
+
+        logging.info(f"Home route completed successfully for user {user_email}, workspace {workspace.name}")
 
         return render_template('home.html', 
                              company=company, 
@@ -1708,8 +2123,10 @@ def home_route():
                              activity_stats=activity_stats,
                              subscription_info=subscription_info,
                              usage_stats=usage_stats,
+                             dashboard_metrics=dashboard_metrics,
                              subscription_updated=subscription_updated,
                              all_fields=all_fields)
+                             
     except Exception as e:
         logging.error(f"Error fetching home data: {str(e)}")
         import traceback

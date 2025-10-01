@@ -72,28 +72,8 @@ def init_database_safely():
             db.create_all()
             logging.info("✅ Database tables created successfully")
             
-            # Add missing columns if needed
-            from sqlalchemy import text
-            columns_to_add = [
-                ("subscription_tier", "VARCHAR(50)", "free"),
-                ("subscription_status", "VARCHAR(50)", "active"), 
-                ("trial_end_date", "DATETIME", None),
-                ("stripe_customer_id", "VARCHAR(255)", None),
-                ("stripe_subscription_id", "VARCHAR(255)", None)
-            ]
-            
-            for column_name, column_type, default_value in columns_to_add:
-                try:
-                    if default_value:
-                        sql = f"ALTER TABLE workspace ADD COLUMN IF NOT EXISTS {column_name} {column_type} DEFAULT '{default_value}'"
-                    else:
-                        sql = f"ALTER TABLE workspace ADD COLUMN IF NOT EXISTS {column_name} {column_type}"
-                    
-                    db.session.execute(text(sql))
-                    logging.info(f"✅ Added column {column_name} to workspace table")
-                except Exception as col_error:
-                    logging.info(f"Column {column_name} already exists or couldn't be added: {str(col_error)}")
-                    continue
+            # For SQLite, we don't need to manually add columns as they're handled by SQLAlchemy
+            # For PostgreSQL, we'd need migration handling
             
             try:
                 db.session.commit()
@@ -102,19 +82,32 @@ def init_database_safely():
                 db.session.rollback()
                 logging.warning(f"Database commit failed, rolling back: {str(commit_error)}")
 
-            # Automatically apply Alembic migrations
+            # Try to apply Alembic migrations if available
             try:
                 from alembic.config import Config
                 from alembic import command
-                alembic_cfg = Config(os.path.join(os.getcwd(), 'alembic.ini'))
-                command.upgrade(alembic_cfg, 'head')
-                logging.info("✅ Alembic migrations applied successfully")
+                import os
+                
+                # Check if alembic.ini exists
+                alembic_ini_path = os.path.join(os.getcwd(), 'alembic.ini')
+                if os.path.exists(alembic_ini_path):
+                    alembic_cfg = Config(alembic_ini_path)
+                    command.upgrade(alembic_cfg, 'head')
+                    logging.info("✅ Alembic migrations applied successfully")
+                else:
+                    logging.info("ℹ️ No alembic.ini found, skipping migrations")
+            except ImportError:
+                logging.info("ℹ️ Alembic not available, skipping migrations")
             except Exception as alembic_error:
-                logging.error(f"❌ Failed to apply Alembic migrations: {alembic_error}")
-                logging.error(traceback.format_exc())
+                logging.warning(f"⚠️ Alembic migrations failed (non-critical): {alembic_error}")
+                # Don't fail the app startup for migration issues
+                
     except Exception as e:
         logging.error(f"❌ Database initialization failed: {e}")
+        import traceback
+        logging.error(f"Traceback: {traceback.format_exc()}")
         logging.error("App will continue without database initialization")
+        # Don't raise the exception - let the app continue
 
 # Call database initialization
 try:

@@ -339,6 +339,20 @@
 
                             <div class="form-control">
                                 <label class="label">
+                                    <span class="label-text font-semibold text-brand-navy-600 text-lg">Expected Workers</span>
+                                </label>
+                                <select id="expected-workers" name="expected_workers" class="select select-bordered w-full text-lg input-focus bg-white border-2 border-blue-200 focus:border-brand-navy-500 focus:ring-2 focus:ring-blue-200">
+                                    <option value="not_specified">Not specified</option>
+                                    <option value="below_100">Below 100</option>
+                                    <option value="100_250">100 - 250</option>
+                                    <option value="251_500">251 - 500</option>
+                                    <option value="501_1000">501 - 1000</option>
+                                    <option value="above_1000">Above 1000</option>
+                                </select>
+                            </div>
+
+                            <div class="form-control">
+                                <label class="label">
                                     <span class="label-text font-semibold text-brand-navy-600 text-lg">Company Phone</span>
                                 </label>
                                 <input type="tel" id="company-phone" name="company_phone" placeholder="Enter company phone number" required 
@@ -526,6 +540,7 @@
                 company_name: document.getElementById('company-name').value.trim(),
                 country: document.getElementById('country').value,
                 industry_type: document.getElementById('industry-type').value,
+                expected_workers: document.getElementById('expected-workers').value,
                 company_phone: document.getElementById('company-phone').value.trim(),
                 company_email: document.getElementById('company-email').value.trim()
             };

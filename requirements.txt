@@ -3,6 +3,7 @@ Flask-SQLAlchemy
 SQLAlchemy
 flask-login
 flask-static-compress
+flask-limiter
 gunicorn==21.2.0
 pandas
 werkzeug==3.0.1

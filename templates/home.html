@@ -151,16 +151,7 @@
 <body>
     <div class="drawer lg:drawer-open">
         <input id="my-drawer" type="checkbox" class="drawer-toggle" />
-        <div class="drawer-content px-4 lg:px-8 pt-6 pb-8 bg-brand-navy-50/80 min-h-screen">
-            <!-- Mobile Menu Button -->
-            <div class="lg:hidden fixed top-4 right-4 z-50">
-                <label for="my-drawer" class="btn btn-primary drawer-button shadow-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" />
-                    </svg>
-                </label>
-            </div>
-            
+        <div class="drawer-content px-4 lg:px-8 pb-8 bg-brand-navy-50/80 min-h-screen">
             <!-- page content -->
             {% block content %}
             <div class="container mx-auto px-4 w-full max-w-6xl">

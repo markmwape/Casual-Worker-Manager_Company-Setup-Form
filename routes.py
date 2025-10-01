@@ -21,6 +21,8 @@ from tier_config import get_tier_spec, get_price_by_product_and_amount, STRIPE_P
 import stripe
 import hmac
 import hashlib
+import secrets
+import string
 # Configure Stripe
 stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
 STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET')
@@ -607,7 +609,7 @@ def handle_subscription_created(subscription):
         workspace = Workspace.query.filter_by(stripe_customer_id=customer_id).first()
         if not workspace:
             logging.warning(f"No workspace found for customer {customer_id}. This might be normal if checkout.session.completed hasn't processed yet.")
-            return
+            return None
             
         # Get product and price information
         if subscription.get('items') and subscription['items'].get('data'):
@@ -740,7 +742,7 @@ def handle_checkout_session_completed(session):
         
         if not customer_id:
             logging.warning("No customer ID in checkout session")
-            return
+            return None
         
         # Find workspace by workspace code first, then fallback to customer ID
         workspace = None
@@ -785,7 +787,7 @@ def handle_checkout_session_completed(session):
             except Exception as e:
                 logging.error(f"Failed to handle invalid workspace code: {str(e)}")
             
-            return
+            return None
         
         product_id = None
         price_id = None
@@ -883,13 +885,13 @@ def handle_payment_intent_succeeded(payment_intent):
         
         if not customer_id:
             logging.warning("No customer ID in payment intent")
-            return
+            return None
         
         # Find workspace by customer ID
         workspace = Workspace.query.filter_by(stripe_customer_id=customer_id).first()
         if not workspace:
             logging.warning(f"No workspace found for customer {customer_id}")
-            return
+            return None
         
         # Get product ID from subscription or invoice
         product_id = None

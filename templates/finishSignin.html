@@ -13,9 +13,12 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!-- Firebase App (the core Firebase SDK) -->
     <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-        window.firebaseApp = initializeApp({
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+
+        // Initialize Firebase (Ember-Accounting project)
+        const firebaseConfig = {
             apiKey: "AIzaSyD9_N_0ve9ABFwwnTBn1N2oxlUs6xbT-No",
             authDomain: "ember-accounting.firebaseapp.com",
             projectId: "ember-accounting",
@@ -23,8 +26,12 @@
             messagingSenderId: "328324461979",
             appId: "1:328324461979:web:0cc9ddad6aa3f157359d3e",
             measurementId: "G-F1XTE0TP63"
-        });
-        window.firebaseAuth = getAuth(window.firebaseApp);
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        window.firebaseAuth = auth;
+        const analytics = getAnalytics(app);
     </script>
 </head>
 <body class="font-inter bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex items-center justify-center">

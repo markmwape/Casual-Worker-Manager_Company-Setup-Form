@@ -3,14 +3,7 @@
 {% block title %}Embee Accounting - Dashboard{% endblock %}
 
 {% block content %}
-    <!-- full dashboard UI as per home_backup.html -->
-    <div class="lg:hidden fixed top-4 right-4 z-50">
-        <label for="my-drawer" class="btn btn-primary drawer-button shadow-lg">
-            <!-- mobile toggle icon -->
-        </label>
-    </div>
-
-    <div class="container mx-auto px-4 w-full max-w-6xl">
+    <div class="container mx-auto px-4 w-full max-w-6xl pt-8">
         <!-- Subscription Update Success Message -->
         {% if subscription_updated %}
         <div id="subscription-success-alert" class="alert alert-success shadow-lg mb-8">

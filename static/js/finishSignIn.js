@@ -150,9 +150,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             console.error('Error checking user workspaces:', error);
                         }
                         
-                        // Fallback: redirect to workspace selection (no workspaces found or error)
-                        console.log('No workspaces found or error occurred, redirecting to workspace selection');
-                        window.location.href = '/workspace-selection';
+                        // Fallback: redirect to home (user can create/join workspace from there)
+                        console.log('Fallback - redirecting to home');
+                        window.location.href = '/home';
                     }
                 } else {
                     const errorData = await response.json();

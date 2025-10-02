@@ -24,29 +24,41 @@ document.addEventListener('DOMContentLoaded', function() {
             const user = result.user;
             console.log('User data:', user);
             
-            // Fetch user's workspaces and select first if available
+            // Determine workspaceData from pendingWorkspace if available
+            // Try to use pendingWorkspace from localStorage
             let workspaceData = null;
-            try {
-                const workspacesResponse = await fetch('/api/user/workspaces', {
-                    method: 'POST',
-                    credentials: 'same-origin',    // include cookies in request
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: user.email })
-                });
-                if (workspacesResponse.ok) {
-                    const workspacesJson = await workspacesResponse.json();
-                    if (workspacesJson.success && workspacesJson.workspaces.length > 0) {
-                        const ws = workspacesJson.workspaces[0];
-                        console.log('Auto-selecting workspace:', ws.name);
+            const pending = window.localStorage.getItem('pendingWorkspace');
+            if (pending) {
+                try {
+                    const ws = JSON.parse(pending);
+                    if (ws && ws.id) {
+                        console.log('Using pendingWorkspace from localStorage:', ws.name);
                         workspaceData = { id: ws.id };
-                    } else {
-                        console.log('No existing workspaces for user');
                     }
-                } else {
-                    console.error('Failed to fetch user workspaces:', workspacesResponse.status);
+                } catch (e) {
+                    console.error('Invalid pendingWorkspace in localStorage:', e);
                 }
-            } catch (err) {
-                console.error('Error fetching user workspaces:', err);
+            }
+            // Fallback: fetch and select first workspace if no pendingWorkspace
+            if (!workspaceData) {
+                try {
+                    const workspacesResponse = await fetch('/api/user/workspaces', {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: user.email })
+                    });
+                    if (workspacesResponse.ok) {
+                        const workspacesJson = await workspacesResponse.json();
+                        if (workspacesJson.success && workspacesJson.workspaces.length > 0) {
+                            const ws = workspacesJson.workspaces[0];
+                            console.log('Auto-selecting workspace:', ws.name);
+                            workspaceData = { id: ws.id };
+                        }
+                    }
+                } catch (err) {
+                    console.error('Error fetching user workspaces:', err);
+                }
             }
             
             // Set session on server including workspaceData if any

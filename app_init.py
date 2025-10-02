@@ -130,9 +130,15 @@ except Exception as e:
 
 # Master Admin Configuration
 MASTER_ADMIN_EMAIL = os.environ.get('MASTER_ADMIN_EMAIL')
-if not MASTER_ADMIN_EMAIL:
-    logging.error("MASTER_ADMIN_EMAIL environment variable not set")
-    raise RuntimeError("MASTER_ADMIN_EMAIL must be set in environment for security")
+# Enforce master admin email only in production (non-SQLite) environments
+db_uri = app.config.get('SQLALCHEMY_DATABASE_URI', '')
+if 'sqlite' not in db_uri:
+    if not MASTER_ADMIN_EMAIL:
+        logging.error("MASTER_ADMIN_EMAIL environment variable not set in production environment")
+        raise RuntimeError("MASTER_ADMIN_EMAIL must be set in environment for security")
+else:
+    if not MASTER_ADMIN_EMAIL:
+        logging.warning("MASTER_ADMIN_EMAIL not set; skipping master admin checks in development")
 
 def is_master_admin():
     """Check if current user is the master admin"""

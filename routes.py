@@ -451,6 +451,23 @@ def set_session():
                                 logging.info(f"Created missing UserWorkspace relationship for {email} to workspace {workspace.name}")
                         else:
                             logging.info(f"User {email} already has access to workspace {workspace.name} with role {user_workspace.role}")
+                        
+                        # Ensure a company exists for this workspace
+                        existing_company = Company.query.filter_by(workspace_id=workspace.id).first()
+                        if not existing_company:
+                            # Create a company for this workspace
+                            new_company = Company(
+                                name=workspace.name,
+                                registration_number="",
+                                address="",
+                                industry=workspace.industry_type or "",
+                                phone=workspace.company_phone or "",
+                                created_by=user.id,
+                                workspace_id=workspace.id
+                            )
+                            db.session.add(new_company)
+                            db.session.commit()
+                            logging.info(f"Created company for existing workspace: {workspace.name}")
                     else:
                         logging.error(f"Workspace not found for ID: {workspace_data['id']}")
                 else:
@@ -472,25 +489,6 @@ def set_session():
                 logging.warning(f"No workspace variable found in locals. locals() keys: {list(locals().keys())}")
                 if workspace_data:
                     logging.warning(f"workspace_data was provided but no workspace variable was created")
-                
-                # Activity logging removed for now
-                
-                # Ensure a company exists for this workspace
-                existing_company = Company.query.filter_by(workspace_id=workspace.id).first()
-                if not existing_company:
-                    # Create a company for this workspace
-                    new_company = Company(
-                        name=workspace.name,
-                        registration_number="",
-                        address="",
-                        industry=workspace.industry_type,
-                        phone=workspace.company_phone,
-                        created_by=user.id,
-                        workspace_id=workspace.id
-                    )
-                    db.session.add(new_company)
-                    db.session.commit()
-                    logging.info(f"Created company for existing workspace: {workspace.name}")
 
         logging.info(f"Session set successfully: {session['user']}")
         logging.info(f"Session keys: {list(session.keys())}")

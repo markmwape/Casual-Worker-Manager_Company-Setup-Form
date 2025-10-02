@@ -1655,6 +1655,9 @@ def home_route():
             session.pop('current_workspace', None)
             return redirect(url_for('workspace_selection_route'))
         
+        # Verify user has access to this workspace
+        user_workspace = UserWorkspace.query.filter_by(
+            user_id=user.id,
             workspace_id=workspace_id
         ).first()
         

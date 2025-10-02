@@ -82,64 +82,44 @@ document.addEventListener('DOMContentLoaded', function() {
                                 const workspacesData = await workspacesResponse.json();
                                 
                                 if (workspacesData.success && workspacesData.workspaces && workspacesData.workspaces.length > 0) {
-                                    if (workspacesData.workspaces.length === 1) {
-                                        // User has exactly one workspace, auto-select it
-                                        const workspace = workspacesData.workspaces[0];
-                                        console.log('Auto-selecting single workspace:', workspace.name);
+                                    // Auto-select the first workspace for all users with existing workspaces
+                                    const workspace = workspacesData.workspaces[0];
+                                    console.log('Auto-selecting workspace:', workspace.name);
+                                    
+                                    const selectResponse = await fetch('/api/workspace/join', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ workspace_code: workspace.code })
+                                    });
+                                    
+                                    if (selectResponse.ok) {
+                                        const selectData = await selectResponse.json();
+                                        console.log('Workspace join response:', selectData);
                                         
-                                        const selectResponse = await fetch('/api/workspace/join', {
+                                        // Set session with the workspace
+                                        const sessionResponse2 = await fetch('/set_session', {
                                             method: 'POST',
-                                            headers: {
-                                                'Content-Type': 'application/json'
-                                            },
+                                            headers: { 'Content-Type': 'application/json' },
                                             body: JSON.stringify({
-                                                workspace_code: workspace.code
+                                                email: user.email,
+                                                displayName: user.displayName || '',
+                                                photoURL: user.photoURL || '',
+                                                uid: user.uid,
+                                                workspace_data: selectData.workspace
                                             })
                                         });
                                         
-                                        if (selectResponse.ok) {
-                                            const selectData = await selectResponse.json();
-                                            console.log('Workspace join response:', selectData);
-                                            
-                                            // Set session with the workspace
-                                            const sessionResponse2 = await fetch('/set_session', {
-                                                method: 'POST',
-                                                headers: {
-                                                    'Content-Type': 'application/json'
-                                                },
-                                                body: JSON.stringify({
-                                                    email: user.email,
-                                                    displayName: user.displayName || '',
-                                                    photoURL: user.photoURL || '',
-                                                    uid: user.uid,
-                                                    workspace_data: selectData.workspace
-                                                })
-                                            });
-                                            
-                                            console.log('Second session response status:', sessionResponse2.status);
-                                            if (sessionResponse2.ok) {
-                                                const sessionResult = await sessionResponse2.json();
-                                                console.log('Second session response:', sessionResult);
-                                                console.log('Auto-selected workspace successfully, redirecting to home');
-                                                window.location.href = '/home';
-                                                return;
-                                            } else {
-                                                const sessionError = await sessionResponse2.json();
-                                                console.error('Second session failed:', sessionError);
-                                                // Fallback to workspace selection
-                                                window.location.href = '/workspace-selection';
-                                                return;
-                                            }
+                                        if (sessionResponse2.ok) {
+                                            console.log('Session set, redirecting to home');
+                                            window.location.href = '/home';
+                                            return;
+                                        } else {
+                                            console.error('Failed to set session for selected workspace:', await sessionResponse2.text());
                                         }
-                                    } else {
-                                        // User has multiple workspaces, show workspace selection
-                                        console.log(`User has ${workspacesData.workspaces.length} workspaces, redirecting to workspace selection`);
-                                        window.location.href = '/workspace-selection';
-                                        return;
                                     }
                                 } else {
-                                    // User has no workspaces, redirect to home (they can create/join from there)
-                                    console.log('User has no workspaces, redirecting to home');
+                                    // No existing workspaces (new user), redirect to home to create/join
+                                    console.log('No workspaces found, redirecting to home');
                                     window.location.href = '/home';
                                     return;
                                 }

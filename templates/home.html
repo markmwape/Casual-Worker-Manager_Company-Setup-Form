@@ -339,16 +339,9 @@
 {% endblock %}
 
 {% block scripts %}
-    <!-- Bring back all page-specific scripts from home_backup.html -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            feather.replace();
-            ...observer code...
-        });
-
-        function copyWorkspaceCode() { ... }
-        function showSuccess(msg) { ... }
-        function showError(msg) { ... }
-        ...other JS from backup (open/close modals, updateReportPreview, etc.)...
-    </script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        feather.replace();
+    });
+</script>
 {% endblock %}

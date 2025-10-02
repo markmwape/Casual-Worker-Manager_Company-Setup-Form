@@ -97,10 +97,10 @@
                     <i data-feather="calendar" class="w-5 h-5 text-green-600"></i>
                     Per Day Reports
                 </h3>
-                <button onclick="downloadReport('per_day')" class="btn btn-success shadow-lg hover:shadow-xl transition-all duration-200">
+                <button onclick="downloadReport('per_day')" class="btn btn-primary shadow-lg hover:shadow-xl transition-all duration-200">
                     <i data-feather="download" class="mr-2"></i>Download Report
                 </button>
-            
+            </div>
             <div class="card bg-white shadow-lg border border-green-200 hover:shadow-xl transition-all duration-300">
                 <div class="card-body p-6">
                     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
@@ -214,22 +214,25 @@
             </div>
         </div>
     </div>
-    <!-- Place Download Per Unit Report button above the Per Unit card -->
-    <button onclick="downloadReport('per_part')" class="btn mb-4 border border-blue-300 rounded-full px-6 py-2 font-semibold shadow-sm" style="background: linear-gradient(90deg, #e0f2fe 0%, #bae6fd 100%); color: #1e40af;">
-        <i data-feather="download" class="mr-2"></i>Download Per Unit Report
-    </button>
     <!-- Per Unit Section -->
     <div class="card bg-base-100 shadow-xl mb-8">
         <div class="card-body">
             <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
-                <h2 class="card-title flex items-center">Report Preview (Per Unit)
+                <h2 class="card-title flex items-center">
+                    <i data-feather="eye" class="w-5 h-5 text-blue-600 mr-2"></i>
+                    Report Preview (Per Unit)
                     <span class="tooltip ml-2" data-tip="This is a preview of how your exported report will look">
                         <i data-feather="info" class="w-5 h-5 text-info"></i>
                     </span>
                 </h2>
-                <button id="toggleCustomFieldsPerPart" class="btn btn-primary font-semibold px-5 py-2 w-full sm:w-auto" onclick="toggleCustomFields('perPart')">
-                    <i class="fas fa-cogs mr-2"></i>Custom Report Fields
-                </button>
+                <div class="flex items-center gap-2">
+                    <button onclick="downloadReport('per_part')" class="btn btn-secondary shadow-lg hover:shadow-xl transition-all duration-200">
+                        <i data-feather="download" class="mr-2"></i>Download Per Unit Report
+                    </button>
+                    <button id="toggleCustomFieldsPerPart" class="btn btn-outline btn-sm" onclick="toggleCustomFields('perPart')">
+                        <i class="fas fa-cogs mr-2"></i>Custom Report Fields
+                    </button>
+                </div>
             </div>
             <div id="customFieldsWindowPerPart" class="mb-6 bg-white border border-gray-200 rounded-xl shadow-lg p-6 relative" style="display:none;">
                 <div class="flex justify-between items-center mb-4">
@@ -350,432 +353,11 @@
 
 {% block scripts %}
 <script>
-    function closeAddReportFieldModal() {
-        const modal = document.getElementById('add-report-field-modal');
-        modal.close();
-        // Reset the form
-        const form = document.getElementById('reportFieldForm');
-        form.reset();
-        // Reset formula preview and validation
-        document.getElementById('formulaBuilder').value = '';
-        document.getElementById('formulaError').classList.add('hidden');
-        document.getElementById('previewTable').innerHTML = '';
-    }
-    // Expose custom fields and their formulas to JS
-    const customFields = [{% for field in custom_fields %}{ name: {{ field.name|tojson }}, formula: {{ field.formula|tojson }}, max_limit: {{ field.max_limit|tojson }} }{% if not loop.last %},{% endif %}{% endfor %}];
-
-    function getCustomFieldFormula(name) {
-        const field = customFields.find(f => f.name === name);
-        return field ? field.formula : null;
-    }
-    function getCustomFieldMaxLimit(name) {
-        const field = customFields.find(f => f.name === name);
-        return field ? field.max_limit : null;
-    }
-
-    // Recursively calculate a field value for a row
-    function calculateFieldValue(fieldName, row, visited = new Set()) {
-        if (visited.has(fieldName)) return 0; // Prevent circular refs
-        visited.add(fieldName);
-        const formula = getCustomFieldFormula(fieldName);
-        const maxLimit = getCustomFieldMaxLimit(fieldName);
-        if (!formula) return row[fieldName] || 0;
-        // Find all referenced fields
-        const fieldRegex = /[a-zA-Z_][a-zA-Z0-9_]*/g;
-        let evalFormula = formula;
-        const fieldsInFormula = Array.from(new Set(formula.match(fieldRegex) || []));
-        for (const refField of fieldsInFormula) {
-            let value;
-            if (getCustomFieldFormula(refField)) {
-                value = calculateFieldValue(refField, row, visited);
-            } else {
-                value = row[refField] || 0;
-            }
-            const re = new RegExp(`\\b${refField}\\b`, 'g');
-            evalFormula = evalFormula.replace(re, value);
-        }
-        try {
-            let result = eval(evalFormula);
-            if (maxLimit !== null && maxLimit !== undefined) {
-                result = Math.min(result, maxLimit);
-            }
-            return result;
-        } catch {
-            return 0;
-        }
-    }
-
-    function updateReportPreview() {
-        console.log('updateReportPreview called');
-        const startDate = document.getElementById('startDate').value;
-        const endDate = document.getElementById('endDate').value;
-        
-        console.log('Start date:', startDate);
-        console.log('End date:', endDate);
-        
-        if (!startDate || !endDate) {
-            console.log('Missing start or end date');
-            return;
-        }
-        
-        if (new Date(endDate) < new Date(startDate)) {
-            showCustomModal('Date Validation', 'End date cannot be before start date', 'warning');
-            // Set end date to 1 day after start date
-            const newEndDate = new Date(startDate);
-            newEndDate.setDate(newEndDate.getDate() + 1);
-            const formattedEndDate = newEndDate.toISOString().split('T')[0];
-            document.getElementById('endDate').value = formattedEndDate;
-            
-            // Update the report with the corrected date
-            const newUrl = `/reports?start_date=${startDate}&end_date=${formattedEndDate}`;
-            console.log('Redirecting to:', newUrl);
-            window.location.href = newUrl;
-            return;
-        }
-        
-        const newUrl = `/reports?start_date=${startDate}&end_date=${endDate}`;
-        console.log('Redirecting to:', newUrl);
-        window.location.href = newUrl;
-    }
-    
-    function showReportErrorModal(message) {
-        // Make the first sentence bold if it matches 'This report is empty'
-        let html = message;
-        const emptyPrefix = 'This report is empty';
-        if (message.startsWith(emptyPrefix)) {
-            const rest = message.slice(emptyPrefix.length);
-            html = `<span class='font-bold text-red-700'>${emptyPrefix}</span>${rest}`;
-        }
-        document.getElementById('reportErrorMessage').innerHTML = html;
-        document.getElementById('reportErrorModal').style.display = '';
-    }
-    function closeReportErrorModal() {
-        document.getElementById('reportErrorModal').style.display = 'none';
-    }
-
-    function downloadReport(reportType) {
-        const startDate = document.getElementById('startDate').value;
-        const endDate = document.getElementById('endDate').value;
-        
-        if (!startDate || !endDate) {
-            showReportErrorModal('Please select both start and end dates');
-            return;
-        }
-        
-        if (new Date(endDate) < new Date(startDate)) {
-            showReportErrorModal('End date cannot be before start date');
-            // Set end date to 1 day after start date
-            const newEndDate = new Date(startDate);
-            newEndDate.setDate(newEndDate.getDate() + 1);
-            const formattedEndDate = newEndDate.toISOString().split('T')[0];
-            document.getElementById('endDate').value = formattedEndDate;
-            
-            // Download report with the corrected date
-            window.location.href = `/report/download?start_date=${startDate}&end_date=${formattedEndDate}&report_type=${reportType}`;
-            return;
-        }
-        
-        // Use fetch to get the report and handle errors
-        const url = `/report/download?start_date=${startDate}&end_date=${endDate}&report_type=${reportType}`;
-        fetch(url)
-            .then(async response => {
-                if (!response.ok) {
-                    let errorMsg = 'Failed to download report.';
-                    try {
-                        const data = await response.json();
-                        if (data && data.error) errorMsg = data.error;
-                    } catch (e) {}
-                    showReportErrorModal(errorMsg);
-                    throw new Error(errorMsg);
-                }
-                // If response is a file, download it
-                const blob = await response.blob();
-                const contentDisposition = response.headers.get('Content-Disposition');
-                let filename = 'report.xlsx';
-                if (contentDisposition) {
-                    const match = contentDisposition.match(/filename="?([^";]+)"?/);
-                    if (match) filename = match[1];
-                }
-                const link = document.createElement('a');
-                link.href = window.URL.createObjectURL(blob);
-                link.download = filename;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            })
-            .catch(err => {
-                // Already handled above
-            });
-    }
-
-    function insertAtCursor(textarea, text) {
-        const start = textarea.selectionStart;
-        const end = textarea.selectionEnd;
-        const before = textarea.value.substring(0, start);
-        const after = textarea.value.substring(end);
-        textarea.value = before + text + after;
-        textarea.selectionStart = textarea.selectionEnd = start + text.length;
-        textarea.focus();
-    }
-
-    function insertOperator(op) {
-        const formulaBuilder = document.getElementById('formulaBuilder');
-        insertAtCursor(formulaBuilder, ` ${op} `);
-    }
-
-    async function insertNumber() {
-        const number = await showCustomConfirm('Input Required', 'Enter a number:');
-        if (number && !isNaN(number)) {
-            const formulaBuilder = document.getElementById('formulaBuilder');
-            insertAtCursor(formulaBuilder, ` ${number} `);
-        }
-    }
-
-    document.getElementById('fieldPicker').addEventListener('change', function() {
-        const field = this.value;
-        if (field) {
-            const formulaBuilder = document.getElementById('formulaBuilder');
-            insertAtCursor(formulaBuilder, ` ${field} `);
-        }
+    document.addEventListener('DOMContentLoaded', function() {
+        feather.replace();
     });
-
-    // Add event listener for formula changes
-    document.getElementById('formulaBuilder').addEventListener('input', updateFormulaPreview);
-    
-
-
-    function editReportField(id, name, formula, payout_type) {
-        editingFieldName = name;
-        editingFieldId = id;
-        if (payout_type === 'per_day') {
-            document.querySelector('#reportFieldFormPerDay input[name="name"]').value = name;
-            document.querySelector('#reportFieldFormPerDay input[name="field_id"]').value = id; // Set field_id
-            document.getElementById('formulaBuilderPerDay').value = formula;
-            // Set max limit toggle and value
-            const field = customFields.find(f => f.name === name);
-            if (field && field.max_limit !== null && field.max_limit !== undefined) {
-                document.getElementById('enableMaxLimitPerDay').checked = true;
-                document.getElementById('maxLimitInputWrapperPerDay').classList.remove('hidden');
-                document.getElementById('maxLimitValuePerDay').value = field.max_limit;
-            } else {
-                document.getElementById('enableMaxLimitPerDay').checked = false;
-                document.getElementById('maxLimitInputWrapperPerDay').classList.add('hidden');
-                document.getElementById('maxLimitValuePerDay').value = '';
-            }
-            document.getElementById('add-report-field-modal-per-day').showModal();
-            if (typeof registerFormulaBuilderEvents === 'function') registerFormulaBuilderEvents();
-        } else if (payout_type === 'per_part') {
-            document.querySelector('#reportFieldFormPerUnit input[name="name"]').value = name;
-            document.querySelector('#reportFieldFormPerUnit input[name="field_id"]').value = id; // Set field_id
-            document.getElementById('formulaBuilderPerUnit').value = formula;
-            // Set max limit toggle and value
-            const field = customFields.find(f => f.name === name);
-            if (field && field.max_limit !== null && field.max_limit !== undefined) {
-                document.getElementById('enableMaxLimitPerUnit').checked = true;
-                document.getElementById('maxLimitInputWrapperPerUnit').classList.remove('hidden');
-                document.getElementById('maxLimitValuePerUnit').value = field.max_limit;
-            } else {
-                document.getElementById('enableMaxLimitPerUnit').checked = false;
-                document.getElementById('maxLimitInputWrapperPerUnit').classList.add('hidden');
-                document.getElementById('maxLimitValuePerUnit').value = '';
-            }
-            document.getElementById('add-report-field-modal-per-unit').showModal();
-            if (typeof registerFormulaBuilderEvents === 'function') registerFormulaBuilderEvents();
-        }
-    }
-
-    function openAddReportFieldModal(payout_type) {
-        editingFieldName = null;
-        editingFieldId = null;
-        document.getElementById('reportFieldForm').reset();
-        document.getElementById('previewTable').innerHTML = '';
-        document.getElementById('add-report-field-modal').showModal();
-        updateCustomFieldsDropdown();
-        document.getElementById('maxLimitInputWrapper').classList.add('hidden');
-        document.getElementById('enableMaxLimit').checked = false;
-        document.getElementById('maxLimitValue').value = '';
-    }
-
-    function openAddReportFieldModalPerDay() {
-        editingFieldName = null;
-        editingFieldId = null;
-        document.getElementById('reportFieldForm').reset();
-        document.getElementById('previewTable').innerHTML = '';
-        document.getElementById('add-report-field-modal').showModal();
-        updateCustomFieldsDropdown();
-        document.getElementById('maxLimitInputWrapper').classList.add('hidden');
-        document.getElementById('enableMaxLimit').checked = false;
-        document.getElementById('maxLimitValue').value = '';
-    }
-
-    function openAddReportFieldModalPerUnit() {
-        editingFieldName = null;
-        editingFieldId = null;
-        document.getElementById('reportFieldForm').reset();
-        document.getElementById('previewTable').innerHTML = '';
-        document.getElementById('add-report-field-modal').showModal();
-        updateCustomFieldsDropdown();
-        document.getElementById('maxLimitInputWrapper').classList.add('hidden');
-        document.getElementById('enableMaxLimit').checked = false;
-        document.getElementById('maxLimitValue').value = '';
-    }
-
-    function updateCustomFieldsDropdown() {
-        const fieldPicker = document.getElementById('fieldPicker');
-        // Remove all custom field options
-        const customOptGroup = fieldPicker.querySelector('optgroup[label="Custom Fields"]');
-        if (customOptGroup) customOptGroup.innerHTML = '';
-        // Add custom fields except the one being edited
-        customFields.forEach(field => {
-            if (!editingFieldName || field.name !== editingFieldName) {
-                const option = document.createElement('option');
-                option.value = field.name;
-                option.textContent = field.name;
-                customOptGroup && customOptGroup.appendChild(option);
-            }
-        });
-    }
-
-    async function deleteReportField(fieldId) {
-        const confirmed = await showCustomConfirm('Confirm Delete', 'Are you sure you want to delete this field?');
-        if (confirmed) {
-            fetch(`/api/report-field?id=${fieldId}`, {
-                method: 'DELETE'
-            })
-            .then(response => response.json())
-            .then(result => {
-                if (result.error) {
-                    showCustomModal('Delete Error', result.error, 'error');
-                } else {
-                    window.location.reload();
-                }
-            })
-            .catch(error => {
-                console.error('Error deleting report field:', error);
-                showCustomModal('Delete Error', 'Failed to delete report field', 'error');
-            });
-        }
-    }
-    
-    function validateFormula() {
-        let formula = document.getElementById('formulaBuilder').value;
-        
-        // Replace custom field references with their formulas
-        for (const [fieldName, fieldFormula] of Object.entries(customFields)) {
-            const regex = new RegExp(fieldName, 'g');
-            formula = formula.replace(regex, `(${fieldFormula})`);
-        }
-        const errorDiv = document.getElementById('formulaError');
-        const previewTable = document.getElementById('previewTable');
-        
-        try {
-            // Sample data for preview
-            const testData = [
-                {name: 'John Doe', attendance_days: 20, daily_rate: 100},
-                {name: 'Jane Smith', attendance_days: 15, daily_rate: 100},
-                {name: 'Bob Wilson', attendance_days: 22, daily_rate: 100}
-            ];
-
-            // Clear previous preview
-            previewTable.innerHTML = '';
-
-            // Test formula with sample data
-            testData.forEach(worker => {
-                const row = document.createElement('tr');
-                const evalFormula = formula
-                    .replace(/attendance_days/g, worker.attendance_days)
-                    .replace(/daily_rate/g, worker.daily_rate);
-                
-                const result = eval(evalFormula);
-
-                row.innerHTML = `
-                    <td>${worker.name}</td>
-                    <td>${worker.attendance_days}</td>
-                    <td>${worker.daily_rate}</td>
-                    <td>${isNaN(result) ? 'Invalid' : result.toFixed(2)}</td>
-                `;
-                previewTable.appendChild(row);
-            });
-
-            errorDiv.classList.add('hidden');
-        } catch (e) {
-            errorDiv.classList.remove('hidden');
-            errorDiv.textContent = 'Invalid formula: ' + e.message;
-        }
-    }
-
-    // Handle report field form submission
-    document.getElementById('reportFieldForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const formData = new FormData(e.target);
-        const fieldId = formData.get('field_id');
-        const data = {
-            name: formData.get('name'),
-            formula: formData.get('formula')
-        };
-        
-        const url = fieldId ? `/api/report-field?id=${fieldId}` : '/api/report-field';
-        const method = fieldId ? 'PUT' : 'POST';
-        
-        fetch(url, {
-            method: method,
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        })
-        .then(response => response.json())
-        .then(result => {
-            if (result.error) {
-                showCustomModal('Save Error', result.error, 'error');
-            } else {
-                closeAddReportFieldModal();
-                window.location.reload();
-            }
-        })
-        .catch(error => {
-            console.error('Error saving report field:', error);
-            showCustomModal('Save Error', 'Failed to save report field', 'error');
-        });
-    });
-
-    function toggleCustomFields(section) {
-        if (section === 'perDay') {
-            const win = document.getElementById('customFieldsWindowPerDay');
-            win.style.display = win.style.display === 'none' ? '' : 'none';
-        } else if (section === 'perPart') {
-            const win = document.getElementById('customFieldsWindowPerPart');
-            win.style.display = win.style.display === 'none' ? '' : 'none';
-        }
-    }
-
-    function editReportField(fieldId, fieldName, fieldFormula, payoutType) {
-        console.log(`Editing field: ${fieldName}`);
-        // Ensure proper escaping of field data
-        const sanitizedFieldName = fieldName.replace(/'/g, "\'");
-        const sanitizedFieldFormula = fieldFormula.replace(/'/g, "\'");
-        // Open modal with sanitized data
-        openEditModal(fieldId, sanitizedFieldName, sanitizedFieldFormula, payoutType);
-    }
-
-    function deleteReportField(fieldId) {
-        if (confirm('Are you sure you want to delete this field?')) {
-            fetch(`/api/report-field/${fieldId}`, {
-                method: 'DELETE'
-            })
-            .then(response => {
-                if (response.ok) {
-                    alert('Field deleted successfully');
-                    location.reload();
-                } else {
-                    alert('Failed to delete field');
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        }
-    }
 </script>
+{% endblock %}
 
 <style>
 .gradient-header th {
@@ -863,4 +445,3 @@ body {
     margin: 0.5rem;
 }
 </style>
-{% endblock %}

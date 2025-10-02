@@ -513,8 +513,8 @@
                 if (response.ok && data.success) {
                     showGlobalMessage('success', `Found workspace "${data.workspace.name}"! Proceeding to sign in...`);
                     
-                    // Store workspace data for later use
-                    localStorage.setItem('pendingWorkspace', JSON.stringify(data.workspace));
+                    // Store workspace data for later use in sessionStorage
+                    sessionStorage.setItem('pending_workspace', JSON.stringify(data.workspace));
                     
                     // Redirect to sign-in
                     setTimeout(() => {
@@ -602,8 +602,8 @@
                     
                     showGlobalMessage('success', `Workspace "${data.workspace.name}" prepared! Proceeding to sign in...`);
                     
-                    // Store workspace data for later use
-                    localStorage.setItem('pendingWorkspace', JSON.stringify(data.workspace));
+                    // Store workspace data for later use in sessionStorage
+                    sessionStorage.setItem('pending_workspace', JSON.stringify(data.workspace));
                     
                     // Redirect to sign-in
                     setTimeout(() => {

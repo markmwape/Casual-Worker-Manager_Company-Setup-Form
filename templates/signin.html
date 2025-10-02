@@ -63,22 +63,18 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
         import { getAuth } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
         
-        // Load Firebase configuration from server
+        // Initialize Firebase directly with Ember-Accounting config
         async function initializeFirebase() {
             try {
-                const response = await fetch('/firebase_config');
-                const firebaseConfig = await response.json();
-                
-                // Fallback configuration if server config is incomplete
-                if (!firebaseConfig.apiKey) {
-                    firebaseConfig.apiKey = "AIzaSyD9_N_0ve9ABFwwnTBn1N2oxlUs6xbT-No";
-                    firebaseConfig.authDomain = "ember-accounting.firebaseapp.com";
-                    firebaseConfig.projectId = "ember-accounting";
-                    firebaseConfig.storageBucket = "ember-accounting.firebasestorage.app";
-                    firebaseConfig.messagingSenderId = "328324461979";
-                    firebaseConfig.appId = "1:328324461979:web:0cc9ddad6aa3f157359d3e";
-                    firebaseConfig.measurementId = "G-F1XTE0TP63";
-                }
+                const firebaseConfig = {
+                    apiKey: "AIzaSyD9_N_0ve9ABFwwnTBn1N2oxlUs6xbT-No",
+                    authDomain: "ember-accounting.firebaseapp.com",
+                    projectId: "ember-accounting",
+                    storageBucket: "ember-accounting.firebasestorage.app",
+                    messagingSenderId: "328324461979",
+                    appId: "1:328324461979:web:0cc9ddad6aa3f157359d3e",
+                    measurementId: "G-F1XTE0TP63"
+                };
                 
                 window.firebaseApp = initializeApp(firebaseConfig);
                 window.firebaseAuth = getAuth(window.firebaseApp);

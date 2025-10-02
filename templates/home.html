@@ -39,13 +39,42 @@
     </div>
     {% endif %}
 
-    <!-- Main Dashboard Content -->
-    <!-- begins old content -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <!-- Your dashboard cards and stats here (omitted for brevity) -->
-        <!-- ...existing dashboard markup... -->
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-8">
+        <!-- ...logo and welcome text... -->
     </div>
-    <!-- ends old content -->
+
+    <!-- Responsive Subscription Status -->
+    {% if subscription_info %}
+    <div class="flex justify-center mb-8">
+        <!-- ...trial and paid plan sections... -->
+    </div>
+    {% endif %}
+
+    <!-- Workspace Info Card -->
+    {% if session.get('current_workspace') %}
+    <div class="card bg-gradient-to-br from-brand-navy-50 via-brand-gray-50 to-brand-navy-100 border border-brand-navy-200/60 shadow-lg mb-8 hover:shadow-xl transition-all duration-300">
+        <!-- ...workspace card content... -->
+    </div>
+    {% endif %}
+
+    <!-- Quick Actions -->
+    <div class="card bg-white shadow-lg mb-8">
+        <div class="card-body p-6">
+            <h3 class="text-sm font-semibold text-indigo-700 mb-1">Quick Actions</h3>
+            <!-- ...quick-action cards grid... -->
+        </div>
+    </div>
+
+    <!-- Team Members -->
+    <div class="card bg-white shadow-lg mb-8">
+        <div class="card-body p-6">
+            <h3 class="text-sm font-semibold text-indigo-700 mb-1">Your Team</h3>
+            <!-- ...team members list... -->
+        </div>
+    </div>
+
+    <!-- ...other dashboard widgets as needed... -->
 </div>
 {% endblock %}
 

@@ -92,15 +92,6 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <!-- Per Day Report Section -->
         <div class="space-y-4">
-            <div class="flex items-center justify-between">
-                <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
-                    <i data-feather="calendar" class="w-5 h-5 text-green-600"></i>
-                    Per Day Reports
-                </h3>
-                <button onclick="downloadReport('per_day')" class="btn btn-primary shadow-lg hover:shadow-xl transition-all duration-200">
-                    <i data-feather="download" class="mr-2"></i>Download Report
-                </button>
-            </div>
             <div class="card bg-white shadow-lg border border-green-200 hover:shadow-xl transition-all duration-300">
                 <div class="card-body p-6">
                     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
@@ -214,25 +205,24 @@
             </div>
         </div>
     </div>
+    
+    <!-- Download Per Day Report Button -->
+    <button onclick="downloadReport('per_day')" class="btn btn-success shadow-lg hover:shadow-xl transition-all duration-200 mb-4">
+        <i data-feather="download" class="mr-2"></i>Download Per Day Report
+    </button>
+    
     <!-- Per Unit Section -->
     <div class="card bg-base-100 shadow-xl mb-8">
         <div class="card-body">
             <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
-                <h2 class="card-title flex items-center">
-                    <i data-feather="eye" class="w-5 h-5 text-blue-600 mr-2"></i>
-                    Report Preview (Per Unit)
+                <h2 class="card-title flex items-center">Report Preview (Per Unit)
                     <span class="tooltip ml-2" data-tip="This is a preview of how your exported report will look">
                         <i data-feather="info" class="w-5 h-5 text-info"></i>
                     </span>
                 </h2>
-                <div class="flex items-center gap-2">
-                    <button onclick="downloadReport('per_part')" class="btn btn-secondary shadow-lg hover:shadow-xl transition-all duration-200">
-                        <i data-feather="download" class="mr-2"></i>Download Per Unit Report
-                    </button>
-                    <button id="toggleCustomFieldsPerPart" class="btn btn-outline btn-sm" onclick="toggleCustomFields('perPart')">
-                        <i class="fas fa-cogs mr-2"></i>Custom Report Fields
-                    </button>
-                </div>
+                <button id="toggleCustomFieldsPerPart" class="btn btn-primary font-semibold px-5 py-2 w-full sm:w-auto" onclick="toggleCustomFields('perPart')">
+                    <i class="fas fa-cogs mr-2"></i>Custom Report Fields
+                </button>
             </div>
             <div id="customFieldsWindowPerPart" class="mb-6 bg-white border border-gray-200 rounded-xl shadow-lg p-6 relative" style="display:none;">
                 <div class="flex justify-between items-center mb-4">
@@ -347,6 +337,11 @@
             </div>
         </div>
     </div>
+    
+    <!-- Download Per Unit Report Button -->
+    <button onclick="downloadReport('per_part')" class="btn btn-primary shadow-lg hover:shadow-xl transition-all duration-200">
+        <i data-feather="download" class="mr-2"></i>Download Per Unit Report
+    </button>
 </div>
     {% include 'modals/add_report_field.html' %}
 {% endblock %}

@@ -1,164 +1,669 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en" data-theme="{{ theme }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Embee accounting - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.24/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://unpkg.com/feather-icons"></script>
+    <!-- Confetti Animation Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        window.tailwind = window.tailwind || {};
+        window.tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-navy': {
+                            '50': '#f8fafc',
+                            '100': '#e2e8f0',
+                            '200': '#cbd5e1',
+                            '300': '#94a3b8',
+                            '400': '#64748b',
+                            '500': '#1A2B48',
+                            '600': '#0f1a2e',
+                            '700': '#0a1424',
+                            '800': '#050a12',
+                            '900': '#020508'
+                        },
+                        'brand-gold': {
+                            '50': '#fefce8',
+                            '100': '#fef3c7',
+                            '200': '#fde68a',
+                            '300': '#fcd34d',
+                            '400': '#fbbf24',
+                            '500': '#E5B23A',
+                            '600': '#d4a02a',
+                            '700': '#b45309',
+                            '800': '#92400e',
+                            '900': '#78350f'
+                        },
+                        'brand-gray': {
+                            '50': '#f8fafc',
+                            '100': '#f1f5f9',
+                            '200': '#e2e8f0',
+                            '300': '#cbd5e1',
+                            '400': '#94a3b8',
+                            '500': '#7C8A9A',
+                            '600': '#5a6778',
+                            '700': '#475569',
+                            '800': '#334155',
+                            '900': '#1e293b'
+                        }
+                    },
+                    boxShadow: {
+                        '3xl': '0 35px 60px -15px rgba(0, 0, 0, 0.3)',
+                    },
+                    perspective: {
+                        '1000': '1000px',
+                    },
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-layout.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-touch.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/date-picker.css') }}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="{{ url_for('static', filename='js/script.js') }}?v=1.1"></script>
+    <script src="{{ url_for('static', filename='js/date-picker.js') }}"></script>
+    <script>
+        // Pass user role to JavaScript
+        window.currentUserRole = "{{ session.get('current_workspace', {}).get('role', '') }}";
+    </script>
+    
+    <style>
+        /* Success Alert Animation Styles */
+        #subscription-success-alert {
+            animation: slideInDown 0.5s ease-out, pulse 2s ease-in-out infinite alternate;
+            background: linear-gradient(135deg, #10B981, #059669);
+            border: 2px solid #047857;
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+        }
+        
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            #subscription-success-alert {
+                margin: 1rem;
+                font-size: 0.9rem;
+            }
+            
+            #subscription-success-alert .h3 {
+                font-size: 1.1rem;
+            }
+            
+            .subscription-success-icon {
+                height: 1.5rem;
+                width: 1.5rem;
+            }
+        }
+        
+        @keyframes slideInDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+            }
+            100% {
+                box-shadow: 0 10px 35px rgba(16, 185, 129, 0.5);
+            }
+        }
+        
+        .subscription-success-icon {
+            animation: bounceIn 0.8s ease-out 0.3s both;
+        }
+        
+        @keyframes bounceIn {
+            0%, 20%, 40%, 60%, 80% {
+                transform: translateY(0);
+                animation-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+        
+        body {
+            margin-top: 2rem;
+        }
+        .btn {
+            margin: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="drawer lg:drawer-open h-screen">
+        <input id="my-drawer" type="checkbox" class="drawer-toggle" />
+        <div class="drawer-content p-8 bg-brand-navy-50/80 min-h-screen lg:ml-80">
+            <!-- Mobile Menu Button -->
+            <div class="lg:hidden fixed top-4 right-4 z-50">
+                <label for="my-drawer" class="btn btn-primary drawer-button shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" />
+                    </svg>
+                </label>
+            </div>
+            <!-- page content -->
+            <div class="container mx-auto px-4 w-full max-w-6xl">
+                <!-- Subscription Update Success Message -->
+                {% if subscription_updated %}
+                <div id="subscription-success-alert" class="alert alert-success shadow-lg mb-8">
+                    <div class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="subscription-success-icon stroke-current flex-shrink-0 h-8 w-8 text-white" fill="none" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div class="ml-3">
+                            <h3 class="font-bold text-lg text-white">
+                                🎉 Welcome to {{ subscription_info.tier_name }}!
+                            </h3>
+                            <div class="text-sm text-white">
+                                {% if subscription_info.tier == 'startup' %}
+                                    You can now manage up to 250 workers! Perfect for growing teams.
+                                {% elif subscription_info.tier == 'growth' %}
+                                    Manage up to 1,000 workers with advanced features!
+                                {% elif subscription_info.tier == 'enterprise' %}
+                                    Unlimited workers and all premium features are now yours!
+                                {% else %}
+                                    Your new plan is now active. Welcome to enhanced features!
+                                {% endif %}
+                            </div>
+                        </div>
+                        <button onclick="closeSuccessAlert()" class="btn btn-ghost btn-sm ml-auto">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                {% endif %}
 
-{% block title %}Embee Accounting - Dashboard{% endblock %}
+                <!-- Header -->
+                <div class="flex items-center justify-between mb-8">
+                    <div class="flex items-center gap-4">
+                        <img src="{{ url_for('static', filename='img/logo + text.png') }}" alt="Embee Accounting Logo" class="h-14 w-auto object-contain" />
+                    </div>
+                    <div class="text-right">
+                        <h1 class="text-3xl font-bold text-black mb-2">
+                            Welcome, {{ session.get('user', {}).get('display_name', 'User') }}
+                        </h1>
+                        <p class="text-sm text-gray-500">
+                            Here's what's happening with your casual workforce today.
+                        </p>
+                    </div>
+                </div>
 
-{% block content %}
-    <div class="container mx-auto px-4 w-full max-w-6xl">
-        <!-- Subscription Update Success Message -->
-        {% if subscription_updated %}
-        <div id="subscription-success-alert" class="alert alert-success shadow-lg mb-8">
-            <div class="flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="subscription-success-icon stroke-current flex-shrink-0 h-8 w-8 text-white" fill="none" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <div class="ml-3">
-                    <h3 class="font-bold text-lg text-white">
-                        🎉 Welcome to {{ subscription_info.tier_name }}!
-                    </h3>
-                    <div class="text-sm text-white">
-                        {% if subscription_info.tier == 'startup' %}
-                            You can now manage up to 250 workers! Perfect for growing teams.
-                        {% elif subscription_info.tier == 'growth' %}
-                            Manage up to 1,000 workers with advanced features!
-                        {% elif subscription_info.tier == 'enterprise' %}
-                            Unlimited workers and all premium features are now yours!
-                        {% else %}
-                            Your new plan is now active. Welcome to enhanced features!
+                        <!-- Responsive Subscription Status -->
+                {% if subscription_info %}
+                <div class="flex justify-center mb-8">
+                    {% if subscription_info.tier == 'trial' %}
+                    <!-- Trial Status -->
+                    <div class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4 shadow-sm w-full max-w-4xl">
+                        <!-- Desktop Layout -->
+                        <div class="hidden lg:flex items-center gap-3 text-sm">
+                            <span class="text-green-800 font-medium">You are currently on a</span>
+                            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full font-semibold">
+                                {{ subscription_info.tier_name }}
+                            </span>
+                            <span class="bg-white/70 text-green-800 px-3 py-1 rounded-full font-medium">
+                                👥 {{ usage_stats.workers_used }} workers - unlimited during trial
+                            </span>
+                            <span class="bg-white/70 px-3 py-1 rounded-full font-medium text-green-700" id="trial-days-display">
+                                <i class="fas fa-clock mr-1"></i>Loading trial info...
+                            </span>
+                            <a href="/upgrade" class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg text-sm font-medium transition-all duration-200 shadow-md hover:shadow-lg">
+                                <i class="fas fa-credit-card"></i>
+                                <span>Upgrade</span>
+                            </a>
+                        </div>
+                        
+                        <!-- Mobile Layout -->
+                        <div class="lg:hidden space-y-3 subscription-status-mobile">
+                            <div class="text-center">
+                                <div class="text-green-800 font-medium text-sm mb-2">You are currently on a</div>
+                                <div class="bg-green-100 text-green-800 px-4 py-2 rounded-full font-semibold text-base inline-block">
+                                    🎉 {{ subscription_info.tier_name }}
+                                </div>
+                            </div>
+                            
+                            <div class="flex flex-col gap-3 text-sm">
+                                <div class="bg-white/70 px-4 py-3 rounded-lg font-medium text-green-700 text-center border border-green-100">
+                                    <div class="text-lg font-semibold">👥 {{ usage_stats.workers_used }} workers</div>
+                                    <div class="text-xs opacity-75">unlimited during trial</div>
+                                </div>
+                                <div class="bg-white/70 px-4 py-3 rounded-lg font-medium text-green-700 text-center border border-green-100" id="trial-days-display-mobile">
+                                    <i class="fas fa-clock mr-1"></i>Loading trial info...
+                                </div>
+                            </div>
+                            
+                            <div class="text-center pt-2">
+                                <a href="/upgrade" class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg min-h-[48px] w-full justify-center">
+                                    <i class="fas fa-credit-card"></i>
+                                    <span>Upgrade Now</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% else %}
+                    <!-- Paid Plan Status -->
+                    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 shadow-sm w-full max-w-4xl">
+                        <!-- Desktop Layout -->
+                        <div class="hidden lg:flex items-center gap-3 text-sm">
+                            <span class="text-blue-800 font-medium">You are currently on the</span>
+                            <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-semibold">
+                                {{ subscription_info.tier_name }} plan
+                            </span>
+                            {% if usage_stats.workers_limit %}
+                            <span class="bg-white/70 px-3 py-1 rounded-full font-medium text-blue-700">
+                                👥 {{ usage_stats.workers_used }}/{{ usage_stats.workers_limit }} workers
+                            </span>
+                            {% else %}
+                            <span class="bg-white/70 px-3 py-1 rounded-full font-medium text-blue-700">
+                                👥 {{ usage_stats.workers_used }} workers - unlimited
+                            </span>
+                            {% endif %}
+                            <a href="/upgrade" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-sm font-medium transition-all duration-200 shadow-md hover:shadow-lg">
+                                <i class="fas fa-cog"></i>
+                                <span>Manage billing</span>
+                            </a>
+                        </div>
+                        
+                        <!-- Mobile Layout -->
+                        <div class="lg:hidden space-y-3 subscription-status-mobile">
+                            <div class="text-center">
+                                <div class="text-blue-800 font-medium text-sm mb-2">You are currently on the</div>
+                                <div class="bg-blue-100 text-blue-800 px-4 py-2 rounded-full font-semibold text-base inline-block">
+                                    {{ subscription_info.tier_name }} plan
+                                </div>
+                            </div>
+                            
+                            <div class="text-center">
+                                <div class="bg-white/70 px-4 py-3 rounded-lg font-medium text-blue-700 border border-blue-100">
+                                    {% if usage_stats.workers_limit %}
+                                    <div class="text-lg font-semibold">👥 {{ usage_stats.workers_used }}/{{ usage_stats.workers_limit }} workers</div>
+                                    <div class="text-xs opacity-75">{{ usage_stats.workers_limit - usage_stats.workers_used }} remaining</div>
+                                    {% else %}
+                                    <div class="text-lg font-semibold">👥 {{ usage_stats.workers_used }} workers</div>
+                                    <div class="text-xs opacity-75">unlimited</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="text-center pt-2">
+                                <a href="/upgrade" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg min-h-[48px] w-full justify-center">
+                                    <i class="fas fa-cog"></i>
+                                    <span>Manage billing</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Workspace Info Card -->
+                {% if session.get('current_workspace') %}
+                <div class="card bg-gradient-to-br from-brand-navy-50 via-brand-gray-50 to-brand-navy-100 border border-brand-navy-200/60 shadow-lg mb-8 hover:shadow-xl transition-all duration-300">
+                    <div class="card-body p-6">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 bg-gradient-to-br from-brand-navy-500 to-brand-navy-600 rounded-xl flex items-center justify-center shadow-md">
+                                    <i class="fas fa-building text-white text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-bold text-gray-800">{{ session.get('current_workspace', {}).get('name', 'Workspace') }}</h3>
+                                    <p class="text-sm text-gray-600 mt-1">Your workspace</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div class="flex flex-wrap items-center gap-3">
+                                    <span class="text-sm font-semibold text-gray-700">Workspace Code:</span>
+                                    <div class="flex items-center gap-2">
+                                        <input type="text" 
+                                               value="{{ session.get('current_workspace', {}).get('code', '') }}" 
+                                               class="input input-sm font-mono text-center bg-white border-2 border-brand-navy-300 focus:border-brand-navy-500 focus:ring-2 focus:ring-brand-navy-200 shadow-sm" 
+                                               readonly 
+                                               style="width: 150px; font-size: 13px; letter-spacing: 1px;">
+                                        <button onclick="copyWorkspaceCode()" class="btn btn-sm btn-primary shadow-md hover:shadow-lg transition-all duration-200">
+                                            <i class="fas fa-copy mr-1"></i>
+                                            Copy
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4 p-3 bg-brand-navy-100/50 rounded-lg border border-brand-navy-200/50">
+                            <div class="flex items-center gap-2 text-sm text-brand-navy-700">
+                                <i class="fas fa-info-circle text-brand-navy-600"></i>
+                                <span class="font-medium">Share this code with team members so that they are able to log into the workspace</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Company Contact Information -->
+                        {% if session.get('current_workspace', {}).get('company_email') or session.get('current_workspace', {}).get('company_phone') %}
+                        <div class="mt-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="font-semibold text-gray-700">Company Contact Information</h4>
+                                <button onclick="openEditContactModal()" class="btn btn-sm btn-ghost hover:bg-blue-100 text-blue-600">
+                                    <i class="fas fa-edit mr-1"></i>
+                                    Edit
+                                </button>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {% if session.get('current_workspace', {}).get('company_email') %}
+                                <div class="flex items-center gap-3 p-3 bg-white/60 rounded-lg border border-brand-navy-200/50">
+                                    <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-envelope text-white text-sm"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="text-xs text-gray-600 font-medium">Company Email</div>
+                                        <div class="text-sm text-gray-800 font-semibold" id="displayCompanyEmail">{{ session.get('current_workspace', {}).get('company_email', '') }}</div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                
+                                {% if session.get('current_workspace', {}).get('company_phone') %}
+                                <div class="flex items-center gap-3 p-3 bg-white/60 rounded-lg border border-brand-navy-200/50">
+                                    <div class="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-phone text-white text-sm"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="text-xs text-gray-600 font-medium">Company Phone</div>
+                                        <div class="text-sm text-gray-800 font-semibold" id="displayCompanyPhone">{{ session.get('current_workspace', {}).get('company_phone', '') }}</div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
                         {% endif %}
                     </div>
                 </div>
-                <button onclick="closeSuccessAlert()" class="btn btn-ghost btn-sm ml-auto">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-        </div>
-        {% endif %}
+                {% endif %}
 
-        <!-- Header -->
-        <div class="flex items-center justify-between mb-8">
-            <div class="flex items-center gap-4">
-                <img src="{{ url_for('static', filename='img/logo + text.png') }}" alt="Embee Accounting Logo" class="h-14 w-auto object-contain" />
-            </div>
-            <div class="text-right">
-                <h1 class="text-3xl font-bold text-black mb-2">
-                    Welcome, {{ session.get('user', {}).get('display_name', 'User') }}
-                </h1>
-                <p class="text-sm text-gray-500">
-                    Here's what's happening with your casual workforce today.
-                </p>
-            </div>
-        </div>
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 gap-6 sm:grid-cols-3 mb-8">
+                    <a href="{{ url_for('workers_route') }}" class="card bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer">
+                        <div class="card-body p-6">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <h3 class="text-sm font-semibold text-blue-700 mb-1">Total Workers</h3>
+                                    <p class="text-3xl font-bold text-blue-800">{{ total_workers }}</p>
+                                    <p class="text-xs text-blue-600 mt-1">Active workforce</p>
+                                </div>
+                                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                                    <i data-feather="users" class="text-blue-600 w-6 h-6"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
 
-        <!-- Responsive Subscription Status -->
-        {% if subscription_info %}
-        <div class="flex justify-center mb-8">
-            {% if subscription_info.tier == 'trial' %}
-            <!-- Trial Status -->
-            <div class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4 shadow-sm w-full max-w-4xl">
-                <!-- Desktop Layout -->
-                <div class="hidden lg:flex items-center gap-3 text-sm">
-                    <span class="text-green-800 font-medium">You are currently on a</span>
-                    <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full font-semibold">
-                        {{ subscription_info.tier_name }}
-                    </span>
-                    <span class="bg-white/70 text-green-800 px-3 py-1 rounded-full font-medium">
-                        👥 {{ usage_stats.workers_used }} workers - unlimited during trial
-                    </span>
-                    <span class="bg-white/70 px-3 py-1 rounded-full font-medium text-green-700" id="trial-days-display">
-                        <i class="fas fa-clock mr-1"></i>Loading trial info...
-                    </span>
-                    <a href="/upgrade" class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg text-sm font-medium transition-all duration-200 shadow-md hover:shadow-lg">
-                        <i class="fas fa-credit-card"></i>
-                        <span>Upgrade</span>
+                    <a href="{{ url_for('tasks_route') }}" class="card bg-gradient-to-br from-green-50 to-green-100 border border-green-200 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer">
+                        <div class="card-body p-6">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <h3 class="text-sm font-semibold text-green-700 mb-1">Active Tasks</h3>
+                                    <p class="text-3xl font-bold text-green-800">{{ total_tasks }}</p>
+                                    <p class="text-xs text-green-600 mt-1">Current projects</p>
+                                </div>
+                                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                                    <i data-feather="clipboard" class="text-green-600 w-6 h-6"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+
+                    <a href="{{ url_for('tasks_route') }}" class="card bg-gradient-to-br from-indigo-50 to-indigo-100 border border-indigo-200 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer">
+                        <div class="card-body p-6">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <h3 class="text-sm font-semibold text-indigo-700 mb-1">Quick Actions</h3>
+                                    <p class="text-lg font-bold text-indigo-800 mb-1">Manage Tasks</p>
+                                    <p class="text-xs text-indigo-600 mt-1">Create & track projects</p>
+                                </div>
+                                <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-tasks text-indigo-600 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
                     </a>
                 </div>
                 
-                <!-- Mobile Layout -->
-                <div class="lg:hidden space-y-3 subscription-status-mobile">
-                    <div class="text-center">
-                        <div class="text-green-800 font-medium text-sm mb-2">You are currently on a</div>
-                        <div class="bg-green-100 text-green-800 px-4 py-2 rounded-full font-semibold text-base inline-block">
-                            🎉 {{ subscription_info.tier_name }}
-                        </div>
-                    </div>
-                    
-                    <div class="flex flex-col gap-3 text-sm">
-                        <div class="bg-white/70 px-4 py-3 rounded-lg font-medium text-green-700 text-center border border-green-100">
-                            <div class="text-lg font-semibold">👥 {{ usage_stats.workers_used }} workers</div>
-                            <div class="text-xs opacity-75">unlimited during trial</div>
-                        </div>
-                        <div class="bg-white/70 px-4 py-3 rounded-lg font-medium text-green-700 text-center border border-green-100" id="trial-days-display-mobile">
-                            <i class="fas fa-clock mr-1"></i>Loading trial info...
-                        </div>
-                    </div>
-                    
-                    <div class="text-center pt-2">
-                        <a href="/upgrade" class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg min-h-[48px] w-full justify-center">
-                            <i class="fas fa-credit-card"></i>
-                            <span>Upgrade Now</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            {% else %}
-            <!-- Paid Plan Status -->
-            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 shadow-sm w-full max-w-4xl">
-                <!-- Desktop Layout -->
-                <div class="hidden lg:flex items-center gap-3 text-sm">
-                    <span class="text-blue-800 font-medium">You are currently on the</span>
-                    <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-semibold">
-                        {{ subscription_info.tier_name }} plan
-                    </span>
-                    {% if usage_stats.workers_limit %}
-                    <span class="bg-white/70 px-3 py-1 rounded-full font-medium text-blue-700">
-                        👥 {{ usage_stats.workers_used }}/{{ usage_stats.workers_limit }} workers
-                    </span>
-                    {% else %}
-                    <span class="bg-white/70 px-3 py-1 rounded-full font-medium text-blue-700">
-                        👥 {{ usage_stats.workers_used }} workers - unlimited
-                    </span>
-                    {% endif %}
-                    <a href="/upgrade" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-sm font-medium transition-all duration-200 shadow-md hover:shadow-lg">
-                        <i class="fas fa-cog"></i>
-                        <span>Manage billing</span>
-                    </a>
-                </div>
-                
-                <!-- Mobile Layout -->
-                <div class="lg:hidden space-y-3 subscription-status-mobile">
-                    <div class="text-center">
-                        <div class="text-blue-800 font-medium text-sm mb-2">You are currently on the</div>
-                        <div class="bg-blue-100 text-blue-800 px-4 py-2 rounded-full font-semibold text-base inline-block">
-                            {{ subscription_info.tier_name }} plan
-                        </div>
-                    </div>
-                    
-                    <div class="text-center">
-                        <div class="bg-white/70 px-4 py-3 rounded-lg font-medium text-blue-700 border border-blue-100">
-                            {% if usage_stats.workers_limit %}
-                            <div class="text-lg font-semibold">👥 {{ usage_stats.workers_used }}/{{ usage_stats.workers_limit }} workers</div>
-                            <div class="text-xs opacity-75">{{ usage_stats.workers_limit - usage_stats.workers_used }} remaining</div>
-                            {% else %}
-                            <div class="text-lg font-semibold">👥 {{ usage_stats.workers_used }} workers</div>
-                            <div class="text-xs opacity-75">unlimited</div>
+                <!-- User Roles Card -->
+                <div class="card bg-blue-50 shadow-xl hover:shadow-2xl transition-all mb-8 border border-blue-100">
+                    <div class="card-body p-6">
+                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-800">Team Members</h3>
+                                <p class="text-sm text-gray-600 mt-1">Manage your team access and permissions</p>
+                            </div>
+                            {% if session.get('current_workspace', {}).get('role') != 'Supervisor' %}
+                            <button onclick="document.getElementById('add-team-member-modal').showModal()" class="btn btn-primary shadow-lg hover:shadow-xl transition-all duration-200 w-full sm:w-auto">
+                                <i data-feather="user-plus" class="mr-2"></i>Add Team Member
+                            </button>
                             {% endif %}
                         </div>
-                    </div>
-                    
-                    <div class="text-center pt-2">
-                        <a href="/upgrade" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg min-h-[48px] w-full justify-center">
-                            <i class="fas fa-cog"></i>
-                            <span>Manage billing</span>
-                        </a>
+                        <div class="overflow-x-auto">
+                            <table class="table w-full">
+                                <thead>
+                                    <tr class="bg-blue-50/50">
+                                        <th class="text-gray-700 font-semibold">Email</th>
+                                        <th class="text-gray-700 font-semibold">Role</th>
+                                        {% if session.get('current_workspace', {}).get('role') != 'Supervisor' %}
+                                        <th class="text-gray-700 font-semibold" style="min-width: 120px;">Actions</th>
+                                        {% endif %}
+                                    </tr>
+                                </thead>
+                                <tbody id="teamMembersTableBody" class="divide-y divide-gray-100">
+                                    {% for user in team_members %}
+                                    <tr class="hover:bg-blue-50/50 transition-colors">
+                                        <td class="font-medium text-gray-800">{{ user.email }}</td>
+                                        <td>
+                                            <span class="badge badge-info">{{ user.role }}</span>
+                                        </td>
+                                        {% if session.get('current_workspace', {}).get('role') != 'Supervisor' %}
+                                        <td>
+                                            <div class="flex gap-2">
+                                                <button onclick="openEditRoleModal('{{ user.id }}', '{{ user.email }}', '{{ user.role }}')" class="btn btn-ghost btn-sm text-blue-600 hover:text-blue-800">
+                                                    <i data-feather="edit-2" class="w-4 h-4"></i>
+                                                </button>
+                                                <button onclick="openRemoveTeamMemberModal('{{ user.id }}', '{{ user.email }}')" class="btn btn-ghost btn-sm text-red-600 hover:text-red-800">
+                                                    <i data-feather="trash-2" class="w-4 h-4"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                        {% endif %}
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
-            {% endif %}
-        </div>
+    <script>
+        // Initialize feather icons and other functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            feather.replace();
+            
+            // Observe the entire document for changes
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'childList') {
+                        mutation.addedNodes.forEach(function(node) {
+                            if (node.nodeType === 1) { // Element node
+                                feather.replace();
+                            }
+                        });
+                    }
+                });
+            });
+            
+            // Observe the entire document for changes
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+            
+            loadTrialInfo();
+        });
+        
+        function copyWorkspaceCode() {
+            const workspaceCodeInput = document.querySelector('input[readonly]');
+            if (workspaceCodeInput) {
+                workspaceCodeInput.select();
+                workspaceCodeInput.setSelectionRange(0, 99999); // For mobile devices
+                try {
+                    document.execCommand('copy');
+                    showSuccess('Workspace code copied to clipboard!');
+                } catch (err) {
+                    console.error('Failed to copy: ', err);
+                    showError('Failed to copy workspace code');
+                }
+            }
+        }
+        
+        // Override notification functions to use custom modal
+        function showSuccess(message) {
+            openNotificationModal('Success', message);
+        }
+        
+        function showError(message) {
+            openNotificationModal('Error', message);
+        }
+        
+        // Create a modern notification modal
+        function openNotificationModal(title, message) {
+            const modal = document.getElementById('notification-modal');
+            const titleEl = document.getElementById('notification-title');
+            const messageEl = document.getElementById('notification-message');
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+            modal.showModal();
+        }
+        
+        function closeNotificationModal() {
+            const modal = document.getElementById('notification-modal');
+            modal.close();
+        }
+        
+        // Load trial information for admin users
+        async function loadTrialInfo() {
+            try {
+                const response = await fetch('/api/workspace/payments');
+                const data = await response.json();
+                
+                if (response.ok && data.workspace) {
+                    const trialDaysDisplay = document.getElementById('trial-days-display');
+                    const trialDaysDisplayMobile = document.getElementById('trial-days-display-mobile');
+                    
+                    // Update the trial days display in the subscription info bar (both desktop and mobile)
+                    const updateTrialDisplay = (element, isActive, daysLeft, subscriptionActive) => {
+                        if (!element) return;
+                        
+                        if (subscriptionActive) {
+                            element.innerHTML = '<i class="fas fa-check mr-1"></i>Subscription active';
+                        } else if (isActive) {
+                            element.innerHTML = `<i class="fas fa-clock mr-1"></i>${daysLeft} days left`;
+                            
+                            // Show warning color if trial is expiring soon (7 days or less)
+                            if (daysLeft <= 7) {
+                                element.classList.remove('text-green-700');
+                                element.classList.add('text-yellow-700');
+                                const parentCard = element.closest('.bg-gradient-to-r');
+                                if (parentCard) {
+                                    parentCard.classList.remove('from-green-50', 'to-emerald-50', 'border-green-200');
+                                    parentCard.classList.add('from-yellow-50', 'to-orange-50', 'border-yellow-200');
+                                }
+                            }
+                        } else {
+                            element.innerHTML = '<i class="fas fa-exclamation-triangle mr-1"></i>Trial expired';
+                            element.classList.remove('text-green-700');
+                            element.classList.add('text-red-700');
+                            const parentCard = element.closest('.bg-gradient-to-r');
+                            if (parentCard) {
+                                parentCard.classList.remove('from-green-50', 'to-emerald-50', 'border-green-200');
+                                parentCard.classList.add('from-red-50', 'to-pink-50', 'border-red-200');
+                            }
+                        }
+                    };
+                    
+                    // Update both desktop and mobile displays
+                    updateTrialDisplay(trialDaysDisplay, data.workspace.is_trial_active, data.workspace.trial_days_left, data.workspace.subscription_status === 'active');
+                    updateTrialDisplay(trialDaysDisplayMobile, data.workspace.is_trial_active, data.workspace.trial_days_left, data.workspace.subscription_status === 'active');
+                } else if (response.status === 402) {
+                    // Payment required - trial expired
+                    window.location.href = '/upgrade';
+                }
+            } catch (error) {
+                console.error('Error loading trial info:', error);
+            }
+        }
+        
+        // Confetti animation for subscription success
+        function triggerConfetti() {
+            // First burst
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#10B981', '#3B82F6', '#F59E0B']
+            });
+            
+            // Second burst after delay
+            setTimeout(() => {
+                confetti({
+                    particleCount: 50,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 },
+                    colors: ['#10B981', '#3B82F6', '#F59E0B']
+                });
+            }, 200);
+            
+            // Third burst from the other side
+            setTimeout(() => {
+                confetti({
+                    particleCount: 50,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 },
+                    colors: ['#10B981', '#3B82F6', '#F59E0B']
+                });
+            }, 400);
+        }
+        
+        // Trigger confetti if subscription was just updated
+        {% if subscription_updated %}
+        document.addEventListener('DOMContentLoaded', function() {
+            triggerConfetti();
+        });
         {% endif %}
+        
+        // Close success alert function
+        function closeSuccessAlert() {
+            const alert = document.getElementById('subscription-success-alert');
+            if (alert) {
+                alert.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
 
         <!-- Workspace Info Card -->
         {% if session.get('current_workspace') %}

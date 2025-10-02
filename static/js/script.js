@@ -760,7 +760,7 @@ window.importWithMapping = async function() {
         }
         return response.json();
     })
-    .then(result => {
+    .then(async result => {
         console.log('Import result:', result);
         
         if (result.error) {

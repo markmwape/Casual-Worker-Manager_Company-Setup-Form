@@ -751,17 +751,6 @@
     }
 </script>
 
-<script>
-    const customFields = [
-        {% for field in custom_fields %}
-        {
-            name: "{{ field.name|escape }}",
-            formula: "{{ field.formula|escape }}",
-            max_limit: {{ field.max_limit|default('null') }}
-        }{% if not loop.last %},{% endif %}
-        {% endfor %}
-    ];
-</script>
 <style>
 .gradient-header th {
     background: linear-gradient(90deg, #2563eb 0%, #60a5fa 100%);

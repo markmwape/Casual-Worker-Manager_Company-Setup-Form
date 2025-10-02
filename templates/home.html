@@ -6,9 +6,7 @@
     <title>Embee accounting - Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.24/dist/full.min.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/daisyui@4.4.24/dist/full.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/feather-icons"></script>
     <!-- Confetti Animation Library -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -586,9 +584,9 @@
                     </div>
                 </dialog>
             </div>
-            {% include 'components/_sidebar.html' %}
             {% endblock %}
         </div>  <!-- close drawer-content -->
+        {% include 'components/_sidebar.html' %}
     </div>  <!-- close drawer -->
     
     <script>
@@ -838,11 +836,13 @@
         }
         
         // Handle contact form submission
-        document.getElementById('contactForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const emailInput = document.getElementById('companyEmailInput');
-            const phoneInput = document.getElementById('companyPhoneInput');
+        const contactForm = document.getElementById('contactForm');
+        if (contactForm) {
+            contactForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const emailInput = document.getElementById('companyEmailInput');
+                const phoneInput = document.getElementById('companyPhoneInput');
             
             const formData = {
                 email: emailInput.value.trim(),
@@ -877,7 +877,8 @@
                 console.error('Error updating contact information:', error);
                 showCustomModal('Error', 'An error occurred while updating contact information', 'error');
             }
-        });
+            });
+        }
         
         // Mobile menu close functionality
         function initializeMobileMenuClose() {

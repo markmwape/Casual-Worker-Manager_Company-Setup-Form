@@ -42,7 +42,7 @@
                     </thead>
                     <tbody class="divide-y divide-blue-50">
                         {% for worker in workers %}
-                        <tr class="hover:bg-blue-50/60 transition-colors duration-150 {% if loop.index0 % 2 == 0 %}bg-white{% else %}bg-blue-50/40{% endif %}">
+                        <tr class="hover:bg-gray-50 transition-colors duration-150 {% if loop.index0 % 2 == 0 %}bg-white{% else %}bg-gray-50/60{% endif %}">
                             <td class="text-center align-middle">
                                 <input type="checkbox" class="worker-checkbox checkbox checkbox-primary" data-worker-id="{{ worker.id }}">
                             </td>

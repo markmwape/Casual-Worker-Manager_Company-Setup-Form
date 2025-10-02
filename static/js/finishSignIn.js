@@ -29,7 +29,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const urlParams = new URLSearchParams(window.location.search);
             const workspaceCode = urlParams.get('workspace');
             const fromForgotWorkspace = urlParams.get('from') === 'forgot-workspace';
-            const pendingWorkspace = sessionStorage.getItem('pending_workspace');
+            // Read pending workspace from localStorage (join page uses localStorage)
+            const pendingWorkspace = localStorage.getItem('pendingWorkspace') || sessionStorage.getItem('pending_workspace');
             const workspaceData = pendingWorkspace ? JSON.parse(pendingWorkspace) : null;
             
             // Send user data to backend
@@ -61,7 +62,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     if (workspaceData) {
                         // User has workspace data, clear it and go to home
-                        sessionStorage.removeItem('pending_workspace');
+                        localStorage.removeItem('pendingWorkspace');
                         console.log('Redirecting to home (user has workspace)');
                         window.location.href = '/home';
                     } else {
@@ -148,17 +149,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 } else {
                     const errorData = await response.json();
-                    console.error('Failed to set session:', errorData);
-                    
-                    if (response.status === 403 && errorData.error && errorData.error.includes('not authorized')) {
-                        alert('Access Denied: You are not authorized to access this workspace. Please make sure your admin has added your email to the workspace team members.');
+                    console.error('Failed to set session (status ' + response.status + '):', errorData);
+                    if (response.status === 403 && errorData.error && errorData.error.toLowerCase().includes('not authorized')) {
+                        alert('Access Denied: ' + errorData.error);
                     } else {
-                        alert('Failed to complete sign-in. Please try again.');
+                        const msg = errorData.error || 'Please try again.';
+                        alert(`Failed to complete sign-in: ${msg}`);
                     }
                 }
             } catch (error) {
                 console.error('Error setting session:', error);
-                alert('Failed to complete sign-in. Please try again.');
+                alert(`Failed to complete sign-in: ${error.message}`);
             }
         })
         .catch((error) => {

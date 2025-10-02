@@ -1,7 +1,7 @@
-<div class="drawer-side fixed inset-y-0 left-0 w-80 h-screen z-[100]">
+<div class="drawer-side">
     <!-- Drawer overlay to close the sidebar when clicking outside on mobile -->
     <label for="my-drawer" class="drawer-overlay"></label>
-        <div class="p-4 w-80 h-screen flex flex-col bg-gradient-to-b from-brand-navy-500 to-brand-navy-700 text-white overflow-y-auto overflow-x-hidden">
+    <div class="p-4 w-80 h-full flex flex-col bg-gradient-to-b from-brand-navy-500 to-brand-navy-700 text-white overflow-y-auto">
         <!-- Header Section -->
         <div class="mb-8">
             <div class="flex items-center justify-center mb-6 mt-4">
@@ -106,16 +106,16 @@
                 </li>
             </ul>
     </div>
+</div>
 
-    <!-- Logout Confirmation Modal -->
-    <div id="logout-modal" class="modal">
-        <div class="modal-box">
-            <h3 class="font-bold text-lg">Confirm Logout</h3>
-            <p class="py-4">Are you sure you want to logout?</p>
-            <div class="modal-action">
-                <a href="#" class="btn btn-ghost" onclick="closeLogoutModal()">Cancel</a>
-                <a href="{{ url_for('logout_route') }}" class="btn btn-primary">Confirm</a>
-            </div>
+<!-- Logout Confirmation Modal -->
+<div id="logout-modal" class="modal">
+    <div class="modal-box">
+        <h3 class="font-bold text-lg">Confirm Logout</h3>
+        <p class="py-4">Are you sure you want to logout?</p>
+        <div class="modal-action">
+            <a href="#" class="btn btn-ghost" onclick="closeLogoutModal()">Cancel</a>
+            <a href="{{ url_for('logout_route') }}" class="btn btn-primary">Confirm</a>
         </div>
     </div>
 </div>

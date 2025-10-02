@@ -1,7 +1,23 @@
-<div class="drawer-side w-80 h-screen">
-    <!-- Drawer overlay to close the sidebar when clicking outside on mobile -->
+<div class="drawer-side z-40">
+    <!-- Drawer overlay to close the sidebar w                <div class="w-full">
+                    <a href="{{ url_for('home_route') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg {% if request.endpoint == 'home_route' %}bg-white/20 text-white{% else %}text-white/90{% endif %} hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline">
+                        <span class="material-icons mr-3 pointer-events-none">home</span> 
+                        <span class="font-medium pointer-events-none">Dashboard</span>
+                    </a>
+                </div>icking outside on mobile -->
     <label for="my-drawer" class="drawer-overlay"></label>
-    <div class="p-4 w-80 h-full flex flex-col bg-gradient-to-b from-brand-navy-500 to-brand-navy-700 text-white overflow-y-auto">
+    <ul class="menu p-4 w-80 h-full bg-gradient-to-b from-brand-navy-500 to-brand-navy-700 text-white overflow-y-auto flex flex-col">
+        <!-- Header Section -->
+        <div class="mb-8">
+            <div class="flex items-center justify-center mb-6 mt-4">
+                <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center mr-3 shadow-lg">
+                    <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Embee Bee Logo" class="w-8 h-8 object-contain" />
+                </div>
+                <h2 class="text-lg font-bold text-white">My Workspace</h2>
+            </div>
+            
+            <!-- User Profile Section -->
+            <div class="bg-white/10 rounded-xl p-5 backdrop-blur-sm border border-white/20">
         <!-- Header Section -->
         <div class="mb-8">
             <div class="flex items-center justify-center mb-6 mt-4">
@@ -62,50 +78,51 @@
             </div>
         </div>
         
-        <ul class="menu w-full space-y-2 mt-8">
-                <li class="w-full">
+        <!-- Menu Items -->
+        <div class="flex-1 space-y-2 mt-8">
+                <div class="w-full">
                     <a href="{{ url_for('home_route') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg {% if request.endpoint == 'home_route' %}bg-white/20 text-white{% else %}text-white/90{% endif %} hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline">
                         <span class="material-icons mr-3 pointer-events-none">home</span> 
                         <span class="font-medium pointer-events-none">Dashboard</span>
                     </a>
-                </li>
-                <li class="w-full">
+                </div>
+                <div class="w-full">
                     <a href="{{ url_for('workers_route') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg {% if request.endpoint == 'workers_route' %}bg-white/20 text-white{% else %}text-white/90{% endif %} hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline">
                         <span class="material-icons mr-3 pointer-events-none">group</span> 
                         <span class="font-medium pointer-events-none">Workers</span>
                     </a>
-                </li>
-                <li class="w-full">
+                </div>
+                <div class="w-full">
                     <a href="{{ url_for('tasks_route') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg {% if request.endpoint == 'tasks_route' %}bg-white/20 text-white{% else %}text-white/90{% endif %} hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline">
                         <span class="material-icons mr-3 pointer-events-none">assignment</span> 
                         <span class="font-medium pointer-events-none">Tasks</span>
                     </a>
-                </li>
-                <li class="w-full">
+                </div>
+                <div class="w-full">
                     <a href="{{ url_for('reports_route') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg {% if request.endpoint == 'reports_route' %}bg-white/20 text-white{% else %}text-white/90{% endif %} hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline">
                         <span class="material-icons mr-3 pointer-events-none">bar_chart</span> 
                         <span class="font-medium pointer-events-none">Reports</span>
                     </a>
-                </li>
+                </div>
                 
                 <!-- Payments/Billing menu item (admin only) -->
                 {% if session.get('current_workspace', {}).get('role') in ['Admin'] %}
-                <li class="w-full">
+                <div class="w-full">
                     <a href="https://billing.stripe.com/p/login/test_5kQaEX5Jg1o5g8lg0SgEg00" target="_blank" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg text-white/90 hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline">
                         <span class="material-icons mr-3 pointer-events-none">credit_card</span> 
                         <span class="font-medium pointer-events-none">Payments/Billing</span>
                     </a>
-                </li>
+                </div>
                 {% endif %}
                 
-                <li class="w-full mt-8">
+                <div class="w-full mt-8">
                     <a href="{{ url_for('signout') }}" class="w-full sidebar-menu-item whitespace-nowrap flex items-center py-4 px-4 rounded-lg text-white/90 hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline">
                         <span class="material-icons mr-3 pointer-events-none">logout</span> 
                         <span class="font-medium pointer-events-none">Sign Out</span>
                     </a>
-                </li>
-            </ul>
-    </div>
+                </div>
+        </div>
+    </ul>
 </div>
 
 <!-- Logout Confirmation Modal -->

@@ -78,6 +78,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 if (response.ok) {
                     console.log('Session set successfully, redirecting to home');
+                    // Clear pendingWorkspace after successful session creation
+                    window.localStorage.removeItem('pendingWorkspace');
                     window.location.href = '/home';
                 } else {
                     const errorData = await response.json();

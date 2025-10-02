@@ -21,7 +21,7 @@
 <body>
     <div class="drawer lg:drawer-open h-screen">
         <input id="my-drawer" type="checkbox" class="drawer-toggle" />
-        <div class="drawer-content p-8 bg-brand-navy-50/80 min-h-screen lg:ml-80">
+        <div class="drawer-content pt-0 px-8 pb-8 bg-brand-navy-50/80 min-h-screen lg:ml-80">
             {% block content %}{% endblock %}
         </div>
         {% include 'components/_sidebar.html' %}

@@ -16,7 +16,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!email) {
             email = window.prompt('Please provide your email for confirmation');
         }
-        
         console.log('Attempting to sign in with email link...');
         signInWithEmailLink(window.firebaseAuth, email, window.location.href)
         .then(async (result) => {
@@ -25,128 +24,57 @@ document.addEventListener('DOMContentLoaded', function() {
             const user = result.user;
             console.log('User data:', user);
             
-            // Get workspace data from URL parameters
-            const urlParams = new URLSearchParams(window.location.search);
-            const workspaceCode = urlParams.get('workspace');
-            const fromForgotWorkspace = urlParams.get('from') === 'forgot-workspace';
-            // Read pending workspace from localStorage (join page uses localStorage)
-            const pendingWorkspace = localStorage.getItem('pendingWorkspace') || sessionStorage.getItem('pending_workspace');
-            const workspaceData = pendingWorkspace ? JSON.parse(pendingWorkspace) : null;
-            
-            // Send user data to backend
+            // Fetch user's workspaces and select first if available
+            let workspaceData = null;
             try {
-                const response = await fetch('/set_session', {
+                const workspacesResponse = await fetch('/api/user/workspaces', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        email: user.email,
-                        displayName: user.displayName || '',
-                        photoURL: user.photoURL || '',
-                        uid: user.uid,
-                        workspace_data: workspaceData
-                    })
+                    credentials: 'same-origin',    // include cookies in request
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: user.email })
                 });
-                
-                if (response.ok) {
-                    console.log('Session set successfully');
-                    
-                    // Check if this is from forgot workspace page
-                    if (fromForgotWorkspace) {
-                        console.log('User came from forgot workspace, redirecting back with workspaces');
-                        // Redirect back to forgot workspace page to show workspaces
-                        window.location.href = '/forgot-workspace?signed_in=true&email=' + encodeURIComponent(user.email);
-                        return;
-                    }
-                    
-                    if (workspaceData) {
-                        // User has workspace data, clear it and go to home
-                        localStorage.removeItem('pendingWorkspace');
-                        console.log('Redirecting to home (user has workspace)');
-                        window.location.href = '/home';
+                if (workspacesResponse.ok) {
+                    const workspacesJson = await workspacesResponse.json();
+                    if (workspacesJson.success && workspacesJson.workspaces.length > 0) {
+                        const ws = workspacesJson.workspaces[0];
+                        console.log('Auto-selecting workspace:', ws.name);
+                        workspaceData = { id: ws.id };
                     } else {
-                        // No workspace data - check if user has workspaces and auto-select
-                        console.log('No workspace data, checking user workspaces...');
-                        
-                        try {
-                            const workspacesResponse = await fetch('/api/user/workspaces', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify({ email: user.email })
-                            });
-                            
-                            if (workspacesResponse.ok) {
-                                const workspacesData = await workspacesResponse.json();
-                                
-                                if (workspacesData.success && workspacesData.workspaces && workspacesData.workspaces.length > 0) {
-                                    // Auto-select the first workspace for all users with existing workspaces
-                                    const workspace = workspacesData.workspaces[0];
-                                    console.log('Auto-selecting workspace:', workspace.name);
-                                    
-                                    const selectResponse = await fetch('/api/workspace/join', {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({ workspace_code: workspace.code })
-                                    });
-                                    
-                                    if (selectResponse.ok) {
-                                        const selectData = await selectResponse.json();
-                                        console.log('Workspace join response:', selectData);
-                                        
-                                        // Set session with the workspace
-                                        const sessionResponse2 = await fetch('/set_session', {
-                                            method: 'POST',
-                                            headers: { 'Content-Type': 'application/json' },
-                                            body: JSON.stringify({
-                                                email: user.email,
-                                                displayName: user.displayName || '',
-                                                photoURL: user.photoURL || '',
-                                                uid: user.uid,
-                                                workspace_data: selectData.workspace
-                                            })
-                                        });
-                                        
-                                        if (sessionResponse2.ok) {
-                                            console.log('Session set, redirecting to home');
-                                            window.location.href = '/home';
-                                            return;
-                                        } else {
-                                            console.error('Failed to set session for selected workspace:', await sessionResponse2.text());
-                                        }
-                                    }
-                                } else {
-                                    // No existing workspaces (new user), redirect to home to create/join
-                                    console.log('No workspaces found, redirecting to home');
-                                    window.location.href = '/home';
-                                    return;
-                                }
-                            } else {
-                                console.error('Failed to fetch user workspaces:', workspacesResponse.status);
-                            }
-                        } catch (error) {
-                            console.error('Error checking user workspaces:', error);
-                        }
-                        
-                        // Fallback: redirect to home (user can create/join workspace from there)
-                        console.log('Fallback - redirecting to home');
-                        window.location.href = '/home';
+                        console.log('No existing workspaces for user');
                     }
                 } else {
+                    console.error('Failed to fetch user workspaces:', workspacesResponse.status);
+                }
+            } catch (err) {
+                console.error('Error fetching user workspaces:', err);
+            }
+            
+            // Set session on server including workspaceData if any
+            try {
+                const sessionPayload = {
+                    email: user.email,
+                    displayName: user.displayName || '',
+                    photoURL: user.photoURL || '',
+                    uid: user.uid
+                };
+                if (workspaceData) sessionPayload.workspace_data = workspaceData;
+                const response = await fetch('/set_session', {
+                    method: 'POST',
+                    credentials: 'same-origin',    // include cookies in request
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(sessionPayload)
+                });
+                if (response.ok) {
+                    console.log('Session set successfully, redirecting to home');
+                    window.location.href = '/home';
+                } else {
                     const errorData = await response.json();
-                    console.error('Failed to set session (status ' + response.status + '):', errorData);
-                    if (response.status === 403 && errorData.error && errorData.error.toLowerCase().includes('not authorized')) {
-                        alert('Access Denied: ' + errorData.error);
-                    } else {
-                        const msg = errorData.error || 'Please try again.';
-                        alert(`Failed to complete sign-in: ${msg}`);
-                    }
+                    console.error('Failed to set session:', errorData);
+                    alert('Failed to complete sign-in: ' + (errorData.error || 'Please try again.'));
                 }
             } catch (error) {
                 console.error('Error setting session:', error);
-                alert(`Failed to complete sign-in: ${error.message}`);
+                alert('Failed to complete sign-in: ' + error.message);
             }
         })
         .catch((error) => {

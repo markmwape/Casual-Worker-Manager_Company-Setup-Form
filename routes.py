@@ -46,6 +46,9 @@ def get_current_user():
 
 @app.route('/workspace-selection')
 def workspace_selection_route():
+    # If user already has a session and workspace, send them to home
+    if 'user' in session and 'current_workspace' in session:
+        return redirect(url_for('home_route'))
     """Route for workspace selection page"""
     return render_template('workspace_selection.html')
 
@@ -1652,9 +1655,6 @@ def home_route():
             session.pop('current_workspace', None)
             return redirect(url_for('workspace_selection_route'))
         
-        # Check if user has access to this workspace
-        user_workspace = UserWorkspace.query.filter_by(
-            user_id=user.id,
             workspace_id=workspace_id
         ).first()
         

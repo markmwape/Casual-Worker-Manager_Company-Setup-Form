@@ -137,7 +137,14 @@ document.addEventListener('DOMContentLoaded', function() {
                                         window.location.href = '/workspace-selection';
                                         return;
                                     }
+                                } else {
+                                    // User has no workspaces, redirect to home (they can create/join from there)
+                                    console.log('User has no workspaces, redirecting to home');
+                                    window.location.href = '/home';
+                                    return;
                                 }
+                            } else {
+                                console.error('Failed to fetch user workspaces:', workspacesResponse.status);
                             }
                         } catch (error) {
                             console.error('Error checking user workspaces:', error);

@@ -74,9 +74,6 @@ def get_user_workspaces():
         # Get all workspaces this user has access to
         user_workspaces = UserWorkspace.query.filter_by(user_id=user.id).all()
         
-        if not user_workspaces:
-            return jsonify({"error": "No workspaces found for this email address"}), 404
-        
         workspaces_data = []
         for uw in user_workspaces:
             workspace = uw.workspace

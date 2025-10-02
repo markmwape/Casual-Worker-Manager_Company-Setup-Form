@@ -482,6 +482,24 @@ def set_session():
                     'company_email': workspace.company_email,
                     'company_phone': workspace.company_phone
                 }
+            elif not workspace_data:
+                # No workspace data provided - check if user has existing workspaces
+                user_workspaces = UserWorkspace.query.filter_by(user_id=user.id).all()
+                if user_workspaces:
+                    # Auto-select the first workspace
+                    first_workspace = user_workspaces[0].workspace
+                    if first_workspace:
+                        logging.info(f"Auto-selecting existing workspace for session: {first_workspace.name} (ID: {first_workspace.id})")
+                        session['current_workspace'] = {
+                            'id': first_workspace.id,
+                            'name': first_workspace.name,
+                            'code': first_workspace.workspace_code,
+                            'role': user_workspaces[0].role,
+                            'company_email': first_workspace.company_email,
+                            'company_phone': first_workspace.company_phone
+                        }
+                else:
+                    logging.info(f"User {email} has no workspaces - session will have no current_workspace")
             else:
                 logging.warning(f"No workspace variable found in locals. locals() keys: {list(locals().keys())}")
                 if workspace_data:
@@ -1575,7 +1593,6 @@ def task_attendance_route(task_id):
 
 
 @app.route("/home", methods=['GET'])
-@subscription_required
 def home_route():
     try:
         # Check if user is authenticated
@@ -1591,9 +1608,41 @@ def home_route():
             logging.error(f"User not found in database: {user_email}")
             return redirect(url_for('signin_route'))
         
+        # Handle case where user has no workspace yet
         if 'current_workspace' not in session:
-            logging.info("No current workspace, redirecting to workspace selection")
+            logging.info("No current workspace - new user, showing home with workspace creation options")
+            # Return home page with empty/default data for new users
+            return render_template('home.html', 
+                                 company=None, 
+                                 total_workers=0, 
+                                 total_tasks=0, 
+                                 team_members=[],
+                                 recent_activities=[],
+                                 activity_stats={},
+                                 subscription_info={'tier': 'trial', 'status': 'trial'},
+                                 usage_stats={'workers_used': 0, 'tasks_used': 0},
+                                 subscription_updated=False,
+                                 all_fields=[])
+        
+        # Apply subscription check only after we know user has a workspace
+        workspace_id = session['current_workspace']['id']
+        workspace = Workspace.query.get(workspace_id)
+        
+        if not workspace:
+            logging.error(f"Workspace not found: {workspace_id}")
+            session.pop('current_workspace', None)
             return redirect(url_for('workspace_selection_route'))
+        
+        # Check subscription status for users with workspaces
+        from subscription_middleware import check_subscription_status
+        try:
+            subscription_valid = check_subscription_status(workspace)
+            if not subscription_valid:
+                logging.warning(f"Subscription expired for workspace {workspace.name}")
+                # Could redirect to upgrade page, but for now continue to show home with limitations
+        except Exception as e:
+            logging.error(f"Error checking subscription status: {str(e)}")
+            # Continue anyway, don't block access due to subscription check errors
         
         workspace_id = session['current_workspace']['id']
         workspace = Workspace.query.get(workspace_id)

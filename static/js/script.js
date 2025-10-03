@@ -50,6 +50,33 @@ function downloadReport(type) {
     showToast(`${type.replace('_', ' ')} report download started!`, 'success');
 }
 
+function closeReportErrorModal() {
+    const modal = document.getElementById('reportErrorModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+function openAddReportFieldModalPerDayV2() {
+    // This would open a modal for adding per day report fields
+    showCustomModal('Feature Coming Soon', 'Custom report field creation is coming soon!', 'info');
+}
+
+function openAddReportFieldModalPerUnitV2() {
+    // This would open a modal for adding per unit report fields
+    showCustomModal('Feature Coming Soon', 'Custom report field creation is coming soon!', 'info');
+}
+
+function editReportField(fieldId, fieldName, formula, payoutType) {
+    // This would open a modal for editing report fields
+    showCustomModal('Feature Coming Soon', 'Report field editing is coming soon!', 'info');
+}
+
+function deleteReportField(fieldId) {
+    // This would delete a report field
+    showCustomModal('Feature Coming Soon', 'Report field deletion is coming soon!', 'info');
+}
+
 // Worker edit functions
 function openEditWorkerModal(workerId) {
     console.log('Opening edit worker modal for worker ID:', workerId);
@@ -339,6 +366,11 @@ window.toggleCustomFields = toggleCustomFields;
 window.downloadReport = downloadReport;
 window.openEditWorkerModal = openEditWorkerModal;
 window.openDeleteWorkerModal = openDeleteWorkerModal;
+window.closeReportErrorModal = closeReportErrorModal;
+window.openAddReportFieldModalPerDayV2 = openAddReportFieldModalPerDayV2;
+window.openAddReportFieldModalPerUnitV2 = openAddReportFieldModalPerUnitV2;
+window.editReportField = editReportField;
+window.deleteReportField = deleteReportField;
 
 // UX Improvements - Custom Modal System
 function showCustomModal(title, message, type = 'info') {
@@ -783,6 +815,77 @@ function loadExcelColumns(columns) {
     });
 }
 
+function saveNewField() {
+    const fieldNameInput = document.getElementById('newFieldName');
+    const fieldName = fieldNameInput?.value?.trim();
+    
+    if (!fieldName) {
+        showToast('Please enter a field name', 'error');
+        return;
+    }
+    
+    // Save new field to backend
+    fetch('/api/import-field', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            name: fieldName,
+            type: 'text'
+        })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.error) {
+            showToast(result.error, 'error');
+        } else {
+            showToast('Field added successfully!', 'success');
+            fieldNameInput.value = '';
+            loadImportFields(); // Reload the fields
+        }
+    })
+    .catch(error => {
+        console.error('Error saving field:', error);
+        showToast('Failed to save field', 'error');
+    });
+}
+
+function resetImportForm() {
+    // Hide column mapping and show import form
+    document.getElementById('columnMapping').classList.add('hidden');
+    document.getElementById('importForm').classList.remove('hidden');
+    
+    // Reset the form
+    const form = document.getElementById('importWorkersForm');
+    if (form) {
+        form.reset();
+    }
+}
+
+function removeCustomField(fieldId) {
+    if (!confirm('Are you sure you want to remove this custom field?')) {
+        return;
+    }
+    
+    fetch(`/api/import-field/${fieldId}`, {
+        method: 'DELETE'
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.error) {
+            showToast(result.error, 'error');
+        } else {
+            showToast('Field removed successfully!', 'success');
+            loadImportFields(); // Reload the fields
+        }
+    })
+    .catch(error => {
+        console.error('Error removing field:', error);
+        showToast('Failed to remove field', 'error');
+    });
+}
+
 function openAddTaskModal() {
     const modal = document.getElementById('add-task-modal');
     if (modal) {
@@ -1032,7 +1135,6 @@ window.updateRole = updateRole;
 window.openRemoveTeamMemberModal = openRemoveTeamMemberModal;
 window.closeRemoveTeamMemberModal = closeRemoveTeamMemberModal;
 window.removeTeamMember = removeTeamMember;
-window.saveNewField = saveNewField;
 
 function closeAddTeamMemberModal() {
     document.getElementById('add-team-member-modal').close();
@@ -1218,3 +1320,360 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 });
+
+// Additional missing functions
+function deleteTask() {
+    const taskId = document.getElementById('delete-task-id')?.value;
+    if (!taskId) return;
+    
+    fetch(`/api/task/${taskId}`, {
+        method: 'DELETE'
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.error) {
+            showToast(result.error, 'error');
+        } else {
+            showToast('Task deleted successfully!', 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        }
+    })
+    .catch(error => {
+        console.error('Error deleting task:', error);
+        showToast('Failed to delete task', 'error');
+    })
+    .finally(() => {
+        document.getElementById('delete-task-modal')?.close();
+    });
+}
+
+function closeEditTaskModal() {
+    const modal = document.getElementById('edit-task-modal');
+    if (modal) {
+        modal.classList.remove('modal-open');
+    }
+}
+
+function deleteAllWorkers() {
+    if (!confirm('Are you sure you want to delete ALL workers? This action cannot be undone.')) {
+        return;
+    }
+    
+    fetch('/api/worker/delete-all', {
+        method: 'DELETE'
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.error) {
+            showToast(result.error, 'error');
+        } else {
+            showToast('All workers deleted successfully!', 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        }
+    })
+    .catch(error => {
+        console.error('Error deleting all workers:', error);
+        showToast('Failed to delete all workers', 'error');
+    })
+    .finally(() => {
+        document.getElementById('delete-all-workers-modal')?.close();
+    });
+}
+
+function closeAddWorkerToTaskModal() {
+    document.getElementById('add-worker-to-task-modal')?.close();
+}
+
+function addWorkerToTask() {
+    showCustomModal('Feature Coming Soon', 'Adding workers to tasks is coming soon!', 'info');
+}
+
+// Expose additional functions globally
+window.deleteTask = deleteTask;
+window.closeEditTaskModal = closeEditTaskModal;
+window.deleteAllWorkers = deleteAllWorkers;
+window.closeAddWorkerToTaskModal = closeAddWorkerToTaskModal;
+window.addWorkerToTask = addWorkerToTask;
+
+// Report field functions
+function insertOperator(operator, fieldType) {
+    const input = document.getElementById(`formula_${fieldType}`);
+    if (input) {
+        const start = input.selectionStart;
+        const end = input.selectionEnd;
+        const value = input.value;
+        input.value = value.substring(0, start) + operator + value.substring(end);
+        input.focus();
+        input.setSelectionRange(start + operator.length, start + operator.length);
+    }
+}
+
+function insertNumber(fieldType) {
+    const number = prompt('Enter a number:');
+    if (number && !isNaN(number)) {
+        insertOperator(number, fieldType);
+    }
+}
+
+function closeAddReportFieldModalPerDay() {
+    const modal = document.getElementById('add_report_field_modal_PerDay');
+    if (modal) {
+        modal.checked = false;
+    }
+}
+
+function closeAddReportFieldModalPerUnit() {
+    const modal = document.getElementById('add_report_field_modal_PerUnit');
+    if (modal) {
+        modal.checked = false;
+    }
+}
+
+function addCustomFieldPerDay() {
+    const fieldName = document.getElementById('field_name_PerDay').value;
+    const formula = document.getElementById('formula_PerDay').value;
+    
+    if (!fieldName.trim()) {
+        alert('Please enter a field name');
+        return;
+    }
+    
+    // This would typically save the custom field via API
+    console.log('Adding custom field (Per Day):', { fieldName, formula });
+    alert('Custom field feature coming soon!');
+    closeAddReportFieldModalPerDay();
+}
+
+function addCustomFieldPerUnit() {
+    const fieldName = document.getElementById('field_name_PerUnit').value;
+    const formula = document.getElementById('formula_PerUnit').value;
+    
+    if (!fieldName.trim()) {
+        alert('Please enter a field name');
+        return;
+    }
+    
+    // This would typically save the custom field via API
+    console.log('Adding custom field (Per Unit):', { fieldName, formula });
+    alert('Custom field feature coming soon!');
+    closeAddReportFieldModalPerUnit();
+}
+
+// Export all report field functions
+window.insertOperator = insertOperator;
+window.insertNumber = insertNumber;
+window.closeAddReportFieldModalPerDay = closeAddReportFieldModalPerDay;
+window.closeAddReportFieldModalPerUnit = closeAddReportFieldModalPerUnit;
+window.addCustomFieldPerDay = addCustomFieldPerDay;
+window.addCustomFieldPerUnit = addCustomFieldPerUnit;
+
+// Additional worker management functions
+function openEditWorkerModal(workerId) {
+    fetch(`/api/worker/${workerId}`)
+    .then(response => response.json())
+    .then(worker => {
+        if (worker.error) {
+            showToast(worker.error, 'error');
+            return;
+        }
+        
+        // Fill the form with worker data
+        const form = document.getElementById('workerForm');
+        if (form) {
+            form.setAttribute('data-edit-worker-id', workerId);
+            
+            // Set form field values
+            const firstNameField = form.querySelector('input[name="first_name"]');
+            const lastNameField = form.querySelector('input[name="last_name"]');
+            const dobField = form.querySelector('input[name="date_of_birth"]');
+            
+            if (firstNameField) firstNameField.value = worker.first_name || '';
+            if (lastNameField) lastNameField.value = worker.last_name || '';
+            if (dobField) dobField.value = worker.date_of_birth || '';
+            
+            // Set custom field values
+            if (worker.custom_field_values) {
+                worker.custom_field_values.forEach(customValue => {
+                    const field = form.querySelector(`input[name="custom_field_${customValue.custom_field_id}"]`);
+                    if (field) {
+                        field.value = customValue.value || '';
+                    }
+                });
+            }
+            
+            // Change submit button text
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) submitBtn.textContent = 'Update Worker';
+        }
+        
+        // Open the modal
+        const modal = document.getElementById('add-worker-modal');
+        if (modal) {
+            modal.showModal();
+        }
+    })
+    .catch(error => {
+        console.error('Error loading worker:', error);
+        showToast('Failed to load worker data', 'error');
+    });
+}
+
+function openDeleteWorkerModal(workerId) {
+    const modal = document.getElementById('delete-worker-modal');
+    const input = document.getElementById('delete-worker-id');
+    
+    if (input) {
+        input.value = workerId;
+    }
+    
+    if (modal) {
+        modal.showModal();
+    }
+}
+
+function deleteSelectedWorkers() {
+    const checkedBoxes = document.querySelectorAll('.worker-checkbox:checked');
+    if (checkedBoxes.length === 0) {
+        showToast('Please select workers to delete', 'warning');
+        return;
+    }
+    
+    if (!confirm(`Are you sure you want to delete ${checkedBoxes.length} selected worker(s)?`)) {
+        return;
+    }
+    
+    const workerIds = Array.from(checkedBoxes).map(cb => cb.dataset.workerId);
+    
+    fetch('/api/worker/delete-selected', {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ worker_ids: workerIds })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.error) {
+            showToast(result.error, 'error');
+        } else {
+            showToast(`${result.deleted_count} worker(s) deleted successfully!`, 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        }
+    })
+    .catch(error => {
+        console.error('Error deleting workers:', error);
+        showToast('Failed to delete workers', 'error');
+    });
+}
+
+// Add select all functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAllCheckbox = document.getElementById('selectAllWorkers');
+    const workerCheckboxes = document.querySelectorAll('.worker-checkbox');
+    const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+    
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            workerCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            updateDeleteSelectedBtn();
+        });
+    }
+    
+    workerCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateDeleteSelectedBtn);
+    });
+    
+    function updateDeleteSelectedBtn() {
+        const checkedBoxes = document.querySelectorAll('.worker-checkbox:checked');
+        if (deleteSelectedBtn) {
+            if (checkedBoxes.length > 0) {
+                deleteSelectedBtn.classList.remove('hidden');
+            } else {
+                deleteSelectedBtn.classList.add('hidden');
+            }
+        }
+        
+        // Update select all checkbox state
+        if (selectAllCheckbox) {
+            selectAllCheckbox.checked = checkedBoxes.length === workerCheckboxes.length;
+            selectAllCheckbox.indeterminate = checkedBoxes.length > 0 && checkedBoxes.length < workerCheckboxes.length;
+        }
+    }
+});
+
+// Export additional worker functions
+window.openEditWorkerModal = openEditWorkerModal;
+window.openDeleteWorkerModal = openDeleteWorkerModal;
+window.deleteSelectedWorkers = deleteSelectedWorkers;
+
+// Additional utility functions
+function closeSuccessAlert() {
+    const alert = document.querySelector('.alert-success');
+    if (alert) {
+        alert.style.display = 'none';
+    }
+}
+
+function copyWorkspaceCode() {
+    const codeElement = document.querySelector('[data-workspace-code]');
+    if (codeElement) {
+        const code = codeElement.textContent.trim();
+        navigator.clipboard.writeText(code).then(() => {
+            showToast('Workspace code copied to clipboard!', 'success');
+        }).catch(() => {
+            showToast('Failed to copy workspace code', 'error');
+        });
+    }
+}
+
+function closeReportErrorModal() {
+    const modal = document.getElementById('reportErrorModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+function openAddReportFieldModalPerDayV2() {
+    const modal = document.getElementById('add_report_field_modal_PerDay');
+    if (modal) {
+        modal.checked = true;
+    }
+}
+
+function openAddReportFieldModalPerUnitV2() {
+    const modal = document.getElementById('add_report_field_modal_PerUnit');
+    if (modal) {
+        modal.checked = true;
+    }
+}
+
+function toggleUnitsSearch() {
+    const searchContainer = document.getElementById('searchContainer');
+    const searchBtn = document.getElementById('showSearchBtn');
+    
+    if (searchContainer && searchBtn) {
+        if (searchContainer.classList.contains('hidden')) {
+            searchContainer.classList.remove('hidden');
+            searchBtn.style.display = 'none';
+        } else {
+            searchContainer.classList.add('hidden');
+            searchBtn.style.display = 'block';
+        }
+    }
+}
+
+// Export utility functions
+window.closeSuccessAlert = closeSuccessAlert;
+window.copyWorkspaceCode = copyWorkspaceCode;
+window.closeReportErrorModal = closeReportErrorModal;
+window.openAddReportFieldModalPerDayV2 = openAddReportFieldModalPerDayV2;
+window.openAddReportFieldModalPerUnitV2 = openAddReportFieldModalPerUnitV2;
+window.toggleUnitsSearch = toggleUnitsSearch;

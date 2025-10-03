@@ -1677,3 +1677,96 @@ window.closeReportErrorModal = closeReportErrorModal;
 window.openAddReportFieldModalPerDayV2 = openAddReportFieldModalPerDayV2;
 window.openAddReportFieldModalPerUnitV2 = openAddReportFieldModalPerUnitV2;
 window.toggleUnitsSearch = toggleUnitsSearch;
+
+// Additional report field management functions
+function editReportField(fieldId, fieldName, formula, payoutType) {
+    // Show a modal or form to edit the field
+    const newName = prompt('Edit field name:', fieldName);
+    if (newName === null) return; // User cancelled
+    
+    const newFormula = prompt('Edit formula:', formula);
+    if (newFormula === null) return; // User cancelled
+    
+    // This would typically send a PUT request to update the field
+    fetch(`/api/report-field/${fieldId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            name: newName,
+            formula: newFormula,
+            payout_type: payoutType
+        })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.error) {
+            showToast(result.error, 'error');
+        } else {
+            showToast('Field updated successfully!', 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        }
+    })
+    .catch(error => {
+        console.error('Error updating field:', error);
+        showToast('Failed to update field', 'error');
+    });
+}
+
+function deleteReportField(fieldId) {
+    if (!confirm('Are you sure you want to delete this custom field?')) {
+        return;
+    }
+    
+    fetch(`/api/report-field/${fieldId}`, {
+        method: 'DELETE'
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.error) {
+            showToast(result.error, 'error');
+        } else {
+            showToast('Field deleted successfully!', 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        }
+    })
+    .catch(error => {
+        console.error('Error deleting field:', error);
+        showToast('Failed to delete field', 'error');
+    });
+}
+
+// Export report field management functions
+window.editReportField = editReportField;
+window.deleteReportField = deleteReportField;
+
+// Report preview update function
+function updateReportPreview() {
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    
+    if (startDate && endDate) {
+        console.log('Updating report preview for date range:', startDate, 'to', endDate);
+        // This would typically reload the report data via AJAX
+        // For now, we'll just reload the page with query parameters
+        const params = new URLSearchParams();
+        params.append('start_date', startDate);
+        params.append('end_date', endDate);
+        
+        // Update the current URL without reloading the page
+        const newUrl = `${window.location.pathname}?${params.toString()}`;
+        window.history.replaceState({}, '', newUrl);
+        
+        // In a full implementation, you would fetch new data via AJAX
+        // For now, let's reload the page to apply the date filter
+        window.location.reload();
+    }
+}
+
+// Export report preview function
+window.updateReportPreview = updateReportPreview;

@@ -117,7 +117,7 @@
 
 {% block content %}
 <div class="dashboard-container">
-    <div class="container mx-auto px-4 lg:px-6 w-full max-w-7xl py-8">
+    <div class="container mx-auto px-4 lg:px-6 w-full max-w-none py-8">
         <!-- Subscription Update Success Message -->
         {% if subscription_updated %}
         <div id="subscription-success-alert" class="alert alert-success shadow-lg mb-8">
@@ -160,10 +160,10 @@
                             <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Embee Logo" class="w-10 h-10 object-contain" />
                         </div>
                         <div>
-                            <h1 class="text-4xl lg:text-5xl font-bold text-gray-800 mb-2">
+                            <h1 class="text-3xl lg:text-4xl font-bold text-gray-800 mb-2">
                                 Welcome back, {{ session.get('user', {}).get('display_name', 'User').split()[0] }}
                             </h1>
-                            <p class="text-lg text-gray-600">
+                            <p class="text-base text-gray-600">
                                 Here's what's happening with your workforce today
                             </p>
                         </div>

@@ -37,8 +37,8 @@
                         <i data-feather="bar-chart-2" class="w-10 h-10 text-white"></i>
                     </div>
                     <div>
-                        <h1 class="text-4xl lg:text-5xl font-bold text-gray-800 mb-2">Reports Dashboard</h1>
-                        <p class="text-lg text-gray-600">Generate and download comprehensive workforce analytics</p>
+                        <h1 class="text-3xl lg:text-4xl font-bold text-gray-800 mb-2">Reports Dashboard</h1>
+                        <p class="text-base text-gray-600">Generate and download comprehensive workforce analytics</p>
                     </div>
                 </div>
                 <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 border border-blue-200">
@@ -61,7 +61,7 @@
                         <i data-feather="calendar" class="w-8 h-8 text-white"></i>
                     </div>
                     <div>
-                        <h2 class="text-2xl font-bold text-white mb-1">Report Date Range</h2>
+                        <h2 class="text-xl font-bold text-white mb-1">Report Date Range</h2>
                         <p class="text-blue-100">Configure the time period for your workforce analytics</p>
                     </div>
                 </div>
@@ -71,7 +71,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div class="form-control">
                         <label class="label mb-3">
-                            <span class="label-text font-bold text-blue-700 text-lg flex items-center">
+                            <span class="label-text font-bold text-blue-700 text-base flex items-center">
                                 <i data-feather="play" class="w-5 h-5 mr-3"></i>
                                 Start Date
                             </span>
@@ -86,7 +86,7 @@
                     
                     <div class="form-control">
                         <label class="label mb-3">
-                            <span class="label-text font-bold text-blue-700 text-lg flex items-center">
+                            <span class="label-text font-bold text-blue-700 text-base flex items-center">
                                 <i data-feather="flag" class="w-5 h-5 mr-3"></i>
                                 End Date
                             </span>
@@ -123,7 +123,7 @@
                                 <i data-feather="eye" class="w-8 h-8 text-white"></i>
                             </div>
                             <div>
-                                <h4 class="text-2xl font-bold text-white mb-1">Per Day Report</h4>
+                                <h4 class="text-xl font-bold text-white mb-1">Per Day Report</h4>
                                 <p class="text-green-100">Daily attendance and payment tracking</p>
                             </div>
                         </div>
@@ -137,7 +137,7 @@
                     <div id="customFieldsWindowPerDay" class="mb-8 bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-2xl p-6" style="display:none;">
                         <div class="flex justify-between items-center mb-6">
                             <div>
-                                <h5 class="text-xl font-bold text-green-800 mb-1">Custom Report Fields (Per Day)</h5>
+                                <h5 class="text-lg font-bold text-green-800 mb-1">Custom Report Fields (Per Day)</h5>
                                 <p class="text-green-700">Add calculated fields and custom formulas to your reports</p>
                             </div>
                             <button onclick="openAddReportFieldModalPerDayV2()" class="btn btn-success rounded-xl shadow-lg hover:shadow-xl">
@@ -245,8 +245,8 @@
                     
                     <!-- Download Per Day Report Button -->
                     <div class="mt-8 text-center">
-                        <button onclick="downloadReport('per_day')" class="btn btn-success btn-lg shadow-xl hover:shadow-2xl transition-all duration-200 rounded-xl px-8 py-4">
-                            <i data-feather="download" class="mr-3"></i>Download Per Day Report
+                        <button onclick="downloadReport('per_day')" class="btn btn-success shadow-xl hover:shadow-2xl transition-all duration-200 rounded-xl px-6 py-3">
+                            <i data-feather="download" class="mr-2"></i>Download Per Day Report
                         </button>
                     </div>
                 </div>
@@ -260,7 +260,7 @@
                                 <i data-feather="box" class="w-8 h-8 text-white"></i>
                             </div>
                             <div>
-                                <h4 class="text-2xl font-bold text-white mb-1">Per Unit Report</h4>
+                                <h4 class="text-xl font-bold text-white mb-1">Per Unit Report</h4>
                                 <p class="text-purple-100">Unit-based productivity and payment tracking</p>
                             </div>
                         </div>
@@ -274,7 +274,7 @@
                     <div id="customFieldsWindowPerPart" class="mb-8 bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-2xl p-6" style="display:none;">
                         <div class="flex justify-between items-center mb-6">
                             <div>
-                                <h5 class="text-xl font-bold text-purple-800 mb-1">Custom Report Fields (Per Unit)</h5>
+                                <h5 class="text-lg font-bold text-purple-800 mb-1">Custom Report Fields (Per Unit)</h5>
                                 <p class="text-purple-700">Add calculated fields and custom formulas to your reports</p>
                             </div>
                             <button onclick="openAddReportFieldModalPerUnitV2()" class="btn btn-secondary rounded-xl shadow-lg hover:shadow-xl">
@@ -397,8 +397,8 @@
                     
                     <!-- Download Per Unit Report Button -->
                     <div class="mt-8 text-center">
-                        <button onclick="downloadReport('per_part')" class="btn btn-secondary btn-lg shadow-xl hover:shadow-2xl transition-all duration-200 rounded-xl px-8 py-4">
-                            <i data-feather="download" class="mr-3"></i>Download Per Unit Report
+                        <button onclick="downloadReport('per_part')" class="btn btn-secondary shadow-xl hover:shadow-2xl transition-all duration-200 rounded-xl px-6 py-3">
+                            <i data-feather="download" class="mr-2"></i>Download Per Unit Report
                         </button>
                     </div>
                 </div>

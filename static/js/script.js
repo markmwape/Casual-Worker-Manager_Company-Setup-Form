@@ -58,13 +58,23 @@ function closeReportErrorModal() {
 }
 
 function openAddReportFieldModalPerDayV2() {
-    // This would open a modal for adding per day report fields
-    showCustomModal('Feature Coming Soon', 'Custom report field creation is coming soon!', 'info');
+    const modal = document.getElementById('add-report-field-modal-per-day');
+    if (modal) {
+        modal.showModal();
+    } else {
+        console.error('Modal not found: add-report-field-modal-per-day');
+        showToast('Error opening modal', 'error');
+    }
 }
 
 function openAddReportFieldModalPerUnitV2() {
-    // This would open a modal for adding per unit report fields
-    showCustomModal('Feature Coming Soon', 'Custom report field creation is coming soon!', 'info');
+    const modal = document.getElementById('add-report-field-modal-per-unit');
+    if (modal) {
+        modal.showModal();
+    } else {
+        console.error('Modal not found: add-report-field-modal-per-unit');
+        showToast('Error opening modal', 'error');
+    }
 }
 
 function editReportField(fieldId, fieldName, formula, payoutType) {
@@ -1638,20 +1648,6 @@ function closeReportErrorModal() {
     const modal = document.getElementById('reportErrorModal');
     if (modal) {
         modal.style.display = 'none';
-    }
-}
-
-function openAddReportFieldModalPerDayV2() {
-    const modal = document.getElementById('add_report_field_modal_PerDay');
-    if (modal) {
-        modal.checked = true;
-    }
-}
-
-function openAddReportFieldModalPerUnitV2() {
-    const modal = document.getElementById('add_report_field_modal_PerUnit');
-    if (modal) {
-        modal.checked = true;
     }
 }
 

@@ -1,3 +1,345 @@
+// Reports page functions
+function toggleCustomFields(type) {
+    const perDayWindow = document.getElementById('customFieldsWindowPerDay');
+    const perPartWindow = document.getElementById('customFieldsWindowPerPart');
+    
+    if (type === 'perDay') {
+        if (perDayWindow) {
+            if (perDayWindow.style.display === 'none' || perDayWindow.style.display === '') {
+                perDayWindow.style.display = 'block';
+            } else {
+                perDayWindow.style.display = 'none';
+            }
+        }
+    } else if (type === 'perPart') {
+        if (perPartWindow) {
+            if (perPartWindow.style.display === 'none' || perPartWindow.style.display === '') {
+                perPartWindow.style.display = 'block';
+            } else {
+                perPartWindow.style.display = 'none';
+            }
+        }
+    }
+}
+
+function downloadReport(type) {
+    const startDate = document.getElementById('startDate')?.value;
+    const endDate = document.getElementById('endDate')?.value;
+    
+    if (!startDate || !endDate) {
+        showCustomModal('Date Range Required', 'Please select both start and end dates before downloading the report.', 'warning');
+        return;
+    }
+    
+    // Validate date range
+    if (new Date(startDate) > new Date(endDate)) {
+        showCustomModal('Invalid Date Range', 'Start date cannot be after end date.', 'warning');
+        return;
+    }
+    
+    const url = `/api/reports?type=${type}&start_date=${startDate}&end_date=${endDate}`;
+    
+    // Create a temporary link to trigger download
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${type}_report_${startDate}_to_${endDate}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showToast(`${type.replace('_', ' ')} report download started!`, 'success');
+}
+
+// Worker edit functions
+function openEditWorkerModal(workerId) {
+    console.log('Opening edit worker modal for worker ID:', workerId);
+    
+    // First, fetch the worker data
+    fetch(`/api/worker/${workerId}`)
+        .then(response => response.json())
+        .then(worker => {
+            if (worker.error) {
+                showToast(worker.error, 'error');
+                return;
+            }
+            
+            // Populate the form with worker data
+            const form = document.getElementById('workerForm');
+            if (form) {
+                // Set form to edit mode
+                form.setAttribute('data-edit-worker-id', workerId);
+                
+                // Fill in the basic fields
+                const firstNameInput = form.querySelector('input[name="first_name"]');
+                const lastNameInput = form.querySelector('input[name="last_name"]');
+                const dobInput = form.querySelector('input[name="date_of_birth"]');
+                
+                if (firstNameInput) firstNameInput.value = worker.first_name || '';
+                if (lastNameInput) lastNameInput.value = worker.last_name || '';
+                if (dobInput) dobInput.value = worker.date_of_birth || '';
+                
+                // Fill in custom fields
+                Object.keys(worker.custom_fields || {}).forEach(fieldName => {
+                    const fieldInput = form.querySelector(`input[name="${fieldName}"], select[name="${fieldName}"], textarea[name="${fieldName}"]`);
+                    if (fieldInput) {
+                        fieldInput.value = worker.custom_fields[fieldName] || '';
+                    }
+                });
+                
+                // Update submit button text
+                const submitBtn = form.querySelector('button[type="submit"]');
+                if (submitBtn) submitBtn.textContent = 'Update Worker';
+                
+                // Update modal title
+                const modalTitle = document.querySelector('#add-worker-modal h3');
+                if (modalTitle) modalTitle.textContent = 'Edit Worker';
+                
+                // Open the modal
+                openAddWorkerModal();
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching worker data:', error);
+            showToast('Failed to load worker data', 'error');
+        });
+}
+
+function openDeleteWorkerModal(workerId) {
+    const modal = document.getElementById('delete-worker-modal');
+    if (modal) {
+        // Set the worker ID in a hidden field or data attribute
+        const deleteBtn = modal.querySelector('.btn-error');
+        if (deleteBtn) {
+            deleteBtn.setAttribute('data-worker-id', workerId);
+        }
+        modal.showModal();
+    }
+}
+
+// Add event handlers for the delete worker modal
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteWorkerModal = document.getElementById('delete-worker-modal');
+    if (deleteWorkerModal) {
+        const confirmDeleteBtn = deleteWorkerModal.querySelector('.btn-error');
+        if (confirmDeleteBtn) {
+            confirmDeleteBtn.addEventListener('click', function() {
+                const workerId = this.getAttribute('data-worker-id');
+                if (workerId) {
+                    fetch(`/api/worker/${workerId}`, {
+                        method: 'DELETE'
+                    })
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.error) {
+                            showToast(result.error, 'error');
+                        } else {
+                            showToast('Worker deleted successfully!', 'success');
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1000);
+                        }
+                        deleteWorkerModal.close();
+                    })
+                    .catch(error => {
+                        console.error('Error deleting worker:', error);
+                        showToast('Failed to delete worker', 'error');
+                        deleteWorkerModal.close();
+                    });
+                }
+            });
+        }
+    }
+    
+    // Add event handler to reset the add worker modal when opened
+    const addWorkerModal = document.getElementById('add-worker-modal');
+    if (addWorkerModal) {
+        addWorkerModal.addEventListener('close', function() {
+            // Reset the modal title and button text when closed
+            const modalTitle = document.querySelector('#add-worker-modal h3');
+            const submitBtn = document.querySelector('#workerForm button[type="submit"]');
+            const form = document.getElementById('workerForm');
+            
+            if (modalTitle) modalTitle.textContent = 'Add New Worker';
+            if (submitBtn) submitBtn.textContent = 'Add Worker';
+            if (form) {
+                form.removeAttribute('data-edit-worker-id');
+                form.reset();
+            }
+        });
+    }
+});
+
+function openDeleteWorkerModal(workerId) {
+    const modal = document.getElementById('delete-worker-modal');
+    if (modal) {
+        // Set the worker ID in a hidden field or data attribute
+        const deleteBtn = modal.querySelector('.btn-error');
+        if (deleteBtn) {
+            deleteBtn.setAttribute('data-worker-id', workerId);
+        }
+        modal.showModal();
+    }
+}
+
+function resetImportForm() {
+    document.getElementById('columnMapping').classList.add('hidden');
+    document.getElementById('importForm').classList.remove('hidden');
+    document.getElementById('importResults').classList.add('hidden');
+}
+
+function removeCustomField(fieldId) {
+    if (confirm('Are you sure you want to delete this custom field?')) {
+        fetch(`/api/import-field/${fieldId}`, {
+            method: 'DELETE'
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.error) {
+                showToast(result.error, 'error');
+            } else {
+                showToast('Custom field deleted successfully!', 'success');
+                loadImportFields();
+            }
+        })
+        .catch(error => {
+            console.error('Error deleting custom field:', error);
+            showToast('Failed to delete custom field', 'error');
+        });
+    }
+}
+
+function saveNewField() {
+    const fieldName = document.getElementById('newFieldName').value.trim();
+    
+    if (!fieldName) {
+        showToast('Please enter a field name', 'warning');
+        return;
+    }
+    
+    fetch('/api/import-field', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            name: fieldName,
+            type: 'text'
+        })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.error) {
+            showToast(result.error, 'error');
+        } else {
+            showToast('Custom field added successfully!', 'success');
+            document.getElementById('newFieldName').value = '';
+            loadImportFields();
+        }
+    })
+    .catch(error => {
+        console.error('Error adding custom field:', error);
+        showToast('Failed to add custom field', 'error');
+    });
+}
+
+// Team member modal functions
+function openEditRoleModal(userId, email, currentRole) {
+    document.getElementById('edit-user-id').value = userId;
+    document.getElementById('edit-email').value = email;
+    document.getElementById('edit-role').value = currentRole;
+    document.getElementById('edit-role-modal').showModal();
+}
+
+function closeEditRoleModal() {
+    document.getElementById('edit-role-modal').close();
+}
+
+function openRemoveTeamMemberModal(userId, email) {
+    document.getElementById('remove-user-id').value = userId;
+    document.getElementById('remove-email').textContent = email;
+    document.getElementById('remove-team-member-modal').showModal();
+}
+
+function closeRemoveTeamMemberModal() {
+    document.getElementById('remove-team-member-modal').close();
+}
+
+function updateRole(event) {
+    // This function is now handled by the form event listener in home.html
+    event.preventDefault();
+}
+
+function removeTeamMember(event) {
+    // This function is now handled by the form event listener in home.html
+    event.preventDefault();
+}
+
+// Add event handlers for the delete worker modal
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteWorkerModal = document.getElementById('delete-worker-modal');
+    if (deleteWorkerModal) {
+        const confirmDeleteBtn = deleteWorkerModal.querySelector('.btn-error');
+        if (confirmDeleteBtn) {
+            confirmDeleteBtn.addEventListener('click', function() {
+                const workerId = this.getAttribute('data-worker-id');
+                if (workerId) {
+                    fetch(`/api/worker/${workerId}`, {
+                        method: 'DELETE'
+                    })
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.error) {
+                            showToast(result.error, 'error');
+                        } else {
+                            showToast('Worker deleted successfully!', 'success');
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1000);
+                        }
+                        deleteWorkerModal.close();
+                    })
+                    .catch(error => {
+                        console.error('Error deleting worker:', error);
+                        showToast('Failed to delete worker', 'error');
+                        deleteWorkerModal.close();
+                    });
+                }
+            });
+        }
+    }
+});
+
+// Expose modal functions globally
+window.openLogoutModal = openLogoutModal;
+window.closeLogoutModal = closeLogoutModal;
+window.openAddWorkerModal = openAddWorkerModal;
+window.closeAddWorkerModal = closeAddWorkerModal;
+window.openAddTaskModal = openAddTaskModal;
+window.closeAddTaskModal = closeAddTaskModal;
+window.createTask = createTask;
+window.setupPaymentTypeHandlers = setupPaymentTypeHandlers;
+window.updatePayoutLabels = updatePayoutLabels;
+window.openImportWorkersModal = openImportWorkersModal;
+window.closeImportWorkersModal = closeImportWorkersModal;
+window.loadImportFields = loadImportFields;
+window.loadExcelColumns = loadExcelColumns;
+window.resetImportForm = resetImportForm;
+window.removeCustomField = removeCustomField;
+window.openEditRoleModal = openEditRoleModal;
+window.closeEditRoleModal = closeEditRoleModal;
+window.updateRole = updateRole;
+window.openRemoveTeamMemberModal = openRemoveTeamMemberModal;
+window.closeRemoveTeamMemberModal = closeRemoveTeamMemberModal;
+window.removeTeamMember = removeTeamMember;
+window.saveNewField = saveNewField;
+window.importWithMapping = importWithMapping;
+
+// Expose functions globally for reports page
+window.toggleCustomFields = toggleCustomFields;
+window.downloadReport = downloadReport;
+window.openEditWorkerModal = openEditWorkerModal;
+window.openDeleteWorkerModal = openDeleteWorkerModal;
+
 // UX Improvements - Custom Modal System
 function showCustomModal(title, message, type = 'info') {
     return new Promise((resolve) => {

@@ -30,7 +30,7 @@
                                 <label class="label">
                                     <span class="label-text">{{ field.name }}</span>
                                 </label>
-                                <input type="text" name="custom_{{ field.name|replace(' ', '_') }}" class="input input-bordered w-full">
+                                <input type="text" name="{{ field.name }}" class="input input-bordered w-full">
                             </div>
                         {% endif %}
                     {% endfor %}

@@ -4,8 +4,8 @@
         <p class="py-4">Are you sure you want to delete this worker? This action cannot be undone.</p>
         <input type="hidden" id="delete-worker-id">
         <div class="modal-action">
-            <button type="button" class="btn btn-ghost" onclick="closeDeleteWorkerModal()">Cancel</button>
-            <button type="button" class="btn btn-error" onclick="deleteWorker()">Delete Worker</button>
+            <button type="button" class="btn btn-ghost" onclick="document.getElementById('delete-worker-modal').close()">Cancel</button>
+            <button type="button" class="btn btn-error">Delete Worker</button>
         </div>
     </div>
 </dialog>

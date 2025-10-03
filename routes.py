@@ -1150,6 +1150,277 @@ def signout():
     session.clear()
     return redirect(url_for('landing_route'))
 
+@app.route("/api/workers", methods=['GET', 'POST'])
+@subscription_required
+def handle_workers():
+    """Handle workers operations - get list or create new worker"""
+    try:
+        if request.method == 'GET':
+            # Get current company from workspace
+            company = get_current_company()
+            
+            if not company:
+                return jsonify({'error': 'Company not found'}), 404
+            
+            # Get workers for this company with their custom field values
+            workers = Worker.query.filter_by(company_id=company.id).all()
+            
+            # Get custom fields for this company
+            custom_fields = ImportField.query.filter_by(company_id=company.id).all()
+            
+            workers_data = []
+            for worker in workers:
+                worker_data = {
+                    'id': worker.id,
+                    'first_name': worker.first_name,
+                    'last_name': worker.last_name,
+                    'date_of_birth': worker.date_of_birth.isoformat() if worker.date_of_birth else None,
+                    'created_at': worker.created_at.isoformat() if worker.created_at else None,
+                    'custom_fields': {}
+                }
+                
+                # Add custom field values
+                for field in custom_fields:
+                    custom_value = WorkerCustomFieldValue.query.filter_by(
+                        worker_id=worker.id,
+                        custom_field_id=field.id
+                    ).first()
+                    worker_data['custom_fields'][field.name] = custom_value.value if custom_value else None
+                
+                workers_data.append(worker_data)
+            
+            return jsonify({'workers': workers_data, 'custom_fields': [{'id': f.id, 'name': f.name, 'type': f.field_type} for f in custom_fields]})
+        
+        elif request.method == 'POST':
+            # Create new worker (delegate to existing function)
+            return create_worker()
+    
+    except Exception as e:
+        logging.error(f"Error handling workers: {str(e)}")
+        db.session.rollback()
+        return jsonify({'error': 'Failed to handle workers'}), 500
+
+@app.route("/api/workers/import", methods=['POST'])
+@subscription_required
+@worker_limit_check
+def import_workers_endpoint():
+    """Worker import endpoint - alias for existing import function"""
+    return import_workers()
+
+@app.route("/api/reports", methods=['GET'])
+@subscription_required
+@feature_required('advanced_reporting')
+def download_reports():
+    """Download reports based on type and date range"""
+    try:
+        report_type = request.args.get('type', 'per_day')
+        start_date = request.args.get('start_date')
+        end_date = request.args.get('end_date')
+        
+        if not start_date or not end_date:
+            return jsonify({'error': 'Start date and end date are required'}), 400
+        
+        # Get current company from workspace
+        company = get_current_company()
+        
+        if not company:
+            return jsonify({'error': 'Company not found'}), 404
+        
+        # Parse dates
+        try:
+            start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+        except ValueError:
+            return jsonify({'error': 'Invalid date format. Use YYYY-MM-DD'}), 400
+        
+        # Generate report data based on type
+        if report_type == 'per_day':
+            # Generate per day report
+            report_data = generate_per_day_report(company, start_date, end_date)
+            filename = f'per_day_report_{start_date}_to_{end_date}.csv'
+        elif report_type == 'per_part':
+            # Generate per part report
+            report_data = generate_per_part_report(company, start_date, end_date)
+            filename = f'per_part_report_{start_date}_to_{end_date}.csv'
+        else:
+            return jsonify({'error': 'Invalid report type'}), 400
+        
+        # Create CSV file
+        import io
+        import csv
+        
+        output = io.StringIO()
+        if report_data:
+            writer = csv.DictWriter(output, fieldnames=report_data[0].keys())
+            writer.writeheader()
+            writer.writerows(report_data)
+        
+        output.seek(0)
+        
+        # Create response
+        response = make_response(output.getvalue())
+        response.headers['Content-Type'] = 'text/csv'
+        response.headers['Content-Disposition'] = f'attachment; filename={filename}'
+        
+        return response
+        
+    except Exception as e:
+        logging.error(f"Error generating report: {str(e)}")
+        return jsonify({'error': 'Failed to generate report'}), 500
+
+def generate_per_day_report(company, start_date, end_date):
+    """Generate per day report data"""
+    try:
+        # Get all workers for the company
+        workers = Worker.query.filter_by(company_id=company.id).all()
+        
+        # Get custom fields for this company
+        import_fields = ImportField.query.filter_by(company_id=company.id).all()
+        
+        # Get custom report fields
+        custom_fields = ReportField.query.filter_by(company_id=company.id).all()
+        
+        report_data = []
+        
+        for worker in workers:
+            # Find all attendance records for this worker in the date range for per_day tasks
+            attendance_records = Attendance.query.filter(
+                Attendance.worker_id == worker.id,
+                Attendance.company_id == company.id,
+                Attendance.date.between(start_date, end_date),
+                Attendance.status == 'Present'
+            ).all()
+            
+            # Group by task (only per_day tasks)
+            per_day_tasks = {}
+            for att in attendance_records:
+                if att.task and getattr(att.task, 'payment_type', None) == 'per_day':
+                    task_id = att.task.id
+                    if task_id not in per_day_tasks:
+                        per_day_tasks[task_id] = {
+                            'task': att.task,
+                            'days': 0
+                        }
+                    per_day_tasks[task_id]['days'] += 1
+            
+            # Create record for each per_day task
+            for task_id, task_data in per_day_tasks.items():
+                task = task_data['task']
+                days = task_data['days']
+                
+                record = {
+                    'first_name': getattr(worker, 'first_name', ''),
+                    'last_name': getattr(worker, 'last_name', ''),
+                    'task_name': getattr(task, 'name', ''),
+                    'attendance_days': days,
+                    'daily_rate': getattr(task, 'per_day_payout', None) or getattr(company, 'daily_payout_rate', None),
+                    'currency': getattr(task, 'per_day_currency', 'USD')
+                }
+                
+                # Add import field values
+                for field in import_fields:
+                    custom_value = WorkerCustomFieldValue.query.filter_by(
+                        worker_id=worker.id,
+                        custom_field_id=field.id
+                    ).first()
+                    record[field.name] = custom_value.value if custom_value else ''
+                
+                # Add custom report fields (simplified)
+                for field in custom_fields:
+                    if field.field_type == 'numeric' and field.formula:
+                        # Simple formula evaluation (you might want to make this more robust)
+                        try:
+                            # Replace variables in formula with actual values
+                            formula = field.formula
+                            formula = formula.replace('attendance_days', str(days))
+                            formula = formula.replace('daily_rate', str(record['daily_rate'] or 0))
+                            record[field.name] = eval(formula)
+                        except:
+                            record[field.name] = 0
+                    else:
+                        record[field.name] = field.value or ''
+                
+                report_data.append(record)
+        
+        return report_data
+        
+    except Exception as e:
+        logging.error(f"Error generating per day report: {str(e)}")
+        return []
+
+def generate_per_part_report(company, start_date, end_date):
+    """Generate per part report data"""
+    try:
+        # Similar to per_day but for per_part tasks
+        workers = Worker.query.filter_by(company_id=company.id).all()
+        import_fields = ImportField.query.filter_by(company_id=company.id).all()
+        custom_fields = ReportField.query.filter_by(company_id=company.id).all()
+        
+        report_data = []
+        
+        for worker in workers:
+            # Find all attendance records for this worker in the date range for per_part tasks
+            attendance_records = Attendance.query.filter(
+                Attendance.worker_id == worker.id,
+                Attendance.company_id == company.id,
+                Attendance.date.between(start_date, end_date)
+            ).all()
+            
+            # Group by task (only per_part tasks)
+            per_part_tasks = {}
+            for att in attendance_records:
+                if att.task and getattr(att.task, 'payment_type', None) == 'per_part':
+                    task_id = att.task.id
+                    if task_id not in per_part_tasks:
+                        per_part_tasks[task_id] = {
+                            'task': att.task,
+                            'units': 0
+                        }
+                    per_part_tasks[task_id]['units'] += getattr(att, 'units_completed', 0)
+            
+            # Create record for each per_part task
+            for task_id, task_data in per_part_tasks.items():
+                task = task_data['task']
+                units = task_data['units']
+                
+                record = {
+                    'first_name': getattr(worker, 'first_name', ''),
+                    'last_name': getattr(worker, 'last_name', ''),
+                    'task_name': getattr(task, 'name', ''),
+                    'units_completed': units,
+                    'per_part_rate': getattr(task, 'per_part_payout', None),
+                    'currency': getattr(task, 'per_part_currency', 'USD')
+                }
+                
+                # Add import field values
+                for field in import_fields:
+                    custom_value = WorkerCustomFieldValue.query.filter_by(
+                        worker_id=worker.id,
+                        custom_field_id=field.id
+                    ).first()
+                    record[field.name] = custom_value.value if custom_value else ''
+                
+                # Add custom report fields
+                for field in custom_fields:
+                    if field.field_type == 'numeric' and field.formula:
+                        try:
+                            formula = field.formula
+                            formula = formula.replace('units_completed', str(units))
+                            formula = formula.replace('per_part_rate', str(record['per_part_rate'] or 0))
+                            record[field.name] = eval(formula)
+                        except:
+                            record[field.name] = 0
+                    else:
+                        record[field.name] = field.value or ''
+                
+                report_data.append(record)
+        
+        return report_data
+        
+    except Exception as e:
+        logging.error(f"Error generating per part report: {str(e)}")
+        return []
+
 @app.route("/api/worker", methods=['POST'])
 @subscription_required
 @worker_limit_check
@@ -1197,6 +1468,10 @@ def create_worker():
         
         return jsonify({'message': 'Worker added successfully'}), 201
         
+    except Exception as e:
+        logging.error(f"Error creating worker: {str(e)}")
+        db.session.rollback()
+        return jsonify({'error': 'Failed to add worker'}), 500
     except Exception as e:
         logging.error(f"Error creating worker: {str(e)}")
         db.session.rollback()
@@ -1876,6 +2151,164 @@ def update_team_member_role(user_id):
         db.session.rollback()
         return jsonify({'error': f'Failed to update role: {str(e)}'}), 500
 
+@app.route("/api/trial-info", methods=['GET'])
+def get_trial_info():
+    """Get trial information for current workspace"""
+    try:
+        if 'current_workspace' not in session:
+            return jsonify({'success': False, 'error': 'No active workspace'}), 400
+        
+        workspace_id = session['current_workspace']['id']
+        workspace = Workspace.query.get(workspace_id)
+        
+        if not workspace:
+            return jsonify({'success': False, 'error': 'Workspace not found'}), 404
+        
+        # Calculate trial days remaining
+        from datetime import date
+        today = date.today()
+        
+        if workspace.trial_end_date:
+            days_remaining = (workspace.trial_end_date - today).days
+            if days_remaining < 0:
+                days_remaining = 0
+        else:
+            days_remaining = 0
+        
+        return jsonify({
+            'success': True,
+            'days_remaining': days_remaining,
+            'trial_end_date': workspace.trial_end_date.isoformat() if workspace.trial_end_date else None,
+            'is_trial': workspace.subscription_status == 'trial' or workspace.subscription_tier == 'trial'
+        })
+        
+    except Exception as e:
+        logging.error(f"Error getting trial info: {str(e)}")
+        return jsonify({'success': False, 'error': 'Failed to get trial info'}), 500
+
+@app.route("/api/team-members", methods=['GET', 'POST'])
+def handle_team_members():
+    """Handle team member operations"""
+    try:
+        if request.method == 'GET':
+            # Get team members for current workspace
+            workspace_id = session.get('current_workspace', {}).get('id')
+            if not workspace_id:
+                return jsonify({'success': False, 'error': 'No active workspace'}), 400
+            
+            user_workspaces = UserWorkspace.query.filter_by(workspace_id=workspace_id).all()
+            team_members = []
+            for uw in user_workspaces:
+                user_obj = User.query.get(uw.user_id)
+                if user_obj:
+                    team_members.append({
+                        'id': user_obj.id,
+                        'email': user_obj.email,
+                        'role': uw.role
+                    })
+            
+            return jsonify({'success': True, 'team_members': team_members})
+        
+        elif request.method == 'POST':
+            # Add team member (existing functionality)
+            return add_team_member()
+    
+    except Exception as e:
+        logging.error(f"Error handling team members: {str(e)}")
+        return jsonify({'success': False, 'error': 'Failed to handle team members'}), 500
+
+@app.route("/api/team-members/<int:user_id>/role", methods=['PUT'])
+def update_team_member_role_api(user_id):
+    """Update team member role with proper JSON response"""
+    try:
+        # Check if current user is a Supervisor
+        if session.get('current_workspace', {}).get('role') == 'Supervisor':
+            return jsonify({'success': False, 'error': 'Supervisors cannot update team member roles'}), 403
+        
+        # Get JSON data
+        if request.content_type == 'application/json':
+            data = request.get_json()
+            new_role = data.get('role')
+        else:
+            # Handle form data
+            new_role = request.form.get('role')
+        
+        if not new_role:
+            return jsonify({'success': False, 'error': 'Role is required'}), 400
+        
+        # Get current workspace
+        workspace_id = session.get('current_workspace', {}).get('id')
+        if not workspace_id:
+            return jsonify({'success': False, 'error': 'No active workspace'}), 400
+        
+        # Find the user's workspace role
+        user_workspace = UserWorkspace.query.filter_by(
+            user_id=user_id,
+            workspace_id=workspace_id
+        ).first()
+        
+        if not user_workspace:
+            return jsonify({'success': False, 'error': 'User not found in this workspace'}), 404
+        
+        user_workspace.role = new_role
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Role updated successfully',
+            'user': {
+                'id': user_id,
+                'email': user_workspace.user.email,
+                'role': new_role
+            }
+        }), 200
+        
+    except Exception as e:
+        logging.error(f"Error updating team member role: {str(e)}\n{traceback.format_exc()}")
+        db.session.rollback()
+        return jsonify({'success': False, 'error': f'Failed to update role: {str(e)}'}), 500
+
+@app.route("/api/team-members/<int:user_id>", methods=['DELETE'])
+def delete_team_member_api(user_id):
+    """Delete team member with proper JSON response"""
+    try:
+        # Check if current user is a Supervisor
+        if session.get('current_workspace', {}).get('role') == 'Supervisor':
+            return jsonify({'success': False, 'error': 'Supervisors cannot delete team members'}), 403
+        
+        # Get current workspace
+        workspace_id = session.get('current_workspace', {}).get('id')
+        if not workspace_id:
+            return jsonify({'success': False, 'error': 'No active workspace'}), 400
+        
+        # Get current user
+        user_email = session['user']['user_email']
+        current_user = User.query.filter_by(email=user_email).first()
+        
+        # Prevent deleting the current user
+        if current_user.id == user_id:
+            return jsonify({'success': False, 'error': 'Cannot remove yourself from the workspace'}), 400
+        
+        # Find the user's workspace membership
+        user_workspace = UserWorkspace.query.filter_by(
+            user_id=user_id,
+            workspace_id=workspace_id
+        ).first()
+        
+        if not user_workspace:
+            return jsonify({'success': False, 'error': 'User not found in this workspace'}), 404
+            
+        # Remove user from workspace (but don't delete the user account)
+        db.session.delete(user_workspace)
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Team member removed from workspace successfully'}), 200
+        
+    except Exception as e:
+        logging.error(f"Error deleting team member: {str(e)}\n{traceback.format_exc()}")
+        db.session.rollback()
+        return jsonify({'success': False, 'error': f'Failed to delete team member: {str(e)}'}), 500
+
 @app.route("/api/team-member/<int:user_id>", methods=['DELETE'])
 def delete_team_member(user_id):
     try:
@@ -2401,6 +2834,56 @@ def import_mapped_workers():
         
         db.session.rollback()
         return jsonify({'error': f'Failed to import workers: {str(e)}'}), 500
+@app.route("/api/worker/<int:worker_id>", methods=['GET', 'DELETE', 'PUT'])
+def handle_single_worker(worker_id):
+    """Handle individual worker operations - get, update, or delete"""
+    try:
+        # Get current company from workspace
+        company = get_current_company()
+        
+        if not company:
+            return jsonify({'error': 'Company not found'}), 404
+        
+        # Find the worker
+        worker = Worker.query.filter_by(id=worker_id, company_id=company.id).first()
+        
+        if not worker:
+            return jsonify({'error': 'Worker not found'}), 404
+        
+        if request.method == 'GET':
+            # Get worker data with custom fields
+            custom_fields = ImportField.query.filter_by(company_id=company.id).all()
+            
+            worker_data = {
+                'id': worker.id,
+                'first_name': worker.first_name,
+                'last_name': worker.last_name,
+                'date_of_birth': worker.date_of_birth.isoformat() if worker.date_of_birth else None,
+                'created_at': worker.created_at.isoformat() if worker.created_at else None,
+                'custom_fields': {}
+            }
+            
+            # Add custom field values
+            for field in custom_fields:
+                custom_value = WorkerCustomFieldValue.query.filter_by(
+                    worker_id=worker.id,
+                    custom_field_id=field.id
+                ).first()
+                worker_data['custom_fields'][field.name] = custom_value.value if custom_value else None
+            
+            return jsonify(worker_data)
+        
+        elif request.method == 'PUT':
+            return update_worker(worker_id)
+        
+        elif request.method == 'DELETE':
+            return delete_worker(worker_id)
+    
+    except Exception as e:
+        logging.error(f"Error handling worker {worker_id}: {str(e)}")
+        db.session.rollback()
+        return jsonify({'error': 'Failed to handle worker'}), 500
+
 @app.route("/api/worker/<int:worker_id>", methods=['DELETE'])
 def delete_worker(worker_id):
     try:

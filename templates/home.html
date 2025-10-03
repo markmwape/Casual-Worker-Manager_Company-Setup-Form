@@ -205,11 +205,7 @@
                             <i class="fas fa-copy"></i>
                         </button>
                     </div>
-                    {% if session.get('current_workspace', {}).get('role') != 'Supervisor' %}
-                    <a href="{{ url_for('workspace_selection_route') }}" class="btn btn-outline btn-sm shadow-lg hover:shadow-xl transition-all duration-200">
-                        <i class="fas fa-exchange-alt mr-2"></i>Switch Workspace
-                    </a>
-                    {% endif %}
+
                 </div>
             </div>
         </div>
@@ -502,10 +498,17 @@
     document.getElementById('addTeamMemberForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const formData = new FormData(this);
+        const data = {
+            email: formData.get('email'),
+            role: formData.get('role')
+        };
         
         fetch('/api/team-members', {
             method: 'POST',
-            body: formData
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
         })
         .then(response => response.json())
         .then(data => {
@@ -525,10 +528,16 @@
         e.preventDefault();
         const formData = new FormData(this);
         const userId = formData.get('user_id');
+        const data = {
+            role: formData.get('role')
+        };
         
         fetch(`/api/team-members/${userId}/role`, {
             method: 'PUT',
-            body: formData
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
         })
         .then(response => response.json())
         .then(data => {

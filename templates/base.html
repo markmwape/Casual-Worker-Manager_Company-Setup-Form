@@ -17,6 +17,15 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
     {% block head %}{% endblock %}
+    
+    <style>
+        /* Ensure drawer sidebar is visible on desktop */
+        @media (min-width: 1024px) {
+            .drawer-open > .drawer-side {
+                transform: translateX(0);
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="drawer lg:drawer-open h-screen bg-white">

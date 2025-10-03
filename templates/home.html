@@ -206,7 +206,7 @@
                         </button>
                     </div>
                     {% if session.get('current_workspace', {}).get('role') != 'Supervisor' %}
-                    <a href="{{ url_for('workspace_selection') }}" class="btn btn-outline btn-sm shadow-lg hover:shadow-xl transition-all duration-200">
+                    <a href="{{ url_for('workspace_selection_route') }}" class="btn btn-outline btn-sm shadow-lg hover:shadow-xl transition-all duration-200">
                         <i class="fas fa-exchange-alt mr-2"></i>Switch Workspace
                     </a>
                     {% endif %}

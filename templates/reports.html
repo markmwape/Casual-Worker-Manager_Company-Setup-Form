@@ -1,6 +1,15 @@
 {% extends "base.html" %}
 
 {% block content %}
+<!-- Mobile Menu Button -->
+<div class="lg:hidden fixed top-4 left-4 z-50">
+    <label for="my-drawer" class="btn btn-square btn-ghost">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+    </label>
+</div>
+
 <!-- Error Modal -->
 <div id="reportErrorModal" class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50" style="display:none;">
   <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full relative border-t-8 border-red-200 animate-fade-in">
@@ -89,23 +98,22 @@
     </div>
 
     <!-- Reports Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div class="space-y-8">
         <!-- Per Day Report Section -->
-        <div class="space-y-4">
-            <div class="card bg-white shadow-lg border border-green-200 hover:shadow-xl transition-all duration-300">
-                <div class="card-body p-6">
-                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
-                        <h4 class="text-lg font-semibold text-gray-700 flex items-center">
-                            <i data-feather="eye" class="w-5 h-5 text-green-600 mr-2"></i>
-                            Report Preview (Per Day)
-                            <span class="tooltip ml-2" data-tip="This is a preview of how your exported report will look">
-                                <i data-feather="info" class="w-4 h-4 text-gray-400"></i>
-                            </span>
-                        </h4>
-                        <button id="toggleCustomFieldsPerDay" class="btn btn-outline btn-sm" onclick="toggleCustomFields('perDay')">
-                            <i class="fas fa-cogs mr-2"></i>Custom Fields
-                        </button>
-                    </div>
+        <div class="card bg-white shadow-lg border border-green-200 hover:shadow-xl transition-all duration-300">
+            <div class="card-body p-6">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
+                    <h4 class="text-lg font-semibold text-gray-700 flex items-center">
+                        <i data-feather="eye" class="w-5 h-5 text-green-600 mr-2"></i>
+                        Report Preview (Per Day)
+                        <span class="tooltip ml-2" data-tip="This is a preview of how your exported report will look">
+                            <i data-feather="info" class="w-4 h-4 text-gray-400"></i>
+                        </span>
+                    </h4>
+                    <button id="toggleCustomFieldsPerDay" class="btn btn-outline btn-sm" onclick="toggleCustomFields('perDay')">
+                        <i class="fas fa-cogs mr-2"></i>Custom Fields
+                    </button>
+                </div>
                     
                     <div id="customFieldsWindowPerDay" class="mb-6 bg-green-50 border border-green-200 rounded-xl shadow-sm p-6 relative" style="display:none;">
                         <div class="flex justify-between items-center mb-4">
@@ -203,16 +211,18 @@
                 </div>
                 {% endif %}
             </div>
+            
+            <!-- Download Per Day Report Button -->
+            <div class="mt-6">
+                <button onclick="downloadReport('per_day')" class="btn btn-success shadow-lg hover:shadow-xl transition-all duration-200">
+                    <i data-feather="download" class="mr-2"></i>Download Per Day Report
+                </button>
+            </div>
         </div>
     </div>
     
-    <!-- Download Per Day Report Button -->
-    <button onclick="downloadReport('per_day')" class="btn btn-success shadow-lg hover:shadow-xl transition-all duration-200 mb-4">
-        <i data-feather="download" class="mr-2"></i>Download Per Day Report
-    </button>
-    
     <!-- Per Unit Section -->
-    <div class="card bg-base-100 shadow-xl mb-8">
+    <div class="card bg-base-100 shadow-xl">
         <div class="card-body">
             <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
                 <h2 class="card-title flex items-center">Report Preview (Per Unit)
@@ -335,13 +345,15 @@
                 </div>
                 {% endif %}
             </div>
+            
+            <!-- Download Per Unit Report Button -->
+            <div class="mt-6">
+                <button onclick="downloadReport('per_part')" class="btn btn-primary shadow-lg hover:shadow-xl transition-all duration-200">
+                    <i data-feather="download" class="mr-2"></i>Download Per Unit Report
+                </button>
+            </div>
         </div>
     </div>
-    
-    <!-- Download Per Unit Report Button -->
-    <button onclick="downloadReport('per_part')" class="btn btn-primary shadow-lg hover:shadow-xl transition-all duration-200">
-        <i data-feather="download" class="mr-2"></i>Download Per Unit Report
-    </button>
 </div>
     {% include 'modals/add_report_field.html' %}
 {% endblock %}

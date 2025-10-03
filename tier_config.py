@@ -18,6 +18,7 @@ TIER_SPECS = {
         'price_monthly_usd': 0,
         'price_yearly_usd': 0,
         'worker_limit': None,  # Unlimited during trial
+        'support_level': 'Email Support',
         'features': {
             'worker_management': True,
             'task_management': True, 
@@ -35,6 +36,7 @@ TIER_SPECS = {
         'price_monthly_usd': 40,
         'price_yearly_usd': 400,
         'worker_limit': 50,
+        'support_level': 'Email Support',
         'features': {
             'worker_management': True,
             'task_management': True, 
@@ -52,6 +54,7 @@ TIER_SPECS = {
         'price_monthly_usd': 120,
         'price_yearly_usd': 1200,
         'worker_limit': 250,
+        'support_level': 'Priority Email Support',
         'features': {
             'worker_management': True,
             'task_management': True,
@@ -69,6 +72,7 @@ TIER_SPECS = {
         'price_monthly_usd': 220,
         'price_yearly_usd': 2200,
         'worker_limit': 1000,
+        'support_level': 'Phone & Email Support',
         'features': {
             'worker_management': True,
             'task_management': True,
@@ -86,6 +90,7 @@ TIER_SPECS = {
         'price_monthly_usd': 350,
         'price_yearly_usd': 3500,
         'worker_limit': None,  # Unlimited
+        'support_level': 'Dedicated Account Manager',
         'features': {
             'worker_management': True,
             'task_management': True,

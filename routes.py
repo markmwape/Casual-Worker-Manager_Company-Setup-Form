@@ -1701,22 +1701,29 @@ def home_route():
         # Get subscription information
         from tier_config import get_tier_spec, format_price
         
+        subscription_tier = workspace.subscription_tier or 'trial'
+        subscription_status = workspace.subscription_status or 'trial'
+        
         subscription_info = {
-            'tier': workspace.subscription_tier or 'trial',
-            'status': workspace.subscription_status or 'trial',
+            'tier': subscription_tier,
+            'status': subscription_status,
             'workspace_code': workspace.workspace_code,
             'subscription_end': workspace.subscription_end_date,
-            'trial_end': workspace.trial_end_date
+            'trial_end': workspace.trial_end_date,
+            'is_trial': subscription_status == 'trial' or subscription_tier == 'trial'
         }
         
         # Get tier details
-        tier_spec = get_tier_spec(subscription_info['tier'])
+        tier_spec = get_tier_spec(subscription_tier)
         subscription_info.update({
             'tier_name': tier_spec['name'],
             'tier_description': tier_spec['description'],
             'worker_limit': tier_spec.get('worker_limit'),
-            'monthly_price': format_price(subscription_info['tier'], 'monthly'),
-            'features': tier_spec['features']
+            'monthly_price': format_price(subscription_tier, 'monthly'),
+            'features': tier_spec['features'],
+            'support_level': tier_spec.get('support_level', 'Email Support'),
+            'upgrade_url': 'https://billing.stripe.com/p/login/test_5kQaEX5Jg1o5g8lg0SgEg00',
+            'manage_url': 'https://billing.stripe.com/p/login/test_5kQaEX5Jg1o5g8lg0SgEg00'
         })
         
         # Calculate usage - simplified to focus on workers only

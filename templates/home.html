@@ -6,7 +6,7 @@
 <style>
     /* Modern Dashboard Styles */
     .dashboard-container {
-        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        background: transparent;
         min-height: 100vh;
         width: 100%;
     }
@@ -117,8 +117,9 @@
 {% endblock %}
 
 {% block content %}
+{% block content %}
 <div class="dashboard-container">
-    <div class="min-h-screen px-4 py-8">
+    <div class="container mx-auto px-8 py-8 max-w-6xl">
         <!-- Subscription Update Success Message -->
         {% if subscription_updated %}
         <div id="subscription-success-alert" class="alert alert-success shadow-lg mb-8">
@@ -265,7 +266,8 @@
         {% endif %}
 
         <!-- Stats Cards -->
-        <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-8">
+                <!-- Stats Cards -->
+        <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 mb-8">
             <a href="{{ url_for('workers_route') }}" class="stat-card p-8 group cursor-pointer">
                 <div class="flex justify-between items-center">
                     <div>

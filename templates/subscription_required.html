@@ -177,7 +177,8 @@
     <script>
         // Simple redirect function for trial extension (if needed)
         async function requestExtension() {
-            if (!confirm('Are you sure you want to request a 3-day extension? This can only be used once.')) {
+            const confirmed = await showCustomConfirm('Request Extension', 'Are you sure you want to request a 3-day extension? This can only be used once.');
+            if (!confirmed) {
                 return;
             }
 
@@ -192,13 +193,14 @@
                 const result = await response.json();
                 
                 if (response.ok) {
-                    alert('Extension granted! You have 3 additional days to try our service.');
-                    window.location.href = '/home';
+                    showCustomModal('Extension Granted', 'Extension granted! You have 3 additional days to try our service.', 'success').then(() => {
+                        window.location.href = '/home';
+                    });
                 } else {
                     throw new Error(result.error || 'Failed to request extension');
                 }
             } catch (error) {
-                alert('Error: ' + error.message);
+                showCustomModal('Error', 'Error: ' + error.message, 'error');
             }
         }
     </script>

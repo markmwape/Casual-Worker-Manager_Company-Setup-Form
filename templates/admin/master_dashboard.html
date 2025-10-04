@@ -1619,6 +1619,64 @@
             
             document.body.appendChild(alertDiv);
             
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+
+        // Custom confirmation modal
+        function showCustomConfirm(title, message) {
+            return new Promise((resolve) => {
+                const modal = document.createElement('div');
+                modal.className = 'modal fade';
+                modal.style.display = 'block';
+                modal.style.backgroundColor = 'rgba(0,0,0,0.5)';
+                
+                modal.innerHTML = `
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">${title}</h5>
+                            </div>
+                            <div class="modal-body">
+                                <p>${message}</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary cancel-btn">Cancel</button>
+                                <button type="button" class="btn btn-primary confirm-btn">Confirm</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+                
+                const cancelBtn = modal.querySelector('.cancel-btn');
+                const confirmBtn = modal.querySelector('.confirm-btn');
+                
+                cancelBtn.addEventListener('click', () => {
+                    modal.remove();
+                    resolve(false);
+                });
+                
+                confirmBtn.addEventListener('click', () => {
+                    modal.remove();
+                    resolve(true);
+                });
+                
+                // Close on backdrop click
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.remove();
+                        resolve(false);
+                    }
+                });
+            });
+        }
+            
             // Auto remove after 5 seconds
             setTimeout(() => {
                 if (alertDiv) {
@@ -1628,9 +1686,13 @@
         }
 
         // Enhanced workspace action functions
-        function pauseWorkspace(workspaceId, workspaceName) {
-            if (confirm(`Are you sure you want to pause "${workspaceName}"? Users will lose access until resumed.`)) {
-                fetch(`/admin/pause-workspace/${workspaceId}`, {
+        async function pauseWorkspace(workspaceId, workspaceName) {
+            const confirmed = await showCustomConfirm('Pause Workspace', `Are you sure you want to pause "${workspaceName}"? Users will lose access until resumed.`);
+            if (!confirmed) {
+                return;
+            }
+            
+            fetch(`/admin/pause-workspace/${workspaceId}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1644,20 +1706,21 @@
                         updateWorkspaceStatus(workspaceId, 'paused');
                         // Refresh the page to update counters
                         setTimeout(() => window.location.reload(), 1500);
-                    } else {
-                        showAlert('error', data.error || 'Failed to pause workspace');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showAlert('error', 'Network error occurred');
-                });
+                } else {
+                    showAlert('error', data.error || 'Failed to pause workspace');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('error', 'Network error occurred');
+            });
+        }        async function resumeWorkspace(workspaceId, workspaceName) {
+            const confirmed = await showCustomConfirm('Resume Workspace', `Are you sure you want to resume "${workspaceName}"?`);
+            if (!confirmed) {
+                return;
             }
-        }
-
-        function resumeWorkspace(workspaceId, workspaceName) {
-            if (confirm(`Are you sure you want to resume "${workspaceName}"?`)) {
-                fetch(`/admin/resume-workspace/${workspaceId}`, {
+            
+            fetch(`/admin/resume-workspace/${workspaceId}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1679,7 +1742,6 @@
                     console.error('Error:', error);
                     showAlert('error', 'Network error occurred');
                 });
-            }
         }
 
         function updateWorkspaceStatus(workspaceId, newStatus) {
@@ -1761,12 +1823,12 @@
                         if (data.success) {
                             location.reload();
                         } else {
-                            alert('Error deleting workspace: ' + data.error);
+                            showAlert('error', 'Error deleting workspace: ' + data.error);
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        alert('Error deleting workspace');
+                        showAlert('error', 'Error deleting workspace');
                     });
                     hideConfirmModal();
                 }
@@ -1788,12 +1850,12 @@
                         if (data.success) {
                             location.reload();
                         } else {
-                            alert('Error deleting worker: ' + data.error);
+                            showAlert('error', 'Error deleting worker: ' + data.error);
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        alert('Error deleting worker');
+                        showAlert('error', 'Error deleting worker');
                     });
                     hideConfirmModal();
                 }
@@ -1815,12 +1877,12 @@
                         if (data.success) {
                             location.reload();
                         } else {
-                            alert('Error deleting user: ' + data.error);
+                            showAlert('error', 'Error deleting user: ' + data.error);
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        alert('Error deleting user');
+                        showAlert('error', 'Error deleting user');
                     });
                     hideConfirmModal();
                 }

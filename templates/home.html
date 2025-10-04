@@ -630,7 +630,7 @@
                 if (typeof showToast === 'function') {
                     showToast(data.error || 'Failed to add team member', 'error');
                 } else {
-                    alert(data.error || 'Failed to add team member');
+                    showCustomModal('Error', data.error || 'Failed to add team member', 'error');
                 }
             }
         })
@@ -639,7 +639,7 @@
             if (typeof showToast === 'function') {
                 showToast('Failed to add team member', 'error');
             } else {
-                alert('Failed to add team member');
+                showCustomModal('Error', 'Failed to add team member', 'error');
             }
         })
         .finally(() => {
@@ -679,7 +679,7 @@
                 if (typeof showToast === 'function') {
                     showToast(data.error || 'Failed to update role', 'error');
                 } else {
-                    alert(data.error || 'Failed to update role');
+                    showCustomModal('Error', data.error || 'Failed to update role', 'error');
                 }
             }
         })
@@ -688,7 +688,7 @@
             if (typeof showToast === 'function') {
                 showToast('Failed to update role', 'error');
             } else {
-                alert('Failed to update role');
+                showCustomModal('Error', 'Failed to update role', 'error');
             }
         })
         .finally(() => {
@@ -721,7 +721,7 @@
                 if (typeof showToast === 'function') {
                     showToast(data.error || 'Failed to remove team member', 'error');
                 } else {
-                    alert(data.error || 'Failed to remove team member');
+                    showCustomModal('Error', data.error || 'Failed to remove team member', 'error');
                 }
             }
         })
@@ -730,7 +730,7 @@
             if (typeof showToast === 'function') {
                 showToast('Failed to remove team member', 'error');
             } else {
-                alert('Failed to remove team member');
+                showCustomModal('Error', 'Failed to remove team member', 'error');
             }
         })
         .finally(() => {

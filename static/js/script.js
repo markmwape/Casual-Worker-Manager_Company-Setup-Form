@@ -60,6 +60,25 @@ function closeReportErrorModal() {
 function openAddReportFieldModalPerDayV2() {
     const modal = document.getElementById('add-report-field-modal-per-day');
     if (modal) {
+        // Reset the modal for new field creation
+        modal.dataset.isEditing = 'false';
+        modal.dataset.editingFieldId = '';
+        
+        // Clear the form
+        document.getElementById('field_name_PerDay').value = '';
+        document.getElementById('formula_PerDay').value = '';
+        
+        // Reset button text and heading
+        const submitButton = modal.querySelector('.btn-primary');
+        if (submitButton) {
+            submitButton.textContent = 'Add Field';
+        }
+        
+        const heading = modal.querySelector('h3');
+        if (heading) {
+            heading.textContent = 'Add Report Field (Per Day)';
+        }
+        
         modal.showModal();
     } else {
         console.error('Modal not found: add-report-field-modal-per-day');
@@ -70,6 +89,25 @@ function openAddReportFieldModalPerDayV2() {
 function openAddReportFieldModalPerUnitV2() {
     const modal = document.getElementById('add-report-field-modal-per-unit');
     if (modal) {
+        // Reset the modal for new field creation
+        modal.dataset.isEditing = 'false';
+        modal.dataset.editingFieldId = '';
+        
+        // Clear the form
+        document.getElementById('field_name_PerUnit').value = '';
+        document.getElementById('formula_PerUnit').value = '';
+        
+        // Reset button text and heading
+        const submitButton = modal.querySelector('.btn-primary');
+        if (submitButton) {
+            submitButton.textContent = 'Add Field';
+        }
+        
+        const heading = modal.querySelector('h3');
+        if (heading) {
+            heading.textContent = 'Add Report Field (Per Unit)';
+        }
+        
         modal.showModal();
     } else {
         console.error('Modal not found: add-report-field-modal-per-unit');
@@ -78,13 +116,60 @@ function openAddReportFieldModalPerUnitV2() {
 }
 
 function editReportField(fieldId, fieldName, formula, payoutType) {
-    // This would open a modal for editing report fields
-    showCustomModal('Feature Coming Soon', 'Report field editing is coming soon!', 'info');
+    // Populate the edit modal with current values
+    const modalId = payoutType === 'per_unit' ? 'add-report-field-modal-per-unit' : 'add-report-field-modal-per-day';
+    const nameFieldId = payoutType === 'per_unit' ? 'field_name_PerUnit' : 'field_name_PerDay';
+    const formulaFieldId = payoutType === 'per_unit' ? 'formula_PerUnit' : 'formula_PerDay';
+    
+    // Set the values
+    document.getElementById(nameFieldId).value = fieldName;
+    document.getElementById(formulaFieldId).value = formula;
+    
+    // Store the field ID for updating
+    const modal = document.getElementById(modalId);
+    modal.dataset.editingFieldId = fieldId;
+    modal.dataset.isEditing = 'true';
+    
+    // Change the button text and heading
+    const submitButton = modal.querySelector('.btn-primary');
+    if (submitButton) {
+        submitButton.textContent = 'Update Field';
+    }
+    
+    const heading = modal.querySelector('h3');
+    if (heading) {
+        heading.textContent = 'Edit Report Field';
+    }
+    
+    // Show the modal
+    modal.showModal();
 }
 
-function deleteReportField(fieldId) {
-    // This would delete a report field
-    showCustomModal('Feature Coming Soon', 'Report field deletion is coming soon!', 'info');
+async function deleteReportField(fieldId) {
+    const confirmed = await showCustomConfirm('Delete Report Field', 'Are you sure you want to delete this report field? This action cannot be undone.');
+    if (!confirmed) {
+        return;
+    }
+    
+    fetch(`/api/report-field?id=${fieldId}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.error) {
+            showCustomModal('Error', result.error, 'error');
+        } else {
+            showCustomModal('Success', 'Report field deleted successfully', 'success');
+            setTimeout(() => window.location.reload(), 1000);
+        }
+    })
+    .catch(error => {
+        console.error('Error deleting report field:', error);
+        showCustomModal('Error', 'Failed to delete report field', 'error');
+    });
 }
 
 // Worker edit functions
@@ -224,9 +309,13 @@ function resetImportForm() {
     document.getElementById('importResults').classList.add('hidden');
 }
 
-function removeCustomField(fieldId) {
-    if (confirm('Are you sure you want to delete this custom field?')) {
-        fetch(`/api/import-field/${fieldId}`, {
+async function removeCustomField(fieldId) {
+    const confirmed = await showCustomConfirm('Delete Custom Field', 'Are you sure you want to delete this custom field?');
+    if (!confirmed) {
+        return;
+    }
+    
+    fetch(`/api/import-field/${fieldId}`, {
             method: 'DELETE'
         })
         .then(response => response.json())
@@ -242,7 +331,6 @@ function removeCustomField(fieldId) {
             console.error('Error deleting custom field:', error);
             showToast('Failed to delete custom field', 'error');
         });
-    }
 }
 
 function saveNewField() {
@@ -873,8 +961,9 @@ function resetImportForm() {
     }
 }
 
-function removeCustomField(fieldId) {
-    if (!confirm('Are you sure you want to remove this custom field?')) {
+async function removeCustomField(fieldId) {
+    const confirmed = await showCustomConfirm('Remove Custom Field', 'Are you sure you want to remove this custom field?');
+    if (!confirmed) {
         return;
     }
     
@@ -1366,8 +1455,9 @@ function closeEditTaskModal() {
     }
 }
 
-function deleteAllWorkers() {
-    if (!confirm('Are you sure you want to delete ALL workers? This action cannot be undone.')) {
+async function deleteAllWorkers() {
+    const confirmed = await showCustomConfirm('Delete All Workers', 'Are you sure you want to delete ALL workers? This action cannot be undone.');
+    if (!confirmed) {
         return;
     }
     
@@ -1394,20 +1484,12 @@ function deleteAllWorkers() {
     });
 }
 
-function closeAddWorkerToTaskModal() {
-    document.getElementById('add-worker-to-task-modal')?.close();
-}
-
-function addWorkerToTask() {
-    showCustomModal('Feature Coming Soon', 'Adding workers to tasks is coming soon!', 'info');
-}
+// Note: addWorkerToTask and closeAddWorkerToTaskModal functions are now handled in the modal template
 
 // Expose additional functions globally
 window.deleteTask = deleteTask;
 window.closeEditTaskModal = closeEditTaskModal;
 window.deleteAllWorkers = deleteAllWorkers;
-window.closeAddWorkerToTaskModal = closeAddWorkerToTaskModal;
-window.addWorkerToTask = addWorkerToTask;
 
 // Report field functions
 function insertOperator(operator, fieldType) {
@@ -1446,30 +1528,94 @@ function closeAddReportFieldModalPerUnit() {
 function addCustomFieldPerDay() {
     const fieldName = document.getElementById('field_name_PerDay').value;
     const formula = document.getElementById('formula_PerDay').value;
+    const modal = document.getElementById('add-report-field-modal-per-day');
     
     if (!fieldName.trim()) {
-        alert('Please enter a field name');
+        showCustomModal('Validation Error', 'Please enter a field name', 'warning');
         return;
     }
     
-    // This would typically save the custom field via API
-    console.log('Adding custom field (Per Day):', { fieldName, formula });
-    alert('Custom field feature coming soon!');
+    const isEditing = modal.dataset.isEditing === 'true';
+    const fieldId = modal.dataset.editingFieldId;
+    
+    const url = isEditing ? `/api/report-field?id=${fieldId}` : '/api/report-field';
+    const method = isEditing ? 'PUT' : 'POST';
+    
+    const data = {
+        name: fieldName,
+        formula: formula,
+        payout_type: 'per_day'
+    };
+    
+    fetch(url, {
+        method: method,
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.error) {
+            showCustomModal('Error', result.error, 'error');
+        } else {
+            const message = isEditing ? 'Report field updated successfully' : 'Report field created successfully';
+            showCustomModal('Success', message, 'success');
+            setTimeout(() => window.location.reload(), 1000);
+        }
+    })
+    .catch(error => {
+        console.error('Error saving report field:', error);
+        showCustomModal('Error', 'Failed to save report field', 'error');
+    });
+    
     closeAddReportFieldModalPerDay();
 }
 
 function addCustomFieldPerUnit() {
     const fieldName = document.getElementById('field_name_PerUnit').value;
     const formula = document.getElementById('formula_PerUnit').value;
+    const modal = document.getElementById('add-report-field-modal-per-unit');
     
     if (!fieldName.trim()) {
-        alert('Please enter a field name');
+        showCustomModal('Validation Error', 'Please enter a field name', 'warning');
         return;
     }
     
-    // This would typically save the custom field via API
-    console.log('Adding custom field (Per Unit):', { fieldName, formula });
-    alert('Custom field feature coming soon!');
+    const isEditing = modal.dataset.isEditing === 'true';
+    const fieldId = modal.dataset.editingFieldId;
+    
+    const url = isEditing ? `/api/report-field?id=${fieldId}` : '/api/report-field';
+    const method = isEditing ? 'PUT' : 'POST';
+    
+    const data = {
+        name: fieldName,
+        formula: formula,
+        payout_type: 'per_unit'
+    };
+    
+    fetch(url, {
+        method: method,
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.error) {
+            showCustomModal('Error', result.error, 'error');
+        } else {
+            const message = isEditing ? 'Report field updated successfully' : 'Report field created successfully';
+            showCustomModal('Success', message, 'success');
+            setTimeout(() => window.location.reload(), 1000);
+        }
+    })
+    .catch(error => {
+        console.error('Error saving report field:', error);
+        showCustomModal('Error', 'Failed to save report field', 'error');
+    });
+    
     closeAddReportFieldModalPerUnit();
 }
 
@@ -1545,14 +1691,15 @@ function openDeleteWorkerModal(workerId) {
     }
 }
 
-function deleteSelectedWorkers() {
+async function deleteSelectedWorkers() {
     const checkedBoxes = document.querySelectorAll('.worker-checkbox:checked');
     if (checkedBoxes.length === 0) {
         showToast('Please select workers to delete', 'warning');
         return;
     }
     
-    if (!confirm(`Are you sure you want to delete ${checkedBoxes.length} selected worker(s)?`)) {
+    const confirmed = await showCustomConfirm('Delete Selected Workers', `Are you sure you want to delete ${checkedBoxes.length} selected worker(s)?`);
+    if (!confirmed) {
         return;
     }
     
@@ -1709,31 +1856,6 @@ function editReportField(fieldId, fieldName, formula, payoutType) {
     .catch(error => {
         console.error('Error updating field:', error);
         showToast('Failed to update field', 'error');
-    });
-}
-
-function deleteReportField(fieldId) {
-    if (!confirm('Are you sure you want to delete this custom field?')) {
-        return;
-    }
-    
-    fetch(`/api/report-field/${fieldId}`, {
-        method: 'DELETE'
-    })
-    .then(response => response.json())
-    .then(result => {
-        if (result.error) {
-            showToast(result.error, 'error');
-        } else {
-            showToast('Field deleted successfully!', 'success');
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000);
-        }
-    })
-    .catch(error => {
-        console.error('Error deleting field:', error);
-        showToast('Failed to delete field', 'error');
     });
 }
 

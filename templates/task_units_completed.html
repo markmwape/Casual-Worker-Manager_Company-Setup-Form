@@ -201,14 +201,14 @@ function saveUnitsCompleted(taskId) {
     .then(response => response.json())
     .then(result => {
         if (result.error) {
-            alert(result.error);
+            showCustomModal('Error', result.error, 'error');
         } else {
-            alert('Saved successfully');
+            showCustomModal('Success', 'Saved successfully', 'success');
         }
     })
     .catch(error => {
         console.error('Error saving units completed:', error);
-        alert('Failed to save');
+        showCustomModal('Error', 'Failed to save', 'error');
     });
 }
 

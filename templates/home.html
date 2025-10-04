@@ -117,7 +117,7 @@
 
 {% block content %}
 <div class="dashboard-container">
-    <div class="container mx-auto px-4 lg:px-8 w-full max-w-7xl py-8">
+    <div class="w-full px-6 lg:px-12 py-8">
         <!-- Subscription Update Success Message -->
         {% if subscription_updated %}
         <div id="subscription-success-alert" class="alert alert-success shadow-lg mb-8">
@@ -264,7 +264,7 @@
         {% endif %}
 
         <!-- Stats Cards -->
-        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+        <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 mb-8">
             <a href="{{ url_for('workers_route') }}" class="stat-card p-8 group cursor-pointer">
                 <div class="flex justify-between items-center">
                     <div>

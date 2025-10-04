@@ -1,5 +1,46 @@
 import { isSignInWithEmailLink, signInWithEmailLink } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
+// Modern notification functions
+function showCustomModal(title, message, type = 'info') {
+    return new Promise((resolve) => {
+        const modal = document.createElement('dialog');
+        modal.className = 'modal';
+        modal.style.zIndex = '10000';
+        
+        let iconClass = 'fas fa-info-circle text-blue-500';
+        if (type === 'success') {
+            iconClass = 'fas fa-check-circle text-green-500';
+        } else if (type === 'error') {
+            iconClass = 'fas fa-exclamation-circle text-red-500';
+        } else if (type === 'warning') {
+            iconClass = 'fas fa-exclamation-triangle text-yellow-500';
+        }
+        
+        modal.innerHTML = `
+            <div class="modal-box">
+                <h3 class="font-bold text-lg flex items-center gap-2">
+                    <i class="${iconClass}"></i>
+                    <span>${title}</span>
+                </h3>
+                <p class="py-4">${message}</p>
+                <div class="modal-action">
+                    <button type="button" class="btn btn-primary" onclick="this.closest('dialog').close(); this.closest('dialog').remove();">OK</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        const okBtn = modal.querySelector('.btn-primary');
+        okBtn.addEventListener('click', () => {
+            modal.remove();
+            resolve(true);
+        });
+        
+        modal.showModal();
+    });
+}
+
 // Wait for Firebase to be initialized
 document.addEventListener('DOMContentLoaded', function() {
     console.log('FinishSignIn page loaded');
@@ -7,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Check if Firebase is available
     if (typeof window.firebaseAuth === 'undefined') {
         console.error('Firebase Auth not initialized');
-        alert('Authentication service not available. Please try again.');
+        showCustomModal('Authentication Error', 'Authentication service not available. Please try again.', 'error');
         return;
     }
 
@@ -134,16 +175,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     const errorData = await response.json();
                     console.error('Failed to set session:', errorData);
-                    alert('Failed to complete sign-in: ' + (errorData.error || 'Please try again.'));
+                    showCustomModal('Sign-in Error', 'Failed to complete sign-in: ' + (errorData.error || 'Please try again.'), 'error');
                 }
             } catch (error) {
                 console.error('Error setting session:', error);
-                alert('Failed to complete sign-in: ' + error.message);
+                showCustomModal('Sign-in Error', 'Failed to complete sign-in: ' + error.message, 'error');
             }
         })
         .catch((error) => {
             console.error('Error signing in with email link:', error);
-            alert('Sign-in failed: ' + error.message);
+            showCustomModal('Sign-in Failed', 'Sign-in failed: ' + error.message, 'error');
         });
     } else {
         console.log('Not a valid email sign-in link');

@@ -1,5 +1,46 @@
 import { sendSignInLinkToEmail, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
+// Modern notification functions
+function showCustomModal(title, message, type = 'info') {
+    return new Promise((resolve) => {
+        const modal = document.createElement('dialog');
+        modal.className = 'modal';
+        modal.style.zIndex = '10000';
+        
+        let iconClass = 'fas fa-info-circle text-blue-500';
+        if (type === 'success') {
+            iconClass = 'fas fa-check-circle text-green-500';
+        } else if (type === 'error') {
+            iconClass = 'fas fa-exclamation-circle text-red-500';
+        } else if (type === 'warning') {
+            iconClass = 'fas fa-exclamation-triangle text-yellow-500';
+        }
+        
+        modal.innerHTML = `
+            <div class="modal-box">
+                <h3 class="font-bold text-lg flex items-center gap-2">
+                    <i class="${iconClass}"></i>
+                    <span>${title}</span>
+                </h3>
+                <p class="py-4">${message}</p>
+                <div class="modal-action">
+                    <button type="button" class="btn btn-primary" onclick="this.closest('dialog').close(); this.closest('dialog').remove();">OK</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        const okBtn = modal.querySelector('.btn-primary');
+        okBtn.addEventListener('click', () => {
+            modal.remove();
+            resolve(true);
+        });
+        
+        modal.showModal();
+    });
+}
+
 let runtimeAppSettingsURL = '';
 
 // Function to fetch runtime app settings URL
@@ -78,11 +119,11 @@ async function processSignIn(user) {
         } else {
             const err = await response.json();
             console.error('Session set error', err);
-            alert('Failed to complete sign-in.');
+            showCustomModal('Sign-in Error', 'Failed to complete sign-in.', 'error');
         }
     } catch(e) {
         console.error('Error setting session', e);
-        alert('Failed to complete sign-in.');
+        showCustomModal('Sign-in Error', 'Failed to complete sign-in.', 'error');
     }
 }
 
@@ -127,22 +168,22 @@ function setupEventListeners() {
                     const errorData = await sessionResponse.json();
                     console.error('Failed to set session:', errorData);
                     if (sessionResponse.status === 403 && errorData.error && errorData.error.includes('not authorized')) {
-                        alert('Access Denied: You are not authorized to access this workspace. Please make sure your admin has added your email to the workspace team members.');
+                        showCustomModal('Access Denied', 'You are not authorized to access this workspace. Please make sure your admin has added your email to the workspace team members.', 'error');
                     } else {
-                        alert('Failed to complete sign-in. Please try again.');
+                        showCustomModal('Sign-in Error', 'Failed to complete sign-in. Please try again.', 'error');
                     }
                     googleButton.disabled = false;
                     googleButton.innerHTML = originalText;
                 }
             } catch (innerError) {
                 console.error('Error setting session:', innerError);
-                alert('Failed to complete sign-in. Please try again.');
+                showCustomModal('Sign-in Error', 'Failed to complete sign-in. Please try again.', 'error');
                 googleButton.disabled = false;
                 googleButton.innerHTML = originalText;
             }
         } catch (error) {
             console.error('Error during Google sign in:', error.message);
-            alert('Sign-in failed: ' + error.message);
+            showCustomModal('Sign-in Failed', 'Sign-in failed: ' + error.message, 'error');
             googleButton.disabled = false;
             googleButton.innerHTML = originalText;
         }

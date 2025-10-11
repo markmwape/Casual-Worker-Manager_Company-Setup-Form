@@ -55,6 +55,7 @@ jobs:
             --max-instances 10 \
             --min-instances 0 \
             --update-env-vars INSTANCE_CONNECTION_NAME=$INSTANCE_CONNECTION_NAME,DB_USER=$DB_USER,DB_NAME=$DB_NAME,GOOGLE_CLOUD_PROJECT=$GCLOUD_PROJECT \
+            --update-secrets DB_PASS=db-pass:latest \
             --add-cloudsql-instances $INSTANCE_CONNECTION_NAME \
             --format="value(status.url)")
           echo "Service URL: $SERVICE_URL" 

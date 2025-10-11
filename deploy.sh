@@ -32,6 +32,7 @@ gcloud run deploy $SERVICE_NAME \
   --min-instances 0 \
   --port 8080 \
   --set-env-vars="INSTANCE_CONNECTION_NAME=$INSTANCE_CONNECTION_NAME,DB_USER=$DB_USER,DB_NAME=$DB_NAME,GOOGLE_CLOUD_PROJECT=$PROJECT_ID" \
+  --update-secrets="DB_PASS=db-pass:latest" \
   --add-cloudsql-instances=$INSTANCE_CONNECTION_NAME
 
 echo "✅ Deployment completed!"

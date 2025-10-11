@@ -48,6 +48,7 @@ gcloud run deploy $SERVICE_NAME \
   --set-env-vars="INSTANCE_CONNECTION_NAME=$CLOUD_SQL_CONNECTION_NAME" \
   --set-env-vars="DB_USER=$DB_USER" \
   --set-env-vars="DB_NAME=$DB_NAME" \
+  --update-secrets="DB_PASS=db-pass:latest" \
   --set-env-vars="GOOGLE_CLOUD_PROJECT=$PROJECT_ID" \
   --add-cloudsql-instances=$CLOUD_SQL_CONNECTION_NAME
 

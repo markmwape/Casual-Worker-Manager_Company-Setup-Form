@@ -13,9 +13,9 @@ def get_database_connection():
     """Get database connection for Cloud SQL"""
     try:
         # Check if we have the required environment variables
-        db_user = os.environ.get('DB_USER', 'postgres')
+        db_user = os.environ.get('DB_USER', 'cwuser')
         db_pass = os.environ.get('DB_PASS', '')
-        db_name = os.environ.get('DB_NAME', 'casual_worker_db')
+        db_name = os.environ.get('DB_NAME', 'cw_manager')
         
         # For Cloud SQL connection
         connection_name = os.environ.get('INSTANCE_CONNECTION_NAME')

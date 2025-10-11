@@ -41,4 +41,4 @@ steps:
       - 'embee-accounting101:us-central1:cw-manager-db'
 
 images:
-  - 'gcr.io/$PROJECT_ID/casual-worker-manager:latest' 
+  - 'gcr.io/$PROJECT_ID/casual-worker-manager:latest'

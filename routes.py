@@ -245,7 +245,7 @@ def create_workspace():
         # Log environment variables for debugging
         logging.info("Environment variables:")
         logging.info(f"  INSTANCE_CONNECTION_NAME: {os.environ.get('INSTANCE_CONNECTION_NAME')}")
-        logging.info(f"  DB_USER: {os.environ.get('DB_USER')}")
+        logging.info(f"  DB_USER: {os.environ.get('DB_USER', 'cwuser')}")
         logging.info(f"  DB_NAME: {os.environ.get('DB_NAME')}")
         logging.info(f"  K_SERVICE: {os.environ.get('K_SERVICE')}")
         

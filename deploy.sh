@@ -1,9 +1,6 @@
 #!/bin/bash
 
-# Deployment script   --set-env-vars="CLOUD_SQL_CONNECTION_NAME=$CLOUD_SQL_CONNECTION_NAME" \
-  --set-env-vars="DB_USER=$DB_USER" \
-  --set-env-vars="DB_NAME=$DB_NAME" \
-  --set-env-vars="GOOGLE_CLOUD_PROJECT=$PROJECT_ID" \Google Cloud Run
+# Deployment script for Google Cloud Run"
 set -e
 
 echo "🚀 Starting deployment to Google Cloud Run..."
@@ -14,10 +11,10 @@ SERVICE_NAME="cw-manager-service"
 REGION="us-central1"
 
 # Cloud SQL Configuration (matching app.yaml and cloudbuild.yaml)
-CLOUD_SQL_CONNECTION_NAME="embee-accounting101:us-central1:cw-manager-db"
+INSTANCE_CONNECTION_NAME="embee-accounting101:us-central1:cw-manager-db"
 DB_USER="cwuser"
-# DB_PASS is loaded from Google Secret Manager (secret: db-pass)
 DB_NAME="cw_manager"
+# DB_PASS is loaded from Google Secret Manager (secret: db-pass)
 
 echo "📦 Building and deploying to Cloud Run..."
 
@@ -34,11 +31,8 @@ gcloud run deploy $SERVICE_NAME \
   --max-instances 10 \
   --min-instances 0 \
   --port 8080 \
-  --set-env-vars="INSTANCE_CONNECTION_NAME=$CLOUD_SQL_CONNECTION_NAME" \
-  --set-env-vars="DB_USER=$DB_USER" \
-  --set-env-vars="DB_PASS=$DB_PASS" \
-  --set-env-vars="DB_NAME=$DB_NAME" \
-  --add-cloudsql-instances=$CLOUD_SQL_CONNECTION_NAME
+  --set-env-vars="INSTANCE_CONNECTION_NAME=$INSTANCE_CONNECTION_NAME,DB_USER=$DB_USER,DB_NAME=$DB_NAME,GOOGLE_CLOUD_PROJECT=$PROJECT_ID" \
+  --add-cloudsql-instances=$INSTANCE_CONNECTION_NAME
 
 echo "✅ Deployment completed!"
 
@@ -61,4 +55,4 @@ echo "gcloud logs tail --service=$SERVICE_NAME --region=$REGION"
 
 echo ""
 echo "🔧 To check health:"
-echo "curl $SERVICE_URL/health" 
+echo "curl $SERVICE_URL/health"

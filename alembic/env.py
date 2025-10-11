@@ -32,9 +32,9 @@ def get_database_url():
     # Production via Cloud Run when DB_HOST or Cloud SQL connection is configured
     if os.environ.get('DB_HOST') or os.environ.get('CLOUD_SQL_CONNECTION_NAME') or os.environ.get('INSTANCE_CONNECTION_NAME'):
          # Production: Use Cloud SQL
-         db_user = os.environ.get('DB_USER', 'postgres')
+         db_user = os.environ.get('DB_USER', 'cwuser')
          db_pass = os.environ.get('DB_PASS', '')
-         db_name = os.environ.get('DB_NAME', 'casual_worker_db')
+         db_name = os.environ.get('DB_NAME', 'cw_manager')
          
          # For Cloud SQL Proxy
          # Prefer INSTANCE_CONNECTION_NAME for Cloud Run compatibility

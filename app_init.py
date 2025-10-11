@@ -35,9 +35,9 @@ app.secret_key = secret_key
 # Database configuration - use Cloud SQL in production (App Engine or explicit Cloud SQL), SQLite for local development or when no DB config
 if os.environ.get('GAE_ENV', '').startswith('standard') or os.environ.get('INSTANCE_CONNECTION_NAME'):
     # Production: Use Cloud SQL
-    db_user = os.environ.get('DB_USER', 'postgres')
+    db_user = os.environ.get('DB_USER', 'cwuser')
     db_pass = os.environ.get('DB_PASS', '')
-    db_name = os.environ.get('DB_NAME', 'casual_worker_db')
+    db_name = os.environ.get('DB_NAME', 'cw_manager')
     
     # For Cloud SQL Proxy
     if os.environ.get('INSTANCE_CONNECTION_NAME'):

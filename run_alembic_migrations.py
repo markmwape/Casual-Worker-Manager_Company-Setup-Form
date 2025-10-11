@@ -22,7 +22,7 @@ def check_database_connection():
         print("📊 Using Cloud SQL (PostgreSQL)")
         print(f"   Host: {os.environ.get('DB_HOST', 'N/A')}")
         print(f"   Database: {os.environ.get('DB_NAME', 'N/A')}")
-        print(f"   User: {os.environ.get('DB_USER', 'N/A')}")
+        print(f"   User: {os.environ.get('DB_USER', 'cwuser')}")
         print(f"   Connection Name: {os.environ.get('CLOUD_SQL_CONNECTION_NAME', 'N/A')}")
     else:
         print("📊 Using local SQLite")
@@ -191,4 +191,4 @@ if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "create":
         create_migration()
     else:
-        main() 
+        main()

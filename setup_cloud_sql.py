@@ -68,12 +68,12 @@ def setup_cloud_sql():
                 "Setting root password")
     
     # Create database
-    db_name = "casual_worker_db"
+    db_name = "cw_manager"  # created by setup_cloud_sql.py
     run_command(f"gcloud sql databases create {db_name} --instance={instance_name}", 
                 f"Creating database '{db_name}'")
     
     # Create application user
-    app_user = "casual_worker_user"
+    app_user = "cwuser"
     app_password = input("Enter a password for the application user: ").strip()
     if not app_password:
         print("❌ Application user password is required")
@@ -100,4 +100,4 @@ def setup_cloud_sql():
     return True
 
 if __name__ == "__main__":
-    setup_cloud_sql() 
+    setup_cloud_sql()

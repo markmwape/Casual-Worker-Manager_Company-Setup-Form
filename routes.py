@@ -24,9 +24,9 @@ import hashlib
 import secrets
 import string
 # Configure Stripe
-stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
-STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET')
-STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY')
+stripe.api_key = os.environ.get('stripe-secret')
+STRIPE_WEBHOOK_SECRET = os.environ.get('stripe-webhook-secret')
+STRIPE_PUBLISHABLE_KEY = os.environ.get('stripe-pub-secret')
 
 def get_current_company():
     """Helper function to get the current company from workspace session"""

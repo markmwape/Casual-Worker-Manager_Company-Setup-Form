@@ -14,9 +14,9 @@ def test_environment_variables():
     print("🔍 Testing environment variables...")
     
     required_vars = [
-        'STRIPE_PUBLISHABLE_KEY',
-        'STRIPE_SECRET_KEY',
-        'STRIPE_WEBHOOK_SECRET'
+        'stripe-pub-secret',
+        'stripe-secret',
+        'stripe-webhook-secret'
     ]
     
     missing_vars = []
@@ -69,7 +69,7 @@ def test_stripe_connection():
     
     try:
         import stripe
-        stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
+        stripe.api_key = os.getenv('stripe-secret')
         
         # Test API connection
         account = stripe.Account.retrieve()

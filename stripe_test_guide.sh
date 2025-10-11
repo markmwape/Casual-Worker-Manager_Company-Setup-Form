@@ -22,9 +22,9 @@ echo "Run: stripe listen --forward-to localhost:5000/stripe/webhook"
 echo "This will show you the webhook signing secret (whsec_...)"
 echo ""
 
-echo "Step 4: Update your .env file"
+echo "Step 4: Update your environment variables"
 echo "Copy the webhook secret from step 3 and update:"
-echo "STRIPE_WEBHOOK_SECRET=whsec_your_actual_secret_here"
+echo "stripe-webhook-secret=whsec_your_actual_secret_here"
 echo ""
 
 echo "Step 5: Test a payment"

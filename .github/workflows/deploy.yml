@@ -42,9 +42,6 @@ jobs:
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASS: ${{ secrets.DB_PASS }}
           DB_NAME: ${{ secrets.DB_NAME }}
-          STRIPE_SECRET: ${{ secrets.STRIPE_SECRET }}
-          STRIPE_PUB_SECRET: ${{ secrets.STRIPE_PUB_SECRET }}
-          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
         run: |
           SERVICE_URL=$(gcloud run deploy cw-manager-service \
             --project $GCLOUD_PROJECT \
@@ -58,7 +55,7 @@ jobs:
             --concurrency 80 \
             --max-instances 10 \
             --min-instances 0 \
-            --update-env-vars INSTANCE_CONNECTION_NAME=$INSTANCE_CONNECTION_NAME,DB_USER=$DB_USER,DB_PASS=$DB_PASS,DB_NAME=$DB_NAME,stripe-secret=$STRIPE_SECRET,stripe-pub-secret=$STRIPE_PUB_SECRET,stripe-webhook-secret=$STRIPE_WEBHOOK_SECRET \
+            --update-env-vars INSTANCE_CONNECTION_NAME=$INSTANCE_CONNECTION_NAME,DB_USER=$DB_USER,DB_NAME=$DB_NAME,GOOGLE_CLOUD_PROJECT=$GCLOUD_PROJECT \
             --add-cloudsql-instances $INSTANCE_CONNECTION_NAME \
             --format="value(status.url)")
           echo "Service URL: $SERVICE_URL" 

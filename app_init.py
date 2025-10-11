@@ -14,6 +14,15 @@ except ImportError:
     # dotenv not installed, environment variables should be set externally
     pass
 
+# Load secrets from Google Secret Manager if in production
+try:
+    from load_secrets import ensure_secrets_loaded
+    ensure_secrets_loaded()
+except ImportError as e:
+    logging.warning(f"Could not import secret loading functionality: {e}")
+except Exception as e:
+    logging.warning(f"Error loading secrets: {e}")
+
 # Create Flask app
 app = Flask(__name__)
 

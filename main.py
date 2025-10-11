@@ -2,6 +2,16 @@ import logging
 import os
 import traceback
 
+# Load secrets before importing the app
+try:
+    from load_secrets import ensure_secrets_loaded
+    ensure_secrets_loaded()
+    logging.info("Secrets loaded successfully")
+except ImportError as e:
+    logging.warning(f"Could not import secret loading functionality: {e}")
+except Exception as e:
+    logging.warning(f"Error loading secrets: {e}")
+
 # Diagnose import issues
 try:
     from app_init import app

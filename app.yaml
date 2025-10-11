@@ -1,12 +1,10 @@
 runtime: python39
 
-# Environment variables - sensitive values should be in Secret Manager
 env_variables:
   INSTANCE_CONNECTION_NAME: embee-accounting101:us-central1:cw-manager-db
   DB_USER: cwuser
+  # DB_PASS is loaded from Google Secret Manager
   DB_NAME: cw_manager
-  # Note: DB_PASS, stripe-secret, stripe-pub-secret, and stripe-webhook-secret 
-  # should be configured in Google Secret Manager and accessed via the application
 
 beta_settings:
   cloud_sql_instances: embee-accounting101:us-central1:cw-manager-db

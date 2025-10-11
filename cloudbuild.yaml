@@ -36,7 +36,7 @@ steps:
       - '--port'
       - '8080'
       - '--set-env-vars'
-      - 'INSTANCE_CONNECTION_NAME=embee-accounting101:us-central1:cw-manager-db,DB_USER=cwuser,DB_PASS=CWManager2024!,DB_NAME=cw_manager,MASTER_ADMIN_EMAIL=markbmwape@gmail.com,RUN_MIGRATIONS_AT_STARTUP=true'
+      - 'INSTANCE_CONNECTION_NAME=embee-accounting101:us-central1:cw-manager-db,DB_USER=cwuser,DB_NAME=cw_manager,MASTER_ADMIN_EMAIL=markbmwape@gmail.com,RUN_MIGRATIONS_AT_STARTUP=true,GOOGLE_CLOUD_PROJECT=embee-accounting101'
       - '--add-cloudsql-instances'
       - 'embee-accounting101:us-central1:cw-manager-db'
 

@@ -23,17 +23,20 @@ import hmac
 import hashlib
 import secrets
 import string
-# Configure Stripe
-stripe.api_key = os.environ.get('stripe-secret')
-STRIPE_WEBHOOK_SECRET = os.environ.get('stripe-webhook-secret')
-STRIPE_PUBLISHABLE_KEY = os.environ.get('stripe-pub-secret')
 
-# Debug logging for environment variables (remove in production)
-logging.info(f"🔍 Stripe environment variables status:")
-logging.info(f"  stripe-secret: {'✅ Set' if os.environ.get('stripe-secret') else '❌ Not set'}")
-logging.info(f"  stripe-webhook-secret: {'✅ Set' if os.environ.get('stripe-webhook-secret') else '❌ Not set'}")
-logging.info(f"  stripe-pub-secret: {'✅ Set' if os.environ.get('stripe-pub-secret') else '❌ Not set'}")
-logging.info(f"  STRIPE_WEBHOOK_SECRET variable: {'✅ Set' if STRIPE_WEBHOOK_SECRET else '❌ Not set'}")
+# Load secrets before configuring Stripe
+try:
+    from load_secrets import ensure_secrets_loaded
+    ensure_secrets_loaded()
+except ImportError as e:
+    logging.warning(f"Could not import secret loading functionality: {e}")
+except Exception as e:
+    logging.warning(f"Error loading secrets: {e}")
+
+# Configure Stripe
+stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
+STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET')
+STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY')
 
 def get_current_company():
     """Helper function to get the current company from workspace session"""

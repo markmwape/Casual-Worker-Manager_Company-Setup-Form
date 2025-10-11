@@ -10,10 +10,31 @@ PROJECT_ID="embee-accounting101"
 SERVICE_NAME="cw-manager-service"
 REGION="us-central1"
 
-# Cloud SQL Configuration (matching app.yaml and cloudbuild.yaml)
+# Cloud SQL Configuration (use Google Secret Manager for production)
 CLOUD_SQL_CONNECTION_NAME="embee-accounting101:us-central1:cw-manager-db"
 DB_USER="cwuser"
-DB_PASS="CWManager2024!"
+# Note: DB_PASS should be loaded from Secret Manager in production
+# For manual deployment, you need to set these environment variables:
+if [[ -z "$DB_PASS" ]]; then
+  echo "❌ Error: DB_PASS environment variable not set"
+  echo "   Please set it with: export DB_PASS='your-password'"
+  exit 1
+fi
+if [[ -z "$STRIPE_SECRET" ]]; then
+  echo "❌ Error: STRIPE_SECRET environment variable not set"
+  echo "   Please set it with: export STRIPE_SECRET='your-stripe-secret'"
+  exit 1
+fi
+if [[ -z "$STRIPE_PUB_SECRET" ]]; then
+  echo "❌ Error: STRIPE_PUB_SECRET environment variable not set"
+  echo "   Please set it with: export STRIPE_PUB_SECRET='your-stripe-publishable-key'"
+  exit 1
+fi
+if [[ -z "$STRIPE_WEBHOOK_SECRET" ]]; then
+  echo "❌ Error: STRIPE_WEBHOOK_SECRET environment variable not set"
+  echo "   Please set it with: export STRIPE_WEBHOOK_SECRET='your-stripe-webhook-secret'"
+  exit 1
+fi
 DB_NAME="cw_manager"
 
 echo "📦 Building and deploying to Cloud Run..."
@@ -35,6 +56,9 @@ gcloud run deploy $SERVICE_NAME \
   --set-env-vars="DB_USER=$DB_USER" \
   --set-env-vars="DB_PASS=$DB_PASS" \
   --set-env-vars="DB_NAME=$DB_NAME" \
+  --set-env-vars="stripe-secret=$STRIPE_SECRET" \
+  --set-env-vars="stripe-pub-secret=$STRIPE_PUB_SECRET" \
+  --set-env-vars="stripe-webhook-secret=$STRIPE_WEBHOOK_SECRET" \
   --add-cloudsql-instances=$CLOUD_SQL_CONNECTION_NAME
 
 echo "✅ Deployment completed!"

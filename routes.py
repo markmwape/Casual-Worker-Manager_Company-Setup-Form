@@ -28,6 +28,13 @@ stripe.api_key = os.environ.get('stripe-secret')
 STRIPE_WEBHOOK_SECRET = os.environ.get('stripe-webhook-secret')
 STRIPE_PUBLISHABLE_KEY = os.environ.get('stripe-pub-secret')
 
+# Debug logging for environment variables (remove in production)
+logging.info(f"🔍 Stripe environment variables status:")
+logging.info(f"  stripe-secret: {'✅ Set' if os.environ.get('stripe-secret') else '❌ Not set'}")
+logging.info(f"  stripe-webhook-secret: {'✅ Set' if os.environ.get('stripe-webhook-secret') else '❌ Not set'}")
+logging.info(f"  stripe-pub-secret: {'✅ Set' if os.environ.get('stripe-pub-secret') else '❌ Not set'}")
+logging.info(f"  STRIPE_WEBHOOK_SECRET variable: {'✅ Set' if STRIPE_WEBHOOK_SECRET else '❌ Not set'}")
+
 def get_current_company():
     """Helper function to get the current company from workspace session"""
     if 'current_workspace' not in session:

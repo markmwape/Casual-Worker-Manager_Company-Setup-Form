@@ -6,16 +6,16 @@ set -e
 echo "🚀 Starting deployment to Google Cloud Run (prebuilt image approach)..."
 
 # Set your project ID
-PROJECT_ID="embee-accounting"
-SERVICE_NAME="casual-worker-manager-company-setup-form"
+PROJECT_ID="embee-accounting101"
+SERVICE_NAME="cw-manager-service"
 REGION="us-central1"
 IMAGE_NAME="gcr.io/$PROJECT_ID/$SERVICE_NAME"
 
-# Cloud SQL Configuration
-CLOUD_SQL_CONNECTION_NAME="embee-accounting:us-central1:casual-worker-db"
-DB_USER="casual_worker_user"
+# Cloud SQL Configuration (matching the error logs)
+CLOUD_SQL_CONNECTION_NAME="embee-accounting101:us-central1:cw-manager-db"
+DB_USER="cwuser"
 # DB_PASS is loaded from Google Secret Manager (secret: db-pass)
-DB_NAME="casual_worker_db"
+DB_NAME="cw_manager"
 
 echo "📦 Building container locally..."
 
@@ -45,7 +45,7 @@ gcloud run deploy $SERVICE_NAME \
   --max-instances 10 \
   --min-instances 0 \
   --port 8080 \
-  --set-env-vars="CLOUD_SQL_CONNECTION_NAME=$CLOUD_SQL_CONNECTION_NAME" \
+  --set-env-vars="INSTANCE_CONNECTION_NAME=$CLOUD_SQL_CONNECTION_NAME" \
   --set-env-vars="DB_USER=$DB_USER" \
   --set-env-vars="DB_NAME=$DB_NAME" \
   --set-env-vars="GOOGLE_CLOUD_PROJECT=$PROJECT_ID" \

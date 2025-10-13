@@ -210,26 +210,31 @@ def worker_limit_check(f):
             workspace = Workspace.query.get(workspace_id)
             
             if workspace:
-                # Count current workers
-                current_worker_count = Worker.query.filter_by(workspace_id=workspace_id).count()
+                # Get company associated with this workspace
+                from models import Company
+                company = Company.query.filter_by(workspace_id=workspace_id).first()
                 
-                # Check if adding one more would exceed limit
-                is_allowed, reason = validate_tier_access(workspace, worker_count=current_worker_count + 1)
-                
-                if not is_allowed:
-                    if request.is_json:
-                        return jsonify({
-                            'error': 'Worker limit exceeded',
-                            'message': reason,
-                            'current_count': current_worker_count,
-                            'limit': get_worker_limit(workspace.subscription_tier or 'starter'),
-                            'upgrade_required': True
-                        }), 403
+                if company:
+                    # Count current workers for this company
+                    current_worker_count = Worker.query.filter_by(company_id=company.id).count()
                     
-                    # For form submissions, flash message and redirect
-                    from flask import flash
-                    flash(reason, 'error')
-                    return redirect(request.referrer or url_for('home'))
+                    # Check if adding one more would exceed limit
+                    is_allowed, reason = validate_tier_access(workspace, worker_count=current_worker_count + 1)
+                    
+                    if not is_allowed:
+                        if request.is_json:
+                            return jsonify({
+                                'error': 'Worker limit exceeded',
+                                'message': reason,
+                                'current_count': current_worker_count,
+                                'limit': get_worker_limit(workspace.subscription_tier or 'starter'),
+                                'upgrade_required': True
+                            }), 403
+                        
+                        # For form submissions, flash message and redirect
+                        from flask import flash
+                        flash(reason, 'error')
+                        return redirect(request.referrer or url_for('home'))
             
             return f(*args, **kwargs)
             

@@ -37,6 +37,17 @@ function downloadReport(type) {
         return;
     }
     
+    // Check if report has data
+    const tableSelector = type === 'per_day' 
+        ? '.bg-white.rounded-3xl.shadow-xl.border.border-green-200 tbody tr' 
+        : '.bg-white.rounded-3xl.shadow-xl.border.border-purple-200 tbody tr';
+    const rows = document.querySelectorAll(tableSelector);
+    
+    if (rows.length === 0) {
+        showCustomModal('No Data Available', 'There is no data to download for the selected date range. Please adjust your dates or ensure workers have been assigned to tasks.', 'warning');
+        return;
+    }
+    
     const url = `/api/reports?type=${type}&start_date=${startDate}&end_date=${endDate}`;
     
     // Create a temporary link to trigger download
@@ -65,18 +76,40 @@ function openAddReportFieldModalPerDayV2() {
         modal.dataset.editingFieldId = '';
         
         // Clear the form
-        document.getElementById('field_name_PerDay').value = '';
-        document.getElementById('formula_PerDay').value = '';
+        const form = document.getElementById('reportFieldFormPerDay');
+        if (form) form.reset();
+        
+        const maxLimitWrapper = document.getElementById('maxLimitInputWrapperPerDay');
+        if (maxLimitWrapper) maxLimitWrapper.classList.add('hidden');
+        
+        const enableMaxLimit = document.getElementById('enableMaxLimitPerDay');
+        if (enableMaxLimit) enableMaxLimit.checked = false;
+        
+        const payoutTypeInput = document.getElementById('payoutTypeInputPerDay');
+        if (payoutTypeInput) payoutTypeInput.value = 'per_day';
+        
+        // Reset age condition controls
+        const ageWrapper = document.getElementById('ageConditionWrapperPerDay');
+        if (ageWrapper) ageWrapper.classList.add('hidden');
+        
+        const enableAgeCondition = document.getElementById('enableAgeConditionPerDay');
+        if (enableAgeCondition) enableAgeCondition.checked = false;
+        
+        const ageValue = document.getElementById('ageValuePerDay');
+        if (ageValue) ageValue.value = '';
+        
+        const ageConditionValue = document.getElementById('ageConditionValuePerDay');
+        if (ageConditionValue) ageConditionValue.value = '';
         
         // Reset button text and heading
-        const submitButton = modal.querySelector('.btn-primary');
+        const submitButton = modal.querySelector('.btn-secondary');
         if (submitButton) {
-            submitButton.textContent = 'Add Field';
+            submitButton.innerHTML = '<i data-feather="plus" class="mr-2"></i>Add Custom Field';
         }
         
         const heading = modal.querySelector('h3');
         if (heading) {
-            heading.textContent = 'Add Report Field (Per Day)';
+            heading.textContent = 'Add Custom Report Field (Per Day)';
         }
         
         modal.showModal();
@@ -94,18 +127,40 @@ function openAddReportFieldModalPerUnitV2() {
         modal.dataset.editingFieldId = '';
         
         // Clear the form
-        document.getElementById('field_name_PerUnit').value = '';
-        document.getElementById('formula_PerUnit').value = '';
+        const form = document.getElementById('reportFieldFormPerUnit');
+        if (form) form.reset();
+        
+        const maxLimitWrapper = document.getElementById('maxLimitInputWrapperPerUnit');
+        if (maxLimitWrapper) maxLimitWrapper.classList.add('hidden');
+        
+        const enableMaxLimit = document.getElementById('enableMaxLimitPerUnit');
+        if (enableMaxLimit) enableMaxLimit.checked = false;
+        
+        const payoutTypeInput = document.getElementById('payoutTypeInputPerUnit');
+        if (payoutTypeInput) payoutTypeInput.value = 'per_part';
+        
+        // Reset age condition controls
+        const ageWrapper = document.getElementById('ageConditionWrapperPerUnit');
+        if (ageWrapper) ageWrapper.classList.add('hidden');
+        
+        const enableAgeCondition = document.getElementById('enableAgeConditionPerUnit');
+        if (enableAgeCondition) enableAgeCondition.checked = false;
+        
+        const ageValue = document.getElementById('ageValuePerUnit');
+        if (ageValue) ageValue.value = '';
+        
+        const ageConditionValue = document.getElementById('ageConditionValuePerUnit');
+        if (ageConditionValue) ageConditionValue.value = '';
         
         // Reset button text and heading
-        const submitButton = modal.querySelector('.btn-primary');
+        const submitButton = modal.querySelector('.btn-secondary');
         if (submitButton) {
-            submitButton.textContent = 'Add Field';
+            submitButton.innerHTML = '<i data-feather="plus" class="mr-2"></i>Add Custom Field';
         }
         
         const heading = modal.querySelector('h3');
         if (heading) {
-            heading.textContent = 'Add Report Field (Per Unit)';
+            heading.textContent = 'Add Custom Report Field (Per Unit)';
         }
         
         modal.showModal();
@@ -1925,8 +1980,11 @@ window.deleteReportField = deleteReportField;
 
 // Report preview update function
 function updateReportPreview() {
-    const startDate = document.getElementById('startDate').value;
-    const endDate = document.getElementById('endDate').value;
+    const startDateInput = document.getElementById('startDate');
+    const endDateInput = document.getElementById('endDate');
+    
+    const startDate = startDateInput?.dataset.isoDate;
+    const endDate = endDateInput?.dataset.isoDate;
     
     if (startDate && endDate) {
         console.log('Updating report preview for date range:', startDate, 'to', endDate);

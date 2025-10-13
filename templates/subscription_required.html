@@ -73,7 +73,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div class="flex items-center text-sm text-gray-700">
                                 <i class="fas fa-check text-green-500 mr-2"></i>
-                                Unlimited worker management
+                                Full worker management access
                             </div>
                             <div class="flex items-center text-sm text-gray-700">
                                 <i class="fas fa-check text-green-500 mr-2"></i>
@@ -93,7 +93,7 @@
                             </div>
                             <div class="flex items-center text-sm text-gray-700">
                                 <i class="fas fa-check text-green-500 mr-2"></i>
-                                Priority customer support
+                                Priority email support
                             </div>
                         </div>
                     </div>
@@ -175,6 +175,83 @@
 
 
     <script>
+        // Custom Modal Functions
+        function showCustomModal(title, message, type = 'info') {
+            return new Promise((resolve) => {
+                const modal = document.createElement('dialog');
+                modal.className = 'modal';
+                
+                let iconClass = 'fas fa-info-circle text-blue-500';
+                if (type === 'success') {
+                    iconClass = 'fas fa-check-circle text-green-500';
+                } else if (type === 'error') {
+                    iconClass = 'fas fa-exclamation-circle text-red-500';
+                } else if (type === 'warning') {
+                    iconClass = 'fas fa-exclamation-triangle text-yellow-500';
+                }
+                
+                modal.innerHTML = `
+                    <div class="modal-box">
+                        <h3 class="font-bold text-lg flex items-center gap-2">
+                            <i class="${iconClass}"></i>
+                            <span>${title}</span>
+                        </h3>
+                        <p class="py-4">${message}</p>
+                        <div class="modal-action">
+                            <button type="button" class="btn btn-primary" onclick="this.closest('dialog').close(); this.closest('dialog').remove();">OK</button>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+                
+                const okBtn = modal.querySelector('.btn-primary');
+                okBtn.addEventListener('click', () => {
+                    modal.remove();
+                    resolve(true);
+                });
+                
+                modal.showModal();
+            });
+        }
+
+        function showCustomConfirm(title, message) {
+            return new Promise((resolve) => {
+                const modal = document.createElement('dialog');
+                modal.className = 'modal';
+                modal.innerHTML = `
+                    <div class="modal-box">
+                        <h3 class="font-bold text-lg flex items-center gap-2">
+                            <i class="fas fa-question-circle text-blue-500"></i>
+                            <span>${title}</span>
+                        </h3>
+                        <p class="py-4">${message}</p>
+                        <div class="modal-action">
+                            <button type="button" class="btn btn-ghost cancel-btn">Cancel</button>
+                            <button type="button" class="btn btn-primary confirm-btn">Confirm</button>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+                
+                const cancelBtn = modal.querySelector('.cancel-btn');
+                const confirmBtn = modal.querySelector('.confirm-btn');
+                
+                cancelBtn.addEventListener('click', () => {
+                    modal.remove();
+                    resolve(false);
+                });
+                
+                confirmBtn.addEventListener('click', () => {
+                    modal.remove();
+                    resolve(true);
+                });
+                
+                modal.showModal();
+            });
+        }
+
         // Simple redirect function for trial extension (if needed)
         async function requestExtension() {
             const confirmed = await showCustomConfirm('Request Extension', 'Are you sure you want to request a 3-day extension? This can only be used once.');

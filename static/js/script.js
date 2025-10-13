@@ -457,7 +457,6 @@ window.openRemoveTeamMemberModal = openRemoveTeamMemberModal;
 window.closeRemoveTeamMemberModal = closeRemoveTeamMemberModal;
 window.removeTeamMember = removeTeamMember;
 window.saveNewField = saveNewField;
-window.importWithMapping = importWithMapping;
 
 // Expose functions globally for reports page
 window.toggleCustomFields = toggleCustomFields;
@@ -1782,12 +1781,18 @@ function closeSuccessAlert() {
 function copyWorkspaceCode() {
     const codeElement = document.querySelector('[data-workspace-code]');
     if (codeElement) {
-        const code = codeElement.textContent.trim();
-        navigator.clipboard.writeText(code).then(() => {
-            showToast('Workspace code copied to clipboard!', 'success');
-        }).catch(() => {
-            showToast('Failed to copy workspace code', 'error');
-        });
+        const code = codeElement.value || codeElement.textContent;
+        if (code && code.trim()) {
+            navigator.clipboard.writeText(code.trim()).then(() => {
+                showToast('Workspace code copied to clipboard!', 'success');
+            }).catch(() => {
+                showToast('Failed to copy workspace code', 'error');
+            });
+        } else {
+            showToast('No workspace code found to copy', 'error');
+        }
+    } else {
+        showToast('Workspace code element not found', 'error');
     }
 }
 
@@ -1888,3 +1893,11 @@ function updateReportPreview() {
 
 // Export report preview function
 window.updateReportPreview = updateReportPreview;
+
+// Ensure copyWorkspaceCode is available globally
+window.copyWorkspaceCode = copyWorkspaceCode;
+
+// Ensure all critical functions are available
+window.showToast = showToast;
+window.showCustomModal = showCustomModal;
+window.showCustomConfirm = showCustomConfirm;

@@ -2063,19 +2063,19 @@ def add_team_member():
     try:
         # Check if current user is a Supervisor
         if session.get('current_workspace', {}).get('role') == 'Supervisor':
-            return jsonify({'error': 'Supervisors cannot add team members'}), 403
+            return jsonify({'success': False, 'error': 'Supervisors cannot add team members'}), 403
         
         data = request.get_json()
         email = data.get('email')
         role = data.get('role')
 
         if not email or not role:
-            return jsonify({'error': 'Email and role are required'}), 400
+            return jsonify({'success': False, 'error': 'Email and role are required'}), 400
 
         # Get current workspace
         workspace_id = session.get('current_workspace', {}).get('id')
         if not workspace_id:
-            return jsonify({'error': 'No active workspace'}), 400
+            return jsonify({'success': False, 'error': 'No active workspace'}), 400
 
         # Check if user already exists
         existing_user = User.query.filter_by(email=email).first()
@@ -2088,12 +2088,12 @@ def add_team_member():
             ).first()
             
             if existing_user_workspace:
-                return jsonify({'error': 'User is already a member of this workspace'}), 400
+                return jsonify({'success': False, 'error': 'User is already a member of this workspace'}), 400
         else:
             # Create new user if they don't exist
             existing_user = User(email=email)
             db.session.add(existing_user)
-            db.session.commit()
+            db.session.flush()  # Get the user ID without committing
 
         # Add user to workspace
         user_workspace = UserWorkspace(
@@ -2107,6 +2107,7 @@ def add_team_member():
         # Activity logging removed for now
 
         return jsonify({
+            'success': True,
             'message': 'Team member added successfully',
             'user': {
                 'id': existing_user.id,
@@ -2118,7 +2119,7 @@ def add_team_member():
     except Exception as e:
         logging.error(f"Error adding team member: {str(e)}\n{traceback.format_exc()}")
         db.session.rollback()
-        return jsonify({'error': f'Failed to add team member: {str(e)}'}), 500
+        return jsonify({'success': False, 'error': f'Failed to add team member: {str(e)}'}), 500
 
 @app.route("/api/team-member/<int:user_id>/role", methods=['PUT'])
 def update_team_member_role(user_id):
@@ -2223,11 +2224,64 @@ def handle_team_members():
             return jsonify({'success': True, 'team_members': team_members})
         
         elif request.method == 'POST':
-            # Add team member (existing functionality)
-            return add_team_member()
+            # Check if current user is a Supervisor
+            if session.get('current_workspace', {}).get('role') == 'Supervisor':
+                return jsonify({'success': False, 'error': 'Supervisors cannot add team members'}), 403
+            
+            data = request.get_json()
+            email = data.get('email')
+            role = data.get('role')
+
+            if not email or not role:
+                return jsonify({'success': False, 'error': 'Email and role are required'}), 400
+
+            # Get current workspace
+            workspace_id = session.get('current_workspace', {}).get('id')
+            if not workspace_id:
+                return jsonify({'success': False, 'error': 'No active workspace'}), 400
+
+            # Check if user already exists
+            existing_user = User.query.filter_by(email=email).first()
+            
+            if existing_user:
+                # Check if user is already a member of this workspace
+                existing_user_workspace = UserWorkspace.query.filter_by(
+                    user_id=existing_user.id,
+                    workspace_id=workspace_id
+                ).first()
+                
+                if existing_user_workspace:
+                    return jsonify({'success': False, 'error': 'User is already a member of this workspace'}), 400
+            else:
+                # Create new user if they don't exist
+                existing_user = User(email=email)
+                db.session.add(existing_user)
+                db.session.flush()  # Get the user ID without committing
+
+            # Add user to workspace
+            user_workspace = UserWorkspace(
+                user_id=existing_user.id,
+                workspace_id=workspace_id,
+                role=role
+            )
+            db.session.add(user_workspace)
+            db.session.commit()
+
+            # Activity logging removed for now
+
+            return jsonify({
+                'success': True,
+                'message': 'Team member added successfully',
+                'user': {
+                    'id': existing_user.id,
+                    'email': existing_user.email,
+                    'role': role
+                }
+            }), 201
     
     except Exception as e:
         logging.error(f"Error handling team members: {str(e)}")
+        db.session.rollback()
         return jsonify({'success': False, 'error': 'Failed to handle team members'}), 500
 
 @app.route("/api/team-members/<int:user_id>/role", methods=['PUT'])

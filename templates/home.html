@@ -213,22 +213,11 @@
                 </div>
             </div>
             
-            <div class="mt-6 grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="bg-white/60 rounded-xl p-4 text-center">
-                    <div class="text-2xl font-bold text-brand-navy-600">{{ subscription_info.worker_limit }}</div>
-                    <div class="text-sm text-gray-600">Worker Limit</div>
-                </div>
-                <div class="bg-white/60 rounded-xl p-4 text-center">
-                    <div class="text-2xl font-bold text-brand-navy-600">{{ total_workers }}</div>
-                    <div class="text-sm text-gray-600">Current Workers</div>
-                </div>
-                <div class="bg-white/60 rounded-xl p-4 text-center">
-                    <div class="text-2xl font-bold text-brand-navy-600">{{ subscription_info.features | length }}</div>
-                    <div class="text-sm text-gray-600">Features</div>
-                </div>
-                <div class="bg-white/60 rounded-xl p-4 text-center">
-                    <div class="text-lg font-bold text-brand-navy-600">{{ subscription_info.support_level }}</div>
-                    <div class="text-sm text-gray-600">Support</div>
+            <div class="mt-6 flex justify-center">
+                <div class="bg-white/60 rounded-xl p-6 text-center w-64">
+                    <div class="text-4xl font-bold text-brand-navy-600 mb-2">{{ subscription_info.worker_limit }}</div>
+                    <div class="text-base text-gray-600">Worker Limit</div>
+                    <div class="text-sm text-gray-500 mt-2">{{ total_workers }} / {{ subscription_info.worker_limit }} used</div>
                 </div>
             </div>
         </div>
@@ -252,7 +241,7 @@
                     <div class="bg-white/60 rounded-xl p-4 text-center">
                         <div class="text-sm text-gray-600 mb-1">Workspace Code</div>
                         <div class="flex items-center gap-2">
-                            <input type="text" value="{{ session.current_workspace.workspace_code }}" readonly 
+                            <input type="text" value="{{ session.current_workspace.code or session.current_workspace.workspace_code }}" readonly 
                                    class="input input-bordered input-sm w-32 text-center font-mono bg-white" data-workspace-code />
                             <button onclick="copyWorkspaceCode()" class="btn btn-ghost btn-sm text-gray-600 hover:text-gray-800">
                                 <i class="fas fa-copy"></i>

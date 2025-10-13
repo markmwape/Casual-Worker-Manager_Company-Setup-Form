@@ -226,48 +226,60 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // --- Edit Worker Modal ---
 window.openEditWorkerModal = function(workerId) {
-    // Find the worker row and extract data
-    const row = document.querySelector(`.worker-checkbox[data-worker-id="${workerId}"]`).closest('tr');
-    const cells = row.querySelectorAll('td');
-    // Assuming order: [checkbox, ...fields, created_at, actions]
-    // We'll use the add_worker modal as the edit modal for simplicity
     const modal = document.getElementById('add-worker-modal');
     const form = document.getElementById('workerForm');
-    // Set form values
-    const inputs = form.querySelectorAll('input[name]');
-    let cellIdx = 1; // skip checkbox
-    inputs.forEach(input => {
-        if (cells[cellIdx]) {
-            let cellValue = cells[cellIdx].innerText.trim();
-            if (cellValue === 'N/A') {
-                input.value = '';
-            } else {
-                // Handle date fields specifically
-                if (input.type === 'date' && cellValue) {
-                    // The date might be in YYYY-MM-DD format already, but let's make sure
-                    try {
-                        // If the date is already in the correct format, use it directly
-                        const date = new Date(cellValue);
-                        if (!isNaN(date.getTime())) {
-                            input.value = cellValue;
-                        } else {
-                            input.value = '';
-                        }
-                    } catch (e) {
-                        input.value = '';
-                    }
-                } else {
-                    input.value = cellValue;
-                }
+    
+    // Fetch worker data from the API
+    fetch(`/api/worker/${workerId}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch worker data');
             }
-            cellIdx++;
-        }
-    });
-    // Change submit button text
-    const submitBtn = form.querySelector('button[type="submit"]');
-    submitBtn.textContent = 'Update Worker';
-    // Store workerId for update
-    form.setAttribute('data-edit-worker-id', workerId);
-    // Show modal
-    modal.showModal();
+            return response.json();
+        })
+        .then(worker => {
+            // Reset form first
+            form.reset();
+            
+            // Set standard fields
+            if (form.querySelector('input[name="first_name"]')) {
+                form.querySelector('input[name="first_name"]').value = worker.first_name || '';
+            }
+            if (form.querySelector('input[name="last_name"]')) {
+                form.querySelector('input[name="last_name"]').value = worker.last_name || '';
+            }
+            if (form.querySelector('input[name="date_of_birth"]')) {
+                form.querySelector('input[name="date_of_birth"]').value = worker.date_of_birth || '';
+            }
+            
+            // Set custom fields
+            if (worker.custom_fields) {
+                Object.keys(worker.custom_fields).forEach(fieldName => {
+                    const input = form.querySelector(`input[name="${fieldName}"]`);
+                    if (input) {
+                        input.value = worker.custom_fields[fieldName] || '';
+                    }
+                });
+            }
+            
+            // Change modal title and button text
+            const modalTitle = modal.querySelector('h3');
+            if (modalTitle) {
+                modalTitle.textContent = 'Edit Worker';
+            }
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.textContent = 'Update Worker';
+            }
+            
+            // Store workerId for update
+            form.setAttribute('data-edit-worker-id', workerId);
+            
+            // Show modal
+            modal.showModal();
+        })
+        .catch(error => {
+            console.error('Error fetching worker data:', error);
+            showCustomModal('Error', 'Failed to load worker data. Please try again.', 'error');
+        });
 };

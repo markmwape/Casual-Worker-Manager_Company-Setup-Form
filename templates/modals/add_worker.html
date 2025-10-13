@@ -1,45 +1,61 @@
 <dialog id="add-worker-modal" class="modal">
-    <div class="modal-box">
-        <h3 class="font-bold text-lg">Add New Worker</h3>
+    <div class="modal-box max-w-4xl">
+        <h3 class="font-bold text-lg mb-4">Add New Worker</h3>
         <form id="workerForm">
-            <div class="form-control w-full">
-                <label class="label">
-                    <span class="label-text">First Name</span>
-                </label>
-                <input type="text" name="first_name" class="input input-bordered w-full">
-            </div>
-            <div class="form-control w-full">
-                <label class="label">
-                    <span class="label-text">Last Name</span>
-                </label>
-                <input type="text" name="last_name" class="input input-bordered w-full">
-            </div>
-            <div class="form-control w-full">
-                <label class="label">
-                    <span class="label-text">Date of Birth</span>
-                </label>
-                <input type="date" name="date_of_birth" class="input input-bordered w-full">
-            </div>
-            <!-- Custom fields -->
-            <div id="customFieldsSingle" class="space-y-4">
-                <h4 class="text-lg font-semibold text-gray-700 mt-6 mb-4">Custom Fields</h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {% for field in all_fields %}
-                        {% if field.id is not string %}
-                            <div class="form-control w-full">
-                                <label class="label">
-                                    <span class="label-text">{{ field.name }}</span>
-                                </label>
-                                <input type="text" name="{{ field.name }}" class="input input-bordered w-full">
-                            </div>
-                        {% endif %}
-                    {% endfor %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="form-control w-full">
+                    <label class="label">
+                        <span class="label-text">First Name</span>
+                    </label>
+                    <input type="text" name="first_name" class="input input-bordered w-full" required>
                 </div>
+                <div class="form-control w-full">
+                    <label class="label">
+                        <span class="label-text">Last Name</span>
+                    </label>
+                    <input type="text" name="last_name" class="input input-bordered w-full" required>
+                </div>
+                <div class="form-control w-full">
+                    <label class="label">
+                        <span class="label-text">Date of Birth</span>
+                    </label>
+                    <input type="date" name="date_of_birth" class="input input-bordered w-full">
+                </div>
+                
+                <!-- Custom fields -->
+                {% for field in all_fields %}
+                    {% if field.id is not string %}
+                        <div class="form-control w-full">
+                            <label class="label">
+                                <span class="label-text">{{ field.name }}</span>
+                            </label>
+                            <input type="text" name="{{ field.name }}" class="input input-bordered w-full">
+                        </div>
+                    {% endif %}
+                {% endfor %}
             </div>
+            
+            {% if all_fields|selectattr('id', 'not string')|list|length > 0 %}
+                <div class="divider">Custom Fields</div>
+            {% else %}
+                <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <div class="flex items-center gap-2 text-blue-700">
+                        <i data-feather="info"></i>
+                        <span class="font-medium">No custom fields available</span>
+                    </div>
+                    <p class="text-blue-600 text-sm mt-2">
+                        You can add custom fields for workers by importing a CSV file or creating them in the settings.
+                    </p>
+                </div>
+            {% endif %}
+            
             <div class="modal-action">
                 <button type="button" class="btn btn-ghost" onclick="closeAddWorkerModal()">Cancel</button>
                 <button type="submit" class="btn btn-primary">Add Worker</button>
             </div>
         </form>
     </div>
+    <form method="dialog" class="modal-backdrop">
+        <button type="button" onclick="closeAddWorkerModal()">close</button>
+    </form>
 </dialog>

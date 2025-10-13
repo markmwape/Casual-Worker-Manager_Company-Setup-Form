@@ -1,28 +1,47 @@
 <dialog id="add-worker-to-task-modal" class="modal">
-    <div class="modal-box">
-        <h3 class="font-bold text-lg">Add Worker to Task</h3>
-        <form id="addWorkerToTaskForm">
+    <div class="modal-box max-w-lg">
+        <h3 class="font-bold text-lg mb-4">Add Worker to Task</h3>
+        <form id="addWorkerToTaskForm" class="space-y-4">
             <div class="form-control w-full">
                 <label class="label">
-                    <span class="label-text">Search Worker</span>
+                    <span class="label-text font-medium">Search Worker</span>
                 </label>
                 <div class="relative">
                     <input type="text" 
                            id="workerSearch" 
-                           class="input input-bordered w-full" 
-                           placeholder="Type to search workers..."
+                           class="input input-bordered w-full pr-10" 
+                           placeholder="Type name, ID, or any field to search..."
                            autocomplete="off"
                            required>
-                    <div id="workersDropdown" class="absolute left-0 right-0 bg-white border border-blue-200 rounded-lg shadow z-50 mt-1 hidden max-h-56 overflow-y-auto"></div>
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+                        <i data-feather="search" class="h-4 w-4 text-gray-400"></i>
+                    </div>
+                    <div id="workersDropdown" class="absolute left-0 right-0 bg-white border border-blue-200 rounded-lg shadow-lg z-[100] mt-1 hidden max-h-48 overflow-y-auto">
+                        <div class="p-2 text-sm text-gray-500 border-b border-gray-100">
+                            Start typing to see available workers
+                        </div>
+                    </div>
                     <input type="hidden" id="selectedWorkerId">
                 </div>
+                <div class="label">
+                    <span class="label-text-alt text-gray-500">
+                        <i data-feather="info" class="inline h-3 w-3 mr-1"></i>
+                        Search by name, date of birth, or any custom field
+                    </span>
+                </div>
             </div>
-            <div class="modal-action">
+            <div class="modal-action mt-6">
                 <button type="button" class="btn btn-ghost" onclick="closeAddWorkerToTaskModal()">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="addWorkerToTask()">Add Worker</button>
+                <button type="button" class="btn btn-primary" onclick="addWorkerToTask()">
+                    <i data-feather="plus" class="mr-2 h-4 w-4"></i>
+                    Add Worker
+                </button>
             </div>
         </form>
     </div>
+    <form method="dialog" class="modal-backdrop">
+        <button type="button" onclick="closeAddWorkerToTaskModal()">close</button>
+    </form>
 </dialog>
 
 <script>
@@ -77,13 +96,32 @@
         const matches = allWorkers.filter(worker => worker.all_fields.toLowerCase().includes(searchValue));
         console.log('Rendering dropdown, matches:', matches.map(w => w.name)); // Debug log
         if (matches.length === 0) {
-            dropdown.innerHTML = '<div class="px-4 py-2 text-gray-400">No workers found</div>';
+            dropdown.innerHTML = '<div class="px-3 py-2 text-sm text-gray-500 text-center">No workers found</div>';
             currentDropdownIndex = -1;
         } else {
-            matches.forEach((worker, idx) => {
+            // Show limited results to reduce scrolling
+            const limitedMatches = matches.slice(0, 8);
+            limitedMatches.forEach((worker, idx) => {
                 const div = document.createElement('div');
-                div.className = 'px-4 py-2 hover:bg-blue-50 cursor-pointer';
-                div.textContent = worker.name;
+                div.className = 'px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors text-sm';
+                
+                // Create a more informative display
+                const displayText = document.createElement('div');
+                displayText.className = 'font-medium text-gray-800';
+                displayText.textContent = worker.name;
+                
+                // Add additional info if available
+                const subText = document.createElement('div');
+                subText.className = 'text-xs text-gray-500 mt-0.5';
+                if (worker.date_of_birth) {
+                    subText.textContent = `DOB: ${worker.date_of_birth}`;
+                }
+                
+                div.appendChild(displayText);
+                if (subText.textContent) {
+                    div.appendChild(subText);
+                }
+                
                 div.onclick = function() {
                     const input = document.getElementById('workerSearch');
                     input.value = worker.name;
@@ -96,6 +134,15 @@
                 div.setAttribute('data-index', idx);
                 dropdown.appendChild(div);
             });
+            
+            // Show "more results" indicator if there are more
+            if (matches.length > 8) {
+                const moreDiv = document.createElement('div');
+                moreDiv.className = 'px-3 py-2 text-xs text-center text-gray-500 bg-gray-50';
+                moreDiv.textContent = `+ ${matches.length - 8} more results - keep typing to refine`;
+                dropdown.appendChild(moreDiv);
+            }
+            
             currentDropdownIndex = -1;
         }
         dropdown.classList.remove('hidden');

@@ -765,6 +765,13 @@ function openAddWorkerModal() {
     if (form) {
         form.reset();
         form.removeAttribute('data-edit-worker-id');
+        
+        // Reset modal title
+        const modalTitle = modal.querySelector('h3');
+        if (modalTitle) {
+            modalTitle.textContent = 'Add New Worker';
+        }
+        
         const submitBtn = form.querySelector('button[type="submit"]');
         if (submitBtn) submitBtn.textContent = 'Add Worker';
     }
@@ -773,7 +780,25 @@ function openAddWorkerModal() {
 }
 
 function closeAddWorkerModal() {
-    document.getElementById('add-worker-modal').close();
+    const modal = document.getElementById('add-worker-modal');
+    const form = document.getElementById('workerForm');
+    
+    // Reset form
+    if (form) {
+        form.reset();
+        form.removeAttribute('data-edit-worker-id');
+        
+        // Reset modal title
+        const modalTitle = modal.querySelector('h3');
+        if (modalTitle) {
+            modalTitle.textContent = 'Add New Worker';
+        }
+        
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) submitBtn.textContent = 'Add Worker';
+    }
+    
+    modal.close();
 }
 
 // Handle worker form submission
@@ -1028,8 +1053,23 @@ function setupPaymentTypeHandlers() {
 function updatePayoutLabels(paymentType) {
     const payoutLabel = document.getElementById('payout-label');
     const payoutInput = document.getElementById('per-day-payout');
+    const perPartPayoutGroup = document.getElementById('per-part-payout-group');
+    const perDayPayoutGroup = document.getElementById('per-day-payout-group');
+    const perPartPayout = document.getElementById('per-part-payout');
+    const perPartCurrency = document.getElementById('per-part-currency');
+    const perDayPayout = document.getElementById('per-day-payout');
+    const perDayCurrency = document.getElementById('per-day-currency');
     
     if (paymentType === 'per_day') {
+        if (perPartPayoutGroup) perPartPayoutGroup.style.display = 'none';
+        if (perDayPayoutGroup) perDayPayoutGroup.style.display = '';
+        
+        // Update required attributes
+        if (perPartPayout) perPartPayout.removeAttribute('required');
+        if (perPartCurrency) perPartCurrency.removeAttribute('required');
+        if (perDayPayout) perDayPayout.setAttribute('required', 'required');
+        if (perDayCurrency) perDayCurrency.setAttribute('required', 'required');
+        
         if (payoutLabel) {
             payoutLabel.innerHTML = 'Daily payout per worker <span class="text-xs text-gray-400">(e.g., 25$ , 60 Kwacha)</span>';
         }
@@ -1037,6 +1077,15 @@ function updatePayoutLabels(paymentType) {
             payoutInput.placeholder = 'Enter daily payout per worker';
         }
     } else if (paymentType === 'per_part') {
+        if (perPartPayoutGroup) perPartPayoutGroup.style.display = '';
+        if (perDayPayoutGroup) perDayPayoutGroup.style.display = 'none';
+        
+        // Update required attributes
+        if (perPartPayout) perPartPayout.setAttribute('required', 'required');
+        if (perPartCurrency) perPartCurrency.setAttribute('required', 'required');
+        if (perDayPayout) perDayPayout.removeAttribute('required');
+        if (perDayCurrency) perDayCurrency.removeAttribute('required');
+        
         if (payoutLabel) {
             payoutLabel.innerHTML = 'Payout per part <span class="text-xs text-gray-400">(e.g., 25$ , 60 Kwacha)</span>';
         }
@@ -1150,14 +1199,17 @@ function createTask(event) {
     if (paymentType === 'per_part') {
         perPartPayout = formData.get('per_part_payout');
         perPartCurrency = formData.get('per_part_currency');
-        if (!perPartPayout || isNaN(perPartPayout) || Number(perPartPayout) <= 0) {
-            errorDiv.textContent = 'Please enter a valid payout per part.';
+        
+        // More robust validation for payout
+        const payoutValue = perPartPayout ? parseFloat(perPartPayout) : null;
+        if (!perPartPayout || perPartPayout.trim() === '' || isNaN(payoutValue) || payoutValue <= 0) {
+            errorDiv.textContent = 'Please enter a valid payout per part (must be a positive number).';
             errorDiv.style.display = '';
             document.getElementById('per-part-payout').focus();
             return;
         }
         if (!perPartCurrency || perPartCurrency.trim() === '') {
-            errorDiv.textContent = 'Please enter a currency for payout per part.';
+            errorDiv.textContent = 'Please select a currency for payout per part.';
             errorDiv.style.display = '';
             document.getElementById('per-part-currency').focus();
             return;
@@ -1165,14 +1217,17 @@ function createTask(event) {
     } else {
         perDayPayout = formData.get('per_day_payout');
         perDayCurrency = formData.get('per_day_currency');
-        if (!perDayPayout || isNaN(perDayPayout) || Number(perDayPayout) <= 0) {
-            errorDiv.textContent = 'Please enter a valid daily payout per worker.';
+        
+        // More robust validation for payout
+        const payoutValue = perDayPayout ? parseFloat(perDayPayout) : null;
+        if (!perDayPayout || perDayPayout.trim() === '' || isNaN(payoutValue) || payoutValue <= 0) {
+            errorDiv.textContent = 'Please enter a valid daily payout per worker (must be a positive number).';
             errorDiv.style.display = '';
             document.getElementById('per-day-payout').focus();
             return;
         }
         if (!perDayCurrency || perDayCurrency.trim() === '') {
-            errorDiv.textContent = 'Please enter a currency for daily payout.';
+            errorDiv.textContent = 'Please select a currency for daily payout.';
             errorDiv.style.display = '';
             document.getElementById('per-day-currency').focus();
             return;

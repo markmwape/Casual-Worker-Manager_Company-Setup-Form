@@ -44,7 +44,7 @@
                     <span class="label-text" id="payout-label">Daily payout per worker <span class="text-xs text-gray-400">(e.g., 25$ , 60 Kwacha)</span></span>
                 </label>
                 <div class="flex gap-2">
-                    <input type="number" step="0.01" min="0" name="per_day_payout" id="per-day-payout" class="input input-bordered w-full" placeholder="Enter payout amount" required>
+                    <input type="number" step="0.01" min="0.01" name="per_day_payout" id="per-day-payout" class="input input-bordered w-full" placeholder="Enter payout amount" required>
                     <select name="per_day_currency" id="per-day-currency" class="select select-bordered w-64" required>
                         <option value="AED">AED - United Arab Emirates Dirham (د.إ)</option>
                         <option value="AFN">AFN - Afghani (؋)</option>
@@ -209,7 +209,7 @@
                     <span class="label-text">Payout per part <span class="text-xs text-gray-400">(e.g., 25$ , 60 Kwacha)</span></span>
                 </label>
                 <div class="flex gap-2">
-                    <input type="number" step="0.01" min="0" name="per_part_payout" id="per-part-payout" class="input input-bordered w-full" placeholder="Enter payout per part">
+                    <input type="number" step="0.01" min="0.01" name="per_part_payout" id="per-part-payout" class="input input-bordered w-full" placeholder="Enter payout per part">
                     <select name="per_part_currency" id="per-part-currency" class="select select-bordered w-64">
                         <option value="AED">AED - United Arab Emirates Dirham (د.إ)</option>
                         <option value="AFN">AFN - Afghani (؋)</option>

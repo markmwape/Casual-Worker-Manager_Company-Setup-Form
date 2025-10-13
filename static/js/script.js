@@ -745,9 +745,15 @@ function loadImportFields() {
     .then(response => {
         console.log('Load fields response status:', response.status);
         if (response.status === 401 || response.status === 403) {
+            console.warn('User not authenticated, skipping import fields load');
             throw new Error('Authentication required. Please log in again.');
         }
+        if (response.status === 400) {
+            console.warn('No workspace selected, skipping import fields load');
+            throw new Error('No workspace selected');
+        }
         if (!response.ok) {
+            console.error(`Failed to load import fields: HTTP ${response.status}`);
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         return response.json();

@@ -1652,46 +1652,49 @@ def workers_route():
             
         workspace_id = session['current_workspace']['id']
         company = Company.query.filter_by(workspace_id=workspace_id).first()
-        if not company:
-            logger.info(f"No company found for workspace: {workspace_id}")
-            return render_template('workers.html', workers=[], all_fields=[])
-
-        # Get custom fields for this company
-        custom_fields = ImportField.query.filter_by(company_id=company.id).all()
+        
+        # Default fields to display
         default_fields = [
             {'name': 'First Name', 'type': 'text', 'id': 'first_name'},
             {'name': 'Last Name', 'type': 'text', 'id': 'last_name'},
             {'name': 'Date of Birth', 'type': 'date', 'id': 'date_of_birth'}
         ]
+        
+        if not company:
+            logger.info(f"No company found for workspace: {workspace_id}")
+            return render_template('workers.html', workers=[], all_fields=default_fields)
+
+        # Get custom fields for this company
+        custom_fields = ImportField.query.filter_by(company_id=company.id).all()
         all_fields = default_fields + [{'name': field.name, 'type': field.field_type or 'text', 'id': field.id} for field in custom_fields]
         
         # Get workers for this company with their custom field values
         workers = Worker.query.filter_by(company_id=company.id).all()
         logger.info(f"Found {len(workers)} workers for company ID: {company.id}")
         
-        # Debug logging for workers
-        for worker in workers:
-            logger.info(f"Worker ID: {worker.id}, First Name: {worker.first_name}, Last Name: {worker.last_name}")
-            
-            # Log custom field values
-            custom_values = WorkerCustomFieldValue.query.filter_by(worker_id=worker.id).all()
-            for value in custom_values:
-                logger.info(f"Custom Field ID: {value.custom_field_id}, Value: {value.value}")
-        
         return render_template('workers.html', workers=workers, all_fields=all_fields)
     except Exception as e:
-        logger.error(f"Error in workers_route: {str(e)}")
-        return render_template('500.html'), 500
         logger.error(f"Error in workers_route: {str(e)}\n{traceback.format_exc()}")
         return render_template('500.html'), 500
 
 @app.route("/api/import-field", methods=['GET', 'POST'])
 def import_field():
     try:
+        # Check if user is authenticated
+        if 'user' not in session or 'user_email' not in session['user']:
+            logging.error("User not authenticated for import-field endpoint")
+            return jsonify({'error': 'Not authenticated'}), 401
+        
+        # Check if workspace exists in session
+        if 'current_workspace' not in session:
+            logging.error("No workspace in session for import-field endpoint")
+            return jsonify({'error': 'No workspace selected'}), 400
+        
         # Get current company from workspace
         company = get_current_company()
         
         if not company:
+            logging.error(f"Company not found for workspace: {session['current_workspace']['id']}")
             return jsonify({'error': 'Company not found'}), 404
             
         if request.method == 'GET':

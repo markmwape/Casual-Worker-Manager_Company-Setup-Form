@@ -35,7 +35,7 @@
                 {% endfor %}
             </div>
             
-            {% if all_fields|selectattr('id', 'not string')|list|length > 0 %}
+            {% if all_fields|rejectattr('id', 'string')|list|length > 0 %}
                 <div class="divider">Custom Fields</div>
             {% else %}
                 <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">

@@ -2909,12 +2909,14 @@ def handle_single_worker(worker_id):
         company = get_current_company()
         
         if not company:
+            logging.error(f"Company not found for worker {worker_id}")
             return jsonify({'error': 'Company not found'}), 404
         
         # Find the worker
         worker = Worker.query.filter_by(id=worker_id, company_id=company.id).first()
         
         if not worker:
+            logging.error(f"Worker {worker_id} not found in company {company.id}")
             return jsonify({'error': 'Worker not found'}), 404
         
         if request.method == 'GET':
@@ -2948,6 +2950,7 @@ def handle_single_worker(worker_id):
     
     except Exception as e:
         logging.error(f"Error handling worker {worker_id}: {str(e)}")
+        logging.error(traceback.format_exc())
         db.session.rollback()
         return jsonify({'error': 'Failed to handle worker'}), 500
 

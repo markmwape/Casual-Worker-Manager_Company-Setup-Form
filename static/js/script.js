@@ -171,33 +171,119 @@ function openAddReportFieldModalPerUnitV2() {
 }
 
 function editReportField(fieldId, fieldName, formula, payoutType) {
-    // Populate the edit modal with current values
-    const modalId = payoutType === 'per_unit' ? 'add-report-field-modal-per-unit' : 'add-report-field-modal-per-day';
-    const nameFieldId = payoutType === 'per_unit' ? 'field_name_PerUnit' : 'field_name_PerDay';
-    const formulaFieldId = payoutType === 'per_unit' ? 'formula_PerUnit' : 'formula_PerDay';
+    // Fetch the full field data from the API to get max_limit
+    fetch(`/api/report-field/${fieldId}`)
+        .then(response => response.json())
+        .then(fieldData => {
+            populateEditModal(fieldId, fieldName, formula, payoutType, fieldData.max_limit || null);
+        })
+        .catch(error => {
+            // If API call fails, fallback to basic edit without max_limit
+            console.error('Error fetching field data:', error);
+            populateEditModal(fieldId, fieldName, formula, payoutType, null);
+        });
+}
+
+function populateEditModal(fieldId, fieldName, formula, payoutType, maxLimit) {
+    // Determine which modal to use based on payout type
+    const isPerDay = payoutType === 'per_day' || payoutType !== 'per_part';
+    const modalId = isPerDay ? 'add-report-field-modal-per-day' : 'add-report-field-modal-per-unit';
+    const suffix = isPerDay ? 'PerDay' : 'PerUnit';
     
-    // Set the values
-    document.getElementById(nameFieldId).value = fieldName;
-    document.getElementById(formulaFieldId).value = formula;
-    
-    // Store the field ID for updating
     const modal = document.getElementById(modalId);
-    modal.dataset.editingFieldId = fieldId;
-    modal.dataset.isEditing = 'true';
-    
-    // Change the button text and heading
-    const submitButton = modal.querySelector('.btn-primary');
-    if (submitButton) {
-        submitButton.textContent = 'Update Field';
+    if (!modal) {
+        console.error('Modal not found:', modalId);
+        return;
     }
     
+    // Parse formula for age conditions
+    let cleanFormula = formula;
+    let hasAgeCondition = false;
+    let ageOperator = '>';
+    let ageValue = '';
+    let conditionValue = '';
+    
+    // Check if formula has age condition pattern: "value if age op value else (formula)"
+    const ageConditionPattern = /^([\d.]+)\s+if\s+age\s+([><=]+)\s+([\d]+)\s+else\s+\((.*)\)$/;
+    const match = formula.match(ageConditionPattern);
+    if (match) {
+        hasAgeCondition = true;
+        conditionValue = match[1];
+        ageOperator = match[2];
+        ageValue = match[3];
+        cleanFormula = match[4];
+    }
+    
+    // Get form elements
+    const form = modal.querySelector('form');
+    const nameInput = form.querySelector('input[name="name"]');
+    const formulaTextarea = document.getElementById(`formulaBuilder${suffix}`);
+    const fieldIdInput = form.querySelector('input[name="field_id"]');
+    
+    // Set basic field values
+    if (nameInput) nameInput.value = fieldName;
+    if (formulaTextarea) formulaTextarea.value = cleanFormula;
+    if (fieldIdInput) fieldIdInput.value = fieldId;
+    
+    // Handle max limit
+    const maxLimitCheckbox = document.getElementById(`enableMaxLimit${suffix}`);
+    const maxLimitInput = document.getElementById(`maxLimitValue${suffix}`);
+    const maxLimitWrapper = document.getElementById(`maxLimitInputWrapper${suffix}`);
+    
+    if (maxLimit !== null && maxLimit !== undefined && maxLimitCheckbox && maxLimitInput) {
+        maxLimitCheckbox.checked = true;
+        maxLimitInput.value = maxLimit;
+        if (maxLimitWrapper) maxLimitWrapper.classList.remove('hidden');
+    } else if (maxLimitCheckbox) {
+        maxLimitCheckbox.checked = false;
+        if (maxLimitInput) maxLimitInput.value = '';
+        if (maxLimitWrapper) maxLimitWrapper.classList.add('hidden');
+    }
+    
+    // Handle age condition
+    const ageCheckbox = document.getElementById(`enableAgeCondition${suffix}`);
+    const ageWrapper = document.getElementById(`ageConditionWrapper${suffix}`);
+    const ageOpSelect = document.getElementById(`ageOperator${suffix}`);
+    const ageValInput = document.getElementById(`ageValue${suffix}`);
+    const ageCondValInput = document.getElementById(`ageConditionValue${suffix}`);
+    
+    if (hasAgeCondition && ageCheckbox) {
+        ageCheckbox.checked = true;
+        if (ageWrapper) ageWrapper.classList.remove('hidden');
+        if (ageOpSelect) ageOpSelect.value = ageOperator;
+        if (ageValInput) ageValInput.value = ageValue;
+        if (ageCondValInput) ageCondValInput.value = conditionValue;
+    } else if (ageCheckbox) {
+        ageCheckbox.checked = false;
+        if (ageWrapper) ageWrapper.classList.add('hidden');
+        if (ageOpSelect) ageOpSelect.value = '>';
+        if (ageValInput) ageValInput.value = '';
+        if (ageCondValInput) ageCondValInput.value = '';
+    }
+    
+    // Update modal heading
     const heading = modal.querySelector('h3');
     if (heading) {
-        heading.textContent = 'Edit Report Field';
+        heading.textContent = `Edit Custom Report Field (${isPerDay ? 'Per Day' : 'Per Unit'})`;
+    }
+    
+    // Update button text
+    const submitButton = modal.querySelector('button[onclick*="addCustomField"]');
+    if (submitButton) {
+        const buttonText = submitButton.querySelector('i') ? 
+            '<i data-feather="save" class="mr-2"></i>Update Field' : 
+            'Update Field';
+        submitButton.innerHTML = buttonText;
+        if (window.feather) feather.replace();
     }
     
     // Show the modal
     modal.showModal();
+    
+    // Re-register event listeners for formula builder
+    if (window.registerFormulaBuilderEvents) {
+        window.registerFormulaBuilderEvents();
+    }
 }
 
 async function deleteReportField(fieldId) {
@@ -1813,43 +1899,6 @@ window.openAddReportFieldModalPerUnitV2 = openAddReportFieldModalPerUnitV2;
 window.toggleUnitsSearch = toggleUnitsSearch;
 
 // Additional report field management functions
-function editReportField(fieldId, fieldName, formula, payoutType) {
-    // Show a modal or form to edit the field
-    const newName = prompt('Edit field name:', fieldName);
-    if (newName === null) return; // User cancelled
-    
-    const newFormula = prompt('Edit formula:', formula);
-    if (newFormula === null) return; // User cancelled
-    
-    // This would typically send a PUT request to update the field
-    fetch(`/api/report-field/${fieldId}`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            name: newName,
-            formula: newFormula,
-            payout_type: payoutType
-        })
-    })
-    .then(response => response.json())
-    .then(result => {
-        if (result.error) {
-            showToast(result.error, 'error');
-        } else {
-            showToast('Field updated successfully!', 'success');
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000);
-        }
-    })
-    .catch(error => {
-        console.error('Error updating field:', error);
-        showToast('Failed to update field', 'error');
-    });
-}
-
 // Export report field management functions
 window.editReportField = editReportField;
 window.deleteReportField = deleteReportField;

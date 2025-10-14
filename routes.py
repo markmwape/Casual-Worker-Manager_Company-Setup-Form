@@ -3613,6 +3613,37 @@ def download_report():
                 'daily_rate': company.daily_payout_rate,
                 'attendance_days': worker_attendance.get(record.worker.id, 0)
             })
+
+@app.route("/api/report-field/<int:field_id>", methods=['GET'])
+@subscription_required
+@feature_required('advanced_reporting')
+def get_report_field(field_id):
+    """Get a single report field by ID"""
+    try:
+        # Get current company from workspace
+        company = get_current_company()
+        
+        if not company:
+            return jsonify({'error': 'Company not found'}), 404
+        
+        field = ReportField.query.filter_by(id=field_id, company_id=company.id).first()
+        if not field:
+            return jsonify({'error': 'Field not found'}), 404
+        
+        return jsonify({
+            'id': field.id,
+            'name': field.name,
+            'field_type': field.field_type,
+            'formula': field.formula,
+            'max_limit': field.max_limit,
+            'payout_type': field.payout_type,
+            'created_at': field.created_at.isoformat() if field.created_at else None
+        }), 200
+        
+    except Exception as e:
+        logging.error(f"Error fetching report field: {str(e)}")
+        return jsonify({'error': 'Failed to fetch report field'}), 500
+
 @app.route("/api/report-field", methods=['POST', 'DELETE', 'PUT'])
 @subscription_required
 @feature_required('advanced_reporting')

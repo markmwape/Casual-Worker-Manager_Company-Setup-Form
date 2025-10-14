@@ -1,0 +1,279 @@
+<dialog id="add-worker-modal" class="modal">
+    <div class="modal-box max-w-4xl">
+        <h3 class="font-bold text-lg mb-4">Add New Worker</h3>
+        <form id="workerForm">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="form-control w-full">
+                    <label class="label">
+                        <span class="label-text">First Name</span>
+                    </label>
+                    <input type="text" name="first_name" class="input input-bordered w-full" required>
+                </div>
+                <div class="form-control w-full">
+                    <label class="label">
+                        <span class="label-text">Last Name</span>
+                    </label>
+                    <input type="text" name="last_name" class="input input-bordered w-full" required>
+                </div>
+                <div class="form-control w-full">
+                    <label class="label">
+                        <span class="label-text">Date of Birth</span>
+                    </label>
+                    <input type="text" name="date_of_birth" class="input input-bordered w-full">
+                </div>
+                
+                <!-- Custom fields -->
+                <div id="customFieldsContainer">
+                    {% for field in all_fields %}
+                        {% if field.id is number %}
+                            <div class="form-control w-full custom-field-item">
+                                <label class="label">
+                                    <span class="label-text">{{ field.name }}</span>
+                                    <button type="button" class="btn btn-ghost btn-xs text-red-500 hover:text-red-700" onclick="deleteCustomField({{ field.id }}, '{{ field.name }}')" title="Delete this field">
+                                        <i data-feather="trash-2" class="h-4 w-4"></i>
+                                    </button>
+                                </label>
+                                <input type="text" name="custom_field_{{ field.id }}" class="input input-bordered w-full" placeholder="Enter {{ field.name }}">
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Add New Custom Field Section -->
+            <div class="border-t border-gray-200 pt-4 mt-4">
+                <h5 class="text-sm font-medium text-gray-600 mb-3">Add Custom Field</h5>
+                <div class="flex flex-wrap items-center gap-2">
+                    <div class="flex-1 min-w-[200px]">
+                        <input type="text" id="newFieldName" class="input input-bordered bg-white w-full" placeholder="Enter field name...">
+                    </div>
+                    <button type="button" class="btn btn-primary whitespace-nowrap" onclick="addCustomField()">
+                        <i data-feather="plus" class="mr-1 h-4 w-4"></i>Add Field
+                    </button>
+                </div>
+            </div>
+            
+            <div class="modal-action">
+                <button type="button" class="btn btn-ghost" onclick="closeAddWorkerModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary">Add Worker</button>
+            </div>
+        </form>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+        <button type="button" onclick="closeAddWorkerModal()">close</button>
+    </form>
+</dialog>
+
+<!-- Delete Custom Field Confirmation Modal -->
+<dialog id="deleteFieldModal" class="modal">
+    <div class="modal-box">
+        <h3 class="font-bold text-lg">Confirm Deletion</h3>
+        <p class="py-4" id="deleteFieldMessage"></p>
+        <div class="modal-action">
+            <button type="button" class="btn btn-ghost" onclick="document.getElementById('deleteFieldModal').close()">Cancel</button>
+            <button type="button" class="btn btn-error" onclick="confirmDeleteCustomField()">Delete</button>
+        </div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+    </form>
+</dialog>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('add-worker-modal');
+    if (modal && typeof modal.showModal !== 'function') {
+        // Polyfill for dialog showModal if not supported
+        HTMLDialogElement.prototype.showModal = HTMLDialogElement.prototype.show || function() {
+            this.setAttribute('open', '');
+            this.style.display = 'block';
+        };
+        HTMLDialogElement.prototype.close = HTMLDialogElement.prototype.close || function() {
+            this.removeAttribute('open');
+            this.style.display = 'none';
+        };
+    }
+});
+
+let deleteFieldData = null;
+
+function addCustomField() {
+    const fieldName = document.getElementById('newFieldName').value.trim();
+    
+    if (!fieldName) {
+        showToast('Please enter a field name', 'warning');
+        return;
+    }
+    
+    // Create the field in the database first
+    fetch('/api/import-field', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            name: fieldName,
+            type: 'text'
+        })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.error) {
+            showToast(result.error, 'error');
+        } else {
+            // Clear the input field
+            document.getElementById('newFieldName').value = '';
+            
+            // Dynamically add the new field to the form
+            const customFieldsContainer = document.getElementById('customFieldsContainer');
+            const newFieldDiv = document.createElement('div');
+            newFieldDiv.className = 'form-control w-full custom-field-item';
+            newFieldDiv.innerHTML = `
+                <label class="label">
+                    <span class="label-text">${fieldName}</span>
+                    <button type="button" class="btn btn-ghost btn-xs text-red-500 hover:text-red-700" onclick="deleteCustomField(${result.field_id}, '${fieldName}')" title="Delete this field">
+                        <i data-feather="trash-2" class="h-4 w-4"></i>
+                    </button>
+                </label>
+                <input type="text" name="custom_field_${result.field_id}" class="input input-bordered w-full" placeholder="Enter ${fieldName}">
+            `;
+            
+            // Add the new field to the container
+            customFieldsContainer.appendChild(newFieldDiv);
+            
+            // Re-initialize feather icons for the new delete button
+            if (typeof feather !== 'undefined') {
+                feather.replace();
+            }
+            
+            showToast(`Custom field "${fieldName}" added successfully!`, 'success');
+        }
+    })
+    .catch(error => {
+        console.error('Error creating custom field:', error);
+        showToast('Failed to create custom field', 'error');
+    });
+}
+
+function deleteCustomField(fieldId, fieldName) {
+    // Store the field data and show confirmation modal
+    deleteFieldData = { fieldId, fieldName };
+    document.getElementById('deleteFieldMessage').textContent = 
+        `Are you sure you want to delete the custom field "${fieldName}"? This will remove it from all workers.`;
+    document.getElementById('deleteFieldModal').showModal();
+}
+
+function confirmDeleteCustomField() {
+    if (!deleteFieldData) return;
+    
+    const { fieldId, fieldName } = deleteFieldData;
+    
+    // Close the modal
+    document.getElementById('deleteFieldModal').close();
+    
+    fetch(`/api/import-field/${fieldId}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.error) {
+            showToast(result.error, 'error');
+        } else {
+            showToast(`Custom field "${fieldName}" deleted successfully! Reloading...`, 'success');
+            
+            // Reload the page to update the form
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        }
+        deleteFieldData = null;
+    })
+    .catch(error => {
+        console.error('Error deleting custom field:', error);
+        showToast('Failed to delete custom field', 'error');
+        deleteFieldData = null;
+    });
+}
+
+function openAddWorkerModal() {
+    const form = document.getElementById('workerForm');
+    form.reset();
+    document.getElementById('newFieldName').value = '';
+    form.removeAttribute('data-edit-worker-id');
+    
+    // Reset modal title and button text
+    const modal = document.getElementById('add-worker-modal');
+    const modalTitle = modal.querySelector('h3');
+    if (modalTitle) {
+        modalTitle.textContent = 'Add New Worker';
+    }
+    const submitBtn = form.querySelector('button[type="submit"]');
+    if (submitBtn) {
+        submitBtn.textContent = 'Add Worker';
+    }
+    modal.showModal();
+    feather.replace();
+}
+
+function closeAddWorkerModal() {
+    document.getElementById('add-worker-modal').close();
+    // Clear the form
+    document.getElementById('workerForm').reset();
+    document.getElementById('newFieldName').value = '';
+}
+
+// Expose functions globally
+window.openAddWorkerModal = openAddWorkerModal;
+window.closeAddWorkerModal = closeAddWorkerModal;
+window.addCustomField = addCustomField;
+window.deleteCustomField = deleteCustomField;
+window.confirmDeleteCustomField = confirmDeleteCustomField;
+
+// Handle form submission
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('workerForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(form);
+            const data = {};
+            formData.forEach((value, key) => {
+                data[key] = value;
+            });
+            
+            const workerId = form.getAttribute('data-edit-worker-id');
+            const url = workerId ? `/api/worker/${workerId}` : '/api/worker';
+            const method = workerId ? 'PUT' : 'POST';
+            
+            fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.error) {
+                    showToast(result.error, 'error');
+                } else {
+                    const action = workerId ? 'updated' : 'added';
+                    showToast(`Worker ${action} successfully!`, 'success');
+                    closeAddWorkerModal();
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                }
+            })
+            .catch(error => {
+                console.error('Error saving worker:', error);
+                showToast('Failed to save worker', 'error');
+            });
+        });
+    }
+});
+</script>

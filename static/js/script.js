@@ -940,6 +940,11 @@ function closeLogoutModal() {
 
 function openAddWorkerModal() {
     const modal = document.getElementById('add-worker-modal');
+    if (!modal) {
+        console.error('[openAddWorkerModal] Modal element not found');
+        if (typeof showToast === 'function') showToast('Internal error: cannot open Add Worker modal', 'error');
+        return;
+    }
     const form = document.getElementById('workerForm');
     
     // Reset form and ensure it's in "add" mode
@@ -1456,7 +1461,6 @@ window.closeAddTaskModal = closeAddTaskModal;
 window.createTask = createTask;
 window.setupPaymentTypeHandlers = setupPaymentTypeHandlers;
 window.updatePayoutLabels = updatePayoutLabels;
-// ...existing code...
 window.openImportWorkersModal = openImportWorkersModal;
 window.closeImportWorkersModal = closeImportWorkersModal;
 window.loadImportFields = loadImportFields;

@@ -1,40 +1,68 @@
 <dialog id="add-worker-to-task-modal" class="modal">
-    <div class="modal-box max-w-lg">
-        <h3 class="font-bold text-lg mb-4">Add Worker to Task</h3>
-        <form id="addWorkerToTaskForm" class="space-y-4">
-            <div class="form-control w-full">
-                <label class="label">
-                    <span class="label-text font-medium">Search Worker</span>
-                </label>
-                <div class="relative">
-                    <input type="text" 
-                           id="workerSearch" 
-                           class="input input-bordered w-full pr-10" 
-                           placeholder="Type name, ID, or any field to search..."
-                           autocomplete="off"
-                           required>
-                    <div class="absolute inset-y-0 right-0 flex items-center pr-3">
-                        <i data-feather="search" class="h-4 w-4 text-gray-400"></i>
+    <div class="modal-box max-w-2xl bg-gradient-to-br from-white to-blue-50 border-2 border-blue-200 shadow-2xl">
+        <!-- Enhanced Header -->
+        <div class="flex items-center gap-4 mb-6 pb-4 border-b border-blue-200">
+            <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl flex items-center justify-center shadow-lg">
+                <i data-feather="user-plus" class="h-6 w-6 text-white"></i>
+            </div>
+            <div>
+                <h3 class="font-bold text-xl bg-gradient-to-r from-blue-700 to-blue-900 bg-clip-text text-transparent">Add Worker to Task</h3>
+                <p class="text-sm text-blue-600 mt-1">Search and assign a worker to this task</p>
+            </div>
+        </div>
+
+        <form id="addWorkerToTaskForm" class="space-y-6">
+            <!-- Enhanced Search Section -->
+            <div class="bg-white rounded-xl p-6 border border-blue-100 shadow-sm">
+                <div class="form-control w-full">
+                    <label class="label mb-3">
+                        <span class="label-text font-bold text-blue-800 text-base flex items-center">
+                            <i data-feather="search" class="h-4 w-4 mr-2"></i>
+                            Find Worker
+                        </span>
+                    </label>
+                    <div class="relative">
+                        <input type="text" 
+                               id="workerSearch" 
+                               class="input input-bordered w-full pr-12 border-blue-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-200 rounded-xl text-base h-14 bg-blue-50/30 hover:bg-blue-50/50 transition-all" 
+                               placeholder="Type worker name, ID, or any field to search..."
+                               autocomplete="off"
+                               required>
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-4">
+                            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i data-feather="search" class="h-4 w-4 text-blue-600"></i>
+                            </div>
+                        </div>
+                        <div id="workersDropdown" class="absolute left-0 right-0 bg-white border-2 border-blue-200 rounded-xl shadow-xl z-[100] mt-2 hidden max-h-64 overflow-y-auto">
+                            <div class="p-4 text-sm text-blue-600 border-b border-blue-100 bg-blue-50/50">
+                                <i data-feather="info" class="inline h-4 w-4 mr-2"></i>
+                                Start typing to see available workers
+                            </div>
+                        </div>
+                        <input type="hidden" id="selectedWorkerId">
                     </div>
-                    <div id="workersDropdown" class="absolute left-0 right-0 bg-white border border-brand-navy-200 rounded-lg shadow-lg z-[100] mt-1 hidden max-h-48 overflow-y-auto">
-                        <div class="p-2 text-sm text-gray-500 border-b border-gray-100">
-                            Start typing to see available workers
+                    
+                    <!-- Enhanced Help Text -->
+                    <div class="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
+                        <div class="flex items-start gap-2">
+                            <i data-feather="lightbulb" class="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0"></i>
+                            <div class="text-sm text-blue-700">
+                                <span class="font-medium">Search Tips:</span> You can search by worker name, date of birth, worker ID, or any custom field values to quickly find the right person.
+                            </div>
                         </div>
                     </div>
-                    <input type="hidden" id="selectedWorkerId">
-                </div>
-                <div class="label">
-                    <span class="label-text-alt text-gray-500">
-                        <i data-feather="info" class="inline h-3 w-3 mr-1"></i>
-                        Search by name, date of birth, or any custom field
-                    </span>
                 </div>
             </div>
-            <div class="modal-action mt-6">
-                <button type="button" class="btn btn-ghost" onclick="closeAddWorkerToTaskModal()">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="addWorkerToTask()">
+
+            <!-- Enhanced Action Buttons -->
+            <div class="flex justify-end gap-3 pt-4 border-t border-blue-200">
+                <button type="button" class="btn btn-ghost border border-gray-300 hover:bg-gray-50 rounded-xl px-6" onclick="closeAddWorkerToTaskModal()">
+                    <i data-feather="x" class="mr-2 h-4 w-4"></i>
+                    Cancel
+                </button>
+                <button type="button" class="btn bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl px-8" onclick="addWorkerToTask()">
                     <i data-feather="plus" class="mr-2 h-4 w-4"></i>
-                    Add Worker
+                    Add Worker to Task
                 </button>
             </div>
         </form>
@@ -67,10 +95,17 @@
         document.getElementById('selectedWorkerId').value = '';
         document.getElementById('workersDropdown').classList.add('hidden');
         renderWorkerDropdown('');
+        
+        // Focus the search input with a slight delay for better UX
+        setTimeout(() => {
+            document.getElementById('workerSearch').focus();
+            feather.replace();
+        }, 100);
     }
 
     function closeAddWorkerToTaskModal() {
         document.getElementById('add-worker-to-task-modal').close();
+        document.getElementById('workersDropdown').classList.add('hidden');
     }
 
     let lastDropdownSelection = false;
@@ -96,31 +131,55 @@
         const matches = allWorkers.filter(worker => worker.all_fields.toLowerCase().includes(searchValue));
         console.log('Rendering dropdown, matches:', matches.map(w => w.name)); // Debug log
         if (matches.length === 0) {
-            dropdown.innerHTML = '<div class="px-3 py-2 text-sm text-gray-500 text-center">No workers found</div>';
+            dropdown.innerHTML = '<div class="px-4 py-6 text-center"><div class="text-gray-400 mb-2"><i data-feather="user-x" class="h-8 w-8 mx-auto mb-2"></i></div><div class="text-sm text-gray-500 font-medium">No workers found</div><div class="text-xs text-gray-400 mt-1">Try adjusting your search terms</div></div>';
+            feather.replace();
             currentDropdownIndex = -1;
         } else {
             // Show limited results to reduce scrolling
             const limitedMatches = matches.slice(0, 8);
             limitedMatches.forEach((worker, idx) => {
                 const div = document.createElement('div');
-                div.className = 'px-3 py-2 hover:bg-brand-navy-50 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors text-sm';
+                div.className = 'px-4 py-3 hover:bg-blue-50 cursor-pointer border-b border-blue-100 last:border-b-0 transition-all duration-200 group';
                 
-                // Create a more informative display
+                // Create enhanced display with avatar placeholder and better info
+                const container = document.createElement('div');
+                container.className = 'flex items-center gap-3';
+                
+                // Avatar placeholder
+                const avatar = document.createElement('div');
+                avatar.className = 'w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center text-white font-medium text-sm group-hover:scale-105 transition-transform';
+                avatar.textContent = worker.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+                
+                // Worker info container
+                const infoContainer = document.createElement('div');
+                infoContainer.className = 'flex-1';
+                
+                // Worker name
                 const displayText = document.createElement('div');
-                displayText.className = 'font-medium text-gray-800';
+                displayText.className = 'font-semibold text-gray-800 group-hover:text-blue-700 transition-colors';
                 displayText.textContent = worker.name;
                 
-                // Add additional info if available
+                // Additional info
                 const subText = document.createElement('div');
                 subText.className = 'text-xs text-gray-500 mt-0.5';
+                const infoParts = [];
                 if (worker.date_of_birth) {
-                    subText.textContent = `DOB: ${worker.date_of_birth}`;
+                    infoParts.push(`DOB: ${worker.date_of_birth}`);
                 }
+                infoParts.push(`ID: ${worker.id}`);
+                subText.textContent = infoParts.join(' • ');
                 
-                div.appendChild(displayText);
-                if (subText.textContent) {
-                    div.appendChild(subText);
-                }
+                // Add icon
+                const icon = document.createElement('div');
+                icon.className = 'w-5 h-5 text-blue-400 group-hover:text-blue-600 transition-colors';
+                icon.innerHTML = '<i data-feather="chevron-right" class="h-4 w-4"></i>';
+                
+                container.appendChild(avatar);
+                infoContainer.appendChild(displayText);
+                infoContainer.appendChild(subText);
+                container.appendChild(infoContainer);
+                container.appendChild(icon);
+                div.appendChild(container);
                 
                 div.onclick = function() {
                     const input = document.getElementById('workerSearch');
@@ -138,12 +197,13 @@
             // Show "more results" indicator if there are more
             if (matches.length > 8) {
                 const moreDiv = document.createElement('div');
-                moreDiv.className = 'px-3 py-2 text-xs text-center text-gray-500 bg-gray-50';
-                moreDiv.textContent = `+ ${matches.length - 8} more results - keep typing to refine`;
+                moreDiv.className = 'px-4 py-3 text-center bg-blue-50 border-t border-blue-200';
+                moreDiv.innerHTML = `<div class="text-xs text-blue-600 font-medium"><i data-feather="more-horizontal" class="inline h-3 w-3 mr-1"></i>+ ${matches.length - 8} more results available</div><div class="text-xs text-blue-500 mt-1">Keep typing to refine your search</div>`;
                 dropdown.appendChild(moreDiv);
             }
             
             currentDropdownIndex = -1;
+            feather.replace();
         }
         dropdown.classList.remove('hidden');
     }
@@ -162,18 +222,33 @@
             e.preventDefault();
             currentDropdownIndex = (currentDropdownIndex + 1) % items.length;
             items.forEach((item, idx) => {
-                item.classList.toggle('bg-brand-navy-100', idx === currentDropdownIndex);
+                if (idx === currentDropdownIndex) {
+                    item.classList.add('bg-blue-100', 'border-blue-300');
+                    item.classList.remove('hover:bg-blue-50');
+                } else {
+                    item.classList.remove('bg-blue-100', 'border-blue-300');
+                    item.classList.add('hover:bg-blue-50');
+                }
             });
         } else if (e.key === 'ArrowUp') {
             e.preventDefault();
             currentDropdownIndex = (currentDropdownIndex - 1 + items.length) % items.length;
             items.forEach((item, idx) => {
-                item.classList.toggle('bg-brand-navy-100', idx === currentDropdownIndex);
+                if (idx === currentDropdownIndex) {
+                    item.classList.add('bg-blue-100', 'border-blue-300');
+                    item.classList.remove('hover:bg-blue-50');
+                } else {
+                    item.classList.remove('bg-blue-100', 'border-blue-300');
+                    item.classList.add('hover:bg-blue-50');
+                }
             });
         } else if (e.key === 'Enter') {
             if (currentDropdownIndex >= 0 && currentDropdownIndex < items.length) {
                 items[currentDropdownIndex].click();
             }
+        } else if (e.key === 'Escape') {
+            dropdown.classList.add('hidden');
+            currentDropdownIndex = -1;
         }
     });
 
@@ -183,9 +258,16 @@
         const workerName = document.getElementById('workerSearch').value;
 
         if (!workerId || !lastDropdownSelection) {
-            showCustomModal('Validation Error', 'Please select a valid worker from the list', 'warning');
+            showCustomModal('Please Select a Worker', 'You must select a valid worker from the search results before proceeding.', 'warning');
             return;
         }
+
+        // Show loading state
+        const button = event.target;
+        const originalHTML = button.innerHTML;
+        button.innerHTML = '<i data-feather="loader" class="mr-2 h-4 w-4 animate-spin"></i>Adding Worker...';
+        button.disabled = true;
+        feather.replace();
 
         fetch(`/api/task/${taskId}/add-worker`, {
             method: 'POST',
@@ -198,16 +280,24 @@
         })
         .then(response => response.json())
         .then(result => {
+            button.innerHTML = originalHTML;
+            button.disabled = false;
+            feather.replace();
+            
             if (result.error) {
-                showCustomModal('Error', result.error, 'error');
+                showCustomModal('Assignment Failed', result.error, 'error');
             } else {
-                showCustomModal('Success', 'Worker added to task successfully', 'success');
+                showCustomModal('Worker Added Successfully!', `${workerName} has been successfully assigned to this task.`, 'success');
+                closeAddWorkerToTaskModal();
                 window.location.reload();
             }
         })
         .catch(error => {
+            button.innerHTML = originalHTML;
+            button.disabled = false;
+            feather.replace();
             console.error('Error adding worker to task:', error);
-            showCustomModal('Error', 'Failed to add worker to task', 'error');
+            showCustomModal('Connection Error', 'Failed to add worker to task. Please check your connection and try again.', 'error');
         });
     }
 </script>

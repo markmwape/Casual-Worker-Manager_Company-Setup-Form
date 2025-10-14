@@ -44,7 +44,7 @@
                             </div>
                             <div id="currentFields" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                                 {% for field in all_fields %}
-                                    {% if field.id is not string %}
+                                    {% if field.id is number %}
                                         <div class="bg-brand-navy-100 p-2 rounded-lg text-brand-navy-700 font-medium truncate" data-field="{{ field.name|replace(' ', '_') }}">{{ field.name }}</div>
                                     {% endif %}
                                 {% endfor %}

@@ -24,7 +24,7 @@
                 
                 <!-- Custom fields -->
                 {% for field in all_fields %}
-                    {% if field.id is not string %}
+                    {% if field.id is number %}
                         <div class="form-control w-full">
                             <label class="label">
                                 <span class="label-text">{{ field.name }}</span>
@@ -35,18 +35,17 @@
                 {% endfor %}
             </div>
             
-            {% if all_fields|rejectattr('id', 'string')|list|length > 0 %}
+            {% set custom_fields = all_fields|selectattr('id', 'number')|list %}
+            {% if custom_fields|length > 0 %}
                 <div class="divider">Custom Fields</div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {% for field in all_fields %}
-                        {% if field.id is not string %}
-                            <div class="form-control w-full">
-                                <label class="label">
-                                    <span class="label-text font-medium text-blue-700">{{ field.name }}</span>
-                                </label>
-                                <input type="text" name="custom_field_{{ field.id }}" class="input input-bordered w-full border-blue-200 focus:border-blue-500" placeholder="Enter {{ field.name }}">
-                            </div>
-                        {% endif %}
+                    {% for field in custom_fields %}
+                        <div class="form-control w-full">
+                            <label class="label">
+                                <span class="label-text font-medium text-blue-700">{{ field.name }}</span>
+                            </label>
+                            <input type="text" name="custom_field_{{ field.id }}" class="input input-bordered w-full border-blue-200 focus:border-blue-500" placeholder="Enter {{ field.name }}">
+                        </div>
                     {% endfor %}
                 </div>
             {% endif %}

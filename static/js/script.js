@@ -508,6 +508,40 @@ function saveNewField() {
     });
 }
 
+function saveNewFieldImport() {
+    const fieldName = document.getElementById('importNewFieldName').value.trim();
+    
+    if (!fieldName) {
+        showToast('Please enter a field name', 'warning');
+        return;
+    }
+    
+    fetch('/api/import-field', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            name: fieldName,
+            type: 'text'
+        })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.error) {
+            showToast(result.error, 'error');
+        } else {
+            showToast('Custom field added successfully!', 'success');
+            document.getElementById('importNewFieldName').value = '';
+            loadImportFields();
+        }
+    })
+    .catch(error => {
+        console.error('Error adding custom field:', error);
+        showToast('Failed to add custom field', 'error');
+    });
+}
+
 // Team member modal functions
 function openEditRoleModal(userId, email, currentRole) {
     document.getElementById('edit-user-id').value = userId;

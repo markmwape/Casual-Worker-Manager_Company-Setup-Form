@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3 
 """
 Emergency migration script to add missing columns directly to the database.
 This bypasses Alembic and adds the columns manually.

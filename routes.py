@@ -1724,6 +1724,7 @@ def workers_route():
             return redirect(url_for('workspace_selection_route'))
             
         workspace_id = session['current_workspace']['id']
+
         logger.info(f"Looking for company in workspace: {workspace_id}")
         
         # Add error handling for workspace_id being None or invalid

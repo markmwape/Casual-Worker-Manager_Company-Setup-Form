@@ -94,7 +94,7 @@ class ImportField(db.Model):
     name = db.Column(db.String(100), nullable=False)
     field_type = db.Column(db.String(50), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    custom_field_values = db.relationship('WorkerCustomFieldValue', backref='custom_field', lazy=True, cascade='all, delete-orphan')
+    custom_field_values = db.relationship('WorkerCustomFieldValue', backref='import_field', lazy=True, cascade='all, delete-orphan')
 
 class WorkerCustomFieldValue(db.Model):
     id = db.Column(db.Integer, primary_key=True)

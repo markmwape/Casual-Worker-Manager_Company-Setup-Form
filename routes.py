@@ -1702,6 +1702,101 @@ def update_company_contact():
         db.session.rollback()
         return jsonify({'error': 'Failed to update company contact information'}), 500
 
+@app.route("/debug/session")
+def debug_session():
+    """Debug endpoint to check session state"""
+    try:
+        debug_info = {
+            'session_keys': list(session.keys()),
+            'user_in_session': 'user' in session,
+            'workspace_in_session': 'current_workspace' in session,
+            'user_data': session.get('user', {}),
+            'workspace_data': session.get('current_workspace', {})
+        }
+        
+        if 'current_workspace' in session:
+            workspace_id = session['current_workspace'].get('id')
+            if workspace_id:
+                # Check if workspace exists
+                workspace = Workspace.query.get(workspace_id)
+                debug_info['workspace_exists'] = workspace is not None
+                if workspace:
+                    debug_info['workspace_name'] = workspace.name
+                    # Check if company exists
+                    company = Company.query.filter_by(workspace_id=workspace_id).first()
+                    debug_info['company_exists'] = company is not None
+                    if company:
+                        debug_info['company_name'] = company.name
+                        debug_info['company_id'] = company.id
+                        
+                        # Check workers count
+                        workers_count = Worker.query.filter_by(company_id=company.id).count()
+                        debug_info['workers_count'] = workers_count
+                        
+                        # Check custom fields count
+                        custom_fields_count = ImportField.query.filter_by(company_id=company.id).count()
+                        debug_info['custom_fields_count'] = custom_fields_count
+        
+        return jsonify(debug_info)
+        
+    except Exception as e:
+        return jsonify({
+            'error': str(e),
+            'traceback': traceback.format_exc()
+        })
+
+@app.route("/debug/workers")
+def debug_workers():
+    """Debug endpoint to test workers data directly"""
+    try:
+        if 'current_workspace' not in session:
+            return jsonify({'error': 'No workspace in session'})
+        
+        workspace_id = session['current_workspace']['id']
+        company = Company.query.filter_by(workspace_id=workspace_id).first()
+        
+        if not company:
+            return jsonify({'error': 'No company found'})
+        
+        # Get workers with custom field values
+        from sqlalchemy.orm import joinedload
+        workers = Worker.query.filter_by(company_id=company.id).options(
+            joinedload(Worker.custom_field_values)
+        ).all()
+        
+        workers_data = []
+        for worker in workers:
+            worker_info = {
+                'id': worker.id,
+                'first_name': worker.first_name,
+                'last_name': worker.last_name,
+                'date_of_birth': worker.date_of_birth.isoformat() if worker.date_of_birth else None,
+                'custom_field_values_count': len(worker.custom_field_values),
+                'custom_field_values': []
+            }
+            
+            for cfv in worker.custom_field_values:
+                worker_info['custom_field_values'].append({
+                    'id': cfv.id,
+                    'custom_field_id': cfv.custom_field_id,
+                    'value': cfv.value
+                })
+            
+            workers_data.append(worker_info)
+        
+        return jsonify({
+            'company_id': company.id,
+            'company_name': company.name,
+            'workers_count': len(workers),
+            'workers': workers_data
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'error': str(e),
+            'traceback': traceback.format_exc()
+        })
+
 @app.route("/workers", methods=['GET'])
 @subscription_required
 def workers_route():
@@ -1724,6 +1819,14 @@ def workers_route():
             return redirect(url_for('workspace_selection_route'))
             
         workspace_id = session['current_workspace']['id']
+        logger.info(f"Looking for company in workspace: {workspace_id}")
+        
+        # Add error handling for workspace_id being None or invalid
+        if not workspace_id:
+            logger.error("Workspace ID is None in session")
+            session.pop('current_workspace', None)
+            return redirect(url_for('workspace_selection_route'))
+        
         company = Company.query.filter_by(workspace_id=workspace_id).first()
         
         # Default fields to display
@@ -1737,15 +1840,53 @@ def workers_route():
             logger.info(f"No company found for workspace: {workspace_id}")
             return render_template('workers.html', workers=[], all_fields=default_fields)
 
-        # Get custom fields for this company
-        custom_fields = ImportField.query.filter_by(company_id=company.id).all()
-        all_fields = default_fields + [{'name': field.name, 'type': field.field_type or 'text', 'id': field.id} for field in custom_fields]
-        
-        # Get workers for this company with their custom field values
-        workers = Worker.query.filter_by(company_id=company.id).all()
-        logger.info(f"Found {len(workers)} workers for company ID: {company.id}")
-        
-        return render_template('workers.html', workers=workers, all_fields=all_fields)
+        logger.info(f"Found company: {company.name} (ID: {company.id})")
+
+        try:
+            # Get custom fields for this company with error handling
+            custom_fields = ImportField.query.filter_by(company_id=company.id).all()
+            logger.info(f"Found {len(custom_fields)} custom fields")
+            
+            # Safe field processing
+            all_fields = default_fields.copy()
+            for field in custom_fields:
+                if field and field.name:  # Ensure field exists and has a name
+                    all_fields.append({
+                        'name': field.name, 
+                        'type': field.field_type or 'text', 
+                        'id': field.id
+                    })
+            
+            # Get workers for this company with their custom field values (eager load to avoid N+1 queries)
+            from sqlalchemy.orm import joinedload
+            workers = Worker.query.filter_by(company_id=company.id).options(
+                joinedload(Worker.custom_field_values)
+            ).all()
+            logger.info(f"Found {len(workers)} workers for company ID: {company.id}")
+            
+            # Validate worker data to prevent template errors
+            valid_workers = []
+            for worker in workers:
+                try:
+                    # Ensure worker has the required attributes
+                    if worker:
+                        # Test accessing custom_field_values to catch any relationship issues early
+                        custom_values_count = len(worker.custom_field_values)
+                        logger.info(f"Worker: {worker.first_name or 'Unknown'} {worker.last_name or 'Unknown'}, Custom fields: {custom_values_count}")
+                        valid_workers.append(worker)
+                except Exception as worker_error:
+                    logger.error(f"Error processing worker {worker.id if worker else 'None'}: {str(worker_error)}")
+                    # Skip this worker but continue with others
+                    continue
+            
+            logger.info(f"Rendering template with {len(valid_workers)} valid workers and {len(all_fields)} fields")
+            return render_template('workers.html', workers=valid_workers, all_fields=all_fields)
+            
+        except Exception as data_error:
+            logger.error(f"Error fetching worker data: {str(data_error)}")
+            # Fallback to empty data rather than crashing
+            return render_template('workers.html', workers=[], all_fields=default_fields)
+            
     except Exception as e:
         logger.error(f"Error in workers_route: {str(e)}\n{traceback.format_exc()}")
         return render_template('500.html'), 500

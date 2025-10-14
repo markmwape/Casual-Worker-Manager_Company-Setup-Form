@@ -1226,9 +1226,14 @@ def download_reports():
         report_type = request.args.get('type', 'per_day')
         start_date = request.args.get('start_date')
         end_date = request.args.get('end_date')
+        format_type = request.args.get('format', 'csv').lower()  # New: format parameter
         
         if not start_date or not end_date:
             return jsonify({'error': 'Start date and end date are required'}), 400
+        
+        # Validate format
+        if format_type not in ['csv', 'excel', 'xlsx']:
+            return jsonify({'error': 'Invalid format. Supported formats: csv, excel, xlsx'}), 400
         
         # Get current company from workspace
         company = get_current_company()
@@ -1247,32 +1252,98 @@ def download_reports():
         if report_type == 'per_day':
             # Generate per day report
             report_data = generate_per_day_report(company, start_date, end_date)
-            filename = f'per_day_report_{start_date}_to_{end_date}.csv'
         elif report_type == 'per_part':
             # Generate per part report
             report_data = generate_per_part_report(company, start_date, end_date)
-            filename = f'per_part_report_{start_date}_to_{end_date}.csv'
         else:
             return jsonify({'error': 'Invalid report type'}), 400
         
-        # Create CSV file
-        import io
-        import csv
+        # Generate file based on format
+        if format_type == 'csv':
+            return generate_csv_response(report_data, report_type, start_date, end_date)
+        elif format_type in ['excel', 'xlsx']:
+            return generate_excel_response(report_data, report_type, start_date, end_date)
         
-        output = io.StringIO()
+    except Exception as e:
+        logging.error(f"Error generating report: {str(e)}")
+        return jsonify({'error': 'Failed to generate report'}), 500
+
+def generate_csv_response(report_data, report_type, start_date, end_date):
+    """Generate CSV file response"""
+    import io
+    import csv
+    
+    filename = f'{report_type}_report_{start_date}_to_{end_date}.csv'
+    
+    output = io.StringIO()
+    if report_data:
+        writer = csv.DictWriter(output, fieldnames=report_data[0].keys())
+        writer.writeheader()
+        writer.writerows(report_data)
+    
+    output.seek(0)
+    
+    # Create response
+    response = make_response(output.getvalue())
+    response.headers['Content-Type'] = 'text/csv'
+    response.headers['Content-Disposition'] = f'attachment; filename={filename}'
+    
+    return response
+
+def generate_excel_response(report_data, report_type, start_date, end_date):
+    """Generate Excel file response"""
+    try:
+        import pandas as pd
+        import io
+        
+        filename = f'{report_type}_report_{start_date}_to_{end_date}.xlsx'
+        
+        # Create DataFrame from report data
         if report_data:
-            writer = csv.DictWriter(output, fieldnames=report_data[0].keys())
-            writer.writeheader()
-            writer.writerows(report_data)
+            df = pd.DataFrame(report_data)
+        else:
+            df = pd.DataFrame()
+        
+        # Create Excel file in memory
+        output = io.BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            # Write data to 'Report' sheet
+            df.to_excel(writer, sheet_name='Report', index=False)
+            
+            # Get the workbook and worksheet for formatting
+            workbook = writer.book
+            worksheet = writer.sheets['Report']
+            
+            # Auto-adjust column widths
+            for column in worksheet.columns:
+                max_length = 0
+                column_letter = column[0].column_letter
+                for cell in column:
+                    try:
+                        if len(str(cell.value)) > max_length:
+                            max_length = len(str(cell.value))
+                    except:
+                        pass
+                adjusted_width = min(max_length + 2, 50)  # Cap at 50 characters
+                worksheet.column_dimensions[column_letter].width = adjusted_width
         
         output.seek(0)
         
         # Create response
         response = make_response(output.getvalue())
-        response.headers['Content-Type'] = 'text/csv'
+        response.headers['Content-Type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         response.headers['Content-Disposition'] = f'attachment; filename={filename}'
         
         return response
+        
+    except ImportError:
+        # Fallback to CSV if pandas/openpyxl is not available
+        logging.warning("pandas or openpyxl not available, falling back to CSV")
+        return generate_csv_response(report_data, report_type, start_date, end_date)
+    except Exception as e:
+        logging.error(f"Error generating Excel file: {str(e)}")
+        # Fallback to CSV on error
+        return generate_csv_response(report_data, report_type, start_date, end_date)
         
     except Exception as e:
         logging.error(f"Error generating report: {str(e)}")

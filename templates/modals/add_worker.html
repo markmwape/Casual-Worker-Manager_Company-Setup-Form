@@ -29,7 +29,7 @@
                             <label class="label">
                                 <span class="label-text">{{ field.name }}</span>
                             </label>
-                            <input type="text" name="{{ field.name }}" class="input input-bordered w-full">
+                            <input type="text" name="custom_field_{{ field.id }}" class="input input-bordered w-full" placeholder="Enter {{ field.name }}">
                         </div>
                     {% endif %}
                 {% endfor %}
@@ -37,6 +37,65 @@
             
             {% if all_fields|rejectattr('id', 'string')|list|length > 0 %}
                 <div class="divider">Custom Fields</div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {% for field in all_fields %}
+                        {% if field.id is not string %}
+                            <div class="form-control w-full">
+                                <label class="label">
+                                    <span class="label-text font-medium text-blue-700">{{ field.name }}</span>
+                                </label>
+                                <input type="text" name="custom_field_{{ field.id }}" class="input input-bordered w-full border-blue-200 focus:border-blue-500" placeholder="Enter {{ field.name }}">
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <!-- Add New Custom Field Section -->
+            <div class="divider">Add Custom Field</div>
+            <div class="bg-blue-50 p-6 rounded-xl border border-blue-200">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                        <i data-feather="plus" class="h-5 w-5 text-white"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-blue-800">Create New Custom Field</h4>
+                        <p class="text-sm text-blue-600">Add a new field that will be available for all workers</p>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium text-blue-700">Field Name</span>
+                        </label>
+                        <input type="text" id="newFieldName" class="input input-bordered border-blue-200 focus:border-blue-500" placeholder="e.g., Department, Skill Level">
+                    </div>
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium text-blue-700">Field Type</span>
+                        </label>
+                        <select id="newFieldType" class="select select-bordered border-blue-200 focus:border-blue-500">
+                            <option value="text">Text</option>
+                            <option value="number">Number</option>
+                            <option value="date">Date</option>
+                            <option value="email">Email</option>
+                        </select>
+                    </div>
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text opacity-0">Action</span>
+                        </label>
+                        <button type="button" class="btn bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0" onclick="addCustomField()">
+                            <i data-feather="plus" class="mr-2 h-4 w-4"></i>
+                            Add Field
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Dynamic custom field container -->
+                <div id="dynamicCustomFields" class="mt-4 space-y-3"></div>
+            </div>
             {% else %}
                 <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                     <div class="flex items-center gap-2 text-blue-700">
@@ -59,3 +118,106 @@
         <button type="button" onclick="closeAddWorkerModal()">close</button>
     </form>
 </dialog>
+
+<script>
+let dynamicFieldCounter = 0;
+
+function addCustomField() {
+    const fieldName = document.getElementById('newFieldName').value.trim();
+    const fieldType = document.getElementById('newFieldType').value;
+    
+    if (!fieldName) {
+        showToast('Please enter a field name', 'warning');
+        return;
+    }
+    
+    // Create the field in the database first
+    fetch('/api/import-field', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            name: fieldName,
+            type: fieldType
+        })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.error) {
+            showToast(result.error, 'error');
+        } else {
+            // Add the field to the form dynamically
+            addDynamicFieldToForm(result.id, result.name, result.type);
+            
+            // Clear the input fields
+            document.getElementById('newFieldName').value = '';
+            document.getElementById('newFieldType').value = 'text';
+            
+            showToast(`Custom field "${fieldName}" added successfully!`, 'success');
+            feather.replace();
+        }
+    })
+    .catch(error => {
+        console.error('Error creating custom field:', error);
+        showToast('Failed to create custom field', 'error');
+    });
+}
+
+function addDynamicFieldToForm(fieldId, fieldName, fieldType) {
+    const container = document.getElementById('dynamicCustomFields');
+    
+    const fieldDiv = document.createElement('div');
+    fieldDiv.className = 'bg-white p-4 rounded-lg border border-blue-200 shadow-sm';
+    fieldDiv.innerHTML = `
+        <div class="flex justify-between items-start mb-3">
+            <div class="flex items-center gap-2">
+                <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+                    <i data-feather="check" class="h-4 w-4 text-green-600"></i>
+                </div>
+                <span class="font-medium text-green-700">New Field Created: ${fieldName}</span>
+            </div>
+            <button type="button" class="text-gray-400 hover:text-red-500 transition-colors" onclick="removeDynamicField(this, ${fieldId})">
+                <i data-feather="x" class="h-4 w-4"></i>
+            </button>
+        </div>
+        <div class="form-control">
+            <label class="label">
+                <span class="label-text font-medium text-blue-700">${fieldName}</span>
+            </label>
+            <input type="${fieldType === 'text' ? 'text' : fieldType}" 
+                   name="custom_field_${fieldId}" 
+                   class="input input-bordered border-blue-200 focus:border-blue-500" 
+                   placeholder="Enter ${fieldName}">
+        </div>
+    `;
+    
+    container.appendChild(fieldDiv);
+    dynamicFieldCounter++;
+}
+
+function removeDynamicField(button, fieldId) {
+    // Remove the field from the form
+    button.closest('.bg-white').remove();
+    
+    // Optionally remove from database (you might want to keep it for other workers)
+    // For now, we'll keep the field in the database since other workers might use it
+    showToast('Field removed from form', 'info');
+}
+
+function openAddWorkerModal() {
+    document.getElementById('add-worker-modal').showModal();
+    // Clear any dynamic fields from previous sessions
+    document.getElementById('dynamicCustomFields').innerHTML = '';
+    dynamicFieldCounter = 0;
+    feather.replace();
+}
+
+function closeAddWorkerModal() {
+    document.getElementById('add-worker-modal').close();
+    // Clear the form
+    document.getElementById('workerForm').reset();
+    document.getElementById('dynamicCustomFields').innerHTML = '';
+    dynamicFieldCounter = 0;
+}
+</script>

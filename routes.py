@@ -1534,11 +1534,13 @@ def create_worker():
         # Handle custom fields
         import_fields = ImportField.query.filter_by(company_id=company.id).all()
         for field in import_fields:
-            if field.name in data:
+            # Check for both field.name and custom_field_{field.id} formats
+            field_value = data.get(field.name) or data.get(f'custom_field_{field.id}')
+            if field_value:
                 custom_value = WorkerCustomFieldValue(
                     worker_id=new_worker.id,
                     custom_field_id=field.id,
-                    value=data[field.name]
+                    value=field_value
                 )
                 db.session.add(custom_value)
         

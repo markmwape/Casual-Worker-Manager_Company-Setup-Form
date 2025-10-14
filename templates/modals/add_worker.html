@@ -1,5 +1,30 @@
 <dialog id="add-worker-modal" class="modal">
-    <div class="modal-box max-w-4xl">
+    <div cla        </form>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+        <button type="button" onclick="closeAddWorkerModal()">close</button>
+    </form>
+</div>
+
+<!-- Delete Custom Field Confirmation Modal -->
+<dialog id="deleteFieldModal" class="modal">
+    <div class="modal-box">
+        <h3 class="font-bold text-lg">Confirm Deletion</h3>
+        <p class="py-4" id="deleteFieldMessage"></p>
+        <div class="modal-action">
+            <button type="button" class="btn btn-ghost" onclick="document.getElementById('deleteFieldModal').close()">Cancel</button>
+            <button type="button" class="btn btn-error" onclick="confirmDeleteCustomField()">Delete</button>
+        </div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+    </form>
+</dialog>
+
+<script>
+let deleteFieldData = null;
+
+function addCustomField() {-box max-w-4xl">
         <h3 class="font-bold text-lg mb-4">Add New Worker</h3>
         <form id="workerForm">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -105,9 +130,20 @@ function addCustomField() {
 }
 
 function deleteCustomField(fieldId, fieldName) {
-    if (!confirm(`Are you sure you want to delete the custom field "${fieldName}"? This will remove it from all workers.`)) {
-        return;
-    }
+    // Store the field data and show confirmation modal
+    deleteFieldData = { fieldId, fieldName };
+    document.getElementById('deleteFieldMessage').textContent = 
+        `Are you sure you want to delete the custom field "${fieldName}"? This will remove it from all workers.`;
+    document.getElementById('deleteFieldModal').showModal();
+}
+
+function confirmDeleteCustomField() {
+    if (!deleteFieldData) return;
+    
+    const { fieldId, fieldName } = deleteFieldData;
+    
+    // Close the modal
+    document.getElementById('deleteFieldModal').close();
     
     fetch(`/api/import-field/${fieldId}`, {
         method: 'DELETE',
@@ -127,10 +163,12 @@ function deleteCustomField(fieldId, fieldName) {
                 window.location.reload();
             }, 1000);
         }
+        deleteFieldData = null;
     })
     .catch(error => {
         console.error('Error deleting custom field:', error);
         showToast('Failed to delete custom field', 'error');
+        deleteFieldData = null;
     });
 }
 

@@ -95,17 +95,6 @@
                 <!-- Dynamic custom field container -->
                 <div id="dynamicCustomFields" class="mt-4 space-y-3"></div>
             </div>
-            {% else %}
-                <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                    <div class="flex items-center gap-2 text-blue-700">
-                        <i data-feather="info"></i>
-                        <span class="font-medium">No custom fields available</span>
-                    </div>
-                    <p class="text-blue-600 text-sm mt-2">
-                        You can add custom fields for workers by importing a CSV file or creating them in the settings.
-                    </p>
-                </div>
-            {% endif %}
             
             <div class="modal-action">
                 <button type="button" class="btn btn-ghost" onclick="closeAddWorkerModal()">Cancel</button>

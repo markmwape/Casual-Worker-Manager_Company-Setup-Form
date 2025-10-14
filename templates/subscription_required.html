@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <script async src="https://js.stripe.com/v3/pricing-table.js"></script>
 </head>
-<body class="font-inter bg-gradient-to-br from-gray-50 to-blue-50">
+<body class="font-inter bg-gradient-to-br from-gray-50 to-brand-navy-50">
     
     <!-- Navigation -->
     <nav class="bg-white/90 backdrop-blur-md shadow-lg sticky top-0 z-50">
@@ -117,8 +117,8 @@
                             
                             <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
                                 <div class="flex items-start">
-                                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3 mt-1">
-                                        <i class="fas fa-chart-line text-blue-600 text-sm"></i>
+                                    <div class="w-8 h-8 bg-brand-navy-100 rounded-full flex items-center justify-center mr-3 mt-1">
+                                        <i class="fas fa-chart-line text-brand-navy-600 text-sm"></i>
                                     </div>
                                     <div>
                                         <h5 class="font-semibold text-gray-900 text-sm">85% Faster Data Entry</h5>
@@ -153,7 +153,7 @@
                     <!-- Help Text -->
                     <div class="mt-6 text-center">
                         <p class="text-sm text-gray-500">
-                            Need help? <a href="mailto:support@embeeaccounting.com" class="text-blue-600 hover:underline">Contact our support team</a>
+                            Need help? <a href="mailto:support@embeeaccounting.com" class="text-brand-navy-600 hover:underline">Contact our support team</a>
                         </p>
                     </div>
                 </div>
@@ -165,7 +165,7 @@
                     Need more time to decide? 
                 </p>
                 <button onclick="requestExtension()" 
-                        class="text-blue-600 hover:text-blue-700 text-sm font-medium underline">
+                        class="text-brand-navy-600 hover:text-brand-navy-700 text-sm font-medium underline">
                     Request 3-day extension (one-time only)
                 </button>
             </div>
@@ -181,7 +181,7 @@
                 const modal = document.createElement('dialog');
                 modal.className = 'modal';
                 
-                let iconClass = 'fas fa-info-circle text-blue-500';
+                let iconClass = 'fas fa-info-circle text-brand-navy-500';
                 if (type === 'success') {
                     iconClass = 'fas fa-check-circle text-green-500';
                 } else if (type === 'error') {
@@ -222,7 +222,7 @@
                 modal.innerHTML = `
                     <div class="modal-box">
                         <h3 class="font-bold text-lg flex items-center gap-2">
-                            <i class="fas fa-question-circle text-blue-500"></i>
+                            <i class="fas fa-question-circle text-brand-navy-500"></i>
                             <span>${title}</span>
                         </h3>
                         <p class="py-4">${message}</p>

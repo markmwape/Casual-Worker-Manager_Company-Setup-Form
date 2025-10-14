@@ -17,14 +17,14 @@
         </div>
     </div>
     {% if task.payment_type == 'per_part' and task.per_part_payout %}
-    <div class="flex items-center text-blue-700 font-semibold mb-4">
+    <div class="flex items-center text-brand-navy-700 font-semibold mb-4">
         <i class="fas fa-coins mr-2"></i>
         <span>Payout per unit: {{ task.per_part_payout }} {{ task.per_part_currency or '' }}</span>
     </div>
     {% endif %}
     <!-- Sticky header for mobile -->
     <div class="relative lg:hidden">
-        <div class="sticky top-0 left-0 w-full z-50 bg-white/95 border-b border-blue-100 flex flex-col items-start gap-0 shadow-lg rounded-b-2xl px-4 pt-4 pb-2">
+        <div class="sticky top-0 left-0 w-full z-50 bg-white/95 border-b border-brand-navy-100 flex flex-col items-start gap-0 shadow-lg rounded-b-2xl px-4 pt-4 pb-2">
             <!-- Hamburger menu (absolute, top right) -->
             <div class="mobile-sidebar-toggle absolute top-4 right-4 z-[110] lg:hidden"></div>
             <!-- Title and subtitle -->
@@ -32,7 +32,7 @@
             <p class="text-xs text-gray-500 mb-1 w-full pr-16">View and manage units completed for this task</p>
         </div>
         <!-- Sticky action buttons below title on mobile -->
-        <div class="sticky top-[64px] left-0 w-full z-40 flex flex-col items-center bg-white/95 py-3 border-b border-blue-50 shadow rounded-b-2xl gap-2 px-4">
+        <div class="sticky top-[64px] left-0 w-full z-40 flex flex-col items-center bg-white/95 py-3 border-b border-brand-navy-50 shadow rounded-b-2xl gap-2 px-4">
             <button onclick="openAddWorkerToTaskModal('{{ task.id }}')" class="btn btn-primary w-full max-w-xs shadow-md text-base py-2">
                 <i data-feather="plus" class="mr-2"></i>Add Worker
             </button>
@@ -50,9 +50,9 @@
             <i data-feather="search"></i>
         </button>
         <div id="unitsSearchBar" class="hidden ml-2 w-full max-w-xs">
-            <div class="flex items-center bg-white border border-blue-200 rounded-lg px-2 py-1 shadow">
+            <div class="flex items-center bg-white border border-brand-navy-200 rounded-lg px-2 py-1 shadow">
                 <input id="unitsSearchInput" type="text" class="flex-1 outline-none bg-transparent px-2 py-1 text-sm" placeholder="Search by any field..." oninput="filterUnitsRows()">
-                <button class="ml-2 text-gray-400 hover:text-blue-600" onclick="toggleUnitsSearch()" type="button"><i data-feather="x"></i></button>
+                <button class="ml-2 text-gray-400 hover:text-brand-navy-600" onclick="toggleUnitsSearch()" type="button"><i data-feather="x"></i></button>
             </div>
         </div>
     </div>
@@ -74,7 +74,7 @@
                     <div class="flex items-center space-x-6 justify-center w-full">
                         <button 
                             onclick="changeDate(-1)" 
-                            class="gradient-circle-btn shadow-md flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            class="gradient-circle-btn shadow-md flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-brand-navy-400"
                             aria-label="Previous Day"
                         >
                             <i data-feather="chevron-left" class="w-6 h-6"></i>
@@ -84,7 +84,7 @@
                         </h2>
                         <button 
                             onclick="changeDate(1)" 
-                            class="gradient-circle-btn shadow-md flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            class="gradient-circle-btn shadow-md flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-brand-navy-400"
                             aria-label="Next Day"
                         >
                             <i data-feather="chevron-right" class="w-6 h-6"></i>
@@ -106,9 +106,9 @@
                                 <i data-feather="search"></i>
                             </button>
                             <div id="unitsSearchBar" class="hidden ml-2 w-full sm:max-w-xs">
-                                <div class="flex items-center bg-white border border-blue-200 rounded-lg px-2 py-1 shadow">
+                                <div class="flex items-center bg-white border border-brand-navy-200 rounded-lg px-2 py-1 shadow">
                                     <input id="unitsSearchInput" type="text" class="flex-1 outline-none bg-transparent px-2 py-1 text-sm" placeholder="Search by any field..." oninput="filterUnitsRows()">
-                                    <button class="ml-2 text-gray-400 hover:text-blue-600" onclick="toggleUnitsSearch()" type="button"><i data-feather="x"></i></button>
+                                    <button class="ml-2 text-gray-400 hover:text-brand-navy-600" onclick="toggleUnitsSearch()" type="button"><i data-feather="x"></i></button>
                                 </div>
                             </div>
                         </div>

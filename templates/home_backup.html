@@ -261,23 +261,23 @@
                     </div>
                     {% else %}
                     <!-- Paid Plan Status -->
-                    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 shadow-sm w-full max-w-4xl">
+                    <div class="bg-gradient-to-r from-brand-navy-50 to-brand-navy-50 border border-brand-navy-200 rounded-lg p-4 shadow-sm w-full max-w-4xl">
                         <!-- Desktop Layout -->
                         <div class="hidden lg:flex items-center gap-3 text-sm">
-                            <span class="text-blue-800 font-medium">You are currently on the</span>
-                            <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-semibold">
+                            <span class="text-brand-navy-800 font-medium">You are currently on the</span>
+                            <span class="bg-brand-navy-100 text-brand-navy-800 px-3 py-1 rounded-full font-semibold">
                                 {{ subscription_info.tier_name }} plan
                             </span>
                             {% if usage_stats.workers_limit %}
-                            <span class="bg-white/70 px-3 py-1 rounded-full font-medium text-blue-700">
+                            <span class="bg-white/70 px-3 py-1 rounded-full font-medium text-brand-navy-700">
                                 👥 {{ usage_stats.workers_used }}/{{ usage_stats.workers_limit }} workers
                             </span>
                             {% else %}
-                            <span class="bg-white/70 px-3 py-1 rounded-full font-medium text-blue-700">
+                            <span class="bg-white/70 px-3 py-1 rounded-full font-medium text-brand-navy-700">
                                 👥 {{ usage_stats.workers_used }} workers - unlimited
                             </span>
                             {% endif %}
-                            <a href="/upgrade" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-sm font-medium transition-all duration-200 shadow-md hover:shadow-lg">
+                            <a href="/upgrade" class="inline-flex items-center gap-2 bg-brand-navy-600 hover:bg-brand-navy-700 text-white px-3 py-1 rounded-lg text-sm font-medium transition-all duration-200 shadow-md hover:shadow-lg">
                                 <i class="fas fa-cog"></i>
                                 <span>Manage billing</span>
                             </a>
@@ -286,14 +286,14 @@
                         <!-- Mobile Layout -->
                         <div class="lg:hidden space-y-3 subscription-status-mobile">
                             <div class="text-center">
-                                <div class="text-blue-800 font-medium text-sm mb-2">You are currently on the</div>
-                                <div class="bg-blue-100 text-blue-800 px-4 py-2 rounded-full font-semibold text-base inline-block">
+                                <div class="text-brand-navy-800 font-medium text-sm mb-2">You are currently on the</div>
+                                <div class="bg-brand-navy-100 text-brand-navy-800 px-4 py-2 rounded-full font-semibold text-base inline-block">
                                     {{ subscription_info.tier_name }} plan
                                 </div>
                             </div>
                             
                             <div class="text-center">
-                                <div class="bg-white/70 px-4 py-3 rounded-lg font-medium text-blue-700 border border-blue-100">
+                                <div class="bg-white/70 px-4 py-3 rounded-lg font-medium text-brand-navy-700 border border-brand-navy-100">
                                     {% if usage_stats.workers_limit %}
                                     <div class="text-lg font-semibold">👥 {{ usage_stats.workers_used }}/{{ usage_stats.workers_limit }} workers</div>
                                     <div class="text-xs opacity-75">{{ usage_stats.workers_limit - usage_stats.workers_used }} remaining</div>
@@ -305,7 +305,7 @@
                             </div>
                             
                             <div class="text-center pt-2">
-                                <a href="/upgrade" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg min-h-[48px] w-full justify-center">
+                                <a href="/upgrade" class="inline-flex items-center gap-2 bg-brand-navy-600 hover:bg-brand-navy-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg min-h-[48px] w-full justify-center">
                                     <i class="fas fa-cog"></i>
                                     <span>Manage billing</span>
                                 </a>
@@ -359,7 +359,7 @@
                         <div class="mt-4">
                             <div class="flex items-center justify-between mb-3">
                                 <h4 class="font-semibold text-gray-700">Company Contact Information</h4>
-                                <button onclick="openEditContactModal()" class="btn btn-sm btn-ghost hover:bg-blue-100 text-blue-600">
+                                <button onclick="openEditContactModal()" class="btn btn-sm btn-ghost hover:bg-brand-navy-100 text-brand-navy-600">
                                     <i class="fas fa-edit mr-1"></i>
                                     Edit
                                 </button>
@@ -367,7 +367,7 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {% if session.get('current_workspace', {}).get('company_email') %}
                                 <div class="flex items-center gap-3 p-3 bg-white/60 rounded-lg border border-brand-navy-200/50">
-                                    <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                                    <div class="w-8 h-8 bg-gradient-to-br from-brand-navy-500 to-brand-navy-600 rounded-lg flex items-center justify-center">
                                         <i class="fas fa-envelope text-white text-sm"></i>
                                     </div>
                                     <div class="flex-1">
@@ -424,16 +424,16 @@
 
                 <!-- Stats Cards -->
                 <div class="grid grid-cols-1 gap-6 sm:grid-cols-3 mb-8">
-                    <a href="{{ url_for('workers_route') }}" class="card bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer">
+                    <a href="{{ url_for('workers_route') }}" class="card bg-gradient-to-br from-brand-navy-50 to-brand-navy-100 border border-brand-navy-200 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer">
                         <div class="card-body p-6">
                             <div class="flex justify-between items-center">
                                 <div>
-                                    <h3 class="text-sm font-semibold text-blue-700 mb-1">Total Workers</h3>
-                                    <p class="text-3xl font-bold text-blue-800">{{ total_workers }}</p>
-                                    <p class="text-xs text-blue-600 mt-1">Active workforce</p>
+                                    <h3 class="text-sm font-semibold text-brand-navy-700 mb-1">Total Workers</h3>
+                                    <p class="text-3xl font-bold text-brand-navy-800">{{ total_workers }}</p>
+                                    <p class="text-xs text-brand-navy-600 mt-1">Active workforce</p>
                                 </div>
-                                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                                    <i data-feather="users" class="text-blue-600 w-6 h-6"></i>
+                                <div class="w-12 h-12 bg-brand-navy-100 rounded-full flex items-center justify-center">
+                                    <i data-feather="users" class="text-brand-navy-600 w-6 h-6"></i>
                                 </div>
                             </div>
                         </div>
@@ -454,16 +454,16 @@
                         </div>
                     </a>
 
-                    <a href="{{ url_for('tasks_route') }}" class="card bg-gradient-to-br from-indigo-50 to-indigo-100 border border-indigo-200 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer">
+                    <a href="{{ url_for('tasks_route') }}" class="card bg-gradient-to-br from-brand-navy-50 to-brand-navy-100 border border-brand-navy-200 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer">
                         <div class="card-body p-6">
                             <div class="flex justify-between items-center">
                                 <div>
-                                    <h3 class="text-sm font-semibold text-indigo-700 mb-1">Quick Actions</h3>
-                                    <p class="text-lg font-bold text-indigo-800 mb-1">Manage Tasks</p>
-                                    <p class="text-xs text-indigo-600 mt-1">Create & track projects</p>
+                                    <h3 class="text-sm font-semibold text-brand-navy-700 mb-1">Quick Actions</h3>
+                                    <p class="text-lg font-bold text-brand-navy-800 mb-1">Manage Tasks</p>
+                                    <p class="text-xs text-brand-navy-600 mt-1">Create & track projects</p>
                                 </div>
-                                <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
-                                    <i class="fas fa-tasks text-indigo-600 text-xl"></i>
+                                <div class="w-12 h-12 bg-brand-navy-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-tasks text-brand-navy-600 text-xl"></i>
                                 </div>
                             </div>
                         </div>
@@ -473,7 +473,7 @@
                 <!-- Subscription info now displayed in header above -->
                 
                 <!-- User Roles Card -->
-                <div class="card bg-blue-50 shadow-xl hover:shadow-2xl transition-all mb-8 border border-blue-100">
+                <div class="card bg-brand-navy-50 shadow-xl hover:shadow-2xl transition-all mb-8 border border-brand-navy-100">
                     <div class="card-body p-6">
                         <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
                             <div>
@@ -489,7 +489,7 @@
                         <div class="overflow-x-auto">
                             <table class="table w-full">
                                 <thead>
-                                    <tr class="bg-blue-50/50">
+                                    <tr class="bg-brand-navy-50/50">
                                         <th class="text-gray-700 font-semibold">Email</th>
                                         <th class="text-gray-700 font-semibold">Role</th>
                                         {% if session.get('current_workspace', {}).get('role') != 'Supervisor' %}
@@ -499,24 +499,24 @@
                                 </thead>
                                 <tbody id="teamMembersTableBody" class="divide-y divide-gray-100">
                                     {% for user in team_members %}
-                                    <tr data-user-id="{{ user.id }}" class="hover:bg-blue-100/50 transition-colors duration-150">
+                                    <tr data-user-id="{{ user.id }}" class="hover:bg-brand-navy-100/50 transition-colors duration-150">
                                         <td class="py-4">
                                             <div class="flex items-center">
-                                                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                                                    <span class="text-blue-600 font-semibold text-sm">{{ user.email[0].upper() }}</span>
+                                                <div class="w-8 h-8 bg-brand-navy-100 rounded-full flex items-center justify-center mr-3">
+                                                    <span class="text-brand-navy-600 font-semibold text-sm">{{ user.email[0].upper() }}</span>
                                                 </div>
                                                 <span class="font-medium text-gray-800">{{ user.email }}</span>
                                             </div>
                                         </td>
                                         <td class="py-4">
-                                            <span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                                            <span class="px-3 py-1 bg-brand-navy-100 text-brand-navy-800 text-xs font-medium rounded-full">
                                                 {{ user.role }}
                                             </span>
                                         </td>
                                         {% if session.get('current_workspace', {}).get('role') != 'Supervisor' %}
                                         <td class="py-4">
                                             <div class="flex gap-2 justify-center">
-                                                <button onclick="openEditRoleModal('{{ user.id }}', '{{ user.email }}', '{{ user.role }}')" class="btn btn-ghost btn-sm hover:bg-blue-100 text-blue-600 border border-blue-200 p-2 rounded-md transition-all duration-200 hover:shadow-sm flex items-center justify-center" title="Edit">
+                                                <button onclick="openEditRoleModal('{{ user.id }}', '{{ user.email }}', '{{ user.role }}')" class="btn btn-ghost btn-sm hover:bg-brand-navy-100 text-brand-navy-600 border border-brand-navy-200 p-2 rounded-md transition-all duration-200 hover:shadow-sm flex items-center justify-center" title="Edit">
                                                     <i data-feather="edit" class="w-4 h-4"></i>
                                                 </button>
                                                 <button onclick="openRemoveTeamMemberModal('{{ user.id }}', '{{ user.email }}')" class="btn btn-ghost btn-sm hover:bg-red-100 text-red-600 border border-red-200 p-2 rounded-md transition-all duration-200 hover:shadow-sm flex items-center justify-center" title="Delete">
@@ -573,7 +573,7 @@
                 <dialog id="notification-modal" class="modal">
                     <div class="modal-box">
                         <h3 class="font-bold text-lg flex items-center gap-2" id="notification-title">
-                            <i class="fas fa-info-circle text-blue-600"></i>
+                            <i class="fas fa-info-circle text-brand-navy-600"></i>
                             <span>Notification</span>
                         </h3>
                         <p class="py-4" id="notification-message"></p>
@@ -705,7 +705,7 @@
                             trialDaysLeft.textContent = 'Pro subscription active';
                             if (trialMessage) {
                                 trialMessage.classList.remove('bg-gradient-to-r', 'from-green-50', 'to-emerald-50', 'border-green-200');
-                                trialMessage.classList.add('bg-gradient-to-r', 'from-blue-50', 'to-indigo-50', 'border-blue-200');
+                                trialMessage.classList.add('bg-gradient-to-r', 'from-brand-navy-50', 'to-brand-navy-50', 'border-brand-navy-200');
                             }
                             
                             // Update button text for active subscription
@@ -776,7 +776,7 @@
                     <div class="p-6">
                         <p class="text-gray-600 mb-4">Your free trial has ended. Upgrade now to continue using all features.</p>
                         <div class="flex gap-3">
-                            <button onclick="createCheckoutSession()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg">
+                            <button onclick="createCheckoutSession()" class="flex-1 bg-brand-navy-600 hover:bg-brand-navy-700 text-white font-semibold py-2 px-4 rounded-lg">
                                 Upgrade Now
                             </button>
                             <button onclick="this.closest('.fixed').remove()" class="flex-1 border border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold py-2 px-4 rounded-lg">
@@ -1016,7 +1016,7 @@
             const importFields = document.getElementById('currentFields');
             if (importFields) {
                 const div = document.createElement('div');
-                div.className = 'bg-blue-100 p-2 rounded-lg text-blue-700 font-medium truncate';
+                div.className = 'bg-brand-navy-100 p-2 rounded-lg text-brand-navy-700 font-medium truncate';
                 div.dataset.field = fieldKey;
                 div.textContent = fieldName;
                 importFields.appendChild(div);

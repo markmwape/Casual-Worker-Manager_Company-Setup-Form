@@ -13,7 +13,7 @@
 }
 
 .date-picker-container:focus-within {
-    border-color: #1A2B48;
+    border-color: #1A2B48; /* brand-navy-500 */
     box-shadow: 0 0 0 3px rgba(26, 43, 72, 0.1), 0 4px 12px rgba(26, 43, 72, 0.15);
     transform: translateY(-1px);
 }
@@ -154,16 +154,16 @@
 
 .date-picker-container:focus-within .fas.fa-calendar-alt {
     opacity: 1;
-    color: #1A2B48;
+    color: #1A2B48; /* brand-navy-500 */
 }
 
 /* Custom styling for different themes */
 .date-picker-container.primary {
-    border-color: #1A2B48;
+    border-color: #1A2B48; /* brand-navy-500 */
 }
 
 .date-picker-container.primary:focus-within {
-    border-color: #0f1a2e;
+    border-color: #0f1a2e; /* brand-navy-600 */
     box-shadow: 0 0 0 3px rgba(26, 43, 72, 0.1);
 }
 
@@ -188,8 +188,8 @@
 /* Custom Date Picker Modal Styles */
 #date-picker-modal .modal-box {
     background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
-    border: 2px solid #e0e7ff;
-    box-shadow: 0 20px 60px rgba(79, 70, 229, 0.15);
+    border: 2px solid #cbd5e1; /* brand-navy-200 */
+    box-shadow: 0 20px 60px rgba(26, 43, 72, 0.15);
 }
 
 #date-picker-calendar {
@@ -206,16 +206,16 @@
 
 #calendar-days button:hover {
     transform: scale(1.05);
-    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.15);
+    box-shadow: 0 2px 8px rgba(26, 43, 72, 0.15);
 }
 
-#calendar-days button.bg-indigo-600 {
+#calendar-days button.bg-brand-navy-600 {
     transform: scale(1.08);
-    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+    box-shadow: 0 4px 12px rgba(26, 43, 72, 0.3);
 }
 
 #calendar-month-year {
-    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    background: linear-gradient(135deg, #1A2B48 0%, #0f1a2e 100%); /* brand-navy-500 to brand-navy-600 */
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -234,7 +234,7 @@ input[readonly].cursor-pointer {
 }
 
 input[readonly].cursor-pointer:hover {
-    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+    box-shadow: 0 4px 12px rgba(26, 43, 72, 0.15);
 }
 
 /* Animate modal entrance */

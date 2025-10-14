@@ -55,8 +55,8 @@
                     <!-- Payment Info -->
                     {% if task.payment_type == 'per_part' and task.per_part_payout %}
                     <div class="mb-4 p-3 bg-white rounded-lg border border-gray-200">
-                        <div class="flex items-center text-blue-700 font-medium">
-                            <i class="fas fa-coins mr-2 text-blue-600"></i>
+                        <div class="flex items-center text-brand-navy-700 font-medium">
+                            <i class="fas fa-coins mr-2 text-brand-navy-600"></i>
                             <span class="text-sm">Payout per unit: {{ task.per_part_payout }} {{ task.per_part_currency or '' }}</span>
                         </div>
                     </div>

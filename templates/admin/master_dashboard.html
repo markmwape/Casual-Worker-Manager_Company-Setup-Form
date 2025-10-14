@@ -526,7 +526,7 @@
                             Export Analytics
                         </button>
                         <button onclick="refreshDashboard()" class="nav-item flex items-center p-3 text-gray-300 hover:text-white w-full text-left">
-                            <i class="fas fa-sync-alt mr-3 text-blue-400"></i>
+                            <i class="fas fa-sync-alt mr-3 text-brand-navy-400"></i>
                             Refresh Data
                         </button>
                     </div>
@@ -536,7 +536,7 @@
             <div class="mt-auto pt-8">
                 <div class="bg-white bg-opacity-10 rounded-lg p-4">
                     <div class="flex items-center">
-                        <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                        <div class="w-10 h-10 bg-brand-navy-500 rounded-full flex items-center justify-center">
                             <i class="fas fa-user text-white"></i>
                         </div>
                         <div class="ml-3">
@@ -700,14 +700,14 @@
                     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 card-hover">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="text-lg font-semibold text-gray-900">
-                                <i class="fas fa-clock mr-2 text-blue-500"></i>
+                                <i class="fas fa-clock mr-2 text-brand-navy-500"></i>
                                 Recent Activity
                             </h3>
                         </div>
                         <div class="space-y-3">
                             <div class="flex justify-between items-center">
                                 <span class="text-gray-600">New Users (7 days)</span>
-                                <span class="font-semibold text-blue-600">{{ recent_users }}</span>
+                                <span class="font-semibold text-brand-navy-600">{{ recent_users }}</span>
                             </div>
                             <div class="flex justify-between items-center">
                                 <span class="text-gray-600">New Tasks (7 days)</span>
@@ -734,7 +734,7 @@
                             </div>
                             <div class="flex justify-between items-center">
                                 <span class="text-gray-600">Free Trials</span>
-                                <span class="font-semibold text-blue-600">{{ free_trials }}</span>
+                                <span class="font-semibold text-brand-navy-600">{{ free_trials }}</span>
                             </div>
                             <div class="flex justify-between items-center">
                                 <span class="text-gray-600">Failed Payments</span>
@@ -788,7 +788,7 @@
                     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 card-hover">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="text-lg font-semibold text-gray-900">
-                                <i class="fas fa-industry mr-2 text-blue-500"></i>
+                                <i class="fas fa-industry mr-2 text-brand-navy-500"></i>
                                 Industry Distribution
                             </h3>
                             <div class="text-sm text-gray-500">{{ industry_stats|length }} industries</div>
@@ -821,7 +821,7 @@
                             User Growth Trend
                         </h3>
                         <div class="flex space-x-2">
-                            <button onclick="changeTimePeriod('7d')" id="btn7d" class="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-lg transition-colors hover:bg-blue-200">7 Days</button>
+                            <button onclick="changeTimePeriod('7d')" id="btn7d" class="px-3 py-1 text-sm bg-brand-navy-100 text-brand-navy-700 rounded-lg transition-colors hover:bg-brand-navy-200">7 Days</button>
                             <button onclick="changeTimePeriod('30d')" id="btn30d" class="px-3 py-1 text-sm bg-gray-100 text-gray-600 rounded-lg transition-colors hover:bg-gray-200">30 Days</button>
                             <button onclick="changeTimePeriod('1y')" id="btn1y" class="px-3 py-1 text-sm bg-gray-100 text-gray-600 rounded-lg transition-colors hover:bg-gray-200">1 Year</button>
                         </div>
@@ -906,8 +906,8 @@
                                 <tr class="table-row">
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
-                                            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                                                <i class="fas fa-building text-blue-600"></i>
+                                            <div class="w-8 h-8 bg-brand-navy-100 rounded-lg flex items-center justify-center mr-3">
+                                                <i class="fas fa-building text-brand-navy-600"></i>
                                             </div>
                                             <div>
                                                 <div class="text-sm font-medium text-gray-900">{{ item.workspace.name }}</div>
@@ -916,7 +916,7 @@
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                                        <span class="px-2 py-1 text-xs font-medium bg-brand-navy-100 text-brand-navy-800 rounded-full">
                                             {{ item.workspace.industry_type }}
                                         </span>
                                     </td>
@@ -958,7 +958,7 @@
                                             <i class="fas fa-tasks text-gray-400 mr-2"></i>
                                             <span class="text-sm font-medium text-gray-900">{{ item.task_count }}</span>
                                             {% if item.completed_tasks > 0 %}
-                                                <span class="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">{{ item.completed_tasks }} done</span>
+                                                <span class="ml-2 px-2 py-1 text-xs bg-brand-navy-100 text-brand-navy-800 rounded-full">{{ item.completed_tasks }} done</span>
                                             {% endif %}
                                         </div>
                                     </td>
@@ -1044,7 +1044,7 @@
                                                 </button>
                                             {% endif %}
                                             <button onclick="viewWorkspaceDetails({{ item.workspace.id }})"
-                                                    class="px-3 py-1 text-xs bg-blue-100 text-blue-800 rounded-md hover:bg-blue-200 transition-colors">
+                                                    class="px-3 py-1 text-xs bg-brand-navy-100 text-brand-navy-800 rounded-md hover:bg-brand-navy-200 transition-colors">
                                                 <i class="fas fa-eye mr-1"></i>Details
                                             </button>
                                             <button onclick="deleteWorkspace({{ item.workspace.id }})"
@@ -1125,7 +1125,7 @@
                         <!-- Top by Tasks -->
                         <div class="bg-gray-50 rounded-lg p-4">
                             <h4 class="text-md font-semibold text-gray-900 mb-3">
-                                <i class="fas fa-tasks mr-2 text-blue-500"></i>
+                                <i class="fas fa-tasks mr-2 text-brand-navy-500"></i>
                                 Top by Task Volume
                             </h4>
                             <div class="space-y-2">
@@ -1136,7 +1136,7 @@
                                         <div class="text-xs text-gray-500">{{ item.workspace.country }} • {{ item.workspace.industry_type }}</div>
                                     </div>
                                     <div class="text-right">
-                                        <div class="text-sm font-semibold text-blue-600">{{ item.task_count }}</div>
+                                        <div class="text-sm font-semibold text-brand-navy-600">{{ item.task_count }}</div>
                                         <div class="text-xs text-gray-500">tasks</div>
                                     </div>
                                 </div>
@@ -1194,9 +1194,9 @@
 
 
                         <!-- Market Opportunities -->
-                        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
+                        <div class="bg-gradient-to-br from-brand-navy-50 to-brand-navy-50 rounded-lg p-4 border border-brand-navy-200">
                             <h4 class="text-md font-semibold text-gray-900 mb-3">
-                                <i class="fas fa-globe-americas mr-2 text-blue-600"></i>
+                                <i class="fas fa-globe-americas mr-2 text-brand-navy-600"></i>
                                 Market Opportunities
                             </h4>
                             <div class="space-y-3">
@@ -1209,7 +1209,7 @@
                                         </div>
                                     </div>
                                     <div class="text-right">
-                                        <div class="text-sm font-semibold text-blue-600">{{ market.workspace_count }}</div>
+                                        <div class="text-sm font-semibold text-brand-navy-600">{{ market.workspace_count }}</div>
                                         <div class="text-xs text-gray-500">businesses</div>
                                     </div>
                                 </div>
@@ -1236,9 +1236,9 @@
                     </div>
 
                     <!-- Marketing Insights & Recommendations -->
-                    <div class="mt-6 bg-blue-50 rounded-lg p-4 border border-blue-200">
+                    <div class="mt-6 bg-brand-navy-50 rounded-lg p-4 border border-brand-navy-200">
                         <h4 class="text-md font-semibold text-gray-900 mb-3">
-                            <i class="fas fa-lightbulb mr-2 text-blue-600"></i>
+                            <i class="fas fa-lightbulb mr-2 text-brand-navy-600"></i>
                             Business Insights & Recommendations
                         </h4>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1340,7 +1340,7 @@
                                 <div class="text-sm text-gray-300">{{ payment_type_analytics|length }} payment types tracked</div>
                             </div>
                             <div class="quick-action text-center" onclick="showTaskDetails('efficiency')">
-                                <i class="fas fa-chart-bar text-2xl text-blue-500 mb-2"></i>
+                                <i class="fas fa-chart-bar text-2xl text-brand-navy-500 mb-2"></i>
                                 <div class="font-medium text-white">Efficiency Metrics</div>
                                 <div class="text-sm text-gray-300">Performance scoring available</div>
                             </div>
@@ -1382,7 +1382,7 @@
                                             <td class="px-6 py-4">
                                                 <div class="flex items-center">
                                                     <div class="flex-shrink-0">
-                                                        <div class="text-lg font-bold text-blue-600">{{ task.unique_workers }}</div>
+                                                        <div class="text-lg font-bold text-brand-navy-600">{{ task.unique_workers }}</div>
                                                         <div class="text-xs text-gray-500">unique workers</div>
                                                     </div>
                                                 </div>
@@ -1404,7 +1404,7 @@
                                                     <i class="fas fa-check-circle mr-1"></i>{{ task.status }}
                                                 </span>
                                                 {% else %}
-                                                <span class="inline-flex px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full mt-1">
+                                                <span class="inline-flex px-2 py-1 text-xs font-medium bg-brand-navy-100 text-brand-navy-800 rounded-full mt-1">
                                                     <i class="fas fa-play-circle mr-1"></i>{{ task.status }}
                                                 </span>
                                                 {% endif %}
@@ -1458,7 +1458,7 @@
                                     </div>
                                     <div class="flex justify-between">
                                         <span class="text-sm text-gray-600">Avg Workers/Task:</span>
-                                        <span class="font-medium text-blue-600">{{ data.avg_workers }}</span>
+                                        <span class="font-medium text-brand-navy-600">{{ data.avg_workers }}</span>
                                     </div>
                                     <div class="progress-bar">
                                         <div class="progress-fill" style="width: {{ (data.avg_workers / 10 * 100)|int }}%"></div>
@@ -1491,7 +1491,7 @@
                 <!-- User Role Summary -->
                 <div id="reports" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 card-hover">
                     <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                        <i class="fas fa-user-tag mr-2 text-indigo-500"></i>
+                        <i class="fas fa-user-tag mr-2 text-brand-navy-500"></i>
                         User Role Distribution
                     </h3>
                     <div class="chart-container">
@@ -1558,11 +1558,11 @@
             const btn30d = document.getElementById('btn30d');
             
             if (period === '7d') {
-                btn7d.className = 'px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-lg';
+                btn7d.className = 'px-3 py-1 text-sm bg-brand-navy-100 text-brand-navy-700 rounded-lg';
                 btn30d.className = 'px-3 py-1 text-sm bg-gray-100 text-gray-600 rounded-lg';
             } else {
                 btn7d.className = 'px-3 py-1 text-sm bg-gray-100 text-gray-600 rounded-lg';
-                btn30d.className = 'px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-lg';
+                btn30d.className = 'px-3 py-1 text-sm bg-brand-navy-100 text-brand-navy-700 rounded-lg';
             }
             
             // Here you could reload chart data based on the selected period
@@ -2023,14 +2023,14 @@
             function switchUserGrowthPeriod(period) {
                 // Update active button state
                 document.querySelectorAll('.time-period-btn').forEach(btn => {
-                    btn.classList.remove('active', 'bg-blue-600', 'text-white');
+                    btn.classList.remove('active', 'bg-brand-navy-600', 'text-white');
                     btn.classList.add('bg-gray-100', 'text-gray-700');
                 });
                 
                 const activeBtn = document.querySelector(`[onclick="switchUserGrowthPeriod('${period}')"]`);
                 if (activeBtn) {
                     activeBtn.classList.remove('bg-gray-100', 'text-gray-700');
-                    activeBtn.classList.add('active', 'bg-blue-600', 'text-white');
+                    activeBtn.classList.add('active', 'bg-brand-navy-600', 'text-white');
                 }
                 
                 // Reload chart with new period
@@ -2261,7 +2261,7 @@
             notification.innerHTML = `
                 <div class="flex">
                     <div class="flex-shrink-0">
-                        <i class="fas fa-info-circle text-blue-500"></i>
+                        <i class="fas fa-info-circle text-brand-navy-500"></i>
                     </div>
                     <div class="ml-3">
                         <p class="text-sm font-medium text-gray-900">Task Insight</p>
@@ -2381,7 +2381,7 @@
 
         function showNotification(message, type = 'info') {
             const icons = {
-                'info': 'fas fa-info-circle text-blue-500',
+                'info': 'fas fa-info-circle text-brand-navy-500',
                 'success': 'fas fa-check-circle text-green-500',
                 'warning': 'fas fa-exclamation-triangle text-yellow-500',
                 'error': 'fas fa-times-circle text-red-500'

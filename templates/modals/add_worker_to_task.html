@@ -16,7 +16,7 @@
                     <div class="absolute inset-y-0 right-0 flex items-center pr-3">
                         <i data-feather="search" class="h-4 w-4 text-gray-400"></i>
                     </div>
-                    <div id="workersDropdown" class="absolute left-0 right-0 bg-white border border-blue-200 rounded-lg shadow-lg z-[100] mt-1 hidden max-h-48 overflow-y-auto">
+                    <div id="workersDropdown" class="absolute left-0 right-0 bg-white border border-brand-navy-200 rounded-lg shadow-lg z-[100] mt-1 hidden max-h-48 overflow-y-auto">
                         <div class="p-2 text-sm text-gray-500 border-b border-gray-100">
                             Start typing to see available workers
                         </div>
@@ -103,7 +103,7 @@
             const limitedMatches = matches.slice(0, 8);
             limitedMatches.forEach((worker, idx) => {
                 const div = document.createElement('div');
-                div.className = 'px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors text-sm';
+                div.className = 'px-3 py-2 hover:bg-brand-navy-50 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors text-sm';
                 
                 // Create a more informative display
                 const displayText = document.createElement('div');
@@ -162,13 +162,13 @@
             e.preventDefault();
             currentDropdownIndex = (currentDropdownIndex + 1) % items.length;
             items.forEach((item, idx) => {
-                item.classList.toggle('bg-blue-100', idx === currentDropdownIndex);
+                item.classList.toggle('bg-brand-navy-100', idx === currentDropdownIndex);
             });
         } else if (e.key === 'ArrowUp') {
             e.preventDefault();
             currentDropdownIndex = (currentDropdownIndex - 1 + items.length) % items.length;
             items.forEach((item, idx) => {
-                item.classList.toggle('bg-blue-100', idx === currentDropdownIndex);
+                item.classList.toggle('bg-brand-navy-100', idx === currentDropdownIndex);
             });
         } else if (e.key === 'Enter') {
             if (currentDropdownIndex >= 0 && currentDropdownIndex < items.length) {

@@ -38,12 +38,12 @@
             {% if all_fields|rejectattr('id', 'string')|list|length > 0 %}
                 <div class="divider">Custom Fields</div>
             {% else %}
-                <div class="mt-4 p-4 bg-brand-navy-50 rounded-lg border border-brand-navy-200">
-                    <div class="flex items-center gap-2 text-brand-navy-700">
+                <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <div class="flex items-center gap-2 text-blue-700">
                         <i data-feather="info"></i>
                         <span class="font-medium">No custom fields available</span>
                     </div>
-                    <p class="text-brand-navy-600 text-sm mt-2">
+                    <p class="text-blue-600 text-sm mt-2">
                         You can add custom fields for workers by importing a CSV file or creating them in the settings.
                     </p>
                 </div>

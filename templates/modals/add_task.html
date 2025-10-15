@@ -1,5 +1,5 @@
 <div id="add-task-modal" class="modal">
-    <div class="modal-box max-w-lg overflow-auto">
+    <div class="modal-box max-w-lg overflow-y-auto overflow-x-hidden max-h-[80vh]">
         <h3 class="font-bold text-lg">Create New Task</h3>
         <div id="task-date-error" class="alert alert-error mb-2" style="display:none;"></div>
         <form id="taskForm" onsubmit="createTask(event)">
@@ -26,16 +26,16 @@
             </div>
             <div class="form-control w-full">
                 <label class="label">
-                    <span class="label-text">Is this task paid per day or per part?</span>
+                    <span class="label-text text-black">Is this task paid per day or per part?</span>
                 </label>
                 <div class="flex gap-4">
                     <label class="cursor-pointer">
                         <input type="radio" name="payment_type" value="per_day" class="radio radio-primary" checked>
-                        <span class="ml-2">Per Day</span>
+                        <span class="ml-2 text-black">Per Day</span>
                     </label>
                     <label class="cursor-pointer">
                         <input type="radio" name="payment_type" value="per_part" class="radio radio-primary">
-                        <span class="ml-2">Per Part</span>
+                        <span class="ml-2 text-black">Per Part</span>
                     </label>
                 </div>
             </div>

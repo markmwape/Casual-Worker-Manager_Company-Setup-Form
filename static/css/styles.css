@@ -1296,3 +1296,48 @@ input[type="date"]::-webkit-date-and-time-value {
 /* Small spacing & alignment cleanup */
 .tasks-page .drawer-side .menu .w-10 { min-width: 40px; }
 .tasks-page .drawer-side .menu .w-12 { min-width: 48px; }
+
+/* DEBUG: Force-visible sidebar on tasks page (temporary) */
+.tasks-page .drawer-side {
+    background: linear-gradient(180deg, #0b2436 0%, #081523 100%) !important;
+    border-right: 2px solid rgba(255,255,255,0.06) !important;
+    outline: 3px solid rgba(255,0,0,0.45) !important; /* visual debug */
+    z-index: 200000 !important;
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    height: 100vh !important;
+    width: 22rem !important;
+    transform: translateX(0) !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.tasks-page .drawer-side .menu {
+    background: rgba(6,12,20,0.98) !important;
+    z-index: 200001 !important;
+    padding-top: 1rem !important;
+    pointer-events: auto !important;
+}
+
+/* Force all children to be visible and readable */
+.tasks-page .drawer-side * {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    color: #ffffff !important;
+    pointer-events: auto !important;
+}
+
+/* Make links clearly visible */
+.tasks-page .drawer-side a.sidebar-menu-item {
+    background: transparent !important;
+    color: #fff !important;
+}
+
+/* Remove accidental transforms/clipping for debugging */
+.tasks-page .drawer-content {
+    transform: none !important;
+}
+
+/* End debug block - remove once issue is resolved */

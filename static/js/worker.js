@@ -346,6 +346,8 @@ function deleteCustomField(fieldId, fieldName) {
 }
 
 function confirmDeleteCustomField() {
+    // Close confirmation modal
+    document.getElementById('deleteFieldModal')?.close();
     const data = window._pendingDelete;
     if (!data) return;
     fetch(`/api/import-field/${data.fieldId}`, { method:'DELETE' })

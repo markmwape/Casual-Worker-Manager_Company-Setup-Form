@@ -284,7 +284,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: JSON.stringify(data)
             })
             .then(response => response.json())
-            .then result => {
+            .then(result => {
                 if (result.error) {
                     showToast(result.error, 'error');
                 } else {

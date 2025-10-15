@@ -289,3 +289,80 @@ window.openEditWorkerModal = function(workerId) {
             showCustomModal('Error', 'Failed to load worker data. Please try again.', 'error');
         });
 };
+
+// --- Add Worker Modal Custom Field Functions ---
+function reloadCustomFields() {
+    fetch('/api/import-field')
+        .then(res => res.json())
+        .then(fields => {
+            const container = document.getElementById('customFieldsContainer');
+            if (!container) return;
+            container.innerHTML = '';
+            fields.forEach(field => {
+                const div = document.createElement('div');
+                div.className = 'form-control w-full custom-field-item';
+                div.innerHTML = `
+                    <label class="label">
+                        <span class="label-text text-black">${field.name}</span>
+                        <button type="button" class="btn btn-ghost btn-xs text-red-500 hover:text-red-700" onclick="deleteCustomField(${field.id}, '${field.name}')">
+                            <i data-feather="trash-2" class="h-4 w-4"></i>
+                        </button>
+                    </label>
+                    <input type="text" name="custom_field_${field.id}" class="input input-bordered w-full h-10" placeholder="Enter ${field.name}">
+                `;
+                container.appendChild(div);
+            });
+            if (window.feather) feather.replace();
+        });
+}
+
+function addCustomField() {
+    const fieldName = document.getElementById('newFieldName')?.value.trim();
+    if (!fieldName) {
+        showToast('Please enter a field name', 'warning');
+        return;
+    }
+    fetch('/api/import-field', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ name: fieldName, type: 'text' })
+    })
+    .then(res => res.json())
+    .then(result => {
+        if (result.error) {
+            showToast(result.error, 'error');
+        } else {
+            document.getElementById('newFieldName').value = '';
+            showToast(`Custom field "${fieldName}" added successfully!`, 'success');
+            reloadCustomFields();
+        }
+    });
+}
+
+function deleteCustomField(fieldId, fieldName) {
+    window._pendingDelete = { fieldId, fieldName };
+    document.getElementById('deleteFieldMessage').textContent =
+        `Are you sure you want to delete the custom field "${fieldName}"?`;
+    document.getElementById('deleteFieldModal')?.showModal();
+}
+
+function confirmDeleteCustomField() {
+    const data = window._pendingDelete;
+    if (!data) return;
+    fetch(`/api/import-field/${data.fieldId}`, { method:'DELETE' })
+        .then(res => res.json())
+        .then(result => {
+            if (result.error) {
+                showToast(result.error,'error');
+            } else {
+                showToast(`Custom field "${data.fieldName}" deleted!`,'success');
+                reloadCustomFields();
+            }
+            window._pendingDelete = null;
+        });
+}
+
+// Expose to global scope
+window.reloadCustomFields = reloadCustomFields;
+window.addCustomField = addCustomField;
+window.deleteCustomField = deleteCustomField;
+window.confirmDeleteCustomField = confirmDeleteCustomField;

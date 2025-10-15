@@ -1196,3 +1196,96 @@ input[type="date"]::-webkit-date-and-time-value {
         overflow-y: auto !important;
     }
 }
+
+/* Strong overrides to ensure sidebar contents are visible and interactive on the tasks page */
+body.tasks-page .drawer-side,
+body.tasks-page .drawer-side *,
+body.tasks-page .drawer-side .menu,
+body.tasks-page .drawer-side .menu * {
+    visibility: visible !important;
+    opacity: 1 !important;
+    color: rgba(255,255,255,0.98) !important;
+    display: block !important;
+    pointer-events: auto !important;
+}
+
+/* In case some icons/text were explicitly set to transparent or white-on-white, ensure contrast */
+body.tasks-page .drawer-side .menu .sidebar-menu-item,
+body.tasks-page .drawer-side .menu .sidebar-menu-item * {
+    color: rgba(255,255,255,0.95) !important;
+}
+
+/* Ensure the overlay label inside drawer-side does not cover content */
+body.tasks-page .drawer-side > label.drawer-overlay {
+    display: none !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+}
+
+/* Force tasks page sidebar and its menu to top-most stacking context to ensure contents are visible */
+.tasks-page .drawer-side {
+    z-index: 2147483646 !important; /* just below dropdowns which use 2147483647 */
+}
+.tasks-page .drawer-side .menu {
+    z-index: 2147483647 !important;
+    position: relative !important; /* keep the menu itself interactive */
+}
+
+/* Emergency fixes: ensure sidebar contents are visible and not clipped/transparent */
+.tasks-page .drawer-side,
+.tasks-page .drawer-side .menu {
+    background: linear-gradient(180deg, #0f243e 0%, #0b1626 100%) !important;
+    color: #ffffff !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    transform: none !important;
+    pointer-events: auto !important;
+}
+
+/* Ensure direct menu children are laid out so content is visible */
+.tasks-page .drawer-side .menu > * {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Ensure menu items are flex rows and not hidden by whitespace or overflow */
+.tasks-page .drawer-side .menu .sidebar-menu-item {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+}
+
+/* Provide visible outlines during debugging so you can see element boxes */
+.tasks-page .drawer-side .menu * {
+    outline: none !important; /* remove if noisy */
+}
+
+/* If the sidebar still appears empty, enable this debugging border (uncomment to use) */
+/* .tasks-page .drawer-side { border: 2px solid rgba(255,255,255,0.08) !important; } */
+
+/* Keep dropdowns above everything but avoid them covering the sidebar content by default */
+.tasks-page .status-dropdown-menu,
+.tasks-page .dropdown-content {
+    position: fixed !important;
+    z-index: 2147483647 !important;
+}
+
+/* TEMP DEBUG: Visible outline and semi-opaque background to confirm sidebar content area
+   Remove or comment this block after confirming visibility. */
+.tasks-page .drawer-side {
+    outline: 3px dashed rgba(255, 165, 0, 0.95) !important;
+}
+.tasks-page .drawer-side .menu {
+    background: linear-gradient(180deg, rgba(16,32,56,0.98) 0%, rgba(11,22,38,0.98) 100%) !important;
+    box-shadow: 0 6px 30px rgba(2,6,23,0.6) !important;
+    outline: 2px solid rgba(0,255,128,0.6) !important;
+}
+.tasks-page .drawer-side .menu > * {
+    background: rgba(255,255,255,0.02) !important;
+}
+
+/* End TEMP DEBUG */

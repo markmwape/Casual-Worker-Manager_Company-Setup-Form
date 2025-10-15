@@ -1210,14 +1210,9 @@ input[type="date"]::-webkit-date-and-time-value {
     outline: none !important; /* remove debug outline */
 }
 
-/* Remove temporary debug backgrounds/outlines applied earlier */
-.tasks-page .drawer-side,
-.tasks-page .drawer-side .menu,
-.tasks-page .drawer-side .menu > * {
-    background: transparent !important;
-    box-shadow: none !important;
-    border: none !important;
-}
+/* (removed) Previously we forced the tasks-page sidebar and its children to be transparent.
+   That caused the sidebar to appear empty/invisible. Keeping this area intentionally blank
+   so the sidebar inherits the normal styling used across the app. */
 
 /* Ensure menu items appear identical to other pages */
 .tasks-page .drawer-side .menu .sidebar-menu-item {
@@ -1257,4 +1252,44 @@ body.tasks-page .drawer-side .menu * {
 .tasks-page .drawer-side { outline: none !important; }
 .tasks-page .drawer-side .menu { outline: none !important; }
 
-/* End TEMP DEBUG */
+/* Final safe fix: restore normal sidebar appearance & layout for Tasks page
+   This block is deliberately minimal and placed last so it overrides earlier accidental rules. */
+body.tasks-page .drawer-side {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    height: 100vh !important;
+    width: 20rem !important; /* match other pages */
+    background: linear-gradient(180deg, var(--primary-navy) 0%, var(--primary-navy-light) 100%) !important;
+    box-shadow: var(--shadow-lg) !important;
+    z-index: 60 !important; /* conservative value to keep below dropdowns */
+    pointer-events: auto !important;
+}
+
+body.tasks-page .drawer-side .menu {
+    background: transparent !important;
+    color: white !important;
+    padding: 1rem !important;
+    position: relative !important;
+    z-index: 61 !important;
+    overflow-y: auto !important;
+}
+
+@media (min-width: 1024px) {
+    body.tasks-page .drawer-content {
+        margin-left: 20rem !important;
+        width: calc(100vw - 20rem) !important;
+    }
+}
+
+/* Keep dropdowns working but avoid forcing massive fixed positioning unless needed */
+body.tasks-page .status-dropdown-menu,
+body.tasks-page .dropdown-content {
+    z-index: 9999 !important;
+    /* position left to DaisyUI default unless the dropdown is clipped; avoid forcing fixed positioning here */
+}
+
+/* End final safe fix */

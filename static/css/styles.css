@@ -773,67 +773,6 @@ input[type="date"]::-webkit-date-and-time-value {
 }
 
 .drawer .drawer-side .menu {
-    background: transparent !important;
-    color: white !important;
-}
-
-.drawer .drawer-side .menu-item {
-    color: white !important;
-    font-weight: 500;
-    transition: all 0.3s ease;
-}
-
-.drawer .drawer-side .menu-item:hover {
-    background: rgba(255, 255, 255, 0.1) !important;
-    color: white !important;
-    transform: translateX(4px);
-}
-
-.drawer .drawer-side .menu-item.active {
-    background: rgba(255, 255, 255, 0.2) !important;
-    color: white !important;
-    box-shadow: var(--shadow-sm);
-}
-
-.sidebar-menu-item {
-    width: 100%;
-    display: flex !important;
-    align-items: center;
-    padding: 1rem 1.5rem;
-    border-radius: 12px;
-    margin: 0.25rem 0;
-    color: white !important;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    text-decoration: none;
-    visibility: visible !important;
-    opacity: 1 !important;
-}
-
-.sidebar-menu-item:hover {
-    background: rgba(255, 255, 255, 0.1) !important;
-    color: white !important;
-    transform: translateX(4px);
-}
-
-.sidebar-menu-item.active {
-    background: rgba(255, 255, 255, 0.2) !important;
-    color: white !important;
-    box-shadow: var(--shadow-sm);
-}
-
-/* Fix text contrast in sidebar - only for drawer layouts */
-.drawer .drawer-side h2,
-.drawer .drawer-side h3,
-.drawer .drawer-side p {
-    color: white !important;
-}
-
-.drawer .drawer-side .text-gray-500 {
-    color: rgba(255, 255, 255, 0.7) !important;
-}
-
-.drawer .drawer-side .text-primary {
     color: white !important;
 }
 

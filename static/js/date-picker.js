@@ -299,6 +299,8 @@ document.addEventListener('DOMContentLoaded', function() {
     dateInputs.forEach(input => {
         // Skip if already converted
         if (input.dataset.datePickerInitialized) return;
+        // Skip custom date picker for task-start-date to use native date picker modal
+        if (input.id === 'task-start-date') return;
         
         // Get URL parameters for date values
         const urlParams = new URLSearchParams(window.location.search);
@@ -407,4 +409,4 @@ document.addEventListener('DOMContentLoaded', function() {
 // Global function to create date pickers manually
 window.createDatePicker = function(container, options) {
     return new DatePicker(container, options);
-}; 
+};

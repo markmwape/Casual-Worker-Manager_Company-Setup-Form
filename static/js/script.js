@@ -1300,7 +1300,7 @@ function updateTaskStatusIndicator() {
             statusValue.textContent = 'In Progress';
             statusValue.className = 'text-green-600 font-bold';
             statusIndicator.classList.remove('hidden');
-        } else {
+        } else if (selectedDate > currentDate) {
             statusValue.textContent = 'Pending';
             statusValue.className = 'text-orange-600 font-bold';
             statusIndicator.classList.remove('hidden');

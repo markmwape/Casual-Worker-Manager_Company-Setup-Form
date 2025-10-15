@@ -617,7 +617,7 @@ window.closeAddWorkerModal = closeAddWorkerModal;
 window.openAddTaskModal = openAddTaskModal;
 window.closeAddTaskModal = closeAddTaskModal;
 window.createTask = createTask;
-window.setupPaymentTypeHandlers = setupPaymentTypeHandlers;
+window.setupPaymentTypeToggle = setupPaymentTypeToggle;
 window.updatePayoutLabels = updatePayoutLabels;
 window.openImportWorkersModal = openImportWorkersModal;
 window.closeImportWorkersModal = closeImportWorkersModal;
@@ -1200,15 +1200,40 @@ function openAddTaskModal() {
     if (modal) {
         modal.classList.add('modal-open');
         
-        // Set default date to today
-        const dateInput = document.getElementById('task-start-date');
-        if (dateInput && !dateInput.value) {
-            const today = new Date().toISOString().split('T')[0];
-            dateInput.value = today;
-        }
+        // Add a small delay to ensure modal is properly rendered before initializing
+        setTimeout(() => {
+            // Reset form to default state
+            const form = document.getElementById('taskForm');
+            if (form) {
+                // Reset the form
+                form.reset();
+                
+                // Set default payment type to per_day
+                const perDayRadio = form.querySelector('input[name="payment_type"][value="per_day"]');
+                if (perDayRadio) {
+                    perDayRadio.checked = true;
+                }
+            }
+            
+            // Set default date to today
+            const dateInput = document.getElementById('task-start-date');
+            if (dateInput) {
+                const today = new Date().toISOString().split('T')[0];
+                dateInput.value = today;
+            }
+            
+            // Update status indicator
+            updateTaskStatusIndicator();
+            
+            // Set up payment type change handlers using the consolidated function
+            setupPaymentTypeToggle();
+            
+            console.log('Task modal opened and initialized');
+        }, 50);
         
         // Initialize custom date picker for the start date input
         setTimeout(() => {
+            const dateInput = document.getElementById('task-start-date');
             if (dateInput && typeof window.createDatePicker === 'function') {
                 // Remove any existing date picker instance
                 if (dateInput.datePickerInstance) {
@@ -1229,34 +1254,7 @@ function openAddTaskModal() {
                 dateInput.dataset.datePickerInitialized = 'true';
             }
         }, 100);
-        
-        // Update status indicator
-        updateTaskStatusIndicator();
-        
-        // Set up payment type change handlers
-        setupPaymentTypeHandlers();
-        
-        // Initialize with default payment type (per_day)
-        updatePayoutLabels('per_day');
-        
-        // Debug the form when modal is opened
-        const taskForm = document.getElementById('taskForm');
-        if (taskForm) {
-            console.log('Task form found when modal opened:', taskForm);
-            console.log('Form onsubmit:', taskForm.onsubmit);
-        } else {
-            console.log('Task form not found when modal opened');
-        }
     }
-}
-
-function setupPaymentTypeHandlers() {
-    const paymentTypeInputs = document.querySelectorAll('input[name="payment_type"]');
-    paymentTypeInputs.forEach(input => {
-        input.addEventListener('change', function() {
-            updatePayoutLabels(this.value);
-        });
-    });
 }
 
 function updatePayoutLabels(paymentType) {
@@ -1270,8 +1268,14 @@ function updatePayoutLabels(paymentType) {
     const perDayCurrency = document.getElementById('per-day-currency');
     
     if (paymentType === 'per_day') {
-        if (perPartPayoutGroup) perPartPayoutGroup.style.display = 'none';
-        if (perDayPayoutGroup) perDayPayoutGroup.style.display = '';
+        if (perPartPayoutGroup) {
+            perPartPayoutGroup.style.display = 'none';
+            perPartPayoutGroup.style.visibility = 'hidden';
+        }
+        if (perDayPayoutGroup) {
+            perDayPayoutGroup.style.display = 'block';
+            perDayPayoutGroup.style.visibility = 'visible';
+        }
         
         // Update required attributes
         if (perPartPayout) perPartPayout.removeAttribute('required');
@@ -1286,8 +1290,14 @@ function updatePayoutLabels(paymentType) {
             payoutInput.placeholder = 'Enter amount';
         }
     } else if (paymentType === 'per_part') {
-        if (perPartPayoutGroup) perPartPayoutGroup.style.display = '';
-        if (perDayPayoutGroup) perDayPayoutGroup.style.display = 'none';
+        if (perPartPayoutGroup) {
+            perPartPayoutGroup.style.display = 'block';
+            perPartPayoutGroup.style.visibility = 'visible';
+        }
+        if (perDayPayoutGroup) {
+            perDayPayoutGroup.style.display = 'none';
+            perDayPayoutGroup.style.visibility = 'hidden';
+        }
         
         // Update required attributes
         if (perPartPayout) perPartPayout.setAttribute('required', 'required');
@@ -1341,29 +1351,76 @@ function setupPaymentTypeToggle() {
     const perDayGroup = document.getElementById('per-day-payout-group');
     const radios = document.querySelectorAll('input[name="payment_type"]');
     
+    console.log('Setting up payment type toggle. Found radios:', radios.length);
+    console.log('Per part group:', perPartGroup);
+    console.log('Per day group:', perDayGroup);
+    
+    // Remove any existing event listeners first
     radios.forEach(radio => {
+        // Clone the node to remove all event listeners
+        const newRadio = radio.cloneNode(true);
+        radio.parentNode.replaceChild(newRadio, radio);
+    });
+    
+    // Re-select the radios after replacement
+    const newRadios = document.querySelectorAll('input[name="payment_type"]');
+    
+    newRadios.forEach(radio => {
         radio.addEventListener('change', function() {
+            console.log('Payment type changed to:', this.value);
+            
             if (this.value === 'per_part') {
-                perPartGroup.style.display = '';
-                perDayGroup.style.display = 'none';
+                if (perPartGroup) {
+                    perPartGroup.style.display = 'block';
+                    perPartGroup.style.visibility = 'visible';
+                }
+                if (perDayGroup) {
+                    perDayGroup.style.display = 'none';
+                    perDayGroup.style.visibility = 'hidden';
+                }
+                
                 // Make per-part fields required
-                document.getElementById('per-part-payout').required = true;
-                document.getElementById('per-part-currency').required = true;
-                // Make per-day fields not required
-                document.getElementById('per-day-payout').required = false;
-                document.getElementById('per-day-currency').required = false;
+                const perPartPayout = document.getElementById('per-part-payout');
+                const perPartCurrency = document.getElementById('per-part-currency');
+                const perDayPayout = document.getElementById('per-day-payout');
+                const perDayCurrency = document.getElementById('per-day-currency');
+                
+                if (perPartPayout) perPartPayout.required = true;
+                if (perPartCurrency) perPartCurrency.required = true;
+                if (perDayPayout) perDayPayout.required = false;
+                if (perDayCurrency) perDayCurrency.required = false;
+                
             } else {
-                perPartGroup.style.display = 'none';
-                perDayGroup.style.display = '';
+                if (perPartGroup) {
+                    perPartGroup.style.display = 'none';
+                    perPartGroup.style.visibility = 'hidden';
+                }
+                if (perDayGroup) {
+                    perDayGroup.style.display = 'block';
+                    perDayGroup.style.visibility = 'visible';
+                }
+                
                 // Make per-day fields required
-                document.getElementById('per-day-payout').required = true;
-                document.getElementById('per-day-currency').required = true;
-                // Make per-part fields not required
-                document.getElementById('per-part-payout').required = false;
-                document.getElementById('per-part-currency').required = false;
+                const perPartPayout = document.getElementById('per-part-payout');
+                const perPartCurrency = document.getElementById('per-part-currency');
+                const perDayPayout = document.getElementById('per-day-payout');
+                const perDayCurrency = document.getElementById('per-day-currency');
+                
+                if (perDayPayout) perDayPayout.required = true;
+                if (perDayCurrency) perDayCurrency.required = true;
+                if (perPartPayout) perPartPayout.required = false;
+                if (perPartCurrency) perPartCurrency.required = false;
             }
         });
     });
+    
+    // Initialize with current state
+    const checkedRadio = document.querySelector('input[name="payment_type"]:checked');
+    if (checkedRadio) {
+        // Trigger the change event to set up the initial state
+        const event = new Event('change');
+        checkedRadio.dispatchEvent(event);
+    }
 }
 
 function createTask(event) {
@@ -1482,7 +1539,7 @@ window.closeAddWorkerModal = closeAddWorkerModal;
 window.openAddTaskModal = openAddTaskModal;
 window.closeAddTaskModal = closeAddTaskModal;
 window.createTask = createTask;
-window.setupPaymentTypeHandlers = setupPaymentTypeHandlers;
+window.setupPaymentTypeToggle = setupPaymentTypeToggle;
 window.updatePayoutLabels = updatePayoutLabels;
 window.openImportWorkersModal = openImportWorkersModal;
 window.closeImportWorkersModal = closeImportWorkersModal;
@@ -1601,7 +1658,6 @@ window.importWithMapping = async function() {
 
 // Currency selection handling
 document.addEventListener('DOMContentLoaded', function() {
-    setupPaymentTypeToggle();
     const currencyOptions = document.querySelectorAll('input[name="currency"]');
     const selectedCurrencySymbol = document.getElementById('selectedCurrencySymbol');
     
@@ -1619,6 +1675,9 @@ document.addEventListener('DOMContentLoaded', function() {
         selectedCurrencySymbol.textContent = checkedCurrency.dataset.symbol;
     }
     
+    // Set up payment type toggle for the task form
+    setupPaymentTypeToggle();
+    
     // Debug task form
     const taskForm = document.getElementById('taskForm');
     if (taskForm) {
@@ -1634,8 +1693,6 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('Form elements:', this.elements);
             createTask(e);
         });
-        
-
         
         console.log('Form onsubmit after:', taskForm.onsubmit);
     } else {

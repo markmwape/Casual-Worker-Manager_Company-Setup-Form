@@ -94,14 +94,26 @@
         @media (min-width: 1024px) {
             .drawer-open > .drawer-side {
                 transform: translateX(0);
+                position: fixed;
+                left: 0;
+                top: 0;
+                bottom: 0;
             }
+            .drawer-content {
+                margin-left: 20rem; /* 80 * 4px = 320px = 20rem */
+            }
+        }
+        
+        /* Ensure sidebar is always visible on large screens */
+        .drawer.lg\:drawer-open .drawer-side {
+            display: block !important;
         }
     </style>
 </head>
 <body>
     <div class="drawer lg:drawer-open min-h-screen bg-gray-50">
         <input id="my-drawer" type="checkbox" class="drawer-toggle" />
-        <div class="drawer-content bg-gray-50 min-h-screen lg:ml-80">
+        <div class="drawer-content bg-gray-50 min-h-screen">
             {% block content %}{% endblock %}
         </div>
         {% include 'components/_sidebar.html' %}

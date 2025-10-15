@@ -689,7 +689,7 @@ input[type="date"]::-webkit-date-and-time-value {
     .form-control, .input, .textarea, .select {
         padding: 0.75rem 1rem; /* Slightly more padding on mobile for touch */
         font-size: 16px; /* Prevent zoom on iOS */
-        min-height: 3rem; /* Larger touch targets */
+        min-height: 3rem;
     }
     
     .textarea {
@@ -770,11 +770,6 @@ input[type="date"]::-webkit-date-and-time-value {
     background: linear-gradient(180deg, var(--primary-navy) 0%, var(--primary-navy-light) 100%);
     box-shadow: var(--shadow-lg);
     color: white;
-}
-
-.drawer .drawer-side .menu {
-    background: linear-gradient(180deg, var(--primary-navy) 0%, var(--primary-navy-light) 100%) !important;
-    color: white !important;
 }
 
 /* Stats Cards */
@@ -1413,3 +1408,58 @@ input[type="date"]::-webkit-date-and-time-value {
         margin-left: 22rem !important;
     }
 }
+
+/* Normalize Tasks page sidebar styling (override debug/fixed rules) */
+.tasks-page .drawer-side {
+    background: linear-gradient(180deg, var(--primary-navy) 0%, var(--primary-navy-light) 100%) !important;
+    box-shadow: var(--shadow-lg) !important;
+    color: white !important;
+    width: 20rem !important; /* match other pages */
+    height: 100vh !important;
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    transform: translateX(0) !important;
+    z-index: 100 !important; /* consistent with global drawer */
+    outline: none !important; /* remove debug outline */
+}
+
+.tasks-page .drawer-side .menu {
+    background: linear-gradient(180deg, var(--primary-navy) 0%, var(--primary-navy-light) 100%) !important;
+    padding: 1rem !important;
+    position: relative !important; /* keep same behavior as Home/Workers */
+    z-index: 101 !important;
+    overflow-y: auto !important;
+    pointer-events: auto !important;
+}
+
+/* Make sure children are visible but not forcibly fixed into viewport */
+.tasks-page .drawer-side .menu * {
+    opacity: 1 !important;
+    visibility: visible !important;
+    color: #ffffff !important;
+    pointer-events: auto !important;
+}
+
+/* Keep the drawer overlay disabled on Tasks page (so content isn't blocked when open) */
+.tasks-page label.drawer-overlay {
+    display: none !important;
+    pointer-events: none !important;
+}
+
+/* Ensure dropdowns still escape stacking contexts when opened */
+.tasks-page .dropdown-content,
+.tasks-page .status-dropdown-menu {
+    position: fixed !important;
+    z-index: 2147483647 !important;
+}
+
+/* Ensure main content shifts to the 20rem sidebar on large screens */
+@media (min-width: 1024px) {
+    .tasks-page .drawer-content {
+        margin-left: 20rem !important;
+        width: calc(100vw - 20rem) !important;
+    }
+}
+
+/* End normalization */

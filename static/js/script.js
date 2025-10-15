@@ -1998,5 +1998,77 @@ window.copyWorkspaceCode = copyWorkspaceCode;
 
 // Ensure all critical functions are available
 window.showToast = showToast;
-window.showCustomModal = showCustomModal;
-window.showCustomConfirm = showCustomConfirm;
+
+// Initialize DaisyUI dropdowns on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle dropdown clicks for three-dot menus
+    initializeDropdownMenus();
+    
+    // Re-initialize feather icons
+    if (typeof feather !== 'undefined') {
+        feather.replace();
+    }
+});
+
+function initializeDropdownMenus() {
+    // Find all dropdown triggers (the three-dot buttons)
+    const dropdownTriggers = document.querySelectorAll('.dropdown label[tabindex="0"]');
+    
+    dropdownTriggers.forEach(trigger => {
+        // Remove any existing click handlers
+        const newTrigger = trigger.cloneNode(true);
+        trigger.parentNode.replaceChild(newTrigger, trigger);
+        
+        // Add new click handler
+        newTrigger.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Get the dropdown container
+            const dropdown = this.closest('.dropdown');
+            if (!dropdown) return;
+            
+            // Get the dropdown content
+            const content = dropdown.querySelector('.dropdown-content');
+            if (!content) return;
+            
+            // Close all other dropdowns first
+            document.querySelectorAll('.dropdown .dropdown-content').forEach(otherContent => {
+                if (otherContent !== content) {
+                    otherContent.style.display = 'none';
+                }
+            });
+            
+            // Toggle this dropdown
+            if (content.style.display === 'block') {
+                content.style.display = 'none';
+            } else {
+                content.style.display = 'block';
+            }
+        });
+    });
+    
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.dropdown')) {
+            document.querySelectorAll('.dropdown .dropdown-content').forEach(content => {
+                content.style.display = 'none';
+            });
+        }
+    });
+    
+    // Prevent dropdown from closing when clicking inside it
+    document.querySelectorAll('.dropdown-content').forEach(content => {
+        content.addEventListener('click', function(e) {
+            // Allow the link to work but keep dropdown behavior
+            if (e.target.tagName === 'A' || e.target.closest('a')) {
+                // Let the link work naturally, dropdown will close via navigation
+            } else {
+                e.stopPropagation();
+            }
+        });
+    });
+}
+
+// Export the initialization function
+window.initializeDropdownMenus = initializeDropdownMenus;

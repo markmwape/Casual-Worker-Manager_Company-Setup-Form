@@ -199,30 +199,44 @@
 /* Three-dot menu should have higher z-index */
 .dropdown {
     z-index: 10000 !important;
+    position: relative !important;
 }
 
 .dropdown-content {
-    z-index: 10001 !important;
+    z-index: 100001 !important;
 }
 
 /* Specific styling for the three-dot menu dropdown */
 .dropdown.dropdown-end {
-    z-index: 10001 !important;
-    position: relative;
+    z-index: 100000 !important;
+    position: relative !important;
 }
 
 .dropdown.dropdown-end .dropdown-content {
-    z-index: 10001 !important;
-    position: absolute;
-    top: 100%;
-    right: 0;
-    margin-top: 0.5rem;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-    border: 1px solid #e5e7eb;
-    min-width: 160px;
-    transform: translateX(0);
+    z-index: 100001 !important;
+    position: absolute !important;
+    top: 100% !important;
+    right: 0 !important;
+    left: auto !important;
+    margin-top: 0.5rem !important;
+    background: white !important;
+    border-radius: 8px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+    border: 1px solid #e5e7eb !important;
+    min-width: 160px !important;
+    transform: translateX(0) !important;
+    display: none;
+}
+
+/* Show dropdown when focused or has focus-within */
+.dropdown:focus-within .dropdown-content,
+.dropdown-content:focus-within {
+    display: block !important;
+}
+
+/* Alternative: show on hover for better UX */
+.dropdown:hover .dropdown-content {
+    display: block !important;
 }
 
 /* Ensure dropdowns can extend beyond card boundaries - only for drawer layouts */

@@ -105,6 +105,28 @@
             margin-left: 20rem !important;
         }
     }
+
+    /* Ensure task card dropdowns and status menus render above the sidebar on Tasks page */
+    .dropdown-content,
+    .task-card .dropdown-content,
+    .dropdown .dropdown-content,
+    .status-dropdown-menu,
+    .status-dropdown .status-dropdown-menu,
+    .status-dropdown-menu.show,
+    .status-menu-item,
+    .task-card .status-dropdown-menu,
+    .task-card .completion-section {
+        position: absolute !important;
+        z-index: 2147483647 !important; /* very high z-index */
+        pointer-events: auto !important;
+    }
+
+    /* Ensure the three-dot trigger sits above cards so the menu can open cleanly */
+    .task-card .dropdown > label,
+    .task-card .dropdown .dropdown-end {
+        z-index: 2147483647 !important;
+        position: relative !important;
+    }
 </style>
 {% endblock %}
 

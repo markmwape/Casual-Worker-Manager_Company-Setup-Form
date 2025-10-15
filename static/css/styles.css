@@ -1341,3 +1341,36 @@ input[type="date"]::-webkit-date-and-time-value {
 }
 
 /* End debug block - remove once issue is resolved */
+
+/* Ensure top-level menu children are above any overlays and visible */
+.tasks-page .drawer-side .menu > * {
+    position: relative !important;
+    z-index: 300000 !important; /* bring each section above other page layers */
+    color: #ffffff !important;
+}
+
+/* Ensure individual menu items are visible, readable and not clipped */
+.tasks-page .drawer-side .menu a.sidebar-menu-item,
+.tasks-page .drawer-side .menu .avatar,
+.tasks-page .drawer-side .menu .mb-8 {
+    position: relative !important;
+    z-index: 300001 !important;
+    color: #fff !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.tasks-page .drawer-side .menu a.sidebar-menu-item span.pointer-events-none {
+    pointer-events: auto !important; /* allow interaction on inner spans */
+    color: #fff !important;
+}
+
+/* Make sure material-icons render and have color */
+.tasks-page .drawer-side .menu .material-icons {
+    font-size: 20px !important;
+    color: #ffffff !important;
+    opacity: 1 !important;
+}
+
+/* Increase menu font size for visibility */
+.tasks-page .drawer-side .menu .font-medium { font-size: 0.95rem !important; }

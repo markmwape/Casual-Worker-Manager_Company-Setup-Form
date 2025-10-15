@@ -2011,39 +2011,59 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initializeDropdownMenus() {
+    console.log('Initializing dropdown menus...');
+    
     // Find all dropdown triggers (the three-dot buttons)
     const dropdownTriggers = document.querySelectorAll('.dropdown label[tabindex="0"]');
+    console.log('Found dropdown triggers:', dropdownTriggers.length);
     
-    dropdownTriggers.forEach(trigger => {
-        // Remove any existing click handlers
-        const newTrigger = trigger.cloneNode(true);
-        trigger.parentNode.replaceChild(newTrigger, trigger);
+    dropdownTriggers.forEach((trigger, index) => {
+        console.log('Setting up dropdown trigger', index);
         
-        // Add new click handler
-        newTrigger.addEventListener('click', function(e) {
+        // Add click handler
+        trigger.addEventListener('click', function(e) {
+            console.log('Dropdown trigger clicked!', index);
             e.preventDefault();
             e.stopPropagation();
             
             // Get the dropdown container
             const dropdown = this.closest('.dropdown');
-            if (!dropdown) return;
+            if (!dropdown) {
+                console.log('No dropdown container found');
+                return;
+            }
             
             // Get the dropdown content
             const content = dropdown.querySelector('.dropdown-content');
-            if (!content) return;
+            if (!content) {
+                console.log('No dropdown content found');
+                return;
+            }
+            
+            console.log('Current display:', content.style.display);
             
             // Close all other dropdowns first
             document.querySelectorAll('.dropdown .dropdown-content').forEach(otherContent => {
                 if (otherContent !== content) {
                     otherContent.style.display = 'none';
+                    otherContent.style.opacity = '0';
+                    otherContent.style.visibility = 'hidden';
                 }
             });
             
             // Toggle this dropdown
-            if (content.style.display === 'block') {
+            const isVisible = content.style.display === 'block' || window.getComputedStyle(content).display === 'block';
+            
+            if (isVisible) {
+                console.log('Hiding dropdown');
                 content.style.display = 'none';
+                content.style.opacity = '0';
+                content.style.visibility = 'hidden';
             } else {
+                console.log('Showing dropdown');
                 content.style.display = 'block';
+                content.style.opacity = '1';
+                content.style.visibility = 'visible';
             }
         });
     });
@@ -2053,6 +2073,8 @@ function initializeDropdownMenus() {
         if (!e.target.closest('.dropdown')) {
             document.querySelectorAll('.dropdown .dropdown-content').forEach(content => {
                 content.style.display = 'none';
+                content.style.opacity = '0';
+                content.style.visibility = 'hidden';
             });
         }
     });
@@ -2060,12 +2082,7 @@ function initializeDropdownMenus() {
     // Prevent dropdown from closing when clicking inside it
     document.querySelectorAll('.dropdown-content').forEach(content => {
         content.addEventListener('click', function(e) {
-            // Allow the link to work but keep dropdown behavior
-            if (e.target.tagName === 'A' || e.target.closest('a')) {
-                // Let the link work naturally, dropdown will close via navigation
-            } else {
-                e.stopPropagation();
-            }
+            e.stopPropagation();
         });
     });
 }

@@ -225,18 +225,22 @@
     border: 1px solid #e5e7eb !important;
     min-width: 160px !important;
     transform: translateX(0) !important;
-    display: none;
 }
 
-/* Show dropdown when focused or has focus-within */
-.dropdown:focus-within .dropdown-content,
-.dropdown-content:focus-within {
+/* DaisyUI dropdown - show when label is clicked/focused */
+.dropdown label:focus + .dropdown-content,
+.dropdown label:active + .dropdown-content,
+.dropdown:focus-within .dropdown-content {
     display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 
-/* Alternative: show on hover for better UX */
-.dropdown:hover .dropdown-content {
+/* Keep dropdown open when hovering over it */
+.dropdown .dropdown-content:hover {
     display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 
 /* Ensure dropdowns can extend beyond card boundaries - only for drawer layouts */

@@ -2,7 +2,7 @@
     <div class="modal-box max-w-4xl">
         <h3 class="font-bold text-lg mb-4">Add New Worker</h3>
         <form id="workerForm">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
                 <div class="form-control w-full">
                     <label class="label">
                         <span class="label-text text-black">First Name</span>
@@ -15,7 +15,7 @@
                     </label>
                     <input type="text" name="last_name" class="input input-bordered w-full h-10" required>
                 </div>
-                <div class="form-control w-full">
+                <div class="form-control w-full self-start">
                     <label class="label">
                         <span class="label-text text-black">Date of Birth</span>
                     </label>
@@ -23,12 +23,12 @@
                 </div>
                 
                 <!-- Custom fields -->
-                <div id="customFieldsContainer">
+                <div id="customFieldsContainer" class="self-start">
                     {% for field in all_fields %}
                         {% if field.id is number %}
                             <div class="form-control w-full custom-field-item">
                                 <label class="label">
-                                    <span class="label-text">{{ field.name }}</span>
+                                    <span class="label-text text-black">{{ field.name }}</span>
                                     <button type="button" class="btn btn-ghost btn-xs text-red-500 hover:text-red-700" onclick="deleteCustomField({{ field.id }}, '{{ field.name }}')" title="Delete this field">
                                         <i data-feather="trash-2" class="h-4 w-4"></i>
                                     </button>
@@ -104,6 +104,7 @@ let deleteFieldData = null;
             .then(fields => {
                 const container = document.getElementById('customFieldsContainer');
                 if (!container) return;
+            container.classList.add('self-start');
                 // Clear existing fields
                 container.innerHTML = '';
                 // Re-render custom fields
@@ -111,17 +112,17 @@ let deleteFieldData = null;
                     const div = document.createElement('div');
                     div.className = 'form-control w-full custom-field-item';
                     div.innerHTML = `
-                        <label class="label">
-                            <span class="label-text">${field.name}</span>
+                      <label class="label">
+                            <span class="label-text text-black">${field.name}</span>
                             <button type="button" class="btn btn-ghost btn-xs text-red-500 hover:text-red-700" onclick="deleteCustomField(${field.id}, '${field.name}')" title="Delete this field">
                                 <i data-feather="trash-2" class="h-4 w-4"></i>
                             </button>
-                        </label>
-                        <input type="text" name="custom_field_${field.id}" class="input input-bordered w-full h-10" placeholder="Enter ${field.name}">
-                    `;
-                    container.appendChild(div);
-                });
-                if (typeof feather !== 'undefined') feather.replace();
+                      </label>
+                      <input type="text" name="custom_field_${field.id}" class="input input-bordered w-full h-10" placeholder="Enter ${field.name}">
+                  `;
+                  container.appendChild(div);
+              });
+              if (typeof feather !== 'undefined') feather.replace();
             })
             .catch(err => console.error('Error reloading custom fields:', err));
     }
@@ -153,8 +154,27 @@ function addCustomField() {
             // Clear the input field
             document.getElementById('newFieldName').value = '';
             
-            // Reload the custom fields to reflect new addition
-            reloadCustomFields();
+            // Dynamically add the new field to the form
+            const customFieldsContainer = document.getElementById('customFieldsContainer');
+            const newFieldDiv = document.createElement('div');
+            newFieldDiv.className = 'form-control w-full custom-field-item';
+            newFieldDiv.innerHTML = `
+                <label class="label">
+                    <span class="label-text text-black">${fieldName}</span>
+                    <button type="button" class="btn btn-ghost btn-xs text-red-500 hover:text-red-700" onclick="deleteCustomField(${result.field_id}, '${fieldName}')" title="Delete this field">
+                        <i data-feather="trash-2" class="h-4 w-4"></i>
+                    </button>
+                </label>
+                <input type="text" name="custom_field_${result.field_id}" class="input input-bordered w-full h-10" placeholder="Enter ${fieldName}">
+            `;
+            
+            // Add the new field to the container
+            customFieldsContainer.appendChild(newFieldDiv);
+            
+            // Re-initialize feather icons for the new delete button
+            if (typeof feather !== 'undefined') {
+                feather.replace();
+            }
             
             showToast(`Custom field "${fieldName}" added successfully!`, 'success');
         }
@@ -264,7 +284,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: JSON.stringify(data)
             })
             .then(response => response.json())
-            .then(result => {
+            .then result => {
                 if (result.error) {
                     showToast(result.error, 'error');
                 } else {

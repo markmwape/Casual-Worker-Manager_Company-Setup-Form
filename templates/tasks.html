@@ -21,6 +21,17 @@
         visibility: visible !important;
         opacity: 1 !important;
     }
+
+    /* Prevent the drawer overlay label from blocking clicks inside the sidebar on this page */
+    .drawer-side > label.drawer-overlay {
+        display: none !important;
+        pointer-events: none !important;
+    }
+
+    /* Ensure sidebar is above interactive content (dropdowns/cards) */
+    .drawer-side {
+        z-index: 9999 !important;
+    }
     
     /* Force all text in sidebar to be white and visible */
     .drawer-side,

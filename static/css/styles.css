@@ -1218,3 +1218,81 @@ input[type="date"]::-webkit-date-and-time-value {
         overflow-y: auto !important;
     }
 }
+
+/* Additional tasks-page sidebar fixes: ensure avatars, icons, and menu items are visible and interactive */
+.tasks-page .drawer-side {
+    z-index: 10010 !important; /* ensure sidebar sits above most page layers */
+}
+
+.tasks-page .drawer-side .menu {
+    z-index: 10011 !important; /* menu should be above the drawer background */
+    background: linear-gradient(180deg, #14263a 0%, #0f1b2a 100%) !important;
+    -webkit-backdrop-filter: blur(6px) !important;
+    backdrop-filter: blur(6px) !important;
+}
+
+/* Make sure avatar area remains visible and uses semi-transparent white bg */
+.tasks-page .drawer-side .avatar,
+.tasks-page .drawer-side .avatar *,
+.tasks-page .drawer-side .bg-white\/10 {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    background-color: rgba(255,255,255,0.06) !important;
+    color: #ffffff !important;
+}
+
+/* Force avatar image to show and fit */
+.tasks-page .drawer-side img {
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: block !important;
+    object-fit: cover !important;
+}
+
+/* Ensure text is readable and not truncated by accidental transparency */
+.tasks-page .drawer-side .menu .font-medium,
+.tasks-page .drawer-side .menu .material-icons,
+.tasks-page .drawer-side .menu .sidebar-menu-item,
+.tasks-page .drawer-side .menu .sidebar-menu-item * {
+    color: #ffffff !important;
+    opacity: 1 !important;
+    text-shadow: 0 1px 0 rgba(0,0,0,0.15) !important;
+}
+
+/* Make sidebar links fully clickable (template uses pointer-events-none on inner spans) */
+.tasks-page .drawer-side .menu a.sidebar-menu-item {
+    pointer-events: auto !important;
+}
+
+/* Improve scrollbar visibility inside the sidebar menu */
+.tasks-page .drawer-side .menu::-webkit-scrollbar {
+    width: 10px !important;
+}
+.tasks-page .drawer-side .menu::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.12) !important;
+    border-radius: 6px !important;
+}
+
+/* Ensure overlay (if present) does not cover or block content on tasks page */
+.tasks-page label.drawer-overlay {
+    display: none !important;
+    pointer-events: none !important;
+}
+
+/* Defensive: if any element has opacity:0 set elsewhere, force visible when inside sidebar */
+.tasks-page .drawer-side *[style*="opacity: 0"],
+.tasks-page .drawer-side *[style*="display: none"] {
+    opacity: 1 !important;
+    display: block !important;
+    visibility: visible !important;
+}
+
+/* Ensure active item highlights remain visible */
+.tasks-page .drawer-side a.sidebar-menu-item.bg-white\/20 {
+    background: rgba(255,255,255,0.12) !important;
+}
+
+/* Small spacing & alignment cleanup */
+.tasks-page .drawer-side .menu .w-10 { min-width: 40px; }
+.tasks-page .drawer-side .menu .w-12 { min-width: 48px; }

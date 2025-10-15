@@ -773,6 +773,7 @@ input[type="date"]::-webkit-date-and-time-value {
 }
 
 .drawer .drawer-side .menu {
+    background: linear-gradient(180deg, var(--primary-navy) 0%, var(--primary-navy-light) 100%) !important;
     color: white !important;
 }
 

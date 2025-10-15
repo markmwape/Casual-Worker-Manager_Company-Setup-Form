@@ -1207,6 +1207,29 @@ function openAddTaskModal() {
             dateInput.value = today;
         }
         
+        // Initialize custom date picker for the start date input
+        setTimeout(() => {
+            if (dateInput && typeof window.createDatePicker === 'function') {
+                // Remove any existing date picker instance
+                if (dateInput.datePickerInstance) {
+                    dateInput.datePickerInstance.destroy();
+                }
+                
+                // Create new date picker instance
+                dateInput.datePickerInstance = window.createDatePicker(dateInput, {
+                    defaultDate: new Date(),
+                    minDate: new Date(), // Today is the minimum
+                    onChange: function(date, formattedDate) {
+                        dateInput.value = formattedDate;
+                        updateTaskStatusIndicator();
+                    }
+                });
+                
+                // Mark as initialized to prevent multiple initializations
+                dateInput.dataset.datePickerInitialized = 'true';
+            }
+        }, 100);
+        
         // Update status indicator
         updateTaskStatusIndicator();
         
@@ -1257,10 +1280,10 @@ function updatePayoutLabels(paymentType) {
         if (perDayCurrency) perDayCurrency.setAttribute('required', 'required');
         
         if (payoutLabel) {
-            payoutLabel.innerHTML = 'Daily payout per worker <span class="text-xs text-gray-400">(e.g., 25$ , 60 Kwacha)</span>';
+            payoutLabel.textContent = 'Daily Payout per Worker *';
         }
         if (payoutInput) {
-            payoutInput.placeholder = 'Enter daily payout per worker';
+            payoutInput.placeholder = 'Enter amount';
         }
     } else if (paymentType === 'per_part') {
         if (perPartPayoutGroup) perPartPayoutGroup.style.display = '';
@@ -1273,10 +1296,10 @@ function updatePayoutLabels(paymentType) {
         if (perDayCurrency) perDayCurrency.removeAttribute('required');
         
         if (payoutLabel) {
-            payoutLabel.innerHTML = 'Payout per part <span class="text-xs text-gray-400">(e.g., 25$ , 60 Kwacha)</span>';
+            payoutLabel.textContent = 'Payout per Part *';
         }
         if (payoutInput) {
-            payoutInput.placeholder = 'Enter payout per part';
+            payoutInput.placeholder = 'Enter amount per part';
         }
     }
 }

@@ -11,7 +11,7 @@
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8">
         {% for task in tasks %}
-        <div class="group relative" onclick="navigateToTask(event, {{ task.id }})" data-payment-type="{{ task.payment_type }}">
+        <div class="group relative" onclick="navigateToTask(event, {{ task.id }})" data-payment-type="{{ task.payment_type }}" data-task-id="{{ task.id }}">
             <div class="task-card bg-white shadow-lg hover:shadow-2xl transition-all duration-300 rounded-2xl border border-gray-200 overflow-visible transform hover:-translate-y-1 cursor-pointer">
                 <div class="p-7">
                     <!-- Header with Title, Badge, and Menu -->
@@ -473,6 +473,25 @@
     }
 
     function updateTaskStatus(taskId, newStatus) {
+        // Find the task card element
+        const taskCard = document.querySelector(`[data-task-id="${taskId}"]`);
+        const statusBadge = taskCard?.querySelector('.status-badge');
+        const statusIndicator = taskCard?.querySelector('.status-indicator');
+        const statusText = statusBadge?.querySelector('span:not(.status-indicator)');
+        
+        // Show loading state
+        if (statusBadge) {
+            statusBadge.style.opacity = '0.6';
+            statusBadge.style.pointerEvents = 'none';
+            const chevron = statusBadge.querySelector('.status-chevron');
+            if (chevron) {
+                chevron.className = 'fas fa-spinner fa-spin status-chevron ml-3 text-xs';
+            }
+        }
+        
+        // Close dropdown immediately
+        closeAllDropdowns();
+        
         fetch(`/api/task/${taskId}/status`, {
             method: 'POST',
             headers: {
@@ -485,15 +504,123 @@
         .then(response => response.json())
         .then(result => {
             if (result.error) {
+                // Restore original state on error
+                if (statusBadge) {
+                    statusBadge.style.opacity = '1';
+                    statusBadge.style.pointerEvents = 'auto';
+                    const chevron = statusBadge.querySelector('.status-chevron');
+                    if (chevron) {
+                        chevron.className = 'fas fa-chevron-down status-chevron ml-3 text-xs transition-transform duration-200';
+                    }
+                }
                 showCustomModal('Update Error', result.error, 'error');
             } else {
-                window.location.reload(); // Refresh to show updated status and completion date
+                // Update UI immediately with new status
+                updateTaskCardUI(taskCard, newStatus, result.completion_date);
             }
         })
         .catch(error => {
             console.error('Error updating task status:', error);
+            // Restore original state on error
+            if (statusBadge) {
+                statusBadge.style.opacity = '1';
+                statusBadge.style.pointerEvents = 'auto';
+                const chevron = statusBadge.querySelector('.status-chevron');
+                if (chevron) {
+                    chevron.className = 'fas fa-chevron-down status-chevron ml-3 text-xs transition-transform duration-200';
+                }
+            }
             showCustomModal('Update Error', 'Failed to update task status', 'error');
         });
+    }
+    
+    function updateTaskCardUI(taskCard, newStatus, completionDate) {
+        const statusBadge = taskCard.querySelector('.status-badge');
+        const statusIndicator = taskCard.querySelector('.status-indicator');
+        const statusText = statusBadge?.querySelector('span:not(.status-indicator)');
+        const completionSection = taskCard.querySelector('.completion-section');
+        
+        if (!statusBadge || !statusIndicator || !statusText) return;
+        
+        // Remove all status classes
+        statusBadge.className = 'status-badge font-semibold px-4 py-3 rounded-xl transition-colors';
+        statusIndicator.className = 'status-indicator w-3 h-3 rounded-full mr-3';
+        
+        // Add new status classes and update text
+        switch (newStatus) {
+            case 'Pending':
+                statusBadge.classList.add('pending', 'bg-yellow-100', 'border-2', 'border-yellow-200', 'text-yellow-800', 'hover:bg-yellow-200');
+                statusIndicator.classList.add('pending', 'bg-yellow-500');
+                statusText.textContent = 'Pending';
+                break;
+            case 'In Progress':
+                statusBadge.classList.add('in-progress', 'bg-blue-100', 'border-2', 'border-blue-200', 'text-blue-800', 'hover:bg-blue-200');
+                statusIndicator.classList.add('in-progress', 'bg-blue-500', 'animate-pulse');
+                statusText.textContent = 'In Progress';
+                break;
+            case 'Completed':
+                statusBadge.classList.add('completed', 'bg-green-100', 'border-2', 'border-green-200', 'text-green-800', 'hover:bg-green-200');
+                statusIndicator.classList.add('completed', 'bg-green-500');
+                statusText.textContent = 'Completed';
+                break;
+        }
+        
+        // Handle completion date display
+        if (newStatus === 'Completed' && completionDate) {
+            // Add or update completion date section
+            let completionDiv = taskCard.querySelector('.completion-section');
+            if (!completionDiv) {
+                completionDiv = document.createElement('div');
+                completionDiv.className = 'completion-section mt-4 p-3 bg-green-50 border border-green-200 rounded-lg';
+                const statusSection = taskCard.querySelector('.mb-6:has(.status-dropdown)');
+                if (statusSection) {
+                    statusSection.after(completionDiv);
+                }
+            }
+            const completionDateFormatted = new Date(completionDate).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            completionDiv.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-check-circle text-green-600 mr-2"></i>
+                    <span class="text-sm font-medium text-green-800">
+                        Completed on ${completionDateFormatted}
+                    </span>
+                </div>
+            `;
+        } else if (newStatus !== 'Completed') {
+            // Remove completion date section if status is not completed
+            const completionDiv = taskCard.querySelector('.completion-section');
+            if (completionDiv) {
+                completionDiv.remove();
+            }
+        }
+        
+        // Restore badge interactivity
+        statusBadge.style.opacity = '1';
+        statusBadge.style.pointerEvents = 'auto';
+        statusBadge.onclick = function() { toggleStatusDropdown(this); };
+        
+        // Restore chevron
+        const chevron = statusBadge.querySelector('.status-chevron');
+        if (chevron) {
+            chevron.className = 'fas fa-chevron-down status-chevron ml-3 text-xs transition-transform duration-200';
+        }
+        
+        // Update dropdown menu active states
+        const dropdown = taskCard.querySelector('.status-dropdown-menu');
+        if (dropdown) {
+            const menuItems = dropdown.querySelectorAll('.status-menu-item');
+            menuItems.forEach(item => {
+                item.classList.remove('active');
+                const itemText = item.querySelector('span:not(.status-indicator)').textContent;
+                if (itemText === newStatus) {
+                    item.classList.add('active');
+                }
+            });
+        }
     }
     
     // Add visual indicators for future tasks

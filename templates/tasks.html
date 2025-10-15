@@ -116,9 +116,22 @@
     .status-menu-item,
     .task-card .status-dropdown-menu,
     .task-card .completion-section {
-        position: absolute !important;
-        z-index: 2147483647 !important; /* very high z-index */
+        position: fixed !important; /* escape stacking contexts created by transformed parents */
+        z-index: 2147483647 !important; /* highest practical value */
         pointer-events: auto !important;
+        transform: none !important;
+        left: auto !important;
+        top: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+        will-change: transform, top, left !important;
+    }
+
+    /* Prevent task cards from clipping dropdowns */
+    .task-card,
+    .group.relative,
+    .task-card .p-7 {
+        overflow: visible !important;
     }
 
     /* Ensure the three-dot trigger sits above cards so the menu can open cleanly */

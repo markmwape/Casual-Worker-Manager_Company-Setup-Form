@@ -95,7 +95,13 @@ function deleteWorker() {
         if (result.error) {
             showCustomModal('Error', result.error, 'error');
         } else {
-            window.location.reload();
+            // Remove the deleted worker's row from the table
+            const checkbox = document.querySelector(`.worker-checkbox[data-worker-id="${workerId}"]`);
+            if (checkbox) {
+                const row = checkbox.closest('tr');
+                if (row) row.remove();
+            }
+            showCustomModal('Success', 'Worker deleted successfully!', 'success');
         }
     })
     .catch(error => {

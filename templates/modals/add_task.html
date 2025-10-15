@@ -60,11 +60,11 @@
                     <span class="label-text text-black font-semibold text-sm" id="payout-label">Daily Payout per Worker *</span>
                     <span class="label-text-alt text-gray-500 text-xs">e.g., 25$, 60 Kwacha</span>
                 </label>
-                <div class="flex gap-3">
+                <div class="flex flex-col sm:flex-row gap-3">
                     <div class="flex-1">
                         <input type="number" step="0.01" min="0.01" name="per_day_payout" id="per-day-payout" class="input input-bordered w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-200" placeholder="Enter amount" required>
                     </div>
-                    <div class="w-48">
+                    <div class="w-full sm:w-48">
                         <select name="per_day_currency" id="per-day-currency" class="select select-bordered w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-200" required>
                         <option value="AED">AED - United Arab Emirates Dirham (د.إ)</option>
                         <option value="AFN">AFN - Afghani (؋)</option>
@@ -229,11 +229,11 @@
                     <span class="label-text text-black font-semibold text-sm">Payout per Part *</span>
                     <span class="label-text-alt text-gray-500 text-xs">e.g., 25$, 60 Kwacha</span>
                 </label>
-                <div class="flex gap-3">
+                <div class="flex flex-col sm:flex-row gap-3">
                     <div class="flex-1">
                         <input type="number" step="0.01" min="0.01" name="per_part_payout" id="per-part-payout" class="input input-bordered w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-200" placeholder="Enter amount per part">
                     </div>
-                    <div class="w-48">
+                    <div class="w-full sm:w-48">
                         <select name="per_part_currency" id="per-part-currency" class="select select-bordered w-full focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
                         <option value="AED">AED - United Arab Emirates Dirham (د.إ)</option>
                         <option value="AFN">AFN - Afghani (؋)</option>

@@ -1919,7 +1919,20 @@ def tasks_route():
         if not company:
             return render_template('tasks.html', tasks=[], task_statuses=['Pending', 'In Progress', 'Completed'], today_date=date.today().strftime('%Y-%m-%d'))
 
+        # Get all tasks and sort them: Pending and In Progress first, then Completed
         tasks = Task.query.filter_by(company_id=company.id).all()
+        
+        # Sort tasks: non-completed tasks first (by created date), then completed tasks (by completion date)
+        def sort_key(task):
+            if task.status == 'Completed':
+                # Completed tasks go to the end, sorted by completion date (newest first)
+                return (1, -(task.completion_date.timestamp() if task.completion_date else task.created_at.timestamp()))
+            else:
+                # Non-completed tasks come first, sorted by creation date (newest first)
+                return (0, -task.created_at.timestamp())
+        
+        tasks = sorted(tasks, key=sort_key)
+        
         return render_template('tasks.html', tasks=tasks, task_statuses=['Pending', 'In Progress', 'Completed'], today_date=date.today().strftime('%Y-%m-%d'))
     except Exception as e:
         logging.error(f"Error fetching tasks: {str(e)}")

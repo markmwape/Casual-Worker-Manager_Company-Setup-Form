@@ -141,6 +141,14 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             feather.replace();
+            
+            // Force drawer open on desktop
+            const drawer = document.querySelector('.drawer');
+            const drawerToggle = document.getElementById('my-drawer');
+            if (drawer && drawerToggle && window.innerWidth >= 1024) {
+                drawer.classList.add('drawer-open');
+                drawerToggle.checked = false;
+            }
         });
     </script>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>

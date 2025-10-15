@@ -1,14 +1,8 @@
 {% extends "base.html" %}
 
 {% block content %}
-<!-- Mobile menu button -->
-<div class="lg:hidden fixed top-4 left-4 z-50">
-    <label for="my-drawer" class="btn btn-circle btn-primary shadow-lg">
-        <i class="fas fa-bars text-white"></i>
-    </label>
-</div>
-
-<div class="container mx-auto px-7 py-8 max-w-6xl">
+<div class="container mx-auto px-4 w-full max-w-6xl pt-8">
+    <!-- Desktop header and actions -->
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
         <h1 class="text-3xl font-bold text-black">Tasks</h1>
         <button onclick="openAddTaskModal()" class="btn btn-primary w-full sm:w-auto">
@@ -18,7 +12,7 @@
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8">
         {% for task in tasks %}
-        <div class="group relative" onclick="navigateToTask(event, {{ task.id }})" data-payment-type="{{ task.payment_type }}" data-task-id="{{ task.id }}">
+        <div class="group relative" onclick="navigateToTask(event, {{ task.id|tojson }})" data-payment-type="{{ task.payment_type }}" data-task-id="{{ task.id|tojson }}">
             <div class="task-card bg-white shadow-lg hover:shadow-2xl transition-all duration-300 rounded-2xl border border-gray-200 overflow-visible transform hover:-translate-y-1 cursor-pointer">
                 <div class="p-7">
                     <!-- Header with Title, Badge, and Menu -->
@@ -50,7 +44,7 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a onclick="openDeleteTaskModal({{ task.id }})" class="text-red-600 hover:bg-red-50 py-3">
+                                    <a onclick="openDeleteTaskModal({{ task.id|tojson }})" class="text-red-600 hover:bg-red-50 py-3">
                                         <i class="fas fa-trash-alt w-4 h-4"></i>Delete Task
                                     </a>
                                 </li>

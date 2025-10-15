@@ -129,7 +129,7 @@
         }
     </style>
 </head>
-<body>
+<body class="{% if request.endpoint == 'tasks_route' %}tasks-page{% endif %}">
     <div class="drawer lg:drawer-open min-h-screen bg-gray-50">
         <input id="my-drawer" type="checkbox" class="drawer-toggle" />
         <div class="drawer-content bg-gray-50 min-h-screen lg:ml-80">

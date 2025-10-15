@@ -1,5 +1,39 @@
 {% extends "base.html" %}
 
+{% block head %}
+<style>
+    /* Ensure sidebar content is visible on tasks page */
+    .drawer-side .menu,
+    .drawer-side .menu *,
+    .drawer-side h2,
+    .drawer-side h3,
+    .drawer-side p,
+    .drawer-side span,
+    .drawer-side a,
+    .sidebar-menu-item,
+    .sidebar-menu-item * {
+        color: white !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+    
+    .drawer-side {
+        background: linear-gradient(180deg, #1A2B48 0%, #102038 100%) !important;
+        z-index: 50 !important;
+    }
+    
+    .drawer-side .menu {
+        background: transparent !important;
+    }
+    
+    /* Ensure icons are visible */
+    .drawer-side .material-icons {
+        color: white !important;
+        opacity: 1 !important;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container mx-auto px-4 w-full max-w-6xl pt-8">
     <!-- Desktop header and actions -->
@@ -33,25 +67,11 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- Debug styles for sidebar visibility -->
-                        <style>
-                            .drawer-side {
-                                display: block !important;
-                                visibility: visible !important;
-                                opacity: 1 !important;
-                                position: fixed !important;
-                                left: 0 !important;
-                                top: 0 !important;
-                                bottom: 0 !important;
-                                z-index: 1000 !important;
-                                background: red !important; /* Highlight for visibility */
-                            }
-                        </style>
-                        <div class="dropdown dropdown-end flex-shrink-0" onclick="event.stopPropagation()" style="position: relative; z-index: 100000;">
+                        <div class="dropdown dropdown-end flex-shrink-0" onclick="event.stopPropagation()" style="position: relative; z-index: 1000;">
                             <label tabindex="0" class="btn btn-ghost btn-sm btn-circle hover:bg-gray-100 h-10 w-10">
                                 <i class="fas fa-ellipsis-v text-gray-600 text-sm"></i>
                             </label>
-                            <ul tabindex="0" class="dropdown-content menu p-2 shadow-xl bg-white rounded-xl w-52 text-sm border border-gray-200" style="position: absolute; z-index: 100000; right: 0; top: 100%; margin-top: 0.5rem; min-width: 160px; overflow: visible;">
+                            <ul tabindex="0" class="dropdown-content menu p-2 shadow-xl bg-white rounded-xl w-52 text-sm border border-gray-200" style="position: absolute; z-index: 1000; right: 0; top: 100%; margin-top: 0.5rem; min-width: 160px; overflow: visible;">
                                 <li>
                                     <a href='javascript:void(0);' onclick='openEditTaskModal({{ task.id|tojson }}, {{ task.name|tojson }}, {{ task.description|tojson }}, {{ task.start_date.strftime("%Y-%m-%d")|tojson }}, {{ task.payment_type|tojson }}, {{ task.per_part_payout|tojson }}, {{ task.per_part_currency|tojson }}, {{ task.per_day_payout|tojson }}, {{ task.per_day_currency|tojson }})' class="hover:bg-gray-50 py-3">
                                         <i class="fas fa-edit w-4 h-4 text-blue-600"></i>Edit Task
@@ -246,6 +266,11 @@
 
     // Close dropdowns when clicking outside
     document.addEventListener('click', function(event) {
+        // Don't close dropdowns if clicking on sidebar or drawer toggle
+        if (event.target.closest('.drawer-side') || event.target.closest('[for="my-drawer"]') || event.target.closest('#my-drawer')) {
+            return;
+        }
+        
         if (!event.target.closest('.status-dropdown') && !event.target.closest('.dropdown')) {
             closeAllDropdowns();
         }
@@ -262,8 +287,8 @@
             }
         });
 
-        // Close all three-dot dropdowns (DaisyUI or custom)
-        document.querySelectorAll('.dropdown .dropdown-content').forEach(menu => {
+        // Close all three-dot dropdowns (DaisyUI or custom) - but NOT sidebar/drawer elements
+        document.querySelectorAll('.task-card .dropdown .dropdown-content').forEach(menu => {
             menu.classList.remove('show');
             // menu.style.display = 'none'; // Removed to fix dropdown reopening
         });

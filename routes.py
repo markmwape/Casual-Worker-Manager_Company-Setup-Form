@@ -1913,10 +1913,22 @@ def import_workers():
 def tasks_route():
     try:
         from datetime import date
+        
+        # Check if user is authenticated
+        if 'user' not in session or 'user_email' not in session['user']:
+            logging.error("User not authenticated in tasks_route")
+            return redirect(url_for('signin_route'))
+        
+        # Check if workspace exists
+        if 'current_workspace' not in session:
+            logging.error("No current workspace in tasks_route")
+            return redirect(url_for('workspace_selection_route'))
+        
         # Get current company from workspace
         company = get_current_company()
 
         if not company:
+            logging.warning("No company found for current workspace in tasks_route")
             return render_template('tasks.html', tasks=[], task_statuses=['Pending', 'In Progress', 'Completed'], today_date=date.today().strftime('%Y-%m-%d'))
 
         # Get all tasks and sort them: Pending and In Progress first, then Completed
@@ -1933,9 +1945,11 @@ def tasks_route():
         
         tasks = sorted(tasks, key=sort_key)
         
+        logging.info(f"Rendering tasks.html with {len(tasks)} tasks for company {company.id}")
         return render_template('tasks.html', tasks=tasks, task_statuses=['Pending', 'In Progress', 'Completed'], today_date=date.today().strftime('%Y-%m-%d'))
     except Exception as e:
         logging.error(f"Error fetching tasks: {str(e)}")
+        logging.error(f"Traceback: {traceback.format_exc()}")
         return render_template('500.html'), 500
 
 @app.route("/task/<int:task_id>/attendance", methods=['GET'])

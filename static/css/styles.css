@@ -190,10 +190,11 @@
     overflow-y: auto;
 }
 
-.status-dropdown-menu.show {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
+.status-dropdown-menu.show,
+.status-dropdown.open .status-dropdown-menu {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateY(0) !important;
 }
 
 /* Three-dot menu should have higher z-index */
@@ -796,7 +797,7 @@ input[type="date"]::-webkit-date-and-time-value {
 
 .sidebar-menu-item {
     width: 100%;
-    display: flex;
+    display: flex !important;
     align-items: center;
     padding: 1rem 1.5rem;
     border-radius: 12px;
@@ -805,6 +806,8 @@ input[type="date"]::-webkit-date-and-time-value {
     font-weight: 500;
     transition: all 0.3s ease;
     text-decoration: none;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
 .sidebar-menu-item:hover {
@@ -1462,7 +1465,9 @@ input[type="date"]::-webkit-date-and-time-value {
     height: 100vh;
     width: 20rem;
     z-index: 100;
-    overflow: hidden;
+    overflow: visible !important;
+    display: block !important;
+    transform: translateX(0) !important;
     /* Prevents page scroll from affecting sidebar */
   }
   .drawer .drawer-side > .menu {
@@ -1470,6 +1475,14 @@ input[type="date"]::-webkit-date-and-time-value {
     overflow-y: auto;
     /* Sidebar content scrolls independently */
     padding-bottom: 2rem;
+    display: block !important;
+    visibility: visible !important;
+  }
+  .drawer .drawer-side > ul {
+    display: flex !important;
+    flex-direction: column !important;
+    visibility: visible !important;
+    opacity: 1 !important;
   }
   .drawer .drawer-content {
     margin-left: 20rem; /* Same as sidebar width */

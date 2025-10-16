@@ -1,12 +1,7 @@
 {% extends "base.html" %}
 
 {% block head %}
-<script>
-// Mark the document as the tasks page so CSS can scope sidebar changes to this page only
-document.addEventListener('DOMContentLoaded', function() {
-    document.body.classList.add('tasks-page');
-});
-</script>
+<!-- No per-page sidebar script — tasks page will use base.html server-side body class -->
 {% endblock %}
 
 {% block content %}

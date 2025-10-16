@@ -63,46 +63,46 @@
         </div>
         
         <!-- Menu Items -->
-        <div class="flex-1 space-y-2 mt-8">
-                <div class="w-full">
-                    <a href="{{ url_for('home_route') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg {% if request.endpoint == 'home_route' %}bg-white/20 !text-white{% else %}!text-white/90{% endif %} hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline" style="z-index:10002;">
-                        <span class="material-icons mr-3 pointer-events-none">home</span> 
-                        <span class="font-medium pointer-events-none">Dashboard</span>
+        <div class="flex-1 space-y-2 mt-8" style="display: flex; flex-direction: column; gap: 0.5rem; flex: 1; margin-top: 2rem; visibility: visible; opacity: 1; pointer-events: auto;">
+                <div class="w-full" style="display: block; width: 100%; visibility: visible; opacity: 1; pointer-events: auto;">
+                    <a href="{{ url_for('home_route') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg {% if request.endpoint == 'home_route' %}bg-white/20 !text-white{% else %}!text-white/90{% endif %} hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline" style="z-index:10002; display: flex; align-items: center; color: #ffffff; background-color: transparent; text-decoration: none; visibility: visible; opacity: 1; pointer-events: auto;">
+                        <span class="material-icons mr-3 pointer-events-none" style="color: #ffffff; pointer-events: none; visibility: visible; opacity: 1;">home</span> 
+                        <span class="font-medium pointer-events-none" style="color: #ffffff; pointer-events: none; visibility: visible; opacity: 1;">Dashboard</span>
                     </a>
                 </div>
-                <div class="w-full">
-                    <a href="{{ url_for('workers_route') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg {% if request.endpoint == 'workers_route' %}bg-white/20 !text-white{% else %}!text-white/90{% endif %} hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline" style="z-index:10002;">
-                        <span class="material-icons mr-3 pointer-events-none">group</span> 
-                        <span class="font-medium pointer-events-none">Workers</span>
+                <div class="w-full" style="display: block; width: 100%; visibility: visible; opacity: 1; pointer-events: auto;">
+                    <a href="{{ url_for('workers_route') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg {% if request.endpoint == 'workers_route' %}bg-white/20 !text-white{% else %}!text-white/90{% endif %} hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline" style="z-index:10002; display: flex; align-items: center; color: #ffffff; background-color: transparent; text-decoration: none; visibility: visible; opacity: 1; pointer-events: auto;">
+                        <span class="material-icons mr-3 pointer-events-none" style="color: #ffffff; pointer-events: none; visibility: visible; opacity: 1;">group</span> 
+                        <span class="font-medium pointer-events-none" style="color: #ffffff; pointer-events: none; visibility: visible; opacity: 1;">Workers</span>
                     </a>
                 </div>
-                <div class="w-full">
-                    <a href="{{ url_for('tasks_route') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg {% if request.endpoint == 'tasks_route' %}bg-white/20 !text-white{% else %}!text-white/90{% endif %} hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline" style="z-index:10002;">
-                        <span class="material-icons mr-3 pointer-events-none">assignment</span> 
-                        <span class="font-medium pointer-events-none">Tasks</span>
+                <div class="w-full" style="display: block; width: 100%; visibility: visible; opacity: 1; pointer-events: auto;">
+                    <a href="{{ url_for('tasks_route') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg {% if request.endpoint == 'tasks_route' %}bg-white/20 !text-white{% else %}!text-white/90{% endif %} hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline" style="z-index:10002; display: flex; align-items: center; color: #ffffff; background-color: transparent; text-decoration: none; visibility: visible; opacity: 1; pointer-events: auto;">
+                        <span class="material-icons mr-3 pointer-events-none" style="color: #ffffff; pointer-events: none; visibility: visible; opacity: 1;">assignment</span> 
+                        <span class="font-medium pointer-events-none" style="color: #ffffff; pointer-events: none; visibility: visible; opacity: 1;">Tasks</span>
                     </a>
                 </div>
-                <div class="w-full">
-                    <a href="{{ url_for('reports_route') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg {% if request.endpoint == 'reports_route' %}bg-white/20 !text-white{% else %}!text-white/90{% endif %} hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline" style="z-index:10002;">
-                        <span class="material-icons mr-3 pointer-events-none">bar_chart</span> 
-                        <span class="font-medium pointer-events-none">Reports</span>
+                <div class="w-full" style="display: block; width: 100%; visibility: visible; opacity: 1; pointer-events: auto;">
+                    <a href="{{ url_for('reports_route') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg {% if request.endpoint == 'reports_route' %}bg-white/20 !text-white{% else %}!text-white/90{% endif %} hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline" style="z-index:10002; display: flex; align-items: center; color: #ffffff; background-color: transparent; text-decoration: none; visibility: visible; opacity: 1; pointer-events: auto;">
+                        <span class="material-icons mr-3 pointer-events-none" style="color: #ffffff; pointer-events: none; visibility: visible; opacity: 1;">bar_chart</span> 
+                        <span class="font-medium pointer-events-none" style="color: #ffffff; pointer-events: none; visibility: visible; opacity: 1;">Reports</span>
                     </a>
                 </div>
                 
                 <!-- Payments/Billing menu item (admin only) -->
                 {% if session.get('current_workspace', {}).get('role') in ['Admin'] %}
-                <div class="w-full">
-                    <a href="https://billing.stripe.com/p/login/test_5kQaEX5Jg1o5g8lg0SgEg00" target="_blank" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg !text-white/90 hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline" style="z-index:10002;">
-                        <span class="material-icons mr-3 pointer-events-none">credit_card</span> 
-                        <span class="font-medium pointer-events-none">Payments/Billing</span>
+                <div class="w-full" style="display: block; width: 100%; visibility: visible; opacity: 1; pointer-events: auto;">
+                    <a href="https://billing.stripe.com/p/login/test_5kQaEX5Jg1o5g8lg0SgEg00" target="_blank" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg !text-white/90 hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline" style="z-index:10002; display: flex; align-items: center; color: #ffffff; background-color: transparent; text-decoration: none; visibility: visible; opacity: 1; pointer-events: auto;">
+                        <span class="material-icons mr-3 pointer-events-none" style="color: #ffffff; pointer-events: none; visibility: visible; opacity: 1;">credit_card</span> 
+                        <span class="font-medium pointer-events-none" style="color: #ffffff; pointer-events: none; visibility: visible; opacity: 1;">Payments/Billing</span>
                     </a>
                 </div>
                 {% endif %}
                 
-                <div class="w-full mt-8">
-                    <a href="{{ url_for('signout') }}" class="w-full sidebar-menu-item whitespace-nowrap flex items-center py-4 px-4 rounded-lg !text-white/90 hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline" style="z-index:10002;">
-                        <span class="material-icons mr-3 pointer-events-none">logout</span> 
-                        <span class="font-medium pointer-events-none">Sign Out</span>
+                <div class="w-full mt-8" style="display: block; width: 100%; visibility: visible; opacity: 1; pointer-events: auto; margin-top: 2rem;">
+                    <a href="{{ url_for('signout') }}" class="w-full sidebar-menu-item whitespace-nowrap flex items-center py-4 px-4 rounded-lg !text-white/90 hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline" style="z-index:10002; display: flex; align-items: center; color: #ffffff; background-color: transparent; text-decoration: none; visibility: visible; opacity: 1; pointer-events: auto; width: 100%;">
+                        <span class="material-icons mr-3 pointer-events-none" style="color: #ffffff; pointer-events: none; visibility: visible; opacity: 1;">logout</span> 
+                        <span class="font-medium pointer-events-none" style="color: #ffffff; pointer-events: none; visibility: visible; opacity: 1;">Sign Out</span>
                     </a>
                 </div>
         </div>

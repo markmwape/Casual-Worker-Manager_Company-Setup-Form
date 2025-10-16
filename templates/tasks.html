@@ -1,56 +1,6 @@
 {% extends "base.html" %}
 
 {% block head %}
-<!-- Ensure sidebar is visible on the tasks page regardless of drawer state -->
-<style>
-    /* Force the drawer sidebar to be visible on desktop for tasks page */
-    @media (min-width: 1024px) {
-        body.tasks-page .drawer-side {
-            display: block !important;
-            transform: translateX(0) !important;
-            position: fixed !important;
-            left: 0 !important;
-            top: 0 !important;
-            bottom: 0 !important;
-            z-index: 10002 !important; /* higher than main content */
-            width: 20rem !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-            pointer-events: auto !important;
-        }
-        body.tasks-page .drawer-content {
-            margin-left: 20rem !important;
-            min-height: 100vh !important;
-            position: relative !important;
-            z-index: 1 !important;
-        }
-
-        /* Force the sidebar menu and its items to be visible and clickable */
-        body.tasks-page .drawer-side .menu,
-        body.tasks-page .drawer-side .menu * {
-            display: block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-            pointer-events: auto !important;
-            color: #ffffff !important;
-        }
-
-        body.tasks-page .drawer-side .sidebar-menu-item {
-            display: flex !important;
-            align-items: center !important;
-            color: #ffffff !important;
-            opacity: 1 !important;
-            visibility: visible !important;
-            pointer-events: auto !important;
-        }
-
-        /* Hide overlay on desktop so it doesn't block clicks */
-        body.tasks-page .drawer-overlay {
-            display: none !important;
-            pointer-events: none !important;
-        }
-    }
-</style>
 <!-- No per-page sidebar script — tasks page will use base.html server-side body class -->
 {% endblock %}
 
@@ -66,7 +16,7 @@
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8">
         {% for task in tasks %}
-        <div class="group relative" onclick="navigateToTask(event, {{ task.id|tojson }})" data-payment-type="{{ task.payment_type }}" data-task-id="{{ task.id|tojson }}">
+        <div class="group relative" onclick="navigateToTask(event, {{ task.id|tojson }})" data-payment-type="{{ task.payment_type|tojson }}" data-task-id="{{ task.id|tojson }}">
             <div class="task-card bg-white shadow-lg hover:shadow-2xl transition-all duration-300 rounded-2xl border border-gray-200 overflow-visible transform hover:-translate-y-1 cursor-pointer">
                 <div class="p-7">
                     <!-- Header with Title, Badge, and Menu -->

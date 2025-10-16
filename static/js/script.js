@@ -778,6 +778,9 @@ document.addEventListener('DOMContentLoaded', function() {
         addTeamMemberForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
+            const submitBtn = addTeamMemberForm.querySelector('button[type="submit"]');
+            if (submitBtn) submitBtn.disabled = true;
+            
             const formData = new FormData(e.target);
             const data = {
                 email: formData.get('email'),
@@ -838,16 +841,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.getElementById('add-team-member-modal').close();
                     e.target.reset();
                     
-                                        // Show success message
+                    // Show success message
                     showToast('Team member added successfully!', 'success');
                     
                     // Refresh Feather icons
                     reinitializeFeatherIcons();
                 }
+                if (submitBtn) submitBtn.disabled = false;
             })
             .catch(error => {
                 console.error('Error adding team member:', error);
                 showToast('Failed to add team member', 'error');
+                if (submitBtn) submitBtn.disabled = false;
             });
         });
     }

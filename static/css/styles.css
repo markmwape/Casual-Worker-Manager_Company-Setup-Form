@@ -1070,7 +1070,7 @@ input[type="date"]::-webkit-date-and-time-value {
     margin-bottom: 1.5rem;
 }
 
-/* Ensure dropdowns/status menus to escape sidebar stacking context on the tasks page so menus are usable */
+/* Ensure dropdowns/status menus to escape stacking contexts on the tasks page so menus are usable */
 .tasks-page .dropdown-content,
 .tasks-page .task-card .dropdown-content,
 .tasks-page .dropdown .dropdown-content,
@@ -1080,8 +1080,12 @@ input[type="date"]::-webkit-date-and-time-value {
 .tasks-page .status-menu-item,
 .tasks-page .task-card .status-dropdown-menu,
 .tasks-page .task-card .completion-section {
-    position: fixed !important; /* escape stacking contexts created by transformed parents */
-    z-index: 2147483647 !important; /* ensure menus appear above the sidebar */
+    /* Use absolute positioning instead of fixed to avoid covering unrelated layers
+       and to keep menus within the document flow - still allow them to escape
+       transformed parents. Set a high but reasonable z-index to keep menus above
+       the sidebar and content without using extreme values that can cause issues. */
+    position: absolute !important; /* escape stacking contexts created by transformed parents */
+    z-index: 100050 !important; /* high enough to appear above sidebar and content */
     pointer-events: auto !important;
     transform: none !important;
     left: auto !important;
@@ -1091,206 +1095,12 @@ input[type="date"]::-webkit-date-and-time-value {
     will-change: transform, top, left !important;
 }
 
-/* Prevent task cards from clipping dropdowns */
-.tasks-page .task-card,
-.tasks-page .group.relative,
-.tasks-page .task-card .p-7 {
-    overflow: visible !important;
+/* Dropdowns and status menus must still escape stacking contexts */
+.tasks-page .dropdown-content,
+.tasks-page .status-dropdown-menu {
+    position: absolute !important;
+    z-index: 100050 !important;
 }
-
-/* Ensure three-dot trigger sits above cards so the menu can open cleanly */
-.tasks-page .task-card .dropdown > label,
-.tasks-page .task-card .dropdown .dropdown-end {
-    z-index: 2147483647 !important;
-    position: relative !important;
-}
-
-/* Tasks page specific sidebar overrides
-   These styles apply only when the tasks page marks the body with the .tasks-page class.
-   They replicate the previous inline styling but keep rules centralized in the main stylesheet.
-*/
-.tasks-page .drawer-side {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    background: linear-gradient(180deg, #102038 0%, #0b1626 100%) !important;
-    z-index: 9999 !important;
-    width: 22rem !important; /* slightly wider on tasks page */
-    height: 100vh !important;
-    position: fixed !important;
-    left: 0 !important;
-    top: 0 !important;
-    transform: translateX(0) !important;
-    box-shadow: 0 10px 40px rgba(2,6,23,0.5) !important;
-}
-
-.tasks-page .drawer-side > * {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-}
-
-/* Hide the drawer overlay label so it doesn't block clicks inside the sidebar for the tasks page */
-.tasks-page .drawer-side > label.drawer-overlay {
-    display: none !important;
-    pointer-events: none !important;
-}
-
-/* Force menu layout and spacing inside the sidebar on tasks page */
-.tasks-page .drawer-side .menu {
-    padding: 1rem !important;
-    width: 100% !important;
-    height: 100% !important;
-    overflow-y: auto !important;
-}
-
-/* Ensure all sidebar menu children are visible and interactive on the tasks page */
-.tasks-page .drawer-side .menu {
-    position: relative !important;
-    z-index: 10005 !important; /* above the drawer-side but below dropdowns */
-    background: linear-gradient(180deg, #1A2B48 0%, #102038 100%) !important;
-    pointer-events: auto !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-}
-
-.tasks-page .drawer-side .menu * {
-    opacity: 1 !important;
-    visibility: visible !important;
-    pointer-events: auto !important;
-    color: #ffffff !important;
-}
-
-/* If any child element was accidentally hidden by higher-specificity rules, force display */
-.tasks-page .drawer-side .menu > * {
-    display: block !important;
-}
-
-/* Make sidebar text and icons clearly visible for the tasks page only */
-.tasks-page .drawer-side,
-.tasks-page .drawer-side .menu,
-.tasks-page .drawer-side a,
-.tasks-page .drawer-side .menu * {
-    color: #ffffff !important;
-}
-
-.tasks-page .drawer-side a.sidebar-menu-item {
-    display: flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    color: rgba(255,255,255,0.95) !important;
-    padding: 1rem !important;
-    margin: 0.25rem 0 !important;
-}
-
-.tasks-page .drawer-side a.sidebar-menu-item:hover {
-    background: rgba(255,255,255,0.06) !important;
-}
-
-/* Ensure the drawer-content shifts to accommodate the wider tasks sidebar on large screens */
-@media (min-width: 1024px) {
-    .tasks-page .drawer-content {
-        margin-left: 22rem !important; /* match the sidebar width above */
-        width: calc(100vw - 22rem) !important;
-    }
-}
-
-/* Mobile adjustments: keep behavior consistent with main layout but scoped to tasks page */
-@media (max-width: 1023px) {
-    .tasks-page .drawer .drawer-side {
-        width: 20rem !important;
-        transform: translateX(-100%);
-        transition: transform 0.3s ease-in-out;
-    }
-    .tasks-page .drawer input.drawer-toggle:checked ~ .drawer-side {
-        transform: translateX(0);
-    }
-    .tasks-page .drawer .drawer-side {
-        height: 100vh !important;
-    }
-    .tasks-page .drawer .drawer-side .menu {
-        height: 100vh !important;
-        overflow-y: auto !important;
-    }
-}
-
-/* Additional tasks-page sidebar fixes: ensure avatars, icons, and menu items are visible and interactive */
-.tasks-page .drawer-side {
-    z-index: 10010 !important; /* ensure sidebar sits above most page layers */
-}
-
-.tasks-page .drawer-side .menu {
-    z-index: 10011 !important; /* menu should be above the drawer background */
-    background: linear-gradient(180deg, #14263a 0%, #0f1b2a 100%) !important;
-    -webkit-backdrop-filter: blur(6px) !important;
-    backdrop-filter: blur(6px) !important;
-}
-
-/* Make sure avatar area remains visible and uses semi-transparent white bg */
-.tasks-page .drawer-side .avatar,
-.tasks-page .drawer-side .avatar *,
-.tasks-page .drawer-side .bg-white\/10 {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    background-color: rgba(255,255,255,0.06) !important;
-    color: #ffffff !important;
-}
-
-/* Force avatar image to show and fit */
-.tasks-page .drawer-side img {
-    opacity: 1 !important;
-    visibility: visible !important;
-    display: block !important;
-    object-fit: cover !important;
-}
-
-/* Ensure text is readable and not truncated by accidental transparency */
-.tasks-page .drawer-side .menu .font-medium,
-.tasks-page .drawer-side .menu .material-icons,
-.tasks-page .drawer-side .menu .sidebar-menu-item,
-.tasks-page .drawer-side .menu .sidebar-menu-item * {
-    color: #ffffff !important;
-    opacity: 1 !important;
-    text-shadow: 0 1px 0 rgba(0,0,0,0.15) !important;
-}
-
-/* Make sidebar links fully clickable (template uses pointer-events-none on inner spans) */
-.tasks-page .drawer-side .menu a.sidebar-menu-item {
-    pointer-events: auto !important;
-}
-
-/* Improve scrollbar visibility inside the sidebar menu */
-.tasks-page .drawer-side .menu::-webkit-scrollbar {
-    width: 10px !important;
-}
-.tasks-page .drawer-side .menu::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.12) !important;
-    border-radius: 6px !important;
-}
-
-/* Ensure overlay (if present) does not cover or block content on tasks page */
-.tasks-page label.drawer-overlay {
-    display: none !important;
-    pointer-events: none !important;
-}
-
-/* Defensive: if any element has opacity:0 set elsewhere, force visible when inside sidebar */
-.tasks-page .drawer-side *[style*="opacity: 0"],
-.tasks-page .drawer-side *[style*="display: none"] {
-    opacity: 1 !important;
-    display: block !important;
-    visibility: visible !important;
-}
-
-/* Ensure active item highlights remain visible */
-.tasks-page .drawer-side a.sidebar-menu-item.bg-white\/20 {
-    background: rgba(255,255,255,0.12) !important;
-}
-
-/* Small spacing & alignment cleanup */
-.tasks-page .drawer-side .menu .w-10 { min-width: 40px; }
-.tasks-page .drawer-side .menu .w-12 { min-width: 48px; }
 
 /* FINAL: Make Tasks sidebar visually match global sidebar (Workers/Home) */
 /* This block intentionally overrides prior .tasks-page rules to restore consistent design. */
@@ -1305,7 +1115,7 @@ input[type="date"]::-webkit-date-and-time-value {
     top: 0 !important;
     height: 100vh !important;
     transform: translateX(0) !important;
-    z-index: 100 !important;
+    z-index: 10010 !important; /* normalized z-index so sidebar is above content but below dropdowns */
     outline: none !important;
 }
 
@@ -1317,70 +1127,12 @@ input[type="date"]::-webkit-date-and-time-value {
     overflow-y: auto !important;
     max-height: 100vh !important;
     box-sizing: border-box !important;
-    z-index: 101 !important;
+    z-index: 10011 !important;
 }
 
-/* Avatar/profile card styling - match global */
-.tasks-page .drawer-side .bg-white\/10 {
-    background-color: rgba(255,255,255,0.06) !important;
-    border-radius: 12px !important;
-    padding: 0.75rem !important;
-    border: 1px solid rgba(255,255,255,0.04) !important;
-}
-.tasks-page .drawer-side .avatar .w-12 {
-    width: 48px !important;
-    height: 48px !important;
-    border-radius: 9999px !important;
-    overflow: hidden !important;
-}
-.tasks-page .drawer-side .avatar img {
-    object-fit: cover !important;
-    width: 100% !important;
-    height: 100% !important;
-    display: block !important;
-}
-
-/* Sidebar menu items: full-width rounded rows (like Workers page) */
-.tasks-page .drawer-side a.sidebar-menu-item {
-    display: flex !important;
-    align-items: center !important;
-    gap: 0.75rem !important;
-    padding: 0.9rem 1rem !important;
-    border-radius: 10px !important;
-    min-height: 48px !important;
-    color: rgba(255,255,255,0.92) !important;
-    background: transparent !important;
-    text-decoration: none !important;
-}
-
-/* Active state uses same translucent white used elsewhere */
-.tasks-page .drawer-side a.sidebar-menu-item.bg-white\/20,
-.tasks-page .drawer-side a.sidebar-menu-item.active {
-    background: rgba(255,255,255,0.08) !important;
-    color: #ffffff !important;
-}
-
-.tasks-page .drawer-side .material-icons { color: rgba(255,255,255,0.92) !important; font-size: 20px !important; }
-.tasks-page .drawer-side .font-medium { color: #ffffff !important; font-weight: 600 !important; }
-
-/* Only show vertical scrollbar when overflow occurs (inherits behaviour) */
-.tasks-page .drawer-side .menu::-webkit-scrollbar { width: 8px; }
-.tasks-page .drawer-side .menu::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06) !important; border-radius: 6px !important; }
-
-/* Dropdowns and status menus must still escape stacking contexts */
-.tasks-page .dropdown-content,
-.tasks-page .status-dropdown-menu {
-    position: fixed !important;
-    z-index: 2147483647 !important;
-}
-
-/* Remove any remaining temporary debug outlines/z-index overrides */
-.tasks-page .drawer-side { outline: none !important; }
-.tasks-page .drawer-side .menu { z-index: 101 !important; position: relative !important; }
-
-/* Restore content area spacing to match 20rem drawer */
+/* Ensure content area sits below the sidebar */
 @media (min-width: 1024px) {
-    .tasks-page .drawer-content { margin-left: 20rem !important; width: calc(100vw - 20rem) !important; }
+    .tasks-page .drawer-content { margin-left: 20rem !important; width: calc(100vw - 20rem) !important; z-index: 1 !important; }
 }
 
 /* End of tasks-page normalization */

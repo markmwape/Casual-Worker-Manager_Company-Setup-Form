@@ -465,6 +465,11 @@ body {
     line-height: 1.6;
 }
 
+/* Prevent horizontal scrolling */
+html, body {
+    overflow-x: hidden !important;
+}
+
 /* Header and Navigation */
 .navbar {
     background: linear-gradient(135deg, var(--primary-navy) 0%, var(--primary-navy-light) 100%);

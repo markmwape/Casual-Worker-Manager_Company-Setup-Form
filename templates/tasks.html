@@ -12,14 +12,42 @@
             left: 0 !important;
             top: 0 !important;
             bottom: 0 !important;
-            z-index: 40 !important;
+            z-index: 10002 !important; /* higher than main content */
             width: 20rem !important;
             visibility: visible !important;
             opacity: 1 !important;
+            pointer-events: auto !important;
         }
         body.tasks-page .drawer-content {
             margin-left: 20rem !important;
             min-height: 100vh !important;
+            position: relative !important;
+            z-index: 1 !important;
+        }
+
+        /* Force the sidebar menu and its items to be visible and clickable */
+        body.tasks-page .drawer-side .menu,
+        body.tasks-page .drawer-side .menu * {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+            color: #ffffff !important;
+        }
+
+        body.tasks-page .drawer-side .sidebar-menu-item {
+            display: flex !important;
+            align-items: center !important;
+            color: #ffffff !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            pointer-events: auto !important;
+        }
+
+        /* Hide overlay on desktop so it doesn't block clicks */
+        body.tasks-page .drawer-overlay {
+            display: none !important;
+            pointer-events: none !important;
         }
     }
 </style>

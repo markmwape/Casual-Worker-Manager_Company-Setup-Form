@@ -3,60 +3,56 @@
     <label for="my-drawer" class="drawer-overlay" style="pointer-events: none; touch-action: none;" aria-hidden="true"></label>
     <div class="menu p-4 w-full h-full bg-gradient-to-b from-brand-navy-500 to-brand-navy-700 !text-white overflow-y-auto flex flex-col" style="position: relative; z-index: 10001; background: linear-gradient(180deg, #1A2B48 0%, #102038 100%) !important; pointer-events: auto; left: 0 !important; top: 0 !important; transform: none !important;">
         <!-- Header Section -->
-        <div class="mb-8 flex flex-col items-center justify-center">
+        <div class="mb-8">
             <div class="flex items-center justify-center mb-6 mt-4">
                 <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center mr-3 shadow-lg">
                     <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Embee Bee Logo" class="w-8 h-8 object-contain" />
                 </div>
-                <h2 class="text-lg font-bold !text-white text-center">My Workspace</h2>
+                <h2 class="text-lg font-bold !text-white">My Workspace</h2>
             </div>
-            
-            <!-- User Profile Section -->
-            <div class="bg-white/10 rounded-xl p-5 backdrop-blur-sm border border-white/20">
-                <div class="flex items-center space-x-4">
-                    {% if session.get('user', {}).get('photo_url') %}
-                        <div class="avatar">
-                            <div class="w-12 h-12 rounded-full shadow-lg ring-2 ring-white/30">
-                                <img src="{{ session['user']['photo_url'] }}" alt="Profile Picture" class="object-cover rounded-full" />
-                            </div>
+            <div class="bg-white/10 rounded-xl p-3 backdrop-blur-sm border border-white/20 flex items-center">
+                {% if session.get('user', {}).get('photo_url') %}
+                    <div class="avatar mr-3">
+                        <div class="w-12 h-12 rounded-full shadow-lg ring-2 ring-white/30">
+                            <img src="{{ session['user']['photo_url'] }}" alt="Profile Picture" class="object-cover rounded-full" />
                         </div>
-                    {% else %}
-                        <div class="avatar placeholder">
-                            <div class="bg-white/20 !text-white rounded-full w-12 h-12 shadow-lg ring-2 ring-white/30 flex items-center justify-center">
-                                <span class="text-lg font-bold">
-                                    {% set display_name = session.get('user', {}).get('display_name', '') %}
-                                    {% set user_email = session.get('user', {}).get('user_email', '') %}
-                                    {% if display_name %}
-                                        {{ display_name[0] | upper }}
-                                    {% elif user_email %}
-                                        {{ user_email.split('@')[0][0] | upper }}
-                                    {% else %}
-                                        U
-                                    {% endif %}
-                                </span>
-                            </div>
-                        </div>
-                    {% endif %}
-                    <div class="flex flex-col min-w-0">
-                        <h3 class="text-sm font-semibold !text-white truncate mb-1">
-                            {% set display_name = session.get('user', {}).get('display_name', '') %}
-                            {% set user_email = session.get('user', {}).get('user_email', '') %}
-                            {% if display_name %}
-                                {{ display_name }}
-                            {% elif user_email %}
-                                {{ user_email.split('@')[0] | title }}
-                            {% else %}
-                                User
-                            {% endif %}
-                        </h3>
-                        <p class="text-xs !text-white/70">
-                            {% if session.get('current_workspace', {}).get('role') %}
-                                {{ session.get('current_workspace', {}).get('role') }}
-                            {% else %}
-                                Administrator
-                            {% endif %}
-                        </p>
                     </div>
+                {% else %}
+                    <div class="avatar placeholder mr-3">
+                        <div class="bg-white/20 !text-white rounded-full w-12 h-12 shadow-lg ring-2 ring-white/30 flex items-center justify-center">
+                            <span class="text-lg font-bold">
+                                {% set display_name = session.get('user', {}).get('display_name', '') %}
+                                {% set user_email = session.get('user', {}).get('user_email', '') %}
+                                {% if display_name %}
+                                    {{ display_name[0] | upper }}
+                                {% elif user_email %}
+                                    {{ user_email.split('@')[0][0] | upper }}
+                                {% else %}
+                                    U
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                {% endif %}
+                <div class="flex flex-col min-w-0">
+                    <h3 class="text-sm font-semibold !text-white truncate mb-1">
+                        {% set display_name = session.get('user', {}).get('display_name', '') %}
+                        {% set user_email = session.get('user', {}).get('user_email', '') %}
+                        {% if display_name %}
+                            {{ display_name }}
+                        {% elif user_email %}
+                            {{ user_email.split('@')[0] | title }}
+                        {% else %}
+                            User
+                        {% endif %}
+                    </h3>
+                    <p class="text-xs !text-white/70">
+                        {% if session.get('current_workspace', {}).get('role') %}
+                            {{ session.get('current_workspace', {}).get('role') }}
+                        {% else %}
+                            Administrator
+                        {% endif %}
+                    </p>
                 </div>
             </div>
         </div>

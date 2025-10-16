@@ -1463,3 +1463,140 @@ input[type="date"]::-webkit-date-and-time-value {
 }
 
 /* End normalization */
+
+/* Prevent horizontal page scroll caused by layout shifts */
+html, body {
+    overflow-x: hidden !important;
+}
+
+/* Prevent drawer-content from causing horizontal overflow */
+.drawer .drawer-content,
+.tasks-page .drawer-content {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+}
+
+/* Sidebar menu: only show vertical scrollbar when content overflows */
+.tasks-page .drawer-side .menu {
+    max-height: 100vh !important;
+    box-sizing: border-box !important; /* include padding in height calculations */
+    padding-bottom: 2rem !important; /* avoid accidental clipping */
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    position: relative !important; /* ensure it participates in document flow like other pages */
+}
+
+/* Subtle scrollbar styling for aesthetic */
+.tasks-page .drawer-side .menu::-webkit-scrollbar {
+    width: 8px !important;
+}
+.tasks-page .drawer-side .menu::-webkit-scrollbar-track {
+    background: transparent !important;
+}
+.tasks-page .drawer-side .menu::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.08) !important;
+    border-radius: 6px !important;
+}
+
+/* Avatar/profile bubble: match Home/Workers look */
+.tasks-page .drawer-side .bg-white\/10,
+.drawer-side .bg-white\/10 {
+    background-color: rgba(255,255,255,0.06) !important; /* subtle translucent bg */
+    padding: 0.75rem !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(255,255,255,0.04) !important;
+}
+
+/* Avatar circle */
+.tasks-page .drawer-side .avatar .w-12,
+.drawer-side .avatar .w-12 {
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 9999px !important;
+    background-color: rgba(255,255,255,0.12) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow: hidden !important;
+}
+
+.tasks-page .drawer-side .avatar img,
+.drawer-side .avatar img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    border-radius: 9999px !important;
+    display: block !important;
+}
+
+/* Profile text alignment */
+.tasks-page .drawer-side .menu .flex-1.min-w-0 {
+    overflow: hidden !important;
+}
+.tasks-page .drawer-side .menu h3 {
+    color: #fff !important;
+    margin: 0 !important;
+}
+.tasks-page .drawer-side .menu p {
+    color: rgba(255,255,255,0.8) !important;
+    margin: 0 !important;
+    font-size: 0.85rem !important;
+}
+
+/* Sidebar menu items: rounded bubbles & consistent spacing */
+.tasks-page .drawer-side a.sidebar-menu-item {
+    border-radius: 10px !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    background: transparent !important;
+}
+
+.tasks-page .drawer-side a.sidebar-menu-item .material-icons {
+    font-size: 20px !important;
+    color: rgba(255,255,255,0.9) !important;
+    min-width: 22px !important;
+}
+
+.tasks-page .drawer-side a.sidebar-menu-item .font-medium {
+    color: #ffffff !important;
+    font-weight: 600 !important;
+}
+
+/* Hover bubble */
+.tasks-page .drawer-side a.sidebar-menu-item:hover {
+    background: rgba(255,255,255,0.06) !important;
+    transform: none !important;
+}
+
+/* Ensure inner spans are clickable (template has pointer-events-none on them) */
+.tasks-page .drawer-side a.sidebar-menu-item span.pointer-events-none {
+    pointer-events: auto !important;
+}
+
+/* Ensure dropdowns don't cause horizontal overflow */
+.tasks-page .dropdown-content,
+.tasks-page .status-dropdown-menu {
+    left: auto !important;
+    right: 1rem !important;
+    max-width: calc(100vw - 2rem) !important;
+    overflow-x: hidden !important;
+}
+
+/* Restore subtle shadows for consistency */
+.tasks-page .drawer-side {
+    box-shadow: var(--shadow-lg) !important;
+}
+
+/* Remove any temporary debug outlines or forced huge z-indices left over */
+.tasks-page .drawer-side { outline: none !important; }
+.tasks-page .drawer-side .menu { z-index: 101 !important; }
+
+/* Small spacing tweaks to match other pages */
+.tasks-page .drawer-side .menu .mb-8 { margin-bottom: 1.5rem !important; }
+.tasks-page .drawer-side .menu .w-full a.sidebar-menu-item { min-height: 48px !important; }
+
+/* End polish */

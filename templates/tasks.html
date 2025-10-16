@@ -1,6 +1,28 @@
 {% extends "base.html" %}
 
 {% block head %}
+<!-- Ensure sidebar is visible on the tasks page regardless of drawer state -->
+<style>
+    /* Force the drawer sidebar to be visible on desktop for tasks page */
+    @media (min-width: 1024px) {
+        body.tasks-page .drawer-side {
+            display: block !important;
+            transform: translateX(0) !important;
+            position: fixed !important;
+            left: 0 !important;
+            top: 0 !important;
+            bottom: 0 !important;
+            z-index: 40 !important;
+            width: 20rem !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+        body.tasks-page .drawer-content {
+            margin-left: 20rem !important;
+            min-height: 100vh !important;
+        }
+    }
+</style>
 <!-- No per-page sidebar script — tasks page will use base.html server-side body class -->
 {% endblock %}
 
@@ -688,6 +710,66 @@
                 };
             }
         });
+    });
+
+    // Ensure sidebar menu items are visible and interactive on desktop for tasks page
+    document.addEventListener('DOMContentLoaded', function() {
+        try {
+            const drawerToggle = document.getElementById('my-drawer');
+            const drawer = document.querySelector('.drawer');
+            const sidebar = document.querySelector('.drawer-side');
+            const overlay = document.querySelector('.drawer-overlay');
+            const menu = sidebar?.querySelector('.menu');
+
+            function forceSidebarVisible() {
+                if (!sidebar) return;
+                if (window.innerWidth >= 1024) {
+                    // Ensure the drawer appears open and the toggle is set
+                    drawer?.classList.add('drawer-open');
+                    if (drawerToggle) drawerToggle.checked = true;
+
+                    // Force styles so nothing hides the menu or its items
+                    sidebar.style.display = 'block';
+                    sidebar.style.visibility = 'visible';
+                    sidebar.style.opacity = '1';
+                    sidebar.style.pointerEvents = 'auto';
+                    sidebar.style.zIndex = '10001';
+                    sidebar.style.width = '20rem';
+
+                    if (menu) {
+                        menu.style.display = 'flex';
+                        menu.style.pointerEvents = 'auto';
+                        menu.style.opacity = '1';
+                        menu.style.visibility = 'visible';
+                        menu.querySelectorAll('.sidebar-menu-item, a').forEach(el => {
+                            el.style.pointerEvents = 'auto';
+                            el.style.opacity = '1';
+                            el.style.visibility = 'visible';
+                        });
+                    }
+
+                    if (overlay) {
+                        // Hide the overlay on desktop so clicks go to the sidebar items
+                        overlay.style.pointerEvents = 'none';
+                        overlay.style.display = 'none';
+                    }
+                } else {
+                    // On mobile revert to default behavior
+                    drawer?.classList.remove('drawer-open');
+                    if (drawerToggle) drawerToggle.checked = false;
+                    if (overlay) {
+                        overlay.style.pointerEvents = '';
+                        overlay.style.display = '';
+                    }
+                }
+            }
+
+            // Run once and on resize
+            forceSidebarVisible();
+            window.addEventListener('resize', forceSidebarVisible);
+        } catch (e) {
+            console.error('Sidebar visibility script error:', e);
+        }
     });
 </script>
 {% endblock %}

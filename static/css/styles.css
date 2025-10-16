@@ -1174,4 +1174,42 @@ input[type="date"]::-webkit-date-and-time-value {
     margin-left: 6px !important;
 }
 
-/* End DEBUG HELPERS */
+/* DEBUG: Strong visibility overrides (temporary) */
+.tasks-page .drawer-side > label.drawer-overlay {
+    display: none !important;
+    pointer-events: none !important;
+    background: transparent !important;
+    width: 0 !important;
+    height: 0 !important;
+    opacity: 0 !important;
+}
+
+.tasks-page .drawer-side .menu,
+.tasks-page .drawer-side .menu > *,
+.tasks-page .drawer-side a.sidebar-menu-item,
+.tasks-page .drawer-side .menu * {
+    position: relative !important;
+    z-index: 20000 !important; /* sit above any background/placeholder */
+    color: #ff0000 !important; /* bright red for visibility */
+    background: rgba(255,255,255,0.0) !important;
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    pointer-events: auto !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.tasks-page .drawer-side a.sidebar-menu-item span,
+.tasks-page .drawer-side a.sidebar-menu-item .material-icons {
+    color: #ff0000 !important;
+    -webkit-text-stroke: 0.6px rgba(0,0,0,0.6) !important;
+}
+
+/* Ensure icons/images show above background */
+.tasks-page .drawer-side img {
+    z-index: 20001 !important;
+    position: relative !important;
+    opacity: 1 !important;
+}
+
+/* End DEBUG overrides */

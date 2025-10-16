@@ -73,7 +73,7 @@ class UserWorkspace(db.Model):
     workspace_id = db.Column(db.Integer, db.ForeignKey('workspace.id'), nullable=False)
     role = db.Column(db.String(20), default='Supervisor')  # Admin, Accountant, Supervisor
     joined_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
+    __table_args__ = (db.UniqueConstraint('user_id', 'workspace_id', name='uq_user_workspace'),)
     # Relationships
     user = db.relationship('User', back_populates='workspaces')
     workspace = db.relationship('Workspace', back_populates='users')

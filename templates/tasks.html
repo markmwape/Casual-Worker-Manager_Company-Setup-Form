@@ -55,7 +55,7 @@
                                     </label>
                                     <ul tabindex="0" class="dropdown-content menu p-2 shadow-xl bg-white rounded-xl w-52 text-sm border border-gray-200" style="position: absolute; z-index: 1000; right: 0; top: 100%; margin-top: 0.5rem; min-width: 160px; overflow: visible;">
                                         <li>
-                                            <a href="javascript:void(0);" onclick="openEditTaskModal(&quot;{{ task.id }}&quot;, &quot;{{ task.name|escapejs }}&quot;, &quot;{{ task.description|escapejs }}&quot;, &quot;{{ task.start_date.strftime('%Y-%m-%d') }}&quot;, &quot;{{ task.payment_type|escapejs }}&quot;, &quot;{{ task.per_part_payout }}&quot;, &quot;{{ task.per_part_currency|escapejs }}&quot;, &quot;{{ task.per_day_payout }}&quot;, &quot;{{ task.per_day_currency|escapejs }}&quot;)" class="hover:bg-gray-50 py-3">
+                                            <a href="javascript:void(0);" onclick="openEditTaskModal('{{ task.id }}', '{{ task.name|escapejs }}', '{{ task.description|escapejs }}', '{{ task.start_date.strftime('%Y-%m-%d') }}', '{{ task.payment_type|escapejs }}', '{{ task.per_part_payout }}', '{{ task.per_part_currency|escapejs }}', '{{ task.per_day_payout }}', '{{ task.per_day_currency|escapejs }}')" class="hover:bg-gray-50 py-3">
                                                 <i class="fas fa-edit w-4 h-4 text-blue-600"></i>Edit Task
                                             </a>
                                         </li>
@@ -137,7 +137,7 @@
                                     
                                     <div class="status-dropdown-menu">
                                         <div class="status-menu-item pending {% if task.status == 'Pending' %}active{% endif %} {% if task.start_date.strftime('%Y-%m-%d') <= today_date %}disabled{% endif %}" 
-                                             onclick="handlePendingStatusUpdate({{ task.id }}, '{{ task.start_date.strftime('%Y-%m-%d') }}')"
+                                             onclick="handlePendingStatusUpdate('{{ task.id }}', '{{ task.start_date.strftime('%Y-%m-%d') }}')"
                                              data-task-date="{{ task.start_date.strftime('%Y-%m-%d') }}">
                                             <span class="status-indicator pending"></span>
                                             <span>Pending</span>
@@ -146,7 +146,7 @@
                                             {% endif %}
                                         </div>
                                         <div class="status-menu-item in-progress {% if task.status == 'In Progress' %}active{% endif %} {% if task.start_date.strftime('%Y-%m-%d') > today_date %}disabled{% endif %}" 
-                                             onclick="handleStatusUpdate({{ task.id }}, 'In Progress', '{{ task.start_date.strftime('%Y-%m-%d') }}')"
+                                             onclick="handleStatusUpdate('{{ task.id }}', 'In Progress', '{{ task.start_date.strftime('%Y-%m-%d') }}')"
                                              data-task-date="{{ task.start_date.strftime('%Y-%m-%d') }}">
                                             <span class="status-indicator in-progress"></span>
                                             <span>In Progress</span>
@@ -155,7 +155,7 @@
                                             {% endif %}
                                         </div>
                                         <div class="status-menu-item completed {% if task.status == 'Completed' %}active{% endif %} {% if task.start_date.strftime('%Y-%m-%d') > today_date %}disabled{% endif %}" 
-                                             onclick="handleStatusUpdate({{ task.id }}, 'Completed', '{{ task.start_date.strftime('%Y-%m-%d') }}')"
+                                             onclick="handleStatusUpdate('{{ task.id }}', 'Completed', '{{ task.start_date.strftime('%Y-%m-%d') }}')"
                                              data-task-date="{{ task.start_date.strftime('%Y-%m-%d') }}">
                                             <span class="status-indicator completed"></span>
                                             <span>Completed</span>
@@ -606,7 +606,7 @@
         if (!statusBadge || !statusIndicator || !statusText) return;
         
         // Remove all status classes
-        statusBadge.className = 'status-badge font-semibold px-4 py-3 rounded-xl transition-colors';
+        statusBadge.className = 'status-badge font
         statusIndicator.className = 'status-indicator w-3 h-3 rounded-full mr-3';
         
         // Add new status classes and update text

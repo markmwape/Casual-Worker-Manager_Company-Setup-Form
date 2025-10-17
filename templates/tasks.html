@@ -741,9 +741,20 @@
                         overlay.style.display = 'none';
                     }
                 } else {
-                    // On mobile revert to default behavior
-                    drawer?.classList.remove('drawer-open');
-                    if (drawerToggle) drawerToggle.checked = false;
+                    // On mobile, show sidebar only if hamburger is toggled
+                    if (drawerToggle && drawerToggle.checked) {
+                        drawer?.classList.add('drawer-open');
+                        sidebar.style.display = 'block';
+                        sidebar.style.visibility = 'visible';
+                        sidebar.style.opacity = '1';
+                        sidebar.style.pointerEvents = 'auto';
+                    } else {
+                        drawer?.classList.remove('drawer-open');
+                        sidebar.style.display = 'none';
+                        sidebar.style.visibility = 'hidden';
+                        sidebar.style.opacity = '0';
+                        sidebar.style.pointerEvents = 'none';
+                    }
                     if (overlay) {
                         overlay.style.pointerEvents = '';
                         overlay.style.display = '';

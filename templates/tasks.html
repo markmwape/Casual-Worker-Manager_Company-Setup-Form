@@ -1,779 +1,895 @@
 {% extends "base.html" %}
 
+{% block title %}Embee Accounting - Dashboard{% endblock %}
+
 {% block head %}
-<!-- No per-page sidebar script — tasks page will use base.html server-side body class -->
+<style>
+    /* Modern Dashboard Styles */
+    .dashboard-container {
+        background: #ffffff;
+        min-height: 100vh;
+        width: 100%;
+    }
+    
+    /* Success Alert Animation Styles */
+    #subscription-success-alert {
+        animation: slideInDown 0.5s ease-out, pulse 2s ease-in-out infinite alternate;
+        background: linear-gradient(135deg, #10B981, #059669);
+        border: 2px solid #047857;
+        box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+        border-radius: 16px;
+    }
+    
+    /* Enhanced Card Styling */
+    .dashboard-card {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .dashboard-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    }
+    
+    /* Stats Card Animations */
+    .stat-card {
+        background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+        border-radius: 20px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 2px solid rgba(59, 130, 246, 0.2);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #1e40af, #3b82f6, #60a5fa);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+    
+    .stat-card:hover::before {
+        transform: scaleX(1);
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 25px 50px rgba(59, 130, 246, 0.25);
+        border-color: rgba(59, 130, 246, 0.4);
+    }
+    
+    /* Team member table enhancements */
+    .team-table {
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+    
+    /* Mobile responsiveness */
+    @media (max-width: 768px) {
+        #subscription-success-alert {
+            margin: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px) scale(1.01);
+        }
+    }
+    
+    @keyframes slideInDown {
+        from {
+            transform: translateY(-100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes pulse {
+        0% {
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+        }
+        100% {
+            box-shadow: 0 10px 35px rgba(16, 185, 129, 0.5);
+        }
+    }
+    
+    .subscription-success-icon {
+        animation: bounceIn 0.8s ease-out 0.3s both;
+    }
+    
+    @keyframes bounceIn {
+        0%, 20%, 40%, 60%, 80% {
+            transform: translateY(0);
+            animation-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000);
+        }
+        40% {
+            transform: translateY(-10px);
+        }
+        60% {
+            transform: translateY(-5px);
+        }
+    }
+    
+    /* Glass morphism effect for hero section */
+    .hero-glass {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        box-shadow: 0 8px 32px rgba(59, 130, 246, 0.1);
+    }
+    
+    /* Slow pulse animation for logo */
+    @keyframes pulse-slow {
+        0%, 100% {
+            transform: scale(1);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+        }
+        50% {
+            transform: scale(1.05);
+            box-shadow: 0 15px 35px rgba(59, 130, 246, 0.5);
+        }
+    }
+    
+    .animate-pulse-slow {
+        animation: pulse-slow 3s ease-in-out infinite;
+    }
+</style>
+<script>
+    // Pass user role to JavaScript
+    window.currentUserRole = "{{ session.get('current_workspace', {}).get('role', '') }}";
+</script>
 {% endblock %}
 
 {% block content %}
-<div class="drawer lg:drawer-open">
-    <input id="my-drawer" type="checkbox" class="drawer-toggle" />
-    <div class="drawer-content">
-        <!-- Mobile Menu Button -->
-        <div class="lg:hidden fixed top-4 right-4 z-50">
-            <label for="my-drawer" class="btn btn-circle btn-primary shadow-lg">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+<div class="dashboard-container">
+    <div class="container mx-auto px-7 py-8 max-w-6xl">
+        <!-- Subscription Update Success Message -->
+        {% if subscription_updated %}
+        <div id="subscription-success-alert" class="alert alert-success shadow-lg mb-8">
+            <div class="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="subscription-success-icon stroke-current flex-shrink-0 h-8 w-8 text-white" fill="none" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-            </label>
-        </div>
-
-        <div class="container mx-auto px-4 w-full max-w-6xl pt-8">
-            <!-- Desktop header and actions -->
-            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
-                <h1 class="text-3xl font-bold text-black">Tasks</h1>
-                <button onclick="openAddTaskModal()" class="btn btn-primary w-full sm:w-auto">
-                    <i class="fas fa-plus mr-2"></i>Create New Task
+                <div class="ml-3">
+                    <h3 class="font-bold text-lg text-white">
+                        🎉 Welcome to {{ subscription_info.tier_name }}!
+                    </h3>
+                    <div class="text-sm text-white">
+                        {% if subscription_info.tier == 'startup' %}
+                            You can now manage up to 250 workers! Perfect for growing teams.
+                        {% elif subscription_info.tier == 'growth' %}
+                            Manage up to 1,000 workers with advanced features!
+                        {% elif subscription_info.tier == 'enterprise' %}
+                            Unlimited workers and all premium features are now yours!
+                        {% else %}
+                            Your new plan is now active. Welcome to enhanced features!
+                        {% endif %}
+                    </div>
+                </div>
+                <button onclick="closeSuccessAlert()" class="btn btn-ghost btn-sm ml-auto">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                 </button>
             </div>
+        </div>
+        {% endif %}
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-                {% for task in tasks %}
-                <div class="group relative" onclick="navigateToTask(event, '{{ task.id }}')" data-payment-type="{{ task.payment_type }}" data-task-id="{{ task.id }}">
-                    <div class="task-card bg-white shadow-lg hover:shadow-2xl transition-all duration-300 rounded-2xl border border-gray-200 overflow-visible transform hover:-translate-y-1 cursor-pointer">
-                        <div class="p-7">
-                            <!-- Header with Title, Badge, and Menu -->
-                            <div class="flex justify-between items-start mb-6">
-                                <div class="flex-1 min-w-0 mr-3">
-                                    <div class="flex flex-wrap items-start gap-3 mb-3">
-                                        <h2 class="text-xl font-bold text-gray-900 break-words flex-1 leading-tight">{{ task.name }}</h2>
-                                        <div class="flex gap-2 flex-shrink-0">
-                                            {% if task.payment_type == 'per_part' %}
-                                                <span class="per-unit-badge inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-200">
-                                                    <i class="fas fa-cube mr-1.5 text-blue-600"></i>Per Unit
-                                                </span>
-                                            {% else %}
-                                                <span class="per-day-badge inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-200">
-                                                    <i class="fas fa-calendar-day mr-1.5 text-green-600"></i>Per Day
-                                                </span>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="dropdown dropdown-end flex-shrink-0" onclick="event.stopPropagation()" style="position: relative; z-index: 1000;">
-                                    <label tabindex="0" class="btn btn-ghost btn-sm btn-circle hover:bg-gray-100 h-10 w-10">
-                                        <i class="fas fa-ellipsis-v text-gray-600 text-sm"></i>
-                                    </label>
-                                    <ul tabindex="0" class="dropdown-content menu p-2 shadow-xl bg-white rounded-xl w-52 text-sm border border-gray-200" style="position: absolute; z-index: 1000; right: 0; top: 100%; margin-top: 0.5rem; min-width: 160px; overflow: visible;">
-                                        <li>
-                                            <a href="javascript:void(0);" onclick="openEditTaskModal('{{ task.id }}', '{{ task.name|escapejs }}', '{{ task.description|escapejs }}', '{{ task.start_date.strftime('%Y-%m-%d')|escapejs }}', '{{ task.payment_type|escapejs }}', '{{ task.per_part_payout }}', '{{ task.per_part_currency|escapejs }}', '{{ task.per_day_payout }}', '{{ task.per_day_currency|escapejs }}')" class="hover:bg-gray-50 py-3">
-                                                <i class="fas fa-edit w-4 h-4 text-blue-600"></i>Edit Task
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a onclick="openDeleteTaskModal('{{ task.id }}')" class="text-red-600 hover:bg-red-50 py-3">
-                                                <i class="fas fa-trash-alt w-4 h-4"></i>Delete Task
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
+        <!-- Hero Header Section -->
+        <div class="hero-glass rounded-3xl p-8 mb-8 relative overflow-hidden border-2 border-blue-100">
+            <div class="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-blue-400/5 to-blue-600/10"></div>
+            <div class="relative z-10">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                    <div class="flex items-center gap-6">
+                        <div class="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl flex items-center justify-center shadow-xl animate-pulse-slow">
+                            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Embee Logo" class="w-10 h-10 object-contain" />
+                        </div>
+                        <div>
+                            <h1 class="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-700 via-blue-800 to-blue-900 bg-clip-text text-transparent mb-2">
+                                Welcome back, {{ session.get('user', {}).get('display_name', 'User').split()[0] }}
+                            </h1>
+                            <p class="text-base text-blue-600 font-medium">
+                                Here's what's happening with your workforce today
+                            </p>
+                        </div>
+                    </div>
+                    <div class="text-center lg:text-right">
+                        <div class="text-sm text-blue-600 mb-2 font-medium">Today's Date</div>
+                        <div class="text-xl font-bold bg-gradient-to-r from-blue-700 to-blue-900 bg-clip-text text-transparent" id="currentDate"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                            <!-- Description -->
-                            <div class="mb-6">
-                                <p class="text-sm text-gray-600 line-clamp-3 leading-relaxed">{{ task.description or 'No description available' }}</p>
-                            </div>
-
-                            <!-- Payment Info -->
-                            {% if task.payment_type == 'per_part' and task.per_part_payout %}
-                            <div class="mb-6 p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200">
-                                <div class="flex items-center text-blue-800 font-semibold">
-                                    <div class="flex-shrink-0 w-10 h-10 bg-blue-200 rounded-lg flex items-center justify-center mr-3">
-                                        <i class="fas fa-coins text-blue-600"></i>
-                                    </div>
-                                    <div>
-                                        <div class="text-sm font-medium text-blue-900">Payout per unit</div>
-                                        <div class="text-lg font-bold text-blue-800">{{ task.per_part_payout }} {{ task.per_part_currency or '' }}</div>
-                                    </div>
-                                </div>
-                            </div>
-                            {% elif task.payment_type == 'per_day' and task.per_day_payout %}
-                            <div class="mb-6 p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-xl border border-green-200">
-                                <div class="flex items-center text-green-800 font-semibold">
-                                    <div class="flex-shrink-0 w-10 h-10 bg-green-200 rounded-lg flex items-center justify-center mr-3">
-                                        <i class="fas fa-calendar-day text-green-600"></i>
-                                    </div>
-                                    <div>
-                                        <div class="text-sm font-medium text-green-900">Daily payout per worker</div>
-                                        <div class="text-lg font-bold text-green-800">{{ task.per_day_payout }} {{ task.per_day_currency or '' }}</div>
-                                    </div>
-                                </div>
-                            </div>
+        <!-- Subscription Status Card -->
+        {% if company and subscription_info %}
+        <div class="dashboard-card rounded-3xl p-8 mb-8">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                <div class="flex items-center gap-6">
+                    <div class="w-16 h-16 bg-gradient-to-br from-amber-400 to-yellow-600 rounded-2xl flex items-center justify-center shadow-lg">
+                        <i class="fas fa-crown text-yellow-100 text-2xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold bg-gradient-to-r from-blue-700 to-blue-900 bg-clip-text text-transparent mb-1">{{ subscription_info.tier_name }} Plan</h3>
+                        <p class="text-gray-600">
+                            {% if subscription_info.is_trial %}
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800">
+                                    <i class="fas fa-clock mr-2"></i>Trial: <span id="trial-info">Loading...</span>
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                    <i class="fas fa-check-circle mr-2"></i>Active Subscription
+                                </span>
                             {% endif %}
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row gap-3">
+                    {% if subscription_info.is_trial %}
+                    <a href="{{ subscription_info.upgrade_url }}" class="btn btn-primary btn-lg shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl">
+                        <i class="fas fa-rocket mr-2"></i>Upgrade Now
+                    </a>
+                    {% endif %}
+                    <a href="{{ subscription_info.manage_url }}" class="btn btn-outline btn-lg shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl">
+                        <i class="fas fa-cog mr-2"></i>Manage Plan
+                    </a>
+                </div>
+            </div>
+            
+            <div class="mt-6 flex justify-center">
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 text-center w-64 border-2 border-blue-200 shadow-lg">
+                    <div class="text-4xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent mb-2">{{ subscription_info.worker_limit }}</div>
+                    <div class="text-base text-blue-700 font-semibold">Worker Limit</div>
+                    <div class="text-sm text-blue-600 mt-2 font-medium">{{ total_workers }} / {{ subscription_info.worker_limit }} used</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
 
-                            <!-- Status Section -->
-                            <div class="mb-6">
-                                <div class="status-dropdown" onclick="event.stopPropagation()">
-                                    {% if task.status == 'Pending' %}
-                                    <div class="status-badge pending bg-yellow-100 border-2 border-yellow-200 text-yellow-800 font-semibold px-4 py-3 rounded-xl hover:bg-yellow-200 transition-colors" onclick="toggleStatusDropdown(this)">
-                                        <div class="flex items-center justify-between">
-                                            <div class="flex items-center">
-                                                <span class="status-indicator pending w-3 h-3 bg-yellow-500 rounded-full mr-3"></span>
-                                                <span class="text-sm font-medium">Pending</span>
-                                            </div>
-                                            <i class="fas fa-chevron-down status-chevron ml-3 text-xs transition-transform duration-200"></i>
-                                        </div>
-                                    </div>
-                                    {% elif task.status == 'In Progress' %}
-                                    <div class="status-badge in-progress bg-blue-100 border-2 border-blue-200 text-blue-800 font-semibold px-4 py-3 rounded-xl hover:bg-blue-200 transition-colors" onclick="toggleStatusDropdown(this)">
-                                        <div class="flex items-center justify-between">
-                                            <div class="flex items-center">
-                                                <span class="status-indicator in-progress w-3 h-3 bg-blue-500 rounded-full mr-3 animate-pulse"></span>
-                                                <span class="text-sm font-medium">In Progress</span>
-                                            </div>
-                                            <i class="fas fa-chevron-down status-chevron ml-3 text-xs transition-transform duration-200"></i>
-                                        </div>
-                                    </div>
-                                    {% else %}
-                                    <div class="status-badge completed bg-green-100 border-2 border-green-200 text-green-800 font-semibold px-4 py-3 rounded-xl hover:bg-green-200 transition-colors" onclick="toggleStatusDropdown(this)">
-                                        <div class="flex items-center justify-between">
-                                            <div class="flex items-center">
-                                                <span class="status-indicator completed w-3 h-3 bg-green-500 rounded-full mr-3"></span>
-                                                <span class="text-sm font-medium">Completed</span>
-                                            </div>
-                                            <i class="fas fa-chevron-down status-chevron ml-3 text-xs transition-transform duration-200"></i>
-                                        </div>
-                                    </div>
-                                    {% endif %}
-                                    
-                                    <div class="status-dropdown-menu">
-                                        <div class="status-menu-item pending {% if task.status == 'Pending' %}active{% endif %} {% if task.start_date.strftime('%Y-%m-%d') <= today_date %}disabled{% endif %}" 
-                                             onclick="handlePendingStatusUpdate('{{ task.id }}', '{{ task.start_date.strftime('%Y-%m-%d')|escapejs }}')"
-                                             data-task-date="{{ task.start_date.strftime('%Y-%m-%d') }}">
-                                            <span class="status-indicator pending"></span>
-                                            <span>Pending</span>
-                                            {% if task.start_date.strftime('%Y-%m-%d') <= today_date %}
-                                            <span class="past-task-indicator">(Start date passed)</span>
-                                            {% endif %}
-                                        </div>
-                                        <div class="status-menu-item in-progress {% if task.status == 'In Progress' %}active{% endif %} {% if task.start_date.strftime('%Y-%m-%d') > today_date %}disabled{% endif %}" 
-                                             onclick="handleStatusUpdate('{{ task.id }}', 'In Progress', '{{ task.start_date.strftime('%Y-%m-%d')|escapejs }}')"
-                                             data-task-date="{{ task.start_date.strftime('%Y-%m-%d') }}">
-                                            <span class="status-indicator in-progress"></span>
-                                            <span>In Progress</span>
-                                            {% if task.start_date.strftime('%Y-%m-%d') > today_date %}
-                                            <span class="future-task-indicator">(Future task)</span>
-                                            {% endif %}
-                                        </div>
-                                        <div class="status-menu-item completed {% if task.status == 'Completed' %}active{% endif %} {% if task.start_date.strftime('%Y-%m-%d') > today_date %}disabled{% endif %}" 
-                                             onclick="handleStatusUpdate('{{ task.id }}', 'Completed', '{{ task.start_date.strftime('%Y-%m-%d')|escapejs }}')"
-                                             data-task-date="{{ task.start_date.strftime('%Y-%m-%d') }}">
-                                            <span class="status-indicator completed"></span>
-                                            <span>Completed</span>
-                                            {% if task.start_date.strftime('%Y-%m-%d') > today_date %}
-                                            <span class="future-task-indicator">(Future task)</span>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                </div>
-                                {% if task.completion_date and task.status == 'Completed' %}
-                                <div class="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                                    <div class="flex items-center">
-                                        <i class="fas fa-check-circle text-green-600 mr-2"></i>
-                                        <span class="text-sm font-medium text-green-800">
-                                            Completed on {{ task.completion_date.strftime('%B %d, %Y') }}
-                                        </span>
-                                    </div>
-                                </div>
-                                {% endif %}
-                            </div>
-
-                            <!-- Footer with Date -->
-                            <div class="pt-4 border-t border-gray-200">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center text-sm text-gray-600">
-                                        <div class="flex-shrink-0 w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center mr-3">
-                                            <i class="fas fa-calendar-alt text-gray-500 text-xs"></i>
-                                        </div>
-                                        <div>
-                                            <div class="text-xs text-gray-500 font-medium">Started on</div>
-                                            <div class="text-sm font-semibold text-gray-800">{{ task.start_date.strftime('%B %d, %Y') }}</div>
-                                        </div>
-                                    </div>
-                                    <div class="flex-shrink-0">
-                                        <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                                            <i class="fas fa-arrow-right text-blue-600 text-xs"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+        <!-- Workspace Info Card -->
+        {% if session.get('current_workspace') %}
+        <div class="dashboard-card rounded-3xl p-8 mb-8">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+                <div class="flex items-center gap-6">
+                    <div class="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl flex items-center justify-center shadow-lg">
+                        <i class="fas fa-building text-white text-2xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold bg-gradient-to-r from-blue-700 to-blue-900 bg-clip-text text-transparent mb-1">{{ session.current_workspace.company_name }}</h3>
+                        <p class="text-gray-600">Your role: <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 border border-blue-200">{{ session.current_workspace.role }}</span></p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-4">
+                    <div class="bg-white/60 rounded-xl p-4 text-center">
+                        <div class="text-sm text-gray-600 mb-1">Workspace Code</div>
+                        <div class="flex items-center gap-2">
+                            <input type="text" value="{{ session.current_workspace.code or session.current_workspace.workspace_code }}" readonly 
+                                   class="input input-bordered input-sm w-32 text-center font-mono bg-white" data-workspace-code />
+                            <button onclick="copyWorkspaceCode()" class="btn btn-ghost btn-sm text-gray-600 hover:text-gray-800">
+                                <i class="fas fa-copy"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
-                {% endfor %}
             </div>
+        </div>
+        {% endif %}
 
-            {% include 'modals/add_task.html' %}
-            {% include 'modals/delete_task.html' %}
-            {% include 'modals/edit_task.html' %}
+        <!-- Stats Cards -->
+                <!-- Stats Cards -->
+        <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+            <a href="{{ url_for('workers_route') }}" class="stat-card p-8 group cursor-pointer">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="text-sm font-semibold text-blue-700 mb-2 uppercase tracking-wide">Total Workers</h3>
+                        <p class="text-4xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent mb-2">{{ total_workers }}</p>
+                        <p class="text-sm text-blue-600">Active workforce</p>
+                    </div>
+                    <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                        <i data-feather="users" class="text-white w-8 h-8"></i>
+                    </div>
+                </div>
+                <div class="mt-4 flex items-center text-sm text-blue-600 font-medium">
+                    <i class="fas fa-arrow-right mr-2"></i>
+                    <span>Manage your team</span>
+                </div>
+            </a>
+
+            <a href="{{ url_for('tasks_route') }}" class="stat-card p-8 group cursor-pointer">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="text-sm font-semibold text-emerald-700 mb-2 uppercase tracking-wide">Active Tasks</h3>
+                        <p class="text-4xl font-bold bg-gradient-to-r from-emerald-600 to-green-700 bg-clip-text text-transparent mb-2">{{ total_tasks }}</p>
+                        <p class="text-sm text-emerald-600">Current projects</p>
+                    </div>
+                    <div class="w-16 h-16 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                        <i data-feather="clipboard" class="text-white w-8 h-8"></i>
+                    </div>
+                </div>
+                <div class="mt-4 flex items-center text-sm text-emerald-600 font-medium">
+                    <i class="fas fa-plus mr-2"></i>
+                    <span>Create new task</span>
+                </div>
+            </a>
+
+            <a href="{{ url_for('reports_route') }}" class="stat-card p-8 group cursor-pointer">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="text-sm font-semibold text-purple-700 mb-2 uppercase tracking-wide">Reports</h3>
+                        <p class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent mb-2">Generate</p>
+                        <p class="text-sm text-purple-600">Workforce analytics</p>
+                    </div>
+                    <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-700 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                        <i class="fas fa-chart-bar text-white text-2xl"></i>
+                    </div>
+                </div>
+                <div class="mt-4 flex items-center text-sm text-purple-600 font-medium">
+                    <i class="fas fa-download mr-2"></i>
+                    <span>Download reports</span>
+                </div>
+            </a>
+        </div>
+        <!-- Team Members Card -->
+        <div class="dashboard-card rounded-3xl p-8 mb-8">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-6 mb-8">
+                <div class="flex items-center gap-4">
+                    <div class="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl flex items-center justify-center shadow-lg">
+                        <i data-feather="users" class="text-white w-8 h-8"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold bg-gradient-to-r from-blue-700 to-blue-900 bg-clip-text text-transparent mb-1">Team Members</h3>
+                        <p class="text-blue-600">Manage your team access and permissions</p>
+                    </div>
+                </div>
+                {% if session.get('current_workspace', {}).get('role') != 'Supervisor' %}
+                <button onclick="document.getElementById('add-team-member-modal').showModal()" class="btn btn-primary btn-lg shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl">
+                    <i data-feather="user-plus" class="mr-2"></i>Add Team Member
+                </button>
+                {% endif %}
+            </div>
+            
+            <div class="team-table bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
+                <table class="table w-full">
+                    <thead>
+                        <tr class="bg-gradient-to-r from-blue-50 to-blue-100">
+                            <th class="text-blue-900 font-semibold py-4 px-6 text-left">
+                                <i class="fas fa-envelope mr-2"></i>Email
+                            </th>
+                            <th class="text-blue-900 font-semibold py-4 px-6 text-left">
+                                <i class="fas fa-user-tag mr-2"></i>Role
+                            </th>
+                            {% if session.get('current_workspace', {}).get('role') != 'Supervisor' %}
+                            <th class="text-blue-900 font-semibold py-4 px-6 text-center" style="min-width: 120px;">
+                                <i class="fas fa-cog mr-2"></i>Actions
+                            </th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody id="teamMembersTableBody" class="divide-y divide-gray-100 bg-white">
+                        {% for user in team_members %}
+                        <tr class="hover:bg-blue-50/70 transition-all duration-200 group">
+                            <td class="font-medium text-gray-800 py-5 px-6">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-gradient-to-br from-brand-navy-500 to-brand-navy-600 rounded-xl flex items-center justify-center text-white font-semibold shadow-md">
+                                        {{ user.email[0].upper() }}
+                                    </div>
+                                    <span class="text-gray-900 font-medium">{{ user.email }}</span>
+                                </div>
+                            </td>
+                            <td class="py-5 px-6">
+                                <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-brand-navy-100 text-brand-navy-800 border border-brand-navy-200">
+                                    {{ user.role }}
+                                </span>
+                            </td>
+                            {% if session.get('current_workspace', {}).get('role') != 'Supervisor' %}
+                            <td class="py-5 px-6">
+                                <div class="flex gap-3 justify-center">
+                                    <button onclick="openEditRoleModal('{{ user.id }}', '{{ user.email }}', '{{ user.role }}')" 
+                                            class="inline-flex items-center px-3 py-2 text-sm font-medium text-brand-navy-700 bg-brand-navy-50 border border-brand-navy-200 rounded-lg hover:bg-brand-navy-100 hover:text-brand-navy-800 transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-brand-navy-500 focus:ring-offset-2" 
+                                            title="Edit Role">
+                                        <i class="fas fa-edit mr-1"></i>
+                                        Edit
+                                    </button>
+                                    <button onclick="openRemoveTeamMemberModal('{{ user.id }}', '{{ user.email }}')" 
+                                            class="inline-flex items-center px-3 py-2 text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 hover:text-red-800 transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2" 
+                                            title="Remove Member">
+                                        <i class="fas fa-trash-2 mr-1"></i>
+                                        Remove
+                                    </button>
+                                </div>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-    {% include 'components/_sidebar.html' %}
+</div>
+
+<!-- Add Team Member Modal -->
+<dialog id="add-team-member-modal" class="modal">
+    <div class="modal-box">
+        <form method="dialog">
+            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+        </form>
+        <h3 class="font-bold text-lg mb-4">Add Team Member</h3>
+        <form id="addTeamMemberForm" class="space-y-4">
+            <div>
+                <label class="label" for="email">
+                    <span class="label-text">Email Address</span>
+                </label>
+                <input type="email" id="email" name="email" required class="input input-bordered w-full" placeholder="Enter team member's email">
+            </div>
+            <div>
+                <label class="label" for="role">
+                    <span class="label-text">Role</span>
+                </label>
+                <select id="role" name="role" required class="select select-bordered w-full">
+                    <option value="">Select a role</option>
+                    <option value="Admin">Admin</option>
+                    <option value="Manager">Manager</option>
+                    <option value="Supervisor">Supervisor</option>
+                </select>
+            </div>
+            <div class="modal-action">
+                <button type="submit" class="btn btn-primary">Add Member</button>
+                <button type="button" onclick="document.getElementById('add-team-member-modal').close()" class="btn">Cancel</button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
+<!-- Edit Role Modal -->
+<dialog id="edit-role-modal" class="modal">
+    <div class="modal-box">
+        <form method="dialog">
+            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+        </form>
+        <h3 class="font-bold text-lg mb-4">Edit Team Member Role</h3>
+        <form id="editRoleForm" class="space-y-4">
+            <input type="hidden" id="edit-user-id" name="user_id">
+            <div>
+                <label class="label">
+                    <span class="label-text">Email</span>
+                </label>
+                <input type="email" id="edit-email" disabled class="input input-bordered w-full bg-gray-100">
+            </div>
+            <div>
+                <label class="label" for="edit-role">
+                    <span class="label-text">Role</span>
+                </label>
+                <select id="edit-role" name="role" required class="select select-bordered w-full">
+                    <option value="Admin">Admin</option>
+                    <option value="Manager">Manager</option>
+                    <option value="Supervisor">Supervisor</option>
+                </select>
+            </div>
+            <div class="modal-action">
+                <button type="submit" class="btn btn-primary">Update Role</button>
+                <button type="button" onclick="document.getElementById('edit-role-modal').close()" class="btn">Cancel</button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
+<!-- Remove Team Member Modal -->
+<dialog id="remove-team-member-modal" class="modal">
+    <div class="modal-box">
+        <form method="dialog">
+            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+        </form>
+        <h3 class="font-bold text-lg mb-4">Remove Team Member</h3>
+        <form id="removeTeamMemberForm" class="space-y-4">
+            <input type="hidden" id="remove-user-id" name="user_id">
+            <p class="text-gray-600">Are you sure you want to remove <strong id="remove-email"></strong> from your team?</p>
+            <div class="modal-action">
+                <button type="submit" class="btn btn-error">Remove Member</button>
+                <button type="button" onclick="document.getElementById('remove-team-member-modal').close()" class="btn">Cancel</button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
+<!-- Mobile Menu Button -->
+<div class="lg:hidden fixed top-4 right-4 z-50">
+    <label for="my-drawer" class="btn btn-circle btn-primary shadow-lg">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+    </label>
 </div>
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <script>
-    // DEBUG: Check sidebar visibility on page load
+    // Initialize feather icons and date
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('=== SIDEBAR DEBUG INFO ===');
-        const sidebar = document.querySelector('.drawer-side');
-        console.log('Sidebar element found:', !!sidebar);
-        if (sidebar) {
-            console.log('Sidebar display:', window.getComputedStyle(sidebar).display);
-            console.log('Sidebar visibility:', window.getComputedStyle(sidebar).visibility);
-            console.log('Sidebar opacity:', window.getComputedStyle(sidebar).opacity);
-            console.log('Sidebar width:', window.getComputedStyle(sidebar).width);
-            console.log('Sidebar backgroundColor:', window.getComputedStyle(sidebar).backgroundColor);
-            console.log('Sidebar innerHTML length:', sidebar.innerHTML.length);
-            
-            // Check menu content
-            const menu = sidebar.querySelector('.menu');
-            console.log('Menu element found:', !!menu);
-            if (menu) {
-                console.log('Menu display:', window.getComputedStyle(menu).display);
-                console.log('Menu color:', window.getComputedStyle(menu).color);
-                console.log('Menu has children:', menu.children.length);
-            }
-            
-            // Check menu items
-            const menuItems = sidebar.querySelectorAll('.sidebar-menu-item');
-            console.log('Menu items found:', menuItems.length);
-           
-                console.log(`Menu item ${index}:`, {
-                    display: window.getComputedStyle(item).display,
-                    visibility: window.getComputedStyle(item).visibility,
-                    opacity: window.getComputedStyle(item).opacity,
-                    color: window.getComputedStyle(item).color,
-                    text: item.textContent.trim().substring(0, 30)
-                });
+        feather.replace();
+        
+        // Set current date
+        const currentDateElement = document.getElementById('currentDate');
+        if (currentDateElement) {
+            const now = new Date();
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            };
+            currentDateElement.textContent = now.toLocaleDateString('en-US', options);
+        }
+        
+        // Load trial info if in trial
+        {% if subscription_info and subscription_info.is_trial %}
+        loadTrialInfo();
+        {% endif %}
+        
+        // Trigger confetti if subscription was just updated
+        {% if subscription_updated %}
+        triggerConfetti();
+        {% endif %}
+    });
+    
+    // Copy workspace code function
+    function copyWorkspaceCode() {
+        const workspaceCodeInput = document.querySelector('input[data-workspace-code]');
+        if (workspaceCodeInput) {
+            navigator.clipboard.writeText(workspaceCodeInput.value).then(() => {
+                // Show feedback
+                const button = workspaceCodeInput.nextElementSibling;
+                const originalContent = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-check text-green-600"></i>';
+                setTimeout(() => {
+                    button.innerHTML = originalContent;
+                }, 1000);
+                
+                // Show toast notification if available
+                if (typeof showToast === 'function') {
+                    showToast('Workspace code copied to clipboard!', 'success');
+                }
+            }).catch(() => {
+                // Fallback for older browsers
+                workspaceCodeInput.select();
+                workspaceCodeInput.setSelectionRange(0, 99999);
+                try {
+                    document.execCommand('copy');
+                    const button = workspaceCodeInput.nextElementSibling;
+                    const originalContent = button.innerHTML;
+                    button.innerHTML = '<i class="fas fa-check text-green-600"></i>';
+                    setTimeout(() => {
+                        button.innerHTML = originalContent;
+                    }, 1000);
+                } catch (err) {
+                    console.error('Failed to copy: ', err);
+                }
             });
         }
-        console.log('=== END DEBUG INFO ===');
-    });
-
-    function navigateToTask(event, taskId) {
-        // Don't navigate if clicking on the menu or its children
-        if (!event.target.closest('.status-dropdown')) {
-            // Get the payment type from the card's data attribute
-            const card = event.currentTarget;
-            const paymentType = card.getAttribute('data-payment-type');
-            if (paymentType === 'per_part') {
-                window.location.href = `/task/${taskId}/units-completed`;
-            } else {
-                window.location.href = `/task/${taskId}/attendance`;
-            }
-        }
     }
-
-    function toggleStatusDropdown(element) {
-        // Close all other dropdowns first
-        document.querySelectorAll('.status-dropdown').forEach(dropdown => {
-            if (dropdown !== element.parentElement) {
-                dropdown.classList.remove('open');
-                const menu = dropdown.querySelector('.status-dropdown-menu');
-                if (menu) {
-                    menu.classList.remove('show');
+    
+    // Load trial information
+    function loadTrialInfo() {
+        fetch('/api/trial-info')
+            .then(response => response.json())
+            .then(data => {
+                const trialInfoElement = document.getElementById('trial-info');
+                if (trialInfoElement && data.success) {
+                    if (data.days_remaining > 0) {
+                        trialInfoElement.innerHTML = `${data.days_remaining} days remaining`;
+                    } else {
+                        trialInfoElement.innerHTML = `Expired`;
+                        trialInfoElement.className = 'text-red-600 font-medium';
+                    }
                 }
-            }
-        });
-
-        // Toggle current dropdown
-        const dropdown = element.parentElement;
-        const menu = dropdown.querySelector('.status-dropdown-menu');
-        
-        dropdown.classList.toggle('open');
-        if (menu) {
-            menu.classList.toggle('show');
-        }
-    }
-
-    // Close dropdowns when clicking outside
-    document.addEventListener('click', function(event) {
-        // Don't close dropdowns if clicking on sidebar or drawer toggle
-        if (event.target.closest('.drawer-side') || event.target.closest('[for="my-drawer"]') || event.target.closest('#my-drawer')) {
-            return;
-        }
-        
-        if (!event.target.closest('.status-dropdown') && !event.target.closest('.dropdown')) {
-            closeAllDropdowns();
-        }
-    });
-
-    function closeAllDropdowns() {
-        // Close all status dropdowns
-        document.querySelectorAll('.status-dropdown').forEach(dropdown => {
-            dropdown.classList.remove('open');
-            const menu = dropdown.querySelector('.status-dropdown-menu');
-            if (menu) {
-                menu.classList.remove('show');
-                // menu.style.display = 'none'; // Removed to fix dropdown reopening
-            }
-        });
-
-        // Close all three-dot dropdowns (DaisyUI or custom) - but NOT sidebar/drawer elements
-        document.querySelectorAll('.task-card .dropdown .dropdown-content').forEach(menu => {
-            menu.classList.remove('show');
-            // menu.style.display = 'none'; // Removed to fix dropdown reopening
-        });
-    }
-
-    function setDropdownsDisabled(disabled) {
-        document.querySelectorAll('.status-dropdown, .dropdown').forEach(el => {
-            if (disabled) {
-                el.classList.add('dropdown-disabled');
-            } else {
-                el.classList.remove('dropdown-disabled');
-            }
-        });
-    }
-
-    function openEditTaskModal(taskId, name, description, startDate, paymentType, perPartPayout, perPartCurrency, perDayPayout, perDayCurrency) {
-        closeAllDropdowns();
-        setDropdownsDisabled(true);
-        const modal = document.getElementById('edit-task-modal');
-        document.getElementById('edit-task-id').value = taskId;
-        document.getElementById('edit-task-name').value = name;
-        document.getElementById('edit-task-description').value = description || '';
-        // Set the start date value
-        const startDateInput = document.getElementById('edit-task-start-date');
-        startDateInput.value = startDate;
-        // Set payment type and show appropriate group
-        if (paymentType === 'per_part') {
-            document.getElementById('edit-payment-type-part').checked = true;
-            document.getElementById('edit-per-part-payout-group').style.display = '';
-            document.getElementById('edit-per-day-payout-group').style.display = 'none';
-        } else {
-            document.getElementById('edit-payment-type-day').checked = true;
-            document.getElementById('edit-per-part-payout-group').style.display = 'none';
-            document.getElementById('edit-per-day-payout-group').style.display = '';
-        }
-        // Set per-part payout and currency
-        document.getElementById('edit-per-part-payout').value = perPartPayout || '';
-        document.getElementById('edit-per-part-currency').value = perPartCurrency || '';
-        // Set per-day payout and currency
-        document.getElementById('edit-per-day-payout').value = perDayPayout || '';
-        document.getElementById('edit-per-day-currency').value = perDayCurrency || '';
-        // Setup toggle and update labels
-        setupEditPaymentTypeToggle();
-        updateEditPayoutLabels(paymentType);
-        modal.classList.add('modal-open');
-        setTimeout(() => {
-            if (startDateInput.datePickerInstance) {
-                startDateInput.datePickerInstance.setValue(startDate);
-            }
-        }, 100);
-    }
-
-    function setupEditPaymentTypeToggle() {
-        const perPartGroup = document.getElementById('edit-per-part-payout-group');
-        const perDayGroup = document.getElementById('edit-per-day-payout-group');
-        const radios = document.querySelectorAll('input[name="edit_payment_type"]');
-        
-        radios.forEach(radio => {
-            radio.addEventListener('change', function() {
-                if (this.value === 'per_part') {
-                    perPartGroup.style.display = '';
-                    perDayGroup.style.display = 'none';
-                } else {
-                    perPartGroup.style.display = 'none';
-                    perDayGroup.style.display = '';
-                }
-                updateEditPayoutLabels(this.value);
-            });
-        });
-    }
-
-    function updateEditPayoutLabels(paymentType) {
-        const payoutLabel = document.getElementById('edit-payout-label');
-        const payoutInput = document.getElementById('edit-per-day-payout');
-        
-        if (paymentType === 'per_day') {
-            if (payoutLabel) {
-                payoutLabel.innerHTML = 'Daily payout per worker <span class="text-xs text-gray-400">(e.g., 25$ , 60 Kwacha)</span>';
-            }
-            if (payoutInput) {
-                payoutInput.placeholder = 'Enter daily payout per worker';
-            }
-        } else if (paymentType === 'per_part') {
-            if (payoutLabel) {
-                payoutLabel.innerHTML = 'Payout per part <span class="text-xs text-gray-400">(e.g., 25$ , 60 Kwacha)</span>';
-            }
-            if (payoutInput) {
-                payoutInput.placeholder = 'Enter payout per part';
-            }
-        }
-    }
-
-    function closeEditTaskModal() {
-        setDropdownsDisabled(false);
-        document.getElementById('edit-task-modal').classList.remove('modal-open');
-    }
-
-    function updateTask(event) {
-        event.preventDefault();
-        const taskId = document.getElementById('edit-task-id').value;
-        const form = event.target;
-        const formData = new FormData(form);
-        const paymentType = formData.get('edit_payment_type') || 'per_day';
-        let perPartPayout = null;
-        let perPartCurrency = null;
-        let perDayPayout = null;
-        let perDayCurrency = null;
-        
-        if (paymentType === 'per_part') {
-            perPartPayout = formData.get('edit_per_part_payout');
-            perPartCurrency = formData.get('edit_per_part_currency');
-            if (!perPartPayout || isNaN(perPartPayout) || Number(perPartPayout) <= 0) {
-                showCustomModal('Validation Error', 'Please enter a valid payout per part.', 'warning');
-                document.getElementById('edit-per-part-payout').focus();
-                return;
-            }
-            if (!perPartCurrency || perPartCurrency.trim() === '') {
-                showCustomModal('Validation Error', 'Please select a currency for payout per part.', 'warning');
-                document.getElementById('edit-per-part-currency').focus();
-                return;
-            }
-        } else {
-            perDayPayout = formData.get('edit_per_day_payout');
-            perDayCurrency = formData.get('edit_per_day_currency');
-            if (!perDayPayout || isNaN(perDayPayout) || Number(perDayPayout) <= 0) {
-                showCustomModal('Validation Error', 'Please enter a valid daily payout per worker.', 'warning');
-                document.getElementById('edit-per-day-payout').focus();
-                return;
-            }
-            if (!perDayCurrency || perDayCurrency.trim() === '') {
-                showCustomModal('Validation Error', 'Please select a currency for daily payout.', 'warning');
-                document.getElementById('edit-per-day-currency').focus();
-                return;
-            }
-        }
-        
-        fetch(`/api/task/${taskId}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                name: formData.get('name'),
-                description: formData.get('description'),
-                start_date: formData.get('start_date'),
-                payment_type: paymentType,
-                per_part_payout: perPartPayout,
-                per_part_currency: perPartCurrency,
-                per_day_payout: perDayPayout,
-                per_day_currency: perDayCurrency
             })
-        })
-        .then(response => response.json())
-        .then(result => {
-            if (result.error) {
-                showCustomModal('Error', result.error, 'error');
-            } else {
-                closeEditTaskModal();
-                window.location.reload();
+            .catch(error => {
+                console.error('Error loading trial info:', error);
+                const trialInfoElement = document.getElementById('trial-info');
+                if (trialInfoElement) {
+                    trialInfoElement.innerHTML = 'Active';
+                }
+            });
+    }
+    
+    // Trigger confetti animation
+    function triggerConfetti() {
+        setTimeout(() => {
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b']
+            });
+        }, 400);
+    }
+    
+    // Close success alert function
+    function closeSuccessAlert() {
+        const alert = document.getElementById('subscription-success-alert');
+        if (alert) {
+            alert.style.animation = 'fadeOut 0.3s ease-out forwards';
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 300);
+        }
+    }
+
+    // Toast notification function
+    function showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 transform translate-x-full`;
+        
+        if (type === 'success') {
+            toast.classList.add('bg-green-500', 'text-white');
+        } else if (type === 'error') {
+            toast.classList.add('bg-red-500', 'text-white');
+        } else {
+            toast.classList.add('bg-brand-navy-500', 'text-white');
+        }
+        
+        toast.innerHTML = `
+            <div class="flex items-center">
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'} mr-2"></i>
+                <span>${message}</span>
+            </div>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        // Animate in
+        setTimeout(() => {
+            toast.classList.remove('translate-x-full');
+        }, 100);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+            toast.classList.add('translate-x-full');
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    document.body.removeChild(toast);
+                }
+            }, 300);
+        }, 3000);
+    }
+
+    // Custom Modal Functions
+    function showCustomModal(title, message, type = 'info') {
+        return new Promise((resolve) => {
+            const modal = document.createElement('dialog');
+            modal.className = 'modal';
+            
+            let iconClass = 'fas fa-info-circle text-brand-navy-500';
+            if (type === 'success') {
+                iconClass = 'fas fa-check-circle text-green-500';
+            } else if (type === 'error') {
+                iconClass = 'fas fa-exclamation-circle text-red-500';
+            } else if (type === 'warning') {
+                iconClass = 'fas fa-exclamation-triangle text-yellow-500';
             }
-        })
-        .catch(error => {
-            console.error('Error updating task:', error);
-            showCustomModal('Error', 'Failed to update task', 'error');
+            
+            modal.innerHTML = `
+                <div class="modal-box">
+                    <h3 class="font-bold text-lg flex items-center gap-2">
+                        <i class="${iconClass}"></i>
+                        <span>${title}</span>
+                    </h3>
+                    <p class="py-4">${message}</p>
+                    <div class="modal-action">
+                        <button type="button" class="btn btn-primary" onclick="this.closest('dialog').close(); this.closest('dialog').remove();">OK</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            const okBtn = modal.querySelector('.btn-primary');
+            okBtn.addEventListener('click', () => {
+                modal.remove();
+                resolve(true);
+            });
+            
+            modal.showModal();
         });
     }
 
-    function openDeleteTaskModal(taskId) {
-        closeAllDropdowns();
-        setDropdownsDisabled(true);
-        document.getElementById('delete-task-id').value = taskId;
-        document.getElementById('delete-task-modal').classList.add('modal-open');
-    }
-
-    function closeDeleteTaskModal() {
-        setDropdownsDisabled(false);
-        document.getElementById('delete-task-modal').classList.remove('modal-open');
-    }
-
-    function deleteTask() {
-        const taskId = document.getElementById('delete-task-id').value;
-        
-        fetch(`/api/task/${taskId}`, {
-            method: 'DELETE'
-        })
-        .then(response => response.json())
-        .then(result => {
-            if (result.error) {
-                showCustomModal('Error', result.error, 'error');
+    // Copy workspace code function
+    function copyWorkspaceCode() {
+        const codeElement = document.querySelector('[data-workspace-code]');
+        if (codeElement) {
+            const code = codeElement.value || codeElement.textContent;
+            if (code && code.trim()) {
+                navigator.clipboard.writeText(code.trim()).then(() => {
+                    showToast('Workspace code copied to clipboard!', 'success');
+                }).catch(() => {
+                    showToast('Failed to copy workspace code', 'error');
+                });
             } else {
-                window.location.reload();
+                showToast('No workspace code found to copy', 'error');
             }
-        })
-        .catch(error => {
-            console.error('Error deleting task:', error);
-            showCustomModal('Error', 'Failed to delete task', 'error');
-        });
-    }
-
-    function handleStatusUpdate(taskId, newStatus, taskDate) {
-        // Check if this is a future task and the status is not allowed
-        const currentDate = new Date().toISOString().split('T')[0];
-        
-        if (newStatus !== 'Pending' && taskDate > currentDate) {
-            showCustomModal('Status Update Error', 'Cannot set status to "' + newStatus + '" for tasks with future start dates. Only "Pending" is allowed until the start date is reached.', 'warning');
-            return;
+        } else {
+            showToast('Workspace code element not found', 'error');
         }
-        
-        updateTaskStatus(taskId, newStatus);
     }
-
-    function handlePendingStatusUpdate(taskId, taskDate) {
-        // Check if the task start date has already passed
-        const currentDate = new Date().toISOString().split('T')[0];
-        
-        if (taskDate <= currentDate) {
-            showCustomModal('Status Update Error', 'Cannot set status to "Pending" for tasks where the start date has already passed. Only "In Progress" or "Completed" are allowed.', 'warning');
-            return;
-        }
-        
-        updateTaskStatus(taskId, 'Pending');
+    
+    // Enhanced team member management functions with better UX
+    function openEditRoleModal(userId, email, currentRole) {
+        document.getElementById('edit-user-id').value = userId;
+        document.getElementById('edit-email').value = email;
+        document.getElementById('edit-role').value = currentRole;
+        document.getElementById('edit-role-modal').showModal();
     }
-
-    function updateTaskStatus(taskId, newStatus) {
-        // Find the task card element
-        const taskCard = document.querySelector(`[data-task-id="${taskId}"]`);
-        const statusBadge = taskCard?.querySelector('.status-badge');
-        const statusIndicator = taskCard?.querySelector('.status-indicator');
-        const statusText = statusBadge?.querySelector('span:not(.status-indicator)');
+    
+    function openRemoveTeamMemberModal(userId, email) {
+        document.getElementById('remove-user-id').value = userId;
+        document.getElementById('remove-email').textContent = email;
+        document.getElementById('remove-team-member-modal').showModal();
+    }
+    
+    // Enhanced form handlers with loading states
+    document.getElementById('addTeamMemberForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="loading loading-spinner loading-sm mr-2"></span>Adding...';
         
-        // Show loading state
-        if (statusBadge) {
-            statusBadge.style.opacity = '0.6';
-            statusBadge.style.pointerEvents = 'none';
-            const chevron = statusBadge.querySelector('.status-chevron');
-            if (chevron) {
-                chevron.className = 'fas fa-spinner fa-spin status-chevron ml-3 text-xs';
-            }
-        }
+        const formData = new FormData(this);
+        const data = {
+            email: formData.get('email'),
+            role: formData.get('role')
+        };
         
-        // Close dropdown immediately
-        closeAllDropdowns();
-        
-        fetch(`/api/task/${taskId}/status`, {
+        fetch('/api/team-members', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                status: newStatus
-            })
+            body: JSON.stringify(data)
         })
         .then(response => response.json())
-        .then(result => {
-            if (result.error) {
-                // Restore original state on error
-                if (statusBadge) {
-                    statusBadge.style.opacity = '1';
-                    statusBadge.style.pointerEvents = 'auto';
-                    const chevron = statusBadge.querySelector('.status-chevron');
-                    if (chevron) {
-                        chevron.className = 'fas fa-chevron-down status-chevron ml-3 text-xs transition-transform duration-200';
-                    }
+        .then(data => {
+            if (data.success) {
+                if (typeof showToast === 'function') {
+                    showToast('Team member added successfully!', 'success');
                 }
-                showCustomModal('Update Error', result.error, 'error');
+                setTimeout(() => location.reload(), 1000);
             } else {
-                // Update UI immediately with new status
-                updateTaskCardUI(taskCard, newStatus, result.completion_date);
+                if (typeof showToast === 'function') {
+                    showToast(data.error || 'Failed to add team member', 'error');
+                } else {
+                    showCustomModal('Error', data.error || 'Failed to add team member', 'error');
+                }
             }
         })
         .catch(error => {
-            console.error('Error updating task status:', error);
-            // Restore original state on error
-            if (statusBadge) {
-                statusBadge.style.opacity = '1';
-                statusBadge.style.pointerEvents = 'auto';
-                const chevron = statusBadge.querySelector('.status-chevron');
-                if (chevron) {
-                    chevron.className = 'fas fa-chevron-down status-chevron ml-3 text-xs transition-transform duration-200';
-                }
+            console.error('Error:', error);
+            if (typeof showToast === 'function') {
+                showToast('Failed to add team member', 'error');
+            } else {
+                showCustomModal('Error', 'Failed to add team member', 'error');
             }
-            showCustomModal('Update Error', 'Failed to update task status', 'error');
-        });
-    }
-    
-    function updateTaskCardUI(taskCard, newStatus, completionDate) {
-        const statusBadge = taskCard.querySelector('.status-badge');
-        const statusIndicator = taskCard.querySelector('.status-indicator');
-        const statusText = statusBadge?.querySelector('span:not(.status-indicator)');
-        const completionSection = taskCard.querySelector('.completion-section');
-        
-        if (!statusBadge || !statusIndicator || !statusText) return;
-        
-        // Remove all status classes
-        statusBadge.className = 'status-badge font
-        statusIndicator.className = 'status-indicator w-3 h-3 rounded-full mr-3';
-        
-        // Add new status classes and update text
-        switch (newStatus) {
-            case 'Pending':
-                statusBadge.classList.add('pending', 'bg-yellow-100', 'border-2', 'border-yellow-200', 'text-yellow-800', 'hover:bg-yellow-200');
-                statusIndicator.classList.add('pending', 'bg-yellow-500');
-                statusText.textContent = 'Pending';
-                break;
-            case 'In Progress':
-                statusBadge.classList.add('in-progress', 'bg-blue-100', 'border-2', 'border-blue-200', 'text-blue-800', 'hover:bg-blue-200');
-                statusIndicator.classList.add('in-progress', 'bg-blue-500', 'animate-pulse');
-                statusText.textContent = 'In Progress';
-                break;
-            case 'Completed':
-                statusBadge.classList.add('completed', 'bg-green-100', 'border-2', 'border-green-200', 'text-green-800', 'hover:bg-green-200');
-                statusIndicator.classList.add('completed', 'bg-green-500');
-                statusText.textContent = 'Completed';
-                break;
-        }
-        
-        // Handle completion date display
-        if (newStatus === 'Completed' && completionDate) {
-            // Add or update completion date section
-            let completionDiv = taskCard.querySelector('.completion-section');
-            if (!completionDiv) {
-                completionDiv = document.createElement('div');
-                completionDiv.className = 'completion-section mt-4 p-3 bg-green-50 border border-green-200 rounded-lg';
-                const statusSection = taskCard.querySelector('.mb-6:has(.status-dropdown)');
-                if (statusSection) {
-                    statusSection.after(completionDiv);
-                }
-            }
-            const completionDateFormatted = new Date(completionDate).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-            completionDiv.innerHTML = `
-                <div class="flex items-center">
-                    <i class="fas fa-check-circle text-green-600 mr-2"></i>
-                    <span class="text-sm font-medium text-green-800">
-                        Completed on ${completionDateFormatted}
-                    </span>
-                </div>
-            `;
-        } else if (newStatus !== 'Completed') {
-            // Remove completion date section if status is not completed
-            const completionDiv = taskCard.querySelector('.completion-section');
-            if (completionDiv) {
-                completionDiv.remove();
-            }
-        }
-        
-        // Restore badge interactivity
-        statusBadge.style.opacity = '1';
-        statusBadge.style.pointerEvents = 'auto';
-        statusBadge.onclick = function() { toggleStatusDropdown(this); };
-        
-        // Restore chevron
-        const chevron = statusBadge.querySelector('.status-chevron');
-        if (chevron) {
-            chevron.className = 'fas fa-chevron-down status-chevron ml-3 text-xs transition-transform duration-200';
-        }
-        
-        // Update dropdown menu active states
-        const dropdown = taskCard.querySelector('.status-dropdown-menu');
-        if (dropdown) {
-            const menuItems = dropdown.querySelectorAll('.status-menu-item');
-            menuItems.forEach(item => {
-                item.classList.remove('active');
-                const itemText = item.querySelector('span:not(.status-indicator)').textContent;
-                if (itemText === newStatus) {
-                    item.classList.add('active');
-                }
-            });
-        }
-    }
-    
-    // Add visual indicators for future tasks
-    document.addEventListener('DOMContentLoaded', function() {
-        const statusMenuItems = document.querySelectorAll('.status-menu-item');
-        const currentDate = new Date().toISOString().split('T')[0];
-        
-        statusMenuItems.forEach(item => {
-            const taskDate = item.getAttribute('data-task-date');
-            if (taskDate && taskDate > currentDate) {
-                // This is a future task - disable the option
-                item.classList.add('disabled');
-                item.onclick = function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    showCustomModal('Status Update Error', 'Cannot set status for tasks with future start dates. Only "Pending" is allowed until the start date is reached.', 'warning');
-                };
-            }
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
         });
     });
-
-    // Ensure sidebar menu items are visible and interactive on desktop for tasks page
-    document.addEventListener('DOMContentLoaded', function() {
-        try {
-            const drawerToggle = document.getElementById('my-drawer');
-            const drawer = document.querySelector('.drawer');
-            const sidebar = document.querySelector('.drawer-side');
-            const overlay = document.querySelector('.drawer-overlay');
-            const menu = sidebar?.querySelector('.menu');
-
-            function forceSidebarVisible() {
-                if (!sidebar) return;
-                if (window.innerWidth >= 1024) {
-                    // Ensure the drawer appears open and the toggle is set
-                    drawer?.classList.add('drawer-open');
-                    if (drawerToggle) drawerToggle.checked = true;
-
-                    // Force styles so nothing hides the menu or its items
-                    sidebar.style.display = 'block';
-                    sidebar.style.visibility = 'visible';
-                    sidebar.style.opacity = '1';
-                    sidebar.style.pointerEvents = 'auto';
-                    sidebar.style.zIndex = '10001';
-                    sidebar.style.width = '20rem';
-
-                    if (menu) {
-                        menu.style.display = 'flex';
-                        menu.style.pointerEvents = 'auto';
-                        menu.style.opacity = '1';
-                        menu.style.visibility = 'visible';
-                        menu.querySelectorAll('.sidebar-menu-item, a').forEach(el => {
-                            el.style.pointerEvents = 'auto';
-                            el.style.opacity = '1';
-                            el.style.visibility = 'visible';
-                        });
-                    }
-
-                    if (overlay) {
-                        // Hide the overlay on desktop so clicks go to the sidebar items
-                        overlay.style.pointerEvents = 'none';
-                        overlay.style.display = 'none';
-                    }
+    
+    document.getElementById('editRoleForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="loading loading-spinner loading-sm mr-2"></span>Updating...';
+        
+        const formData = new FormData(this);
+        const userId = formData.get('user_id');
+        const data = {
+            role: formData.get('role')
+        };
+        
+        fetch(`/api/team-members/${userId}/role`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (typeof showToast === 'function') {
+                    showToast('Role updated successfully!', 'success');
+                }
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                if (typeof showToast === 'function') {
+                    showToast(data.error || 'Failed to update role', 'error');
                 } else {
-                    // On mobile, show sidebar only if hamburger is toggled
-                    if (drawerToggle && drawerToggle.checked) {
-                        drawer?.classList.add('drawer-open');
-                        sidebar.style.display = 'block';
-                        sidebar.style.visibility = 'visible';
-                        sidebar.style.opacity = '1';
-                        sidebar.style.pointerEvents = 'auto';
-                    } else {
-                        drawer?.classList.remove('drawer-open');
-                        sidebar.style.display = 'none';
-                        sidebar.style.visibility = 'hidden';
-                        sidebar.style.opacity = '0';
-                        sidebar.style.pointerEvents = 'none';
-                    }
-                    if (overlay) {
-                        overlay.style.pointerEvents = '';
-                        overlay.style.display = '';
-                    }
+                    showCustomModal('Error', data.error || 'Failed to update role', 'error');
                 }
             }
-
-            // Run once and on resize
-            forceSidebarVisible();
-            window.addEventListener('resize', forceSidebarVisible);
-        } catch (e) {
-            console.error('Sidebar visibility script error:', e);
-        }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            if (typeof showToast === 'function') {
+                showToast('Failed to update role', 'error');
+            } else {
+                showCustomModal('Error', 'Failed to update role', 'error');
+            }
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+        });
     });
+    
+    document.getElementById('removeTeamMemberForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="loading loading-spinner loading-sm mr-2"></span>Removing...';
+        
+        const formData = new FormData(this);
+        const userId = formData.get('user_id');
+        
+        fetch(`/api/team-members/${userId}`, {
+            method: 'DELETE'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (typeof showToast === 'function') {
+                    showToast('Team member removed successfully!', 'success');
+                }
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                if (typeof showToast === 'function') {
+                    showToast(data.error || 'Failed to remove team member', 'error');
+                } else {
+                    showCustomModal('Error', data.error || 'Failed to remove team member', 'error');
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            if (typeof showToast === 'function') {
+                showToast('Failed to remove team member', 'error');
+            } else {
+                showCustomModal('Error', 'Failed to remove team member', 'error');
+            }
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+        });
+    });
+
+    // Add fadeOut animation for success alert
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-20px); }
+        }
+    `;
+    document.head.appendChild(style);
 </script>
 {% endblock %}

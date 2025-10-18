@@ -141,13 +141,17 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             feather.replace();
-            
-            // Force drawer open on desktop
+            // Only force drawer open on desktop (not mobile)
             const drawer = document.querySelector('.drawer');
             const drawerToggle = document.getElementById('my-drawer');
-            if (drawer && drawerToggle && window.innerWidth >= 1024) {
-                drawer.classList.add('drawer-open');
-                drawerToggle.checked = false;
+            if (drawer && drawerToggle) {
+                if (window.innerWidth >= 1024) {
+                    drawer.classList.add('drawer-open');
+                    drawerToggle.checked = false;
+                } else {
+                    drawer.classList.remove('drawer-open');
+                    drawerToggle.checked = false;
+                }
             }
         });
     </script>

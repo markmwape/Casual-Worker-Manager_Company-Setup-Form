@@ -90,6 +90,15 @@
     {% block head %}{% endblock %}
     
     <style>
+        /* Clean drawer styles without blue strip */
+        .drawer {
+            background: #ffffff;
+        }
+        
+        .drawer-content {
+            background: #ffffff;
+        }
+        
         /* Ensure drawer sidebar is visible on desktop */
         @media (min-width: 1024px) {
             .drawer.lg\:drawer-open .drawer-side {
@@ -101,7 +110,7 @@
                 z-index: 40;
             }
             .drawer.lg\:drawer-open .drawer-content {
-                margin-left: 20rem; /* 80 * 4px = 320px = 20rem */
+                margin-left: 20rem;
             }
         }
         
@@ -121,18 +130,24 @@
             .drawer.lg\:drawer-open .drawer-content {
                 margin-left: 20rem !important;
                 min-height: 100vh !important;
+                background: #ffffff !important;
             }
             
             .drawer.lg\:drawer-open .drawer-toggle {
                 display: none !important;
             }
         }
+        
+        /* Remove any default blue backgrounds */
+        body {
+            background: #ffffff !important;
+        }
     </style>
 </head>
-<body class="{% if request.endpoint == 'tasks_route' %}tasks-page{% endif %}">
-    <div class="drawer min-h-screen bg-gray-50">
+<body class="{% if request.endpoint == 'tasks_route' %}tasks-page{% endif %} bg-white">
+    <div class="drawer min-h-screen bg-white">
         <input id="my-drawer" type="checkbox" class="drawer-toggle" />
-        <div class="drawer-content bg-gray-50 min-h-screen lg:ml-80">
+        <div class="drawer-content bg-white min-h-screen lg:ml-80">
             {% block content %}{% endblock %}
         </div>
         {% include 'components/_sidebar.html' %}

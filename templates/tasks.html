@@ -108,20 +108,27 @@
         -webkit-box-orient: vertical;
         overflow: hidden;
     }
+
+    /* Ensure proper spacing with sidebar on desktop */
+    @media (min-width: 1024px) {
+        .tasks-container .container {
+            margin-left: 0;
+        }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="tasks-container">
-    <!-- Mobile Menu Button - ADDED THIS -->
-    <div class="lg:hidden fixed top-4 right-4 z-50">
-        <label for="my-drawer" class="btn btn-circle btn-primary shadow-lg">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-            </svg>
-        </label>
-    </div>
+<!-- Mobile Menu Button - Same as workers page -->
+<div class="lg:hidden fixed top-4 right-4 z-50">
+    <label for="my-drawer" class="btn btn-circle btn-primary shadow-lg">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+    </label>
+</div>
 
+<div class="tasks-container">
     <div class="container mx-auto px-4 py-8 max-w-6xl">
         <!-- Desktop header and actions -->
         <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
@@ -320,6 +327,21 @@
 
 {% block scripts %}
 <script>
+    // Initialize sidebar behavior
+    document.addEventListener('DOMContentLoaded', function() {
+        // Close sidebar when clicking on menu items on mobile
+        if (window.innerWidth < 1024) {
+            document.querySelectorAll('.sidebar-menu-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const drawerToggle = document.getElementById('my-drawer');
+                    if (drawerToggle) {
+                        drawerToggle.checked = false;
+                    }
+                });
+            });
+        }
+    });
+
     function navigateToTask(event, taskId) {
         if (!event.target.closest('.status-dropdown') && !event.target.closest('.dropdown')) {
             const card = event.currentTarget;

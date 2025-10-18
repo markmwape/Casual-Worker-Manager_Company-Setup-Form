@@ -777,6 +777,19 @@ input[type="date"]::-webkit-date-and-time-value {
     color: white;
 }
 
+/* Sidebar robust vertical stacking and scroll */
+.drawer .drawer-side .menu {
+    display: flex !important;
+    flex-direction: column !important;
+    overflow-y: auto !important;
+    max-height: 100vh !important;
+}
+.drawer .drawer-side .menu > div {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100%;
+}
+
 /* Stats Cards */
 .stats-card {
     background: linear-gradient(135deg, var(--bg-white) 0%, #f1f5f9 100%);

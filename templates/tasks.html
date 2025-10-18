@@ -1,553 +1,792 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Embee Accounting - Tasks</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-navy': {
+                            '50': '#f0f4f8',
+                            '100': '#d9e2ec',
+                            '200': '#bcccdc',
+                            '300': '#9fb3c8',
+                            '400': '#829ab1',
+                            '500': '#1A2B48',
+                            '600': '#102038',
+                            '700': '#0d1a2d',
+                            '800': '#0a1423',
+                            '900': '#060d18'
+                        },
+                        'brand-gold': {
+                            '50': '#fefbf3',
+                            '100': '#fef3d9',
+                            '200': '#fde9b3',
+                            '300': '#fcdd8c',
+                            '400': '#f8cd5f',
+                            '500': '#E5B23A',
+                            '600': '#d19b1f',
+                            '700': '#a87b15',
+                            '800': '#7f5c0f',
+                            '900': '#563d0a'
+                        },
+                        'brand-blue': {
+                            '50': '#eff6ff',
+                            '100': '#dbeafe',
+                            '200': '#bfdbfe',
+                            '300': '#93c5fd',
+                            '400': '#60a5fa',
+                            '500': '#3b82f6',
+                            '600': '#2563eb',
+                            '700': '#1d4ed8',
+                            '800': '#1e40af',
+                            '900': '#1e3a8a'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.24/dist/full.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <style>
+        /* Base styles */
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #ffffff;
+            color: #1f2937;
+            line-height: 1.6;
+        }
 
-{% block title %}Embee Accounting - Tasks{% endblock %}
+        html, body {
+            overflow-x: hidden !important;
+        }
 
-{% block head %}
-<style>
-    /* Task Card Styles */
-    .task-card {
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        border: 1px solid #e5e7eb;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        background: white;
-    }
-    
-    .task-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-    }
-    
-    /* Status dropdown styles */
-    .status-dropdown {
-        position: relative;
-    }
-    
-    .status-dropdown-menu {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-        border: 1px solid #e5e7eb;
-        opacity: 0;
-        visibility: hidden;
-        transform: translateY(-10px);
-        transition: all 0.2s ease;
-        z-index: 50;
-    }
-    
-    .status-dropdown.open .status-dropdown-menu {
-        opacity: 1;
-        visibility: visible;
-        transform: translateY(5px);
-    }
-    
-    .status-menu-item {
-        padding: 12px 16px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        transition: all 0.2s ease;
-    }
-    
-    .status-menu-item:hover:not(.disabled) {
-        background: #f3f4f6;
-    }
-    
-    .status-menu-item.disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-    
-    .status-menu-item.active {
-        background: #eff6ff;
-    }
-    
-    .status-indicator {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        flex-shrink: 0;
-    }
-    
-    .status-indicator.pending {
-        background: #eab308;
-    }
-    
-    .status-indicator.in-progress {
-        background: #3b82f6;
-    }
-    
-    .status-indicator.completed {
-        background: #10b981;
-    }
-
-    .status-badge {
-        cursor: pointer;
-        transition: all 0.3s ease;
-        border: 2px solid transparent;
-    }
-
-    .status-badge.pending {
-        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-        color: #92400e;
-        border-color: #f59e0b;
-    }
-
-    .status-badge.in-progress {
-        background: linear-gradient(135deg, #dbeafe 0%, #93c5fd 100%);
-        color: #1e40af;
-        border-color: #3b82f6;
-    }
-
-    .status-badge.completed {
-        background: linear-gradient(135deg, #dcfce7 0%, #86efac 100%);
-        color: #166534;
-        border-color: #22c55e;
-    }
-    
-    /* Mobile responsiveness */
-    @media (max-width: 768px) {
-        .task-card {
-            margin: 0.5rem;
+        /* Custom Sidebar System - EXACT MATCH */
+        .tasks-layout {
+            display: flex;
+            min-height: 100vh;
+            background: #ffffff;
+            position: relative;
         }
         
-        .grid {
-            gap: 1rem;
+        /* Sidebar Container - EXACT match to drawer-side */
+        .tasks-sidebar-container {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 20rem;
+            height: 100vh;
+            display: block;
+            visibility: visible;
+            opacity: 1;
+            z-index: 10001;
+            transform: translateX(0);
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        /* Sidebar Content - EXACT match to inner div */
+        .tasks-sidebar {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(180deg, #1A2B48 0%, #102038 100%);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 10001;
+            pointer-events: auto;
+            overflow: hidden;
+        }
+        
+        .tasks-main-content {
+            flex: 1;
+            margin-left: 20rem;
+            min-height: 100vh;
+            position: relative;
+            background: #ffffff;
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        /* Mobile Styles - EXACT slide animation */
+        @media (max-width: 1023px) {
+            .tasks-sidebar-container {
+                transform: translateX(-100%);
+            }
+            
+            .tasks-main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+            
+            .sidebar-open .tasks-sidebar-container {
+                transform: translateX(0);
+            }
+            
+            .sidebar-open .tasks-main-content {
+                transform: translateX(20rem);
+            }
+
+            /* Prevent body scroll when sidebar is open */
+            .sidebar-open body {
+                overflow: hidden;
+            }
+        }
+        
+        /* Desktop Styles */
+        @media (min-width: 1024px) {
+            .tasks-sidebar-container {
+                transform: translateX(0) !important;
+            }
+            
+            .tasks-main-content {
+                margin-left: 20rem !important;
+                transform: none !important;
+            }
+            
+            .mobile-menu-btn {
+                display: none !important;
+            }
         }
 
-        .container {
-            padding-left: 1rem;
-            padding-right: 1rem;
+        /* Sidebar Menu Items - EXACT match */
+        .sidebar-menu-item {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 1rem 1rem;
+            border-radius: 0.5rem;
+            color: rgba(255, 255, 255, 0.9);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            min-height: 48px;
+            z-index: 10002;
+            flex-shrink: 0;
+            touch-action: manipulation;
+            cursor: pointer;
         }
-    }
-    
-    /* Line clamp for description */
-    .line-clamp-3 {
-        display: -webkit-box;
-        -webkit-line-clamp: 3;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-</style>
-{% endblock %}
+        
+        .sidebar-menu-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .sidebar-menu-item.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
 
-{% block content %}
-<!-- Mobile Menu Button -->
-<div class="lg:hidden fixed top-4 right-4 z-50">
-    <label for="my-drawer" class="btn btn-circle btn-primary shadow-lg">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-        </svg>
-    </label>
-</div>
+        /* Mobile Overlay - EXACT match to drawer-overlay */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+            pointer-events: auto;
+            touch-action: auto;
+        }
+        
+        .sidebar-open .sidebar-overlay {
+            display: block;
+        }
 
-<div class="container mx-auto px-4 py-8 max-w-6xl">
-    <!-- Desktop header and actions -->
-    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
-        <div>
-            <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-700 to-blue-900 bg-clip-text text-transparent mb-2">Tasks</h1>
-            <p class="text-blue-600">Manage and track your workforce tasks</p>
-        </div>
-        <button onclick="openAddTaskModal()" class="btn btn-primary btn-lg shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl">
-            <i class="fas fa-plus mr-2"></i>Create New Task
+        /* Mobile Menu Button */
+        .mobile-menu-btn {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 10002;
+            background: linear-gradient(135deg, #1A2B48 0%, #102038 100%);
+            border: none;
+            border-radius: 50%;
+            width: 3rem;
+            height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+        }
+
+        .mobile-menu-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Scrollbar styles - EXACT match */
+        .sidebar-nav {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,0.2) transparent;
+        }
+
+        .sidebar-nav::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar-nav::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sidebar-nav::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+
+        .sidebar-nav::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Task Card Styles */
+        .tasks-container {
+            background: #ffffff;
+            min-height: 100vh;
+            width: 100%;
+        }
+        
+        .task-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            background: white;
+        }
+        
+        .task-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Status dropdown styles */
+        .status-dropdown {
+            position: relative;
+        }
+        
+        .status-dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            border: 1px solid #e5e7eb;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s ease;
+            z-index: 50;
+        }
+        
+        .status-dropdown.open .status-dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(5px);
+        }
+        
+        .status-menu-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s ease;
+        }
+        
+        .status-menu-item:hover:not(.disabled) {
+            background: #f3f4f6;
+        }
+        
+        .status-menu-item.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .status-menu-item.active {
+            background: #eff6ff;
+        }
+        
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        
+        .status-indicator.pending {
+            background: #eab308;
+        }
+        
+        .status-indicator.in-progress {
+            background: #3b82f6;
+        }
+        
+        .status-indicator.completed {
+            background: #10b981;
+        }
+
+        .status-badge {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .status-badge.pending {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            color: #92400e;
+            border-color: #f59e0b;
+        }
+
+        .status-badge.in-progress {
+            background: linear-gradient(135deg, #dbeafe 0%, #93c5fd 100%);
+            color: #1e40af;
+            border-color: #3b82f6;
+        }
+
+        .status-badge.completed {
+            background: linear-gradient(135deg, #dcfce7 0%, #86efac 100%);
+            color: #166534;
+            border-color: #22c55e;
+        }
+        
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .task-card {
+                margin: 0.5rem;
+            }
+            
+            .grid {
+                gap: 1rem;
+            }
+
+            .container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+        }
+        
+        /* Line clamp for description */
+        .line-clamp-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Modal styles */
+        .modal-box {
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            border: none;
+        }
+
+        /* Button styles */
+        .btn-primary {
+            background: linear-gradient(135deg, #1A2B48 0%, #102038 100%);
+            border: none;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #102038 0%, #1A2B48 100%);
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+    <div class="tasks-layout" id="tasks-layout">
+        <!-- Mobile Overlay - EXACT match to drawer-overlay -->
+        <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()" aria-hidden="true"></div>
+        
+        <!-- Mobile Menu Button -->
+        <button class="mobile-menu-btn lg:hidden" onclick="toggleSidebar()">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
         </button>
-    </div>
-
-    <!-- Tasks Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {% for task in tasks %}
-        <div class="group relative" onclick="navigateToTask(event, {{ task.id|tojson }})" data-payment-type="{{ task.payment_type|tojson }}" data-task-id="{{ task.id|tojson }}">
-            <div class="task-card bg-white rounded-2xl border border-gray-200 overflow-visible transform hover:-translate-y-1 cursor-pointer">
-                <div class="p-6">
-                    <!-- Header with Title, Badge, and Menu -->
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="flex-1 min-w-0 mr-3">
-                            <div class="flex flex-wrap items-start gap-2 mb-2">
-                                <h2 class="text-xl font-bold text-gray-900 break-words flex-1 leading-tight">{{ task.name }}</h2>
-                                <div class="flex gap-2 flex-shrink-0">
-                                    {% if task.payment_type == 'per_part' %}
-                                        <span class="per-unit-badge inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-200">
-                                            <i class="fas fa-cube mr-1.5 text-blue-600"></i>Per Unit
-                                        </span>
-                                    {% else %}
-                                        <span class="per-day-badge inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-200">
-                                            <i class="fas fa-calendar-day mr-1.5 text-green-600"></i>Per Day
-                                        </span>
-                                    {% endif %}
+        
+        <!-- Custom Standalone Sidebar - EXACT MATCH to original -->
+        <div class="tasks-sidebar-container">
+            <div class="tasks-sidebar">
+                <!-- Header Section (Non-scrolling) - EXACT match -->
+                <div class="flex-shrink-0 p-4 border-b border-white/10">
+                    <div class="flex items-center justify-center mb-6 mt-4">
+                        <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center mr-3 shadow-lg">
+                            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Embee Bee Logo" class="w-8 h-8 object-contain" />
+                        </div>
+                        <h2 class="text-lg font-bold text-white whitespace-nowrap">My Workspace</h2>
+                    </div>
+                    <div class="bg-white/10 rounded-xl p-3 backdrop-blur-sm border border-white/20 flex items-center min-w-0">
+                        {% if session.get('user', {}).get('photo_url') %}
+                            <div class="avatar mr-3 flex-shrink-0">
+                                <div class="w-12 h-12 rounded-full shadow-lg ring-2 ring-white/30">
+                                    <img src="{{ session['user']['photo_url'] }}" alt="Profile Picture" class="object-cover rounded-full" />
                                 </div>
                             </div>
-                        </div>
-                        <div class="dropdown dropdown-end flex-shrink-0" onclick="event.stopPropagation()">
-                            <label tabindex="0" class="btn btn-ghost btn-sm btn-circle hover:bg-gray-100 h-8 w-8">
-                                <i class="fas fa-ellipsis-v text-gray-600 text-xs"></i>
-                            </label>
-                            <ul tabindex="0" class="dropdown-content menu p-2 shadow-xl bg-white rounded-xl w-48 text-sm border border-gray-200">
-                                <li>
-                                    <a href='javascript:void(0);' onclick='openEditTaskModal({{ task.id|tojson }}, {{ task.name|tojson }}, {{ task.description|tojson }}, {{ task.start_date.strftime("%Y-%m-%d")|tojson }}, {{ task.payment_type|tojson }}, {{ task.per_part_payout|tojson }}, {{ task.per_part_currency|tojson }}, {{ task.per_day_payout|tojson }}, {{ task.per_day_currency|tojson }})' class="hover:bg-gray-50 py-2">
-                                        <i class="fas fa-edit w-4 h-4 text-blue-600"></i>Edit Task
-                                    </a>
-                                </li>
-                                <li>
-                                    <a onclick="openDeleteTaskModal({{ task.id|tojson }})" class="text-red-600 hover:bg-red-50 py-2">
-                                        <i class="fas fa-trash-alt w-4 h-4"></i>Delete Task
-                                    </a>
-                                </li>
-                            </ul>
+                        {% else %}
+                            <div class="avatar placeholder mr-3 flex-shrink-0">
+                                <div class="bg-white/20 text-white rounded-full w-12 h-12 shadow-lg ring-2 ring-white/30 flex items-center justify-center">
+                                    <span class="text-lg font-bold">
+                                        {% set display_name = session.get('user', {}).get('display_name', '') %}
+                                        {% set user_email = session.get('user', {}).get('user_email', '') %}
+                                        {% if display_name %}
+                                            {{ display_name[0] | upper }}
+                                        {% elif user_email %}
+                                            {{ user_email.split('@')[0][0] | upper }}
+                                        {% else %}
+                                            U
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        {% endif %}
+                        <div class="flex flex-col min-w-0 flex-1">
+                            <h3 class="text-sm font-semibold text-white truncate mb-1">
+                                {% set display_name = session.get('user', {}).get('display_name', '') %}
+                                {% set user_email = session.get('user', {}).get('user_email', '') %}
+                                {% if display_name %}
+                                    {{ display_name }}
+                                {% elif user_email %}
+                                    {{ user_email.split('@')[0] | title }}
+                                {% else %}
+                                    User
+                                {% endif %}
+                            </h3>
+                            <p class="text-xs text-white/70 truncate">
+                                {% if session.get('current_workspace', {}).get('role') %}
+                                    {{ session.get('current_workspace', {}).get('role') }}
+                                {% else %}
+                                    Administrator
+                                {% endif %}
+                            </p>
                         </div>
                     </div>
-
-                    <!-- Description -->
-                    <div class="mb-4">
-                        <p class="text-sm text-gray-600 line-clamp-3 leading-relaxed">{{ task.description or 'No description available' }}</p>
-                    </div>
-
-                    <!-- Payment Info -->
-                    {% if task.payment_type == 'per_part' and task.per_part_payout %}
-                    <div class="mb-4 p-3 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200">
-                        <div class="flex items-center text-blue-800 font-semibold">
-                            <div class="flex-shrink-0 w-8 h-8 bg-blue-200 rounded-lg flex items-center justify-center mr-3">
-                                <i class="fas fa-coins text-blue-600 text-sm"></i>
-                            </div>
-                            <div>
-                                <div class="text-xs font-medium text-blue-900">Payout per unit</div>
-                                <div class="text-base font-bold text-blue-800">{{ task.per_part_payout }} {{ task.per_part_currency or '' }}</div>
-                            </div>
+                </div>
+                
+                <!-- Menu Items (Scrollable) - EXACT match -->
+                <nav class="flex-1 overflow-y-auto overflow-x-hidden sidebar-nav">
+                    <div class="space-y-2 p-4" style="gap: 0.5rem; display: flex; flex-direction: column;">
+                        <div class="w-full">
+                            <a href="{{ url_for('home_route') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg {% if request.endpoint == 'home_route' %}bg-white/20 text-white{% else %}text-white/90{% endif %} hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline" style="z-index:10002; flex-shrink: 0;">
+                                <span class="material-icons mr-3 flex-shrink-0">home</span> 
+                                <span class="font-medium flex-shrink-0">Dashboard</span>
+                            </a>
                         </div>
-                    </div>
-                    {% elif task.payment_type == 'per_day' and task.per_day_payout %}
-                    <div class="mb-4 p-3 bg-gradient-to-r from-green-50 to-green-100 rounded-xl border border-green-200">
-                        <div class="flex items-center text-green-800 font-semibold">
-                            <div class="flex-shrink-0 w-8 h-8 bg-green-200 rounded-lg flex items-center justify-center mr-3">
-                                <i class="fas fa-calendar-day text-green-600 text-sm"></i>
-                            </div>
-                            <div>
-                                <div class="text-xs font-medium text-green-900">Daily payout per worker</div>
-                                <div class="text-base font-bold text-green-800">{{ task.per_day_payout }} {{ task.per_day_currency or '' }}</div>
-                            </div>
+                        <div class="w-full">
+                            <a href="{{ url_for('workers_route') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg {% if request.endpoint == 'workers_route' %}bg-white/20 text-white{% else %}text-white/90{% endif %} hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline" style="z-index:10002; flex-shrink: 0;">
+                                <span class="material-icons mr-3 flex-shrink-0">group</span> 
+                                <span class="font-medium flex-shrink-0">Workers</span>
+                            </a>
                         </div>
-                    </div>
-                    {% endif %}
-
-                    <!-- Status Section -->
-                    <div class="mb-4">
-                        <div class="status-dropdown" onclick="event.stopPropagation()">
-                            {% if task.status == 'Pending' %}
-                            <div class="status-badge pending bg-yellow-100 border-2 border-yellow-200 text-yellow-800 font-semibold px-3 py-2 rounded-xl hover:bg-yellow-200 transition-colors" onclick="toggleStatusDropdown(this)">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center">
-                                        <span class="status-indicator pending w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
-                                        <span class="text-sm font-medium">Pending</span>
-                                    </div>
-                                    <i class="fas fa-chevron-down status-chevron ml-2 text-xs transition-transform duration-200"></i>
-                                </div>
-                            </div>
-                            {% elif task.status == 'In Progress' %}
-                            <div class="status-badge in-progress bg-blue-100 border-2 border-blue-200 text-blue-800 font-semibold px-3 py-2 rounded-xl hover:bg-blue-200 transition-colors" onclick="toggleStatusDropdown(this)">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center">
-                                        <span class="status-indicator in-progress w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse"></span>
-                                        <span class="text-sm font-medium">In Progress</span>
-                                    </div>
-                                    <i class="fas fa-chevron-down status-chevron ml-2 text-xs transition-transform duration-200"></i>
-                                </div>
-                            </div>
-                            {% else %}
-                            <div class="status-badge completed bg-green-100 border-2 border-green-200 text-green-800 font-semibold px-3 py-2 rounded-xl hover:bg-green-200 transition-colors" onclick="toggleStatusDropdown(this)">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center">
-                                        <span class="status-indicator completed w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                                        <span class="text-sm font-medium">Completed</span>
-                                    </div>
-                                    <i class="fas fa-chevron-down status-chevron ml-2 text-xs transition-transform duration-200"></i>
-                                </div>
-                            </div>
-                            {% endif %}
-                            
-                            <div class="status-dropdown-menu">
-                                <div class="status-menu-item pending {% if task.status == 'Pending' %}active{% endif %} {% if task.start_date.strftime('%Y-%m-%d') <= today_date %}disabled{% endif %}" 
-                                     onclick="handlePendingStatusUpdate({{ task.id }}, '{{ task.start_date.strftime('%Y-%m-%d') }}')"
-                                     data-task-date="{{ task.start_date.strftime('%Y-%m-%d') }}">
-                                    <span class="status-indicator pending"></span>
-                                    <span>Pending</span>
-                                    {% if task.start_date.strftime('%Y-%m-%d') <= today_date %}
-                                    <span class="past-task-indicator text-xs text-gray-500">(Start date passed)</span>
-                                    {% endif %}
-                                </div>
-                                <div class="status-menu-item in-progress {% if task.status == 'In Progress' %}active{% endif %} {% if task.start_date.strftime('%Y-%m-%d') > today_date %}disabled{% endif %}" 
-                                     onclick="handleStatusUpdate({{ task.id }}, 'In Progress', '{{ task.start_date.strftime('%Y-%m-%d') }}')"
-                                     data-task-date="{{ task.start_date.strftime('%Y-%m-%d') }}">
-                                    <span class="status-indicator in-progress"></span>
-                                    <span>In Progress</span>
-                                    {% if task.start_date.strftime('%Y-%m-%d') > today_date %}
-                                    <span class="future-task-indicator text-xs text-gray-500">(Future task)</span>
-                                    {% endif %}
-                                </div>
-                                <div class="status-menu-item completed {% if task.status == 'Completed' %}active{% endif %} {% if task.start_date.strftime('%Y-%m-%d') > today_date %}disabled{% endif %}" 
-                                     onclick="handleStatusUpdate({{ task.id }}, 'Completed', '{{ task.start_date.strftime('%Y-%m-%d') }}')"
-                                     data-task-date="{{ task.start_date.strftime('%Y-%m-%d') }}">
-                                    <span class="status-indicator completed"></span>
-                                    <span>Completed</span>
-                                    {% if task.start_date.strftime('%Y-%m-%d') > today_date %}
-                                    <span class="future-task-indicator text-xs text-gray-500">(Future task)</span>
-                                    {% endif %}
-                                </div>
-                            </div>
+                        <div class="w-full">
+                            <a href="{{ url_for('tasks_route') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg bg-white/20 text-white hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline" style="z-index:10002; flex-shrink: 0;">
+                                <span class="material-icons mr-3 flex-shrink-0">assignment</span> 
+                                <span class="font-medium flex-shrink-0">Tasks</span>
+                            </a>
                         </div>
-                        {% if task.completion_date and task.status == 'Completed' %}
-                        <div class="mt-3 p-2 bg-green-50 border border-green-200 rounded-lg">
-                            <div class="flex items-center">
-                                <i class="fas fa-check-circle text-green-600 mr-2 text-sm"></i>
-                                <span class="text-xs font-medium text-green-800">
-                                    Completed on {{ task.completion_date.strftime('%B %d, %Y') }}
-                                </span>
-                            </div>
+                        <div class="w-full">
+                            <a href="{{ url_for('reports_route') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg {% if request.endpoint == 'reports_route' %}bg-white/20 text-white{% else %}text-white/90{% endif %} hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline" style="z-index:10002; flex-shrink: 0;">
+                                <span class="material-icons mr-3 flex-shrink-0">bar_chart</span> 
+                                <span class="font-medium flex-shrink-0">Reports</span>
+                            </a>
+                        </div>
+                        
+                        <!-- Payments/Billing menu item (admin only) -->
+                        {% if session.get('current_workspace', {}).get('role') in ['Admin'] %}
+                        <div class="w-full">
+                            <a href="https://billing.stripe.com/p/login/test_5kQaEX5Jg1o5g8lg0SgEg00" target="_blank" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg text-white/90 hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline" style="z-index:10002; flex-shrink: 0;">
+                                <span class="material-icons mr-3 flex-shrink-0">credit_card</span> 
+                                <span class="font-medium flex-shrink-0">Payments/Billing</span>
+                            </a>
                         </div>
                         {% endif %}
                     </div>
-
-                    <!-- Footer with Date -->
-                    <div class="pt-3 border-t border-gray-200">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center text-sm text-gray-600">
-                                <div class="flex-shrink-0 w-6 h-6 bg-gray-100 rounded-lg flex items-center justify-center mr-2">
-                                    <i class="fas fa-calendar-alt text-gray-500 text-xs"></i>
-                                </div>
-                                <div>
-                                    <div class="text-xs text-gray-500 font-medium">Started on</div>
-                                    <div class="text-sm font-semibold text-gray-800">{{ task.start_date.strftime('%B %d, %Y') }}</div>
-                                </div>
-                            </div>
-                            <div class="flex-shrink-0">
-                                <div class="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center">
-                                    <i class="fas fa-arrow-right text-blue-600 text-xs"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                </nav>
+                
+                <!-- Sign Out Section (Non-scrolling) - EXACT match -->
+                <div class="flex-shrink-0 p-4 border-t border-white/10">
+                    <a href="{{ url_for('signout') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg text-white/90 hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline" style="z-index:10002;">
+                        <span class="material-icons mr-3 flex-shrink-0">logout</span> 
+                        <span class="font-medium flex-shrink-0">Sign Out</span>
+                    </a>
                 </div>
             </div>
         </div>
-        {% endfor %}
-    </div>
 
-    <!-- Include Modals -->
-    {% include 'modals/add_task.html' %}
-    {% include 'modals/delete_task.html' %}
-    {% include 'modals/edit_task.html' %}
-</div>
-{% endblock %}
+        <!-- Main Content Area -->
+        <div class="tasks-main-content">
+            <div class="tasks-container">
+                <div class="container mx-auto px-4 py-8 max-w-6xl">
+                    <!-- Desktop header and actions -->
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
+                        <div>
+                            <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-700 to-blue-900 bg-clip-text text-transparent mb-2">Tasks</h1>
+                            <p class="text-blue-600">Manage and track your workforce tasks</p>
+                        </div>
+                        <button onclick="openAddTaskModal()" class="btn btn-primary btn-lg shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl">
+                            <i class="fas fa-plus mr-2"></i>Create New Task
+                        </button>
+                    </div>
 
-{% block scripts %}
-<script>
-    // Task Management Functions
-    function navigateToTask(event, taskId) {
-        if (!event.target.closest('.status-dropdown') && !event.target.closest('.dropdown')) {
-            const card = event.currentTarget;
-            const paymentType = card.getAttribute('data-payment-type');
-            if (paymentType === 'per_part') {
-                window.location.href = `/task/${taskId}/units-completed`;
-            } else {
-                window.location.href = `/task/${taskId}/attendance`;
-            }
-        }
-    }
+                    <!-- Tasks Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                        {% for task in tasks %}
+                        <div class="group relative" onclick="navigateToTask(event, {{ task.id|tojson }})" data-payment-type="{{ task.payment_type|tojson }}" data-task-id="{{ task.id|tojson }}">
+                            <!-- Your existing task card content -->
+                            <div class="task-card bg-white rounded-2xl border border-gray-200 overflow-visible transform hover:-translate-y-1 cursor-pointer">
+                                <div class="p-6">
+                                    <!-- Header with Title, Badge, and Menu -->
+                                    <div class="flex justify-between items-start mb-4">
+                                        <div class="flex-1 min-w-0 mr-3">
+                                            <div class="flex flex-wrap items-start gap-2 mb-2">
+                                                <h2 class="text-xl font-bold text-gray-900 break-words flex-1 leading-tight">{{ task.name }}</h2>
+                                                <div class="flex gap-2 flex-shrink-0">
+                                                    {% if task.payment_type == 'per_part' %}
+                                                        <span class="per-unit-badge inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-200">
+                                                            <i class="fas fa-cube mr-1.5 text-blue-600"></i>Per Unit
+                                                        </span>
+                                                    {% else %}
+                                                        <span class="per-day-badge inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-200">
+                                                            <i class="fas fa-calendar-day mr-1.5 text-green-600"></i>Per Day
+                                                        </span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="dropdown dropdown-end flex-shrink-0" onclick="event.stopPropagation()">
+                                            <label tabindex="0" class="btn btn-ghost btn-sm btn-circle hover:bg-gray-100 h-8 w-8">
+                                                <i class="fas fa-ellipsis-v text-gray-600 text-xs"></i>
+                                            </label>
+                                            <ul tabindex="0" class="dropdown-content menu p-2 shadow-xl bg-white rounded-xl w-48 text-sm border border-gray-200">
+                                                <li>
+                                                    <a href='javascript:void(0);' onclick='openEditTaskModal({{ task.id|tojson }}, {{ task.name|tojson }}, {{ task.description|tojson }}, {{ task.start_date.strftime("%Y-%m-%d")|tojson }}, {{ task.payment_type|tojson }}, {{ task.per_part_payout|tojson }}, {{ task.per_part_currency|tojson }}, {{ task.per_day_payout|tojson }}, {{ task.per_day_currency|tojson }})' class="hover:bg-gray-50 py-2">
+                                                        <i class="fas fa-edit w-4 h-4 text-blue-600"></i>Edit Task
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a onclick="openDeleteTaskModal({{ task.id|tojson }})" class="text-red-600 hover:bg-red-50 py-2">
+                                                        <i class="fas fa-trash-alt w-4 h-4"></i>Delete Task
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
 
-    function toggleStatusDropdown(element) {
-        document.querySelectorAll('.status-dropdown').forEach(dropdown => {
-            if (dropdown !== element.parentElement) {
-                dropdown.classList.remove('open');
-            }
-        });
-        const dropdown = element.parentElement;
-        dropdown.classList.toggle('open');
-    }
+                                    <!-- Description -->
+                                    <div class="mb-4">
+                                        <p class="text-sm text-gray-600 line-clamp-3 leading-relaxed">{{ task.description or 'No description available' }}</p>
+                                    </div>
 
-    // Close dropdowns when clicking outside
-    document.addEventListener('click', function(event) {
-        if (!event.target.closest('.status-dropdown')) {
-            document.querySelectorAll('.status-dropdown').forEach(dropdown => {
-                dropdown.classList.remove('open');
-            });
-        }
-    });
+                                    <!-- Payment Info -->
+                                    {% if task.payment_type == 'per_part' and task.per_part_payout %}
+                                    <div class="mb-4 p-3 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200">
+                                        <div class="flex items-center text-blue-800 font-semibold">
+                                            <div class="flex-shrink-0 w-8 h-8 bg-blue-200 rounded-lg flex items-center justify-center mr-3">
+                                                <i class="fas fa-coins text-blue-600 text-sm"></i>
+                                            </div>
+                                            <div>
+                                                <div class="text-xs font-medium text-blue-900">Payout per unit</div>
+                                                <div class="text-base font-bold text-blue-800">{{ task.per_part_payout }} {{ task.per_part_currency or '' }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% elif task.payment_type == 'per_day' and task.per_day_payout %}
+                                    <div class="mb-4 p-3 bg-gradient-to-r from-green-50 to-green-100 rounded-xl border border-green-200">
+                                        <div class="flex items-center text-green-800 font-semibold">
+                                            <div class="flex-shrink-0 w-8 h-8 bg-green-200 rounded-lg flex items-center justify-center mr-3">
+                                                <i class="fas fa-calendar-day text-green-600 text-sm"></i>
+                                            </div>
+                                            <div>
+                                                <div class="text-xs font-medium text-green-900">Daily payout per worker</div>
+                                                <div class="text-base font-bold text-green-800">{{ task.per_day_payout }} {{ task.per_day_currency or '' }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
 
-    // Modal Functions
-    function openAddTaskModal() {
-        const modal = document.getElementById('add-task-modal');
-        if (modal) modal.showModal();
-    }
+                                    <!-- Status Section -->
+                                    <div class="mb-4">
+                                        <div class="status-dropdown" onclick="event.stopPropagation()">
+                                            {% if task.status == 'Pending' %}
+                                            <div class="status-badge pending bg-yellow-100 border-2 border-yellow-200 text-yellow-800 font-semibold px-3 py-2 rounded-xl hover:bg-yellow-200 transition-colors" onclick="toggleStatusDropdown(this)">
+                                                <div class="flex items-center justify-between">
+                                                    <div class="flex items-center">
+                                                        <span class="status-indicator pending w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
+                                                        <span class="text-sm font-medium">Pending</span>
+                                                    </div>
+                                                    <i class="fas fa-chevron-down status-chevron ml-2 text-xs transition-transform duration-200"></i>
+                                                </div>
+                                            </div>
+                                            {% elif task.status == 'In Progress' %}
+                                            <div class="status-badge in-progress bg-blue-100 border-2 border-blue-200 text-blue-800 font-semibold px-3 py-2 rounded-xl hover:bg-blue-200 transition-colors" onclick="toggleStatusDropdown(this)">
+                                                <div class="flex items-center justify-between">
+                                                    <div class="flex items-center">
+                                                        <span class="status-indicator in-progress w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse"></span>
+                                                        <span class="text-sm font-medium">In Progress</span>
+                                                    </div>
+                                                    <i class="fas fa-chevron-down status-chevron ml-2 text-xs transition-transform duration-200"></i>
+                                                </div>
+                                            </div>
+                                            {% else %}
+                                            <div class="status-badge completed bg-green-100 border-2 border-green-200 text-green-800 font-semibold px-3 py-2 rounded-xl hover:bg-green-200 transition-colors" onclick="toggleStatusDropdown(this)">
+                                                <div class="flex items-center justify-between">
+                                                    <div class="flex items-center">
+                                                        <span class="status-indicator completed w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                                                        <span class="text-sm font-medium">Completed</span>
+                                                    </div>
+                                                    <i class="fas fa-chevron-down status-chevron ml-2 text-xs transition-transform duration-200"></i>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                            
+                                            <div class="status-dropdown-menu">
+                                                <div class="status-menu-item pending {% if task.status == 'Pending' %}active{% endif %} {% if task.start_date.strftime('%Y-%m-%d') <= today_date %}disabled{% endif %}" 
+                                                     onclick="handlePendingStatusUpdate({{ task.id }}, '{{ task.start_date.strftime('%Y-%m-%d') }}')"
+                                                     data-task-date="{{ task.start_date.strftime('%Y-%m-%d') }}">
+                                                    <span class="status-indicator pending"></span>
+                                                    <span>Pending</span>
+                                                    {% if task.start_date.strftime('%Y-%m-%d') <= today_date %}
+                                                    <span class="past-task-indicator text-xs text-gray-500">(Start date passed)</span>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="status-menu-item in-progress {% if task.status == 'In Progress' %}active{% endif %} {% if task.start_date.strftime('%Y-%m-%d') > today_date %}disabled{% endif %}" 
+                                                     onclick="handleStatusUpdate({{ task.id }}, 'In Progress', '{{ task.start_date.strftime('%Y-%m-%d') }}')"
+                                                     data-task-date="{{ task.start_date.strftime('%Y-%m-%d') }}">
+                                                    <span class="status-indicator in-progress"></span>
+                                                    <span>In Progress</span>
+                                                    {% if task.start_date.strftime('%Y-%m-%d') > today_date %}
+                                                    <span class="future-task-indicator text-xs text-gray-500">(Future task)</span>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="status-menu-item completed {% if task.status == 'Completed' %}active{% endif %} {% if task.start_date.strftime('%Y-%m-%d') > today_date %}disabled{% endif %}" 
+                                                     onclick="handleStatusUpdate({{ task.id }}, 'Completed', '{{ task.start_date.strftime('%Y-%m-%d') }}')"
+                                                     data-task-date="{{ task.start_date.strftime('%Y-%m-%d') }}">
+                                                    <span class="status-indicator completed"></span>
+                                                    <span>Completed</span>
+                                                    {% if task.start_date.strftime('%Y-%m-%d') > today_date %}
+                                                    <span class="future-task-indicator text-xs text-gray-500">(Future task)</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% if task.completion_date and task.status == 'Completed' %}
+                                        <div class="mt-3 p-2 bg-green-50 border border-green-200 rounded-lg">
+                                            <div class="flex items-center">
+                                                <i class="fas fa-check-circle text-green-600 mr-2 text-sm"></i>
+                                                <span class="text-xs font-medium text-green-800">
+                                                    Completed on {{ task.completion_date.strftime('%B %d, %Y') }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    </div>
 
-    function openEditTaskModal(taskId, name, description, startDate, paymentType, perPartPayout, perPartCurrency, perDayPayout, perDayCurrency) {
-        const modal = document.getElementById('edit-task-modal');
-        if (modal) {
-            // Populate form fields
-            document.getElementById('edit-task-id').value = taskId;
-            document.getElementById('edit-task-name').value = name;
-            document.getElementById('edit-task-description').value = description || '';
-            document.getElementById('edit-task-start-date').value = startDate;
-            
-            // Set payment type
-            if (paymentType === 'per_part') {
-                document.getElementById('edit-payment-type-part').checked = true;
-                document.getElementById('edit-per-part-payout-group').style.display = '';
-                document.getElementById('edit-per-day-payout-group').style.display = 'none';
-            } else {
-                document.getElementById('edit-payment-type-day').checked = true;
-                document.getElementById('edit-per-part-payout-group').style.display = 'none';
-                document.getElementById('edit-per-day-payout-group').style.display = '';
-            }
-            
-            // Set payout values
-            document.getElementById('edit-per-part-payout').value = perPartPayout || '';
-            document.getElementById('edit-per-part-currency').value = perPartCurrency || '';
-            document.getElementById('edit-per-day-payout').value = perDayPayout || '';
-            document.getElementById('edit-per-day-currency').value = perDayCurrency || '';
-            
-            modal.showModal();
-        }
-    }
+                                    <!-- Footer with Date -->
+                                    <div class="pt-3 border-t border-gray-200">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center text-sm text-gray-600">
+                                                <div class="flex-shrink-0 w-6 h-6 bg-gray-100 rounded-lg flex items-center justify-center mr-2">
+                                                    <i class="fas fa-calendar-alt text-gray-500 text-xs"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="text-xs text-gray-500 font-medium">Started on</div>
+                                                    <div class="text-sm font-semibold text-gray-800">{{ task.start_date.strftime('%B %d, %Y') }}</div>
+                                                </div>
+                                            </div>
+                                            <div class="flex-shrink-0">
+                                                <div class="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center">
+                                                    <i class="fas fa-arrow-right text-blue-600 text-xs"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
 
-    function openDeleteTaskModal(taskId) {
-        const modal = document.getElementById('delete-task-modal');
-        if (modal) {
-            document.getElementById('delete-task-id').value = taskId;
-            modal.showModal();
-        }
-    }
-
-    // Status Update Functions
-    function handleStatusUpdate(taskId, newStatus, taskDate) {
-        const currentDate = new Date().toISOString().split('T')[0];
-        
-        if (newStatus !== 'Pending' && taskDate > currentDate) {
-            showCustomModal('Status Update Error', 'Cannot set status to "' + newStatus + '" for tasks with future start dates. Only "Pending" is allowed until the start date is reached.', 'warning');
-            return;
-        }
-        
-        updateTaskStatus(taskId, newStatus);
-    }
-
-    function handlePendingStatusUpdate(taskId, taskDate) {
-        const currentDate = new Date().toISOString().split('T')[0];
-        
-        if (taskDate <= currentDate) {
-            showCustomModal('Status Update Error', 'Cannot set status to "Pending" for tasks where the start date has already passed. Only "In Progress" or "Completed" are allowed.', 'warning');
-            return;
-        }
-        
-        updateTaskStatus(taskId, 'Pending');
-    }
-
-    function updateTaskStatus(taskId, newStatus) {
-        const taskCard = document.querySelector(`[data-task-id="${taskId}"]`);
-        const statusBadge = taskCard?.querySelector('.status-badge');
-        
-        if (statusBadge) {
-            statusBadge.style.opacity = '0.6';
-            statusBadge.style.pointerEvents = 'none';
-        }
-        
-        fetch(`/api/task/${taskId}/status`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                status: newStatus
-            })
-        })
-        .then(response => response.json())
-        .then(result => {
-            if (result.error) {
-                showCustomModal('Update Error', result.error, 'error');
-                if (statusBadge) {
-                    statusBadge.style.opacity = '1';
-                    statusBadge.style.pointerEvents = 'auto';
-                }
-            } else {
-                window.location.reload();
-            }
-        })
-        .catch(error => {
-            console.error('Error updating task status:', error);
-            showCustomModal('Update Error', 'Failed to update task status', 'error');
-            if (statusBadge) {
-                statusBadge.style.opacity = '1';
-                statusBadge.style.pointerEvents = 'auto';
-            }
-        });
-    }
-
-    // Utility Functions
-    function showCustomModal(title, message, type = 'info') {
-        const modal = document.createElement('dialog');
-        modal.className = 'modal';
-        
-        let iconClass = 'fas fa-info-circle text-blue-500';
-        if (type === 'success') {
-            iconClass = 'fas fa-check-circle text-green-500';
-        } else if (type === 'error') {
-            iconClass = 'fas fa-exclamation-circle text-red-500';
-        } else if (type === 'warning') {
-            iconClass = 'fas fa-exclamation-triangle text-yellow-500';
-        }
-        
-        modal.innerHTML = `
-            <div class="modal-box">
-                <h3 class="font-bold text-lg flex items-center gap-2">
-                    <i class="${iconClass}"></i>
-                    <span>${title}</span>
-                </h3>
-                <p class="py-4">${message}</p>
-                <div class="modal-action">
-                    <button type="button" class="btn btn-primary" onclick="this.closest('dialog').close(); this.closest('dialog').remove();">OK</button>
+                    <!-- Include Modals -->
+                    {% include 'modals/add_task.html' %}
+                    {% include 'modals/delete_task.html' %}
+                    {% include 'modals/edit_task.html' %}
                 </div>
             </div>
-        `;
+        </div>
+    </div>
+
+    <!-- Logout Confirmation Modal -->
+    <div id="logout-modal" class="modal">
+        <div class="modal-box">
+            <h3 class="font-bold text-lg">Confirm Logout</h3>
+            <p class="py-4">Are you sure you want to logout?</p>
+            <div class="modal-action">
+                <a href="#" class="btn btn-ghost" onclick="closeLogoutModal()">Cancel</a>
+                <a href="{{ url_for('logout_route') }}" class="btn btn-primary">Confirm</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sidebar functionality - EXACT slide animation
+        function toggleSidebar() {
+            const layout = document.getElementById('tasks-layout');
+            const body = document.body;
+            
+            if (layout.classList.contains('sidebar-open')) {
+                layout.classList.remove('sidebar-open');
+                body.style.overflow = '';
+            } else {
+                layout.classList.add('sidebar-open');
+                body.style.overflow = 'hidden';
+            }
+        }
+
+        // Close sidebar when clicking on menu items (mobile)
+        document.querySelectorAll('.sidebar-menu-item').forEach(item => {
+            item.addEventListener('click', function() {
+                if (window.innerWidth < 1024) {
+                    toggleSidebar();
+                }
+            });
+        });
+
+        // Close sidebar when clicking overlay
+        document.getElementById('sidebar-overlay').addEventListener('click', function() {
+            toggleSidebar();
+        });
+
+        // Close sidebar when pressing Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                const layout = document.getElementById('tasks-layout');
+                if (layout.classList.contains('sidebar-open')) {
+                    toggleSidebar();
+                }
+            }
+        });
+
+        // Close sidebar on window resize if it becomes desktop
+        window.addEventListener('resize', function() {
+            if (window.innerWidth >= 1024) {
+                const layout = document.getElementById('tasks-layout');
+                layout.classList.remove('sidebar-open');
+                document.body.style.overflow = '';
+            }
+        });
+
+        // Logout modal functions
+        function closeLogoutModal() {
+            document.getElementById('logout-modal').close();
+        }
+
+        // Your existing task JavaScript functions...
+        // ... (include all the JavaScript functions from previous response)
         
-        document.body.appendChild(modal);
-        modal.showModal();
-    }
-
-    // Initialize on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        // Set up payment type toggles
-        const paymentTypeRadios = document.querySelectorAll('input[name="payment_type"]');
-        paymentTypeRadios.forEach(radio => {
-            radio.addEventListener('change', function() {
-                const perPartGroup = document.getElementById('per-part-payout-group');
-                const perDayGroup = document.getElementById('per-day-payout-group');
-                
-                if (this.value === 'per_part') {
-                    perPartGroup.style.display = '';
-                    perDayGroup.style.display = 'none';
-                } else {
-                    perPartGroup.style.display = 'none';
-                    perDayGroup.style.display = '';
-                }
-            });
-        });
-
-        // Set up edit payment type toggles
-        const editPaymentTypeRadios = document.querySelectorAll('input[name="edit_payment_type"]');
-        editPaymentTypeRadios.forEach(radio => {
-            radio.addEventListener('change', function() {
-                const perPartGroup = document.getElementById('edit-per-part-payout-group');
-                const perDayGroup = document.getElementById('edit-per-day-payout-group');
-                
-                if (this.value === 'per_part') {
-                    perPartGroup.style.display = '';
-                    perDayGroup.style.display = 'none';
-                } else {
-                    perPartGroup.style.display = 'none';
-                    perDayGroup.style.display = '';
-                }
-            });
-        });
-    });
-</script>
-{% endblock %}
+    </script>
+</body>
+</html>

@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
 {% block head %}
-<!-- No per-page sidebar script — tasks page will use base.html server-side body class -->
+<!-- No per-page sidebar script -->
 {% endblock %}
 
 {% block content %}
-<!-- Mobile Menu Button -->
+<!-- Mobile Menu Button (same as other pages) -->
 <div class="lg:hidden fixed top-4 right-4 z-50">
     <label for="my-drawer" class="btn btn-circle btn-primary shadow-lg">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -24,7 +24,7 @@
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8">
         {% for task in tasks %}
-        <div class="group relative" onclick="navigateToTask(event, {{ task.id|tojson }})" data-payment-type="{{ task.payment_type|tojson }}" data-task-id="{{ task.id|tojson }}">
+        <div class="group relative" onclick='navigateToTask(event, {{ task.id|tojson }})' data-payment-type={{ task.payment_type|tojson }} data-task-id={{ task.id|tojson }}>
             <div class="task-card bg-white shadow-lg hover:shadow-2xl transition-all duration-300 rounded-2xl border border-gray-200 overflow-visible transform hover:-translate-y-1 cursor-pointer">
                 <div class="p-7">
                     <!-- Header with Title, Badge, and Menu -->
@@ -51,12 +51,12 @@
                             </label>
                             <ul tabindex="0" class="dropdown-content menu p-2 shadow-xl bg-white rounded-xl w-52 text-sm border border-gray-200" style="position: absolute; z-index: 1000; right: 0; top: 100%; margin-top: 0.5rem; min-width: 160px; overflow: visible;">
                                 <li>
-                                    <a href='javascript:void(0);' onclick='openEditTaskModal({{ task.id|tojson }}, {{ task.name|tojson }}, {{ task.description|tojson }}, {{ task.start_date.strftime("%Y-%m-%d")|tojson }}, {{ task.payment_type|tojson }}, {{ task.per_part_payout|tojson }}, {{ task.per_part_currency|tojson }}, {{ task.per_day_payout|tojson }}, {{ task.per_day_currency|tojson }})' class="hover:bg-gray-50 py-3">
+                                    <a href="javascript:void(0);" onclick='openEditTaskModal({{ task.id|tojson }}, {{ task.name|tojson }}, {{ task.description|tojson }}, {{ task.start_date.strftime("%Y-%m-%d")|tojson }}, {{ task.payment_type|tojson }}, {{ task.per_part_payout|tojson }}, {{ task.per_part_currency|tojson }}, {{ task.per_day_payout|tojson }}, {{ task.per_day_currency|tojson }})' class="hover:bg-gray-50 py-3">
                                         <i class="fas fa-edit w-4 h-4 text-blue-600"></i>Edit Task
                                     </a>
                                 </li>
                                 <li>
-                                    <a onclick="openDeleteTaskModal({{ task.id|tojson }})" class="text-red-600 hover:bg-red-50 py-3">
+                                    <a onclick='openDeleteTaskModal({{ task.id|tojson }})' class="text-red-600 hover:bg-red-50 py-3">
                                         <i class="fas fa-trash-alt w-4 h-4"></i>Delete Task
                                     </a>
                                 </li>
@@ -206,44 +206,6 @@
 
 {% block scripts %}
 <script>
-    // DEBUG: Check sidebar visibility on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('=== SIDEBAR DEBUG INFO ===');
-        const sidebar = document.querySelector('.drawer-side');
-        console.log('Sidebar element found:', !!sidebar);
-        if (sidebar) {
-            console.log('Sidebar display:', window.getComputedStyle(sidebar).display);
-            console.log('Sidebar visibility:', window.getComputedStyle(sidebar).visibility);
-            console.log('Sidebar opacity:', window.getComputedStyle(sidebar).opacity);
-            console.log('Sidebar width:', window.getComputedStyle(sidebar).width);
-            console.log('Sidebar backgroundColor:', window.getComputedStyle(sidebar).backgroundColor);
-            console.log('Sidebar innerHTML length:', sidebar.innerHTML.length);
-            
-            // Check menu content
-            const menu = sidebar.querySelector('.menu');
-            console.log('Menu element found:', !!menu);
-            if (menu) {
-                console.log('Menu display:', window.getComputedStyle(menu).display);
-                console.log('Menu color:', window.getComputedStyle(menu).color);
-                console.log('Menu has children:', menu.children.length);
-            }
-            
-            // Check menu items
-            const menuItems = sidebar.querySelectorAll('.sidebar-menu-item');
-            console.log('Menu items found:', menuItems.length);
-            menuItems.forEach((item, index) => {
-                console.log(`Menu item ${index}:`, {
-                    display: window.getComputedStyle(item).display,
-                    visibility: window.getComputedStyle(item).visibility,
-                    opacity: window.getComputedStyle(item).opacity,
-                    color: window.getComputedStyle(item).color,
-                    text: item.textContent.trim().substring(0, 30)
-                });
-            });
-        }
-        console.log('=== END DEBUG INFO ===');
-    });
-
     function navigateToTask(event, taskId) {
         // Don't navigate if clicking on the menu or its children
         if (!event.target.closest('.status-dropdown')) {

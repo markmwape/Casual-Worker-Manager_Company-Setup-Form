@@ -8,7 +8,7 @@
             Task Attendance: {{ task.name }}
         </div>
         <div class="flex gap-2">
-            <button onclick="openAddWorkerToTaskModal({{ task.id }})" class="btn btn-primary">
+            <button onclick="openAddWorkerToTaskModal('{{ task.id }}')" class="btn btn-primary">
                 <i data-feather="plus" class="mr-2"></i>Add Worker
             </button>
             <a href="{{ url_for('tasks_route') }}" class="btn btn-ghost">
@@ -20,14 +20,18 @@
     <div class="relative lg:hidden">
         <div class="sticky top-0 left-0 w-full z-50 bg-white/95 border-b border-brand-navy-100 flex flex-col items-start gap-0 shadow-lg rounded-b-2xl px-4 pt-4 pb-2">
             <!-- Hamburger menu (absolute, top right) -->
-            <div class="mobile-sidebar-toggle absolute top-4 right-4 z-[110] lg:hidden"></div>
+            <label for="my-drawer" class="btn btn-circle btn-primary shadow-lg absolute top-4 right-4 z-[110] lg:hidden">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </label>
             <!-- Title and subtitle -->
             <h1 class="text-lg font-bold text-black truncate w-full pr-16 mb-1">{{ task.name }}</h1>
             <p class="text-xs text-gray-500 mb-1 w-full pr-16">View and manage attendance details for this task</p>
         </div>
         <!-- Sticky action buttons below title on mobile -->
         <div class="sticky top-[64px] left-0 w-full z-40 flex flex-col items-center bg-white/95 py-3 border-b border-brand-navy-50 shadow rounded-b-2xl gap-2 px-4">
-            <button onclick="openAddWorkerToTaskModal({{ task.id }})" class="btn btn-primary w-full max-w-xs shadow-md text-base py-2">
+            <button onclick="openAddWorkerToTaskModal('{{ task.id }}')" class="btn btn-primary w-full max-w-xs shadow-md text-base py-2">
                 <i data-feather="plus" class="mr-2"></i>Add Worker
             </button>
             <a href="{{ url_for('tasks_route') }}" class="btn w-full max-w-xs border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 shadow-sm text-base py-2 flex items-center justify-center transition-all duration-150">

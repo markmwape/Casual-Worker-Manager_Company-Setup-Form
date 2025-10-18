@@ -108,13 +108,6 @@
         -webkit-box-orient: vertical;
         overflow: hidden;
     }
-
-    /* Ensure proper spacing with sidebar on desktop */
-    @media (min-width: 1024px) {
-        .tasks-container .container {
-            margin-left: 0;
-        }
-    }
 </style>
 {% endblock %}
 
@@ -327,21 +320,6 @@
 
 {% block scripts %}
 <script>
-    // Initialize sidebar behavior
-    document.addEventListener('DOMContentLoaded', function() {
-        // Close sidebar when clicking on menu items on mobile
-        if (window.innerWidth < 1024) {
-            document.querySelectorAll('.sidebar-menu-item').forEach(item => {
-                item.addEventListener('click', function() {
-                    const drawerToggle = document.getElementById('my-drawer');
-                    if (drawerToggle) {
-                        drawerToggle.checked = false;
-                    }
-                });
-            });
-        }
-    });
-
     function navigateToTask(event, taskId) {
         if (!event.target.closest('.status-dropdown') && !event.target.closest('.dropdown')) {
             const card = event.currentTarget;

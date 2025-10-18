@@ -336,6 +336,79 @@
     z-index: 2;
 }
 
+/* Ensure proper spacing in the grid */
+.grid > * {
+    margin-bottom: 1.5rem;
+}
+
+/* Ensure dropdowns/status menus to escape stacking contexts on the tasks page so menus are usable */
+.tasks-page .dropdown-content,
+.tasks-page .task-card .dropdown-content,
+.tasks-page .dropdown .dropdown-content,
+.tasks-page .status-dropdown-menu,
+.tasks-page .status-dropdown .status-dropdown-menu,
+.tasks-page .status-dropdown-menu.show,
+.tasks-page .status-menu-item,
+.tasks-page .task-card .status-dropdown-menu,
+.tasks-page .task-card .completion-section {
+    /* Use absolute positioning instead of fixed to avoid covering unrelated layers
+       and to keep menus within the document flow - still allow them to escape
+       transformed parents. Set a high but reasonable z-index to keep menus above
+       the sidebar and content without using extreme values that can cause issues. */
+    position: absolute !important; /* escape stacking contexts created by transformed parents */
+    z-index: 1000 !important; /* FIXED: Changed from 100050 to 1000 */
+    pointer-events: auto !important;
+    transform: none !important;
+    left: auto !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    will-change: transform, top, left !important;
+}
+
+/* Dropdowns and status menus must still escape stacking contexts */
+.tasks-page .dropdown-content,
+.tasks-page .status-dropdown-menu {
+    position: absolute !important;
+    z-index: 1000 !important; /* FIXED: Changed from 100050 to 1000 */
+}
+
+/* FIXED: REMOVED PROBLEMATIC TASKS-PAGE SIDEBAR OVERRIDES */
+/* These lines were causing the blue strip and sidebar issues */
+/* DELETED: .tasks-page .drawer-side { all: unset !important; } */
+/* DELETED: .tasks-page .drawer-side > * { all: unset !important; } */
+
+/* Ensure sidebar works normally on all pages */
+.drawer .drawer-side {
+    background: linear-gradient(180deg, var(--primary-navy) 0%, var(--primary-navy-light) 100%) !important;
+    box-shadow: var(--shadow-lg) !important;
+    color: white !important;
+}
+
+.drawer .drawer-side .menu {
+    display: flex !important;
+    flex-direction: column !important;
+    overflow-y: auto !important;
+    max-height: 100vh !important;
+}
+
+.drawer .drawer-side .menu > div {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100%;
+}
+
+/* FIXED: REMOVED CONFLICTING SIDEBAR TRANSFORM */
+/* This was overriding DaisyUI's drawer behavior */
+/* DELETED: .drawer .drawer-side { transform: translateX(-100%); transition: transform 0.3s ease-in-out; } */
+
+/* Ensure content area sits below the sidebar */
+@media (min-width: 1024px) {
+    .drawer.lg\:drawer-open .drawer-content {
+        margin-left: 20rem !important;
+    }
+}
+
 /* Dropdown Menu Items */
 .status-menu-item {
     display: flex;
@@ -981,14 +1054,6 @@ input[type="date"]::-webkit-date-and-time-value {
     /* Sidebar sizing - only for drawer layouts */
     .drawer .drawer-side {
         width: 20rem !important;   /* fixed 320px for consistency */
-        /* Hidden by default */
-        transform: translateX(-100%);
-        transition: transform 0.3s ease-in-out;
-    }
-
-    /* Slide in when the drawer is toggled - only for drawer layouts */
-    .drawer input.drawer-toggle:checked ~ .drawer-side {
-        transform: translateX(0);
     }
 
     .drawer .card {
@@ -1086,75 +1151,4 @@ input[type="date"]::-webkit-date-and-time-value {
 /* Ensure proper spacing in the grid */
 .grid > * {
     margin-bottom: 1.5rem;
-}
-
-/* Ensure dropdowns/status menus to escape stacking contexts on the tasks page so menus are usable */
-.tasks-page .dropdown-content,
-.tasks-page .task-card .dropdown-content,
-.tasks-page .dropdown .dropdown-content,
-.tasks-page .status-dropdown-menu,
-.tasks-page .status-dropdown .status-dropdown-menu,
-.tasks-page .status-dropdown-menu.show,
-.tasks-page .status-menu-item,
-.tasks-page .task-card .status-dropdown-menu,
-.tasks-page .task-card .completion-section {
-    /* Use absolute positioning instead of fixed to avoid covering unrelated layers
-       and to keep menus within the document flow - still allow them to escape
-       transformed parents. Set a high but reasonable z-index to keep menus above
-       the sidebar and content without using extreme values that can cause issues. */
-    position: absolute !important; /* escape stacking contexts created by transformed parents */
-    z-index: 100050 !important; /* high enough to appear above sidebar and content */
-    pointer-events: auto !important;
-    transform: none !important;
-    left: auto !important;
-    top: auto !important;
-    right: auto !important;
-    bottom: auto !important;
-    will-change: transform, top, left !important;
-}
-
-/* Dropdowns and status menus must still escape stacking contexts */
-.tasks-page .dropdown-content,
-.tasks-page .status-dropdown-menu {
-    position: absolute !important;
-    z-index: 100050 !important;
-}
-
-/* FIX FOR BLUE STRIP ISSUE - COMPLETELY REMOVE PROBLEMATIC TASKS-PAGE SIDEBAR OVERRIDES */
-/* Remove all tasks-page specific sidebar overrides that were causing the blue strip */
-.tasks-page .drawer-side {
-    /* Reset to default drawer behavior - remove all custom positioning */
-    all: unset !important;
-}
-
-.tasks-page .drawer-side > * {
-    /* Reset to default */
-    all: unset !important;
-}
-
-/* Ensure sidebar works normally on all pages */
-.drawer .drawer-side {
-    background: linear-gradient(180deg, var(--primary-navy) 0%, var(--primary-navy-light) 100%) !important;
-    box-shadow: var(--shadow-lg) !important;
-    color: white !important;
-}
-
-.drawer .drawer-side .menu {
-    display: flex !important;
-    flex-direction: column !important;
-    overflow-y: auto !important;
-    max-height: 100vh !important;
-}
-
-.drawer .drawer-side .menu > div {
-    display: flex !important;
-    flex-direction: column !important;
-    width: 100%;
-}
-
-/* Ensure content area sits below the sidebar */
-@media (min-width: 1024px) {
-    .drawer.lg\:drawer-open .drawer-content {
-        margin-left: 20rem !important;
-    }
 }

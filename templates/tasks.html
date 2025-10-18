@@ -5,15 +5,6 @@
 {% endblock %}
 
 {% block content %}
-<!-- Mobile Menu Button -->
-<div class="lg:hidden fixed top-4 right-4 z-50">
-    <label for="my-drawer" class="btn btn-circle btn-primary shadow-lg">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-        </svg>
-    </label>
-</div>
-
 <div class="container mx-auto px-4 w-full max-w-6xl pt-8">
     <!-- Desktop header and actions -->
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
@@ -698,79 +689,5 @@
             }
         });
     });
-
-    /*
-    // Ensure sidebar menu items are visible and interactive on desktop for tasks page
-    document.addEventListener('DOMContentLoaded', function() {
-        try {
-            const drawerToggle = document.getElementById('my-drawer');
-            const drawer = document.querySelector('.drawer');
-            const sidebar = document.querySelector('.drawer-side');
-            const overlay = document.querySelector('.drawer-overlay');
-            const menu = sidebar?.querySelector('.menu');
-
-            function forceSidebarVisible() {
-                if (!sidebar) return;
-                if (window.innerWidth >= 1024) {
-                    // Ensure the drawer appears open and the toggle is set
-                    drawer?.classList.add('drawer-open');
-                    if (drawerToggle) drawerToggle.checked = true;
-
-                    // Force styles so nothing hides the menu or its items
-                    sidebar.style.display = 'block';
-                    sidebar.style.visibility = 'visible';
-                    sidebar.style.opacity = '1';
-                    sidebar.style.pointerEvents = 'auto';
-                    sidebar.style.zIndex = '10001';
-                    sidebar.style.width = '20rem';
-
-                    if (menu) {
-                        menu.style.display = 'flex';
-                        menu.style.pointerEvents = 'auto';
-                        menu.style.opacity = '1';
-                        menu.style.visibility = 'visible';
-                        menu.querySelectorAll('.sidebar-menu-item, a').forEach(el => {
-                            el.style.pointerEvents = 'auto';
-                            el.style.opacity = '1';
-                            el.style.visibility = 'visible';
-                        });
-                    }
-
-                    if (overlay) {
-                        // Hide the overlay on desktop so clicks go to the sidebar items
-                        overlay.style.pointerEvents = 'none';
-                        overlay.style.display = 'none';
-                    }
-                } else {
-                    // On mobile, show sidebar only if hamburger is toggled
-                    if (drawerToggle && drawerToggle.checked) {
-                        drawer?.classList.add('drawer-open');
-                        sidebar.style.display = 'block';
-                        sidebar.style.visibility = 'visible';
-                        sidebar.style.opacity = '1';
-                        sidebar.style.pointerEvents = 'auto';
-                    } else {
-                        drawer?.classList.remove('drawer-open');
-                        sidebar.style.display = 'none';
-                        sidebar.style.visibility = 'hidden';
-                        sidebar.style.opacity = '0';
-                        sidebar.style.pointerEvents = 'none';
-                    }
-                    if (overlay) {
-                        overlay.style.pointerEvents = '';
-                        overlay.style.display = '';
-                        overlay.style.display = '';
-                    }
-                }
-            }
-
-            // Run once and on resize
-            forceSidebarVisible();
-            window.addEventListener('resize', forceSidebarVisible);
-        } catch (e) {
-            console.error('Sidebar visibility script error:', e);
-        }
-    });
-    */
 </script>
 {% endblock %}

@@ -1,25 +1,27 @@
 <div class="drawer-side w-80 z-50" style="position: fixed; left: 0; top: 0; width: 20rem; height: 100vh; display: block; visibility: visible; opacity: 1; z-index: 10001;">
     <!-- Drawer overlay to close the sidebar when clicking outside on mobile -->
     <label for="my-drawer" class="drawer-overlay" style="pointer-events: auto; touch-action: auto;" aria-hidden="true"></label>
-    <div class="menu p-4 w-full h-full bg-gradient-to-b from-brand-navy-500 to-brand-navy-700 !text-white overflow-y-auto flex flex-col" style="position: relative; z-index: 10001; background: linear-gradient(180deg, #1A2B48 0%, #102038 100%) !important; pointer-events: auto; left: 0 !important; top: 0 !important; transform: none !important; display: flex; flex-direction: column; overflow-y: auto; max-height: 100vh;">
-        <!-- Header Section -->
-        <div class="mb-8">
+    
+    <div class="h-full w-full bg-gradient-to-b from-brand-navy-500 to-brand-navy-700 flex flex-col" style="position: relative; z-index: 10001; background: linear-gradient(180deg, #1A2B48 0%, #102038 100%); pointer-events: auto; display: flex; flex-direction: column; height: 100vh; overflow: hidden;">
+        
+        <!-- Header Section (Non-scrolling) -->
+        <div class="flex-shrink-0 p-4 border-b border-white/10">
             <div class="flex items-center justify-center mb-6 mt-4">
                 <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center mr-3 shadow-lg">
                     <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Embee Bee Logo" class="w-8 h-8 object-contain" />
                 </div>
-                <h2 class="text-lg font-bold !text-white">My Workspace</h2>
+                <h2 class="text-lg font-bold text-white whitespace-nowrap">My Workspace</h2>
             </div>
-            <div class="bg-white/10 rounded-xl p-3 backdrop-blur-sm border border-white/20 flex items-center">
+            <div class="bg-white/10 rounded-xl p-3 backdrop-blur-sm border border-white/20 flex items-center min-w-0">
                 {% if session.get('user', {}).get('photo_url') %}
-                    <div class="avatar mr-3">
+                    <div class="avatar mr-3 flex-shrink-0">
                         <div class="w-12 h-12 rounded-full shadow-lg ring-2 ring-white/30">
                             <img src="{{ session['user']['photo_url'] }}" alt="Profile Picture" class="object-cover rounded-full" />
                         </div>
                     </div>
                 {% else %}
-                    <div class="avatar placeholder mr-3">
-                        <div class="bg-white/20 !text-white rounded-full w-12 h-12 shadow-lg ring-2 ring-white/30 flex items-center justify-center">
+                    <div class="avatar placeholder mr-3 flex-shrink-0">
+                        <div class="bg-white/20 text-white rounded-full w-12 h-12 shadow-lg ring-2 ring-white/30 flex items-center justify-center">
                             <span class="text-lg font-bold">
                                 {% set display_name = session.get('user', {}).get('display_name', '') %}
                                 {% set user_email = session.get('user', {}).get('user_email', '') %}
@@ -34,8 +36,8 @@
                         </div>
                     </div>
                 {% endif %}
-                <div class="flex flex-col min-w-0">
-                    <h3 class="text-sm font-semibold !text-white truncate mb-1">
+                <div class="flex flex-col min-w-0 flex-1">
+                    <h3 class="text-sm font-semibold text-white truncate mb-1">
                         {% set display_name = session.get('user', {}).get('display_name', '') %}
                         {% set user_email = session.get('user', {}).get('user_email', '') %}
                         {% if display_name %}
@@ -46,7 +48,7 @@
                             User
                         {% endif %}
                     </h3>
-                    <p class="text-xs !text-white/70">
+                    <p class="text-xs text-white/70 truncate">
                         {% if session.get('current_workspace', {}).get('role') %}
                             {{ session.get('current_workspace', {}).get('role') }}
                         {% else %}
@@ -57,49 +59,52 @@
             </div>
         </div>
         
-        <!-- Menu Items -->
-        <div class="flex-1 space-y-2 mt-8 flex flex-col" style="gap: 0.5rem; flex: 1; margin-top: 2rem; visibility: visible; opacity: 1; pointer-events: auto; display: flex; flex-direction: column;">
-                                <div class="w-full">
-                    <a href="{{ url_for('home_route') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg {% if request.endpoint == 'home_route' %}bg-white/20 !text-white{% else %}!text-white/90{% endif %} hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline" style="z-index:10002;">
-                        <span class="material-icons mr-3 pointer-events-none">home</span> 
-                        <span class="font-medium pointer-events-none">Dashboard</span>
+        <!-- Menu Items (Scrollable) -->
+        <nav class="flex-1 overflow-y-auto overflow-x-hidden" style="scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.2) transparent;">
+            <div class="space-y-2 p-4" style="gap: 0.5rem; display: flex; flex-direction: column;">
+                <div class="w-full">
+                    <a href="{{ url_for('home_route') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg {% if request.endpoint == 'home_route' %}bg-white/20 text-white{% else %}text-white/90{% endif %} hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline" style="z-index:10002; flex-shrink: 0;">
+                        <span class="material-icons mr-3 flex-shrink-0">home</span> 
+                        <span class="font-medium flex-shrink-0">Dashboard</span>
                     </a>
                 </div>
                 <div class="w-full">
-                    <a href="{{ url_for('workers_route') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg {% if request.endpoint == 'workers_route' %}bg-white/20 !text-white{% else %}!text-white/90{% endif %} hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline" style="z-index:10002;">
-                        <span class="material-icons mr-3 pointer-events-none">group</span> 
-                        <span class="font-medium pointer-events-none">Workers</span>
+                    <a href="{{ url_for('workers_route') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg {% if request.endpoint == 'workers_route' %}bg-white/20 text-white{% else %}text-white/90{% endif %} hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline" style="z-index:10002; flex-shrink: 0;">
+                        <span class="material-icons mr-3 flex-shrink-0">group</span> 
+                        <span class="font-medium flex-shrink-0">Workers</span>
                     </a>
                 </div>
                 <div class="w-full">
-                    <a href="{{ url_for('tasks_route') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg {% if request.endpoint == 'tasks_route' %}bg-white/20 !text-white{% else %}!text-white/90{% endif %} hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline" style="z-index:10002;">
-                        <span class="material-icons mr-3 pointer-events-none">assignment</span> 
-                        <span class="font-medium pointer-events-none">Tasks</span>
+                    <a href="{{ url_for('tasks_route') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg {% if request.endpoint == 'tasks_route' %}bg-white/20 text-white{% else %}text-white/90{% endif %} hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline" style="z-index:10002; flex-shrink: 0;">
+                        <span class="material-icons mr-3 flex-shrink-0">assignment</span> 
+                        <span class="font-medium flex-shrink-0">Tasks</span>
                     </a>
                 </div>
                 <div class="w-full">
-                    <a href="{{ url_for('reports_route') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg {% if request.endpoint == 'reports_route' %}bg-white/20 !text-white{% else %}!text-white/90{% endif %} hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline" style="z-index:10002;">
-                        <span class="material-icons mr-3 pointer-events-none">bar_chart</span> 
-                        <span class="font-medium pointer-events-none">Reports</span>
+                    <a href="{{ url_for('reports_route') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg {% if request.endpoint == 'reports_route' %}bg-white/20 text-white{% else %}text-white/90{% endif %} hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline" style="z-index:10002; flex-shrink: 0;">
+                        <span class="material-icons mr-3 flex-shrink-0">bar_chart</span> 
+                        <span class="font-medium flex-shrink-0">Reports</span>
                     </a>
                 </div>
                 
                 <!-- Payments/Billing menu item (admin only) -->
                 {% if session.get('current_workspace', {}).get('role') in ['Admin'] %}
                 <div class="w-full">
-                    <a href="https://billing.stripe.com/p/login/test_5kQaEX5Jg1o5g8lg0SgEg00" target="_blank" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg !text-white/90 hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline" style="z-index:10002;">
-                        <span class="material-icons mr-3 pointer-events-none">credit_card</span> 
-                        <span class="font-medium pointer-events-none">Payments/Billing</span>
+                    <a href="https://billing.stripe.com/p/login/test_5kQaEX5Jg1o5g8lg0SgEg00" target="_blank" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg text-white/90 hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline" style="z-index:10002; flex-shrink: 0;">
+                        <span class="material-icons mr-3 flex-shrink-0">credit_card</span> 
+                        <span class="font-medium flex-shrink-0">Payments/Billing</span>
                     </a>
                 </div>
                 {% endif %}
-                
-                <div class="w-full mt-8">
-                    <a href="{{ url_for('signout') }}" class="w-full sidebar-menu-item whitespace-nowrap flex items-center py-4 px-4 rounded-lg !text-white/90 hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline" style="z-index:10002;">
-                        <span class="material-icons mr-3 pointer-events-none">logout</span> 
-                        <span class="font-medium pointer-events-none">Sign Out</span>
-                    </a>
-                </div>
+            </div>
+        </nav>
+        
+        <!-- Sign Out Section (Non-scrolling) -->
+        <div class="flex-shrink-0 p-4 border-t border-white/10">
+            <a href="{{ url_for('signout') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg text-white/90 hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline" style="z-index:10002;">
+                <span class="material-icons mr-3 flex-shrink-0">logout</span> 
+                <span class="font-medium flex-shrink-0">Sign Out</span>
+            </a>
         </div>
     </div>
 </div>

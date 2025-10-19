@@ -2,123 +2,6 @@
 
 {% block title %}Embee Accounting - Tasks{% endblock %}
 
-{% block head %}
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'brand-navy': {
-                            '50': '#f0f4f8',
-                            '100': '#d9e2ec',
-                            '200': '#bcccdc',
-                            '300': '#9fb3c8',
-                            '400': '#829ab1',
-                            '500': '#1A2B48',
-                            '600': '#102038',
-                            '700': '#0d1a2d',
-                            '800': '#0a1423',
-                            '900': '#060d18'
-                        },
-                        'brand-gold': {
-                            '50': '#fefbf3',
-                            '100': '#fef3d9',
-                            '200': '#fde9b3',
-                            '300': '#fcdd8c',
-                            '400': '#f8cd5f',
-                            '500': '#E5B23A',
-                            '600': '#d19b1f',
-                            '700': '#a87b15',
-                            '800': '#7f5c0f',
-                            '900': '#563d0a'
-                        },
-                        'brand-blue': {
-                            '50': '#eff6ff',
-                            '100': '#dbeafe',
-                            '200': '#bfdbfe',
-                            '300': '#93c5fd',
-                            '400': '#60a5fa',
-                            '500': '#3b82f6',
-                            '600': '#2563eb',
-                            '700': '#1d4ed8',
-                            '800': '#1e40af',
-                            '900': '#1e3a8a'
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.24/dist/full.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <style>
-        /* Task-specific styles */
-        .tasks-container {
-            background: #ffffff;
-            min-height: 100vh;
-            width: 100%;
-        }
-        .task-card {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        }
-        .task-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-        }
-        /* Status dropdown styles */
-        .status-dropdown { position: relative; }
-        .status-dropdown-menu {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-            border: 1px solid #e5e7eb;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-10px);
-            transition: all 0.2s ease;
-            z-index: 50;
-        }
-        .status-dropdown.open .status-dropdown-menu {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(5px);
-        }
-        .status-menu-item {
-            padding: 12px 16px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            transition: all 0.2s ease;
-        }
-        .status-menu-item:hover:not(.disabled) { background: #f3f4f6; }
-        .status-menu-item.disabled { opacity: 0.5; cursor: not-allowed; }
-        .status-menu-item.active { background: #eff6ff; }
-        .status-indicator { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-        .status-indicator.pending { background: #eab308; }
-        .status-indicator.in-progress { background: #3b82f6; }
-        .status-indicator.completed { background: #10b981; }
-        @media (max-width: 768px) {
-            .task-card { margin: 0.5rem; }
-            .grid { gap: 1rem; }
-        }
-        .line-clamp-3 {
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-    </style>
-{% endblock %}
-
 {% block content %}
 <!-- Mobile Menu Button -->
 <div class="lg:hidden fixed top-4 right-4 z-50">
@@ -128,22 +11,21 @@
         </svg>
     </label>
 </div>
+
 <div class="container mx-auto px-4 w-full max-w-6xl pt-8">
     <!-- Desktop header and actions -->
-    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
-        <div>
-            <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-700 to-blue-900 bg-clip-text text-transparent mb-2">Tasks</h1>
-            <p class="text-blue-600">Manage and track your workforce tasks</p>
-        </div>
-        <button onclick="openAddTaskModal()" class="btn btn-primary btn-lg shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl">
-            <i class="fas fa-plus mr-2"></i>Create New Task
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+        <h1 class="text-3xl font-bold text-black">Tasks</h1>
+        <button onclick="openAddTaskModal()" class="btn btn-primary w-full sm:w-auto">
+            <i data-feather="plus" class="mr-2"></i>Create New Task
         </button>
     </div>
+
     <!-- Tasks Grid -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         {% for task in tasks %}
         <div class="group relative" onclick="navigateToTask(event, {{ task.id }})" data-payment-type="{{ task.payment_type }}" data-task-id="{{ task.id }}">
-            <div class="task-card bg-white rounded-2xl border border-gray-200 overflow-visible transform hover:-translate-y-1 cursor-pointer">
+            <div class="task-card bg-white rounded-2xl border border-gray-200 overflow-visible transform hover:-translate-y-1 cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300">
                 <div class="p-6">
                     <!-- Header with Title, Badge, and Menu -->
                     <div class="flex justify-between items-start mb-4">
@@ -314,6 +196,62 @@
     {% include 'modals/delete_task.html' %}
     {% include 'modals/edit_task.html' %}
 </div>
+
+<style>
+    /* Task-specific styles */
+    .task-card {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+    .task-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    }
+    /* Status dropdown styles */
+    .status-dropdown { position: relative; }
+    .status-dropdown-menu {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        border: 1px solid #e5e7eb;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.2s ease;
+        z-index: 50;
+    }
+    .status-dropdown.open .status-dropdown-menu {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(5px);
+    }
+    .status-menu-item {
+        padding: 12px 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: all 0.2s ease;
+    }
+    .status-menu-item:hover:not(.disabled) { background: #f3f4f6; }
+    .status-menu-item.disabled { opacity: 0.5; cursor: not-allowed; }
+    .status-menu-item.active { background: #eff6ff; }
+    .status-indicator { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .status-indicator.pending { background: #eab308; }
+    .status-indicator.in-progress { background: #3b82f6; }
+    .status-indicator.completed { background: #10b981; }
+    .line-clamp-3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+</style>
 {% endblock %}
 
 {% block scripts %}
@@ -322,6 +260,7 @@ function navigateToTask(event, taskId) {
     event.stopPropagation();
     window.location.href = '/task_attendance/' + taskId;
 }
+
 function toggleStatusDropdown(element) {
     document.querySelectorAll('.status-dropdown').forEach(function(drop) {
         if (drop !== element.parentElement) {
@@ -330,6 +269,7 @@ function toggleStatusDropdown(element) {
     });
     element.parentElement.classList.toggle('open');
 }
+
 function openEditTaskModal(id, name, description, startDate, paymentType, perPartPayout, perPartCurrency, perDayPayout, perDayCurrency) {
     document.getElementById('editTaskId').value = id;
     document.getElementById('editTaskName').value = name;
@@ -342,9 +282,19 @@ function openEditTaskModal(id, name, description, startDate, paymentType, perPar
     document.getElementById('editTaskPerDayCurrency').value = perDayCurrency;
     document.getElementById('editTaskModal').showModal();
 }
+
 function openDeleteTaskModal(id) {
     document.getElementById('deleteTaskId').value = id;
     document.getElementById('deleteTaskModal').showModal();
 }
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('.status-dropdown')) {
+        document.querySelectorAll('.status-dropdown').forEach(function(drop) {
+            drop.classList.remove('open');
+        });
+    }
+});
 </script>
 {% endblock %}

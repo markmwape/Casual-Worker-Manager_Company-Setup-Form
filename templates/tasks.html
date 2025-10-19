@@ -362,5 +362,42 @@
         {% include 'modals/edit_task.html' %}
     </div>
     {% endblock %}
+
+    {% block scripts %}
+    <script>
+    function navigateToTask(event, taskId) {
+        event.stopPropagation();
+        window.location.href = '/task_attendance/' + taskId;
+    }
+
+    function toggleStatusDropdown(element) {
+        document.querySelectorAll('.status-dropdown').forEach(function(drop) {
+            if (drop !== element.parentElement) {
+                drop.classList.remove('open');
+            }
+        });
+        element.parentElement.classList.toggle('open');
+    }
+
+    function openEditTaskModal(id, name, description, startDate, paymentType, perPartPayout, perPartCurrency, perDayPayout, perDayCurrency) {
+        // Example: fill modal fields and show modal
+        document.getElementById('editTaskId').value = id;
+        document.getElementById('editTaskName').value = name;
+        document.getElementById('editTaskDescription').value = description;
+        document.getElementById('editTaskStartDate').value = startDate;
+        document.getElementById('editTaskPaymentType').value = paymentType;
+        document.getElementById('editTaskPerPartPayout').value = perPartPayout;
+        document.getElementById('editTaskPerPartCurrency').value = perPartCurrency;
+        document.getElementById('editTaskPerDayPayout').value = perDayPayout;
+        document.getElementById('editTaskPerDayCurrency').value = perDayCurrency;
+        document.getElementById('editTaskModal').showModal();
+    }
+
+    function openDeleteTaskModal(id) {
+        document.getElementById('deleteTaskId').value = id;
+        document.getElementById('deleteTaskModal').showModal();
+    }
+    </script>
+    {% endblock %}
 </body>
 </html>

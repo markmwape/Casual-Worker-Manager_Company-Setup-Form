@@ -698,7 +698,7 @@ input[type="date"]::-webkit-date-and-time-value {
 
 /* Sidebar - only for drawer layouts */
 .drawer .drawer-side {
-    background: linear-gradient(180deg, var(--primary-navy) 0%, var(--primary-navy-light) 100%);
+    background: none !important;
     box-shadow: var(--shadow-lg);
     color: white;
 }

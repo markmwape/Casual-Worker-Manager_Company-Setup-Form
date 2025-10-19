@@ -170,10 +170,8 @@
 
 /* Dropdown Menu */
 .status-dropdown-menu {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    z-index: 9999;
+    position: fixed;
+    z-index: 10000 !important;
     min-width: 220px;
     background: white;
     border-radius: 12px;
@@ -188,6 +186,7 @@
     backdrop-filter: blur(12px);
     max-height: 300px;
     overflow-y: auto;
+    pointer-events: none;
 }
 
 .status-dropdown-menu.show,
@@ -195,37 +194,35 @@
     opacity: 1 !important;
     visibility: visible !important;
     transform: translateY(0) !important;
+    pointer-events: auto !important;
 }
 
 /* Three-dot menu should have higher z-index */
 .dropdown {
-    z-index: 10000 !important;
+    z-index: 10 !important;
     position: relative !important;
 }
 
 .dropdown-content {
-    z-index: 100001 !important;
+    z-index: 10001 !important;
+    position: fixed !important;
+    pointer-events: auto !important;
 }
 
 /* Specific styling for the three-dot menu dropdown */
 .dropdown.dropdown-end {
-    z-index: 100000 !important;
+    z-index: 10 !important;
     position: relative !important;
 }
 
 .dropdown.dropdown-end .dropdown-content {
-    z-index: 100001 !important;
-    position: absolute !important;
-    top: 100% !important;
-    right: 0 !important;
-    left: auto !important;
-    margin-top: 0.5rem !important;
+    z-index: 10001 !important;
+    position: fixed !important;
     background: white !important;
     border-radius: 8px !important;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
     border: 1px solid #e5e7eb !important;
     min-width: 160px !important;
-    transform: translateX(0) !important;
 }
 
 /* DaisyUI dropdown - show when label is clicked/focused */
@@ -235,6 +232,7 @@
     display: block !important;
     opacity: 1 !important;
     visibility: visible !important;
+    pointer-events: auto !important;
 }
 
 /* Keep dropdown open when hovering over it */
@@ -242,91 +240,18 @@
     display: block !important;
     opacity: 1 !important;
     visibility: visible !important;
+    pointer-events: auto !important;
 }
 
-/* Ensure dropdowns can extend beyond card boundaries - only for drawer layouts */
-.drawer .task-card {
+/* Ensure dropdowns can extend beyond card boundaries */
+.task-card {
     overflow: visible !important;
 }
 
-.drawer .task-card .dropdown {
+.task-card .dropdown {
     overflow: visible !important;
 }
 
-/* Force dropdown positioning to be above everything - only for drawer layouts */
-.drawer .dropdown-content {
-    position: absolute !important;
-    z-index: 100000 !important;
-    transform: none !important;
-}
-
-/* Ensure the dropdown container doesn't clip content - only for drawer layouts */
-.drawer .dropdown {
-    overflow: visible !important;
-}
-
-/* Make sure task cards don't clip dropdowns - only for drawer layouts */
-.drawer .task-card,
-.drawer .card,
-.drawer .group {
-    overflow: visible !important;
-}
-
-/* Override DaisyUI dropdown positioning - only for drawer layouts */
-.drawer .dropdown.dropdown-end .dropdown-content {
-    position: absolute !important;
-    top: 100% !important;
-    right: 0 !important;
-    left: auto !important;
-    transform: none !important;
-    z-index: 100000 !important;
-    margin-top: 0.5rem !important;
-    background: white !important;
-    border-radius: 8px !important;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
-    border: 1px solid #e5e7eb !important;
-    min-width: 160px !important;
-    overflow: visible !important;
-}
-
-/* Ensure dropdown menu items are visible */
-.dropdown-content ul {
-    overflow: visible !important;
-}
-
-.dropdown-content li {
-    overflow: visible !important;
-}
-
-.dropdown-content a {
-    overflow: visible !important;
-    white-space: nowrap !important;
-}
-
-/* Responsive positioning */
-@media (max-width: 768px) {
-    .status-dropdown-menu {
-        min-width: 250px;
-        max-width: 90vw;
-        right: 0;
-        left: auto;
-    }
-}
-
-/* Ensure dropdowns are always visible */
-.status-dropdown {
-    position: relative;
-    z-index: 9999;
-}
-
-.status-dropdown-menu.show {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-    z-index: 10000;
-}
-
-/* Ensure task cards don't interfere with dropdowns */
 .group {
     position: relative;
     z-index: 1;
@@ -334,87 +259,6 @@
 
 .group:hover {
     z-index: 2;
-}
-
-/* Ensure proper spacing in the grid */
-.grid > * {
-    margin-bottom: 1.5rem;
-}
-
-/* Ensure dropdowns/status menus to escape stacking contexts on the tasks page so menus are usable */
-.tasks-page .dropdown-content,
-.tasks-page .task-card .dropdown-content,
-.tasks-page .dropdown .dropdown-content,
-.tasks-page .status-dropdown-menu,
-.tasks-page .status-dropdown .status-dropdown-menu,
-.tasks-page .status-dropdown-menu.show,
-.tasks-page .status-menu-item,
-.tasks-page .task-card .status-dropdown-menu,
-.tasks-page .task-card .completion-section {
-    /* Use absolute positioning instead of fixed to avoid covering unrelated layers
-       and to keep menus within the document flow - still allow them to escape
-       transformed parents. Set a high but reasonable z-index to keep menus above
-       the sidebar and content without using extreme values that can cause issues. */
-    position: absolute !important; /* escape stacking contexts created by transformed parents */
-    z-index: 1000 !important; /* Reasonable z-index that works with sidebar */
-    pointer-events: auto !important;
-    transform: none !important;
-    left: auto !important;
-    top: auto !important;
-    right: auto !important;
-    bottom: auto !important;
-    will-change: transform, top, left !important;
-}
-
-/* Dropdowns and status menus must still escape stacking contexts */
-.tasks-page .dropdown-content,
-.tasks-page .status-dropdown-menu {
-    position: absolute !important;
-    z-index: 1000 !important; /* Reasonable z-index that works with sidebar */
-}
-
-/* CRITICAL FIX: REMOVED DESTRUCTIVE all: unset RULES */
-/* These lines were nuclear bombing the DaisyUI drawer component:
-   .tasks-page .drawer-side { all: unset !important; }
-   .tasks-page .drawer-side > * { all: unset !important; }
-   
-   They were destroying:
-   - position: fixed (essential for sidebar positioning)
-   - height: 100vh (essential for full-height sidebar)  
-   - z-index (essential for proper layering)
-   - background/box-shadow (essential for visual appearance)
-*/
-
-/* Ensure sidebar works normally on all pages */
-.drawer .drawer-side {
-    background: linear-gradient(180deg, var(--primary-navy) 0%, var(--primary-navy-light) 100%) !important;
-    box-shadow: var(--shadow-lg) !important;
-    color: white !important;
-}
-
-.drawer .drawer-side .menu {
-    display: flex !important;
-    flex-direction: column !important;
-    overflow-y: auto !important;
-    max-height: 100vh !important;
-}
-
-.drawer .drawer-side .menu > div {
-    display: flex !important;
-    flex-direction: column !important;
-    width: 100%;
-}
-
-/* CRITICAL FIX: REMOVED CONFLICTING SIDEBAR TRANSFORM */
-/* This was overriding DaisyUI's drawer behavior:
-   .drawer .drawer-side { transform: translateX(-100%); transition: transform 0.3s ease-in-out; }
-*/
-
-/* Ensure content area sits below the sidebar */
-@media (min-width: 1024px) {
-    .drawer.lg\:drawer-open .drawer-content {
-        margin-left: 20rem !important;
-    }
 }
 
 /* Dropdown Menu Items */
@@ -431,6 +275,7 @@
     border: 1px solid transparent;
     white-space: nowrap;
     min-height: 44px;
+    pointer-events: auto !important;
 }
 
 .status-menu-item:last-child {
@@ -582,6 +427,7 @@ html, body {
     border-radius: 12px;
     box-shadow: var(--shadow-sm);
     transition: all 0.3s ease;
+    overflow: hidden;
 }
 
 .card:hover {
@@ -828,7 +674,6 @@ input[type="date"]::-webkit-date-and-time-value {
 
 .table tbody tr:hover {
     background-color: rgba(26, 43, 72, 0.05);
-    transform: scale(1.01);
 }
 
 .table tbody td {
@@ -1017,17 +862,6 @@ input[type="date"]::-webkit-date-and-time-value {
     transform: scale(0.98);
 }
 
-/* Better card interactions */
-.card {
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-lg);
-}
-
 /* Loading states */
 .loading-spinner {
     border: 2px solid var(--border-light);
@@ -1101,61 +935,132 @@ input[type="date"]::-webkit-date-and-time-value {
     }
 }
 
-/* Ensure task cards don't clip dropdowns */
-.card {
-    background: var(--bg-white);
-    border: 1px solid var(--border-light);
-    border-radius: 12px;
-    box-shadow: var(--shadow-sm);
-    transition: all 0.3s ease;
-    overflow: hidden;
-}
+/* ============================================================
+   TASKS PAGE SPECIFIC DROPDOWN FIXES
+   ============================================================ */
 
-.card:hover {
-    box-shadow: var(--shadow-md);
-    transform: translateY(-2px);
-}
-
-/* Ensure the task grid container doesn't clip dropdowns */
-.grid {
-    overflow: visible;
+/* CRITICAL FIX: Use fixed positioning to escape stacking contexts */
+.tasks-page .status-dropdown {
     position: relative;
-}
-
-/* Ensure individual task containers don't clip dropdowns */
-.group {
-    overflow: visible;
-    position: relative;
-    z-index: 1;
-}
-
-.group:hover {
-    z-index: 5;
-}
-
-/* Ensure the main container doesn't clip dropdowns */
-.container {
-    overflow: visible;
-}
-
-/* Ensure the card body doesn't clip dropdowns */
-.card-body {
-    overflow: visible;
-    position: relative;
-}
-
-/* Prevent overlapping between task cards */
-.card {
-    position: relative;
-    z-index: 1;
-    margin-bottom: 1rem;
-}
-
-.card:hover {
     z-index: 10;
 }
 
+.tasks-page .status-dropdown-menu {
+    position: fixed !important;
+    z-index: 10000 !important;
+    pointer-events: auto !important;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tasks-page .status-dropdown.open .status-dropdown-menu,
+.tasks-page .status-dropdown-menu.show {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateY(0) !important;
+    pointer-events: auto !important;
+}
+
+/* Three-dot menu dropdown */
+.tasks-page .dropdown {
+    position: relative;
+    z-index: 10;
+}
+
+.tasks-page .dropdown-content {
+    position: fixed !important;
+    z-index: 10001 !important;
+    pointer-events: auto !important;
+}
+
+.tasks-page .dropdown.dropdown-end .dropdown-content {
+    position: fixed !important;
+    z-index: 10001 !important;
+    background: white !important;
+    border-radius: 8px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+    border: 1px solid #e5e7eb !important;
+    min-width: 160px !important;
+    pointer-events: auto !important;
+}
+
+/* Ensure menu items are clickable */
+.tasks-page .status-menu-item {
+    pointer-events: auto !important;
+    position: relative;
+    z-index: inherit;
+}
+
+.tasks-page .dropdown-content li,
+.tasks-page .dropdown-content a {
+    pointer-events: auto !important;
+}
+
+/* Task cards and groups */
+.tasks-page .group {
+    position: relative;
+    z-index: 1;
+}
+
+.tasks-page .group:hover {
+    z-index: 2;
+}
+
+.tasks-page .task-card {
+    overflow: visible !important;
+    position: relative;
+}
+
+.tasks-page .card-body {
+    overflow: visible !important;
+    position: relative;
+}
+
+/* Ensure containers don't clip dropdowns */
+.tasks-page .grid {
+    overflow: visible;
+    position: relative;
+}
+
+.tasks-page .container {
+    overflow: visible;
+}
+
+/* Responsive positioning for mobile */
+@media (max-width: 768px) {
+    .tasks-page .status-dropdown-menu {
+        min-width: 250px;
+        max-width: 90vw;
+    }
+}
+
 /* Ensure proper spacing in the grid */
-.grid > * {
+.tasks-page .grid > * {
     margin-bottom: 1.5rem;
+}
+
+/* Prevent card hover transform from interfering with dropdowns */
+.tasks-page .card {
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.tasks-page .card:hover {
+    transform: translateY(-2px);
+}
+
+/* ============================================================
+   END TASKS PAGE SPECIFIC FIXES
+   ============================================================ */
+
+/* Better card interactions */
+.card {
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
 }

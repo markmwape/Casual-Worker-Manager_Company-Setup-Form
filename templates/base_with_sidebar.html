@@ -86,14 +86,18 @@
         .profile-avatar {
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
-        .mobile-header {
+        .mobile-menu-button {
             display: none;
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 50;
             background: linear-gradient(180deg, #1A2B48 0%, #102038 100%);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         /* Responsive drawer behavior */
         @media (max-width: 1023px) {
-            .mobile-header {
+            .mobile-menu-button {
                 display: flex;
             }
             .drawer-side {
@@ -193,25 +197,17 @@
     {% block head %}{% endblock %}
 </head>
 <body class="min-h-screen bg-gray-50">
-    <div class="drawer min-h-screen lg:drawer-open"> <!-- Force sidebar always open on desktop -->
+    <div class="drawer min-h-screen lg:drawer-open">
         <input id="my-drawer" type="checkbox" class="drawer-toggle" />
         
         <!-- Main Content Area -->
         <div class="drawer-content bg-gray-50 min-h-screen lg:ml-0">
-            <!-- Mobile Header with Hamburger Menu (restored) -->
-            <div class="mobile-header lg:hidden flex items-center justify-between px-4 py-3">
-                <div class="flex items-center">
-                    <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center mr-3 shadow-lg">
-                        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Embee Bee Logo" class="w-6 h-6 object-contain" />
-                    </div>
-                    <h2 class="text-lg font-bold text-white">My Workspace</h2>
-                </div>
-                <label for="my-drawer" class="btn btn-ghost btn-circle text-white">
-                    <i class="material-icons">menu</i>
-                </label>
-            </div>
+            <!-- Mobile Menu Button Only (No Header) -->
+            <label for="my-drawer" class="mobile-menu-button btn btn-ghost btn-circle text-white shadow-lg">
+                <i class="material-icons">menu</i>
+            </label>
             
-            <div class="p-4 lg:p-6">
+            <div class="p-4 lg:p-6 pt-16 lg:pt-6">
                 {% block content %}{% endblock %}
             </div>
         </div>

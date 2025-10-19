@@ -82,44 +82,20 @@
         opacity: 0.6;
     }
 
-    /* Sidebar Styles - Exact match from base_with_sidebar */
-    .sidebar-container {
-        background: linear-gradient(180deg, #1A2B48 0%, #102038 100%);
-        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-    }
-    .sidebar-menu-item {
-        transition: all 0.2s ease;
-        position: relative;
-    }
-    .sidebar-menu-item.active {
-        background-color: rgba(255, 255, 255, 0.2);
-        color: white;
-    }
-    .sidebar-menu-item:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-    }
-    .sidebar-menu-item.active::after {
-        content: '';
-        position: absolute;
-        right: 0;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 3px;
-        height: 60%;
-        background-color: #E5B23A;
-        border-radius: 2px 0 0 2px;
-    }
-    .profile-avatar {
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    }
-    .mobile-header {
+    /* Mobile Menu Button */
+    .mobile-menu-button {
         display: none;
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        z-index: 50;
         background: linear-gradient(180deg, #1A2B48 0%, #102038 100%);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
     }
+
     /* Responsive drawer behavior */
     @media (max-width: 1023px) {
-        .mobile-header {
+        .mobile-menu-button {
             display: flex;
         }
         .drawer-side {
@@ -168,6 +144,37 @@
         .drawer.lg\:drawer-open .drawer-toggle {
             display: none;
         }
+    }
+
+    /* Sidebar Styles - Exact match from base_with_sidebar */
+    .sidebar-container {
+        background: linear-gradient(180deg, #1A2B48 0%, #102038 100%);
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    }
+    .sidebar-menu-item {
+        transition: all 0.2s ease;
+        position: relative;
+    }
+    .sidebar-menu-item.active {
+        background-color: rgba(255, 255, 255, 0.2);
+        color: white;
+    }
+    .sidebar-menu-item:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+    .sidebar-menu-item.active::after {
+        content: '';
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 3px;
+        height: 60%;
+        background-color: #E5B23A;
+        border-radius: 2px 0 0 2px;
+    }
+    .profile-avatar {
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     }
     .sidebar-scroll {
         scrollbar-width: thin;
@@ -222,30 +229,13 @@
     
     <!-- Main Content Area -->
     <div class="drawer-content bg-gray-50 min-h-screen lg:ml-0">
-        <!-- Mobile Header with Hamburger Menu -->
-        <div class="mobile-header lg:hidden flex items-center justify-between px-4 py-3">
-            <div class="flex items-center">
-                <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center mr-3 shadow-lg">
-                    <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Embee Bee Logo" class="w-6 h-6 object-contain" />
-                </div>
-                <h2 class="text-lg font-bold text-white">My Workspace</h2>
-            </div>
-            <label for="my-drawer" class="btn btn-ghost btn-circle text-white">
-                <i class="material-icons">menu</i>
-            </label>
-        </div>
+        <!-- Mobile Menu Button Only (No Header) -->
+        <label for="my-drawer" class="mobile-menu-button btn btn-ghost btn-circle text-white shadow-lg">
+            <i class="material-icons">menu</i>
+        </label>
         
-        <div class="p-4 lg:p-6">
-            <!-- Mobile Menu Button -->
-            <div class="lg:hidden fixed top-4 right-4 z-50">
-                <label for="my-drawer" class="btn btn-circle btn-primary shadow-lg">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </label>
-            </div>
-
-            <div class="container mx-auto px-4 w-full max-w-6xl pt-8">
+        <div class="p-4 lg:p-6 pt-16 lg:pt-6">
+            <div class="container mx-auto px-4 w-full max-w-6xl">
                 <!-- Desktop header and actions -->
                 <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
                     <h1 class="text-3xl font-bold text-black">Tasks</h1>

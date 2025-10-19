@@ -100,9 +100,18 @@
                 transform: translateX(-100%);
                 transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
                 z-index: 10001;
+                position: fixed;
+                left: 0;
+                top: 0;
+                height: 100vh;
+                width: 20rem;
+                pointer-events: none;
+                opacity: 0;
             }
             .drawer-toggle:checked ~ .drawer-side {
                 transform: translateX(0%);
+                pointer-events: auto;
+                opacity: 1;
             }
             .drawer-toggle:checked ~ .drawer-content {
                 /* Optionally dim background */
@@ -157,6 +166,24 @@
             outline: none;
             box-shadow: none;
         }
+        /* Remove transition/transform from .drawer-content to prevent page animation */
+        .drawer-content {
+            transition: none !important;
+            transform: none !important;
+        }
+        /* Restrict slide-in animation to only the sidebar, not the page */
+        @media (max-width: 1023px) {
+            .drawer-side {
+                transition: none !important;
+            }
+            .sidebar-container {
+                transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+                transform: translateX(-100%);
+            }
+            .drawer-toggle:checked ~ .drawer-side .sidebar-container {
+                transform: translateX(0);
+            }
+        }
     </style>
     
     {% block head %}{% endblock %}
@@ -166,7 +193,7 @@
         <input id="my-drawer" type="checkbox" class="drawer-toggle" />
         
         <!-- Main Content Area -->
-        <div class="drawer-content bg-gray-50 min-h-screen lg:ml-0 transition-all duration-300">
+        <div class="drawer-content bg-gray-50 min-h-screen lg:ml-0">
             {# Removed mobile-header for mobile, only hamburger menu will show #}
             <div class="p-4 lg:p-6">
                 {% block content %}{% endblock %}

@@ -134,10 +134,10 @@
         }
     </style>
 </head>
-<body class="{% if request.endpoint == 'tasks_route' %}tasks-page{% endif %}">
-    <div class="drawer min-h-screen bg-gray-50">
+<body class="min-h-screen bg-white">
+    <div class="drawer min-h-screen bg-white">
         <input id="my-drawer" type="checkbox" class="drawer-toggle" />
-        <div class="drawer-content bg-gray-50 min-h-screen lg:ml-80">
+        <div class="drawer-content bg-white min-h-screen lg:ml-80">
             {% block content %}{% endblock %}
         </div>
         {% include 'components/_sidebar.html' %}

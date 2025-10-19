@@ -193,7 +193,7 @@
     {% block head %}{% endblock %}
 </head>
 <body class="min-h-screen bg-gray-50">
-    <div class="drawer min-h-screen">
+    <div class="drawer min-h-screen lg:drawer-open"> <!-- Force sidebar always open on desktop -->
         <input id="my-drawer" type="checkbox" class="drawer-toggle" />
         
         <!-- Main Content Area -->
@@ -330,39 +330,14 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             feather.replace();
-            
-            // Handle drawer behavior
-            const drawer = document.querySelector('.drawer');
+
             const drawerToggle = document.getElementById('my-drawer');
-            
-            // Auto-open on desktop, close on mobile
-            if (drawer && drawerToggle) {
-                if (window.innerWidth >= 1024) {
-                    drawer.classList.add('lg:drawer-open');
-                    drawerToggle.checked = false;
-                } else {
-                    drawer.classList.remove('lg:drawer-open');
-                    drawerToggle.checked = false;
-                }
-            }
-            
-            // Handle window resize
-            window.addEventListener('resize', function() {
-                if (window.innerWidth >= 1024) {
-                    drawer.classList.add('lg:drawer-open');
-                    drawerToggle.checked = false;
-                } else {
-                    drawer.classList.remove('lg:drawer-open');
-                    drawerToggle.checked = false;
-                }
-            });
-            
+
             // Remove any focus outlines from sidebar items when clicked
             document.querySelectorAll('.sidebar-menu-item').forEach(item => {
                 item.addEventListener('mousedown', function(e) {
                     e.preventDefault();
                 });
-                
                 item.addEventListener('click', function() {
                     // Close sidebar on mobile after clicking a link
                     if (window.innerWidth < 1024) {

@@ -1,10 +1,8 @@
-<!DOCTYPE html>
-<html lang="en" data-theme="light">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Embee Accounting - Tasks</title>
-    {% block head %}
+{% extends "base_with_sidebar.html" %}
+
+{% block title %}Embee Accounting - Tasks{% endblock %}
+
+{% block head %}
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -62,23 +60,17 @@
             min-height: 100vh;
             width: 100%;
         }
-        
         .task-card {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border: 1px solid rgba(255, 255, 255, 0.2);
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
-        
         .task-card:hover {
             transform: translateY(-4px);
             box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
         }
-        
         /* Status dropdown styles */
-        .status-dropdown {
-            position: relative;
-        }
-        
+        .status-dropdown { position: relative; }
         .status-dropdown-menu {
             position: absolute;
             top: 100%;
@@ -94,13 +86,11 @@
             transition: all 0.2s ease;
             z-index: 50;
         }
-        
         .status-dropdown.open .status-dropdown-menu {
             opacity: 1;
             visibility: visible;
             transform: translateY(5px);
         }
-        
         .status-menu-item {
             padding: 12px 16px;
             cursor: pointer;
@@ -109,51 +99,17 @@
             gap: 12px;
             transition: all 0.2s ease;
         }
-        
-        .status-menu-item:hover:not(.disabled) {
-            background: #f3f4f6;
-        }
-        
-        .status-menu-item.disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        .status-menu-item.active {
-            background: #eff6ff;
-        }
-        
-        .status-indicator {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-        
-        .status-indicator.pending {
-            background: #eab308;
-        }
-        
-        .status-indicator.in-progress {
-            background: #3b82f6;
-        }
-        
-        .status-indicator.completed {
-            background: #10b981;
-        }
-        
-        /* Mobile responsiveness */
+        .status-menu-item:hover:not(.disabled) { background: #f3f4f6; }
+        .status-menu-item.disabled { opacity: 0.5; cursor: not-allowed; }
+        .status-menu-item.active { background: #eff6ff; }
+        .status-indicator { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .status-indicator.pending { background: #eab308; }
+        .status-indicator.in-progress { background: #3b82f6; }
+        .status-indicator.completed { background: #10b981; }
         @media (max-width: 768px) {
-            .task-card {
-                margin: 0.5rem;
-            }
-            
-            .grid {
-                gap: 1rem;
-            }
+            .task-card { margin: 0.5rem; }
+            .grid { gap: 1rem; }
         }
-        
-        /* Line clamp for description */
         .line-clamp-3 {
             display: -webkit-box;
             -webkit-line-clamp: 3;
@@ -161,14 +117,10 @@
             overflow: hidden;
         }
     </style>
-    {% endblock %}
-</head>
-<body>
-    {% extends "base_with_sidebar.html" %}
+{% endblock %}
 
-    {% block title %}Embee Accounting - Tasks{% endblock %}
-
-    {% block content %}
+{% block content %}
+<div class="tasks-page">
     <div class="container mx-auto px-4 py-8 max-w-6xl">
         <!-- Desktop header and actions -->
         <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
@@ -180,7 +132,6 @@
                 <i class="fas fa-plus mr-2"></i>Create New Task
             </button>
         </div>
-
         <!-- Tasks Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
             {% for task in tasks %}
@@ -223,12 +174,10 @@
                                 </ul>
                             </div>
                         </div>
-
                         <!-- Description -->
                         <div class="mb-4">
                             <p class="text-sm text-gray-600 line-clamp-3 leading-relaxed">{{ task.description or 'No description available' }}</p>
                         </div>
-
                         <!-- Payment Info -->
                         {% if task.payment_type == 'per_part' and task.per_part_payout %}
                         <div class="mb-4 p-3 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200">
@@ -255,7 +204,6 @@
                             </div>
                         </div>
                         {% endif %}
-
                         <!-- Status Section -->
                         <div class="mb-4">
                             <div class="status-dropdown" onclick="event.stopPropagation()">
@@ -331,7 +279,6 @@
                             </div>
                             {% endif %}
                         </div>
-
                         <!-- Footer with Date -->
                         <div class="pt-3 border-t border-gray-200">
                             <div class="flex items-center justify-between">
@@ -356,48 +303,42 @@
             </div>
             {% endfor %}
         </div>
-
         {% include 'modals/add_task.html' %}
         {% include 'modals/delete_task.html' %}
         {% include 'modals/edit_task.html' %}
     </div>
-    {% endblock %}
+</div>
+{% endblock %}
 
-    {% block scripts %}
-    <script>
-    function navigateToTask(event, taskId) {
-        event.stopPropagation();
-        window.location.href = '/task_attendance/' + taskId;
-    }
-
-    function toggleStatusDropdown(element) {
-        document.querySelectorAll('.status-dropdown').forEach(function(drop) {
-            if (drop !== element.parentElement) {
-                drop.classList.remove('open');
-            }
-        });
-        element.parentElement.classList.toggle('open');
-    }
-
-    function openEditTaskModal(id, name, description, startDate, paymentType, perPartPayout, perPartCurrency, perDayPayout, perDayCurrency) {
-        // Example: fill modal fields and show modal
-        document.getElementById('editTaskId').value = id;
-        document.getElementById('editTaskName').value = name;
-        document.getElementById('editTaskDescription').value = description;
-        document.getElementById('editTaskStartDate').value = startDate;
-        document.getElementById('editTaskPaymentType').value = paymentType;
-        document.getElementById('editTaskPerPartPayout').value = perPartPayout;
-        document.getElementById('editTaskPerPartCurrency').value = perPartCurrency;
-        document.getElementById('editTaskPerDayPayout').value = perDayPayout;
-        document.getElementById('editTaskPerDayCurrency').value = perDayCurrency;
-        document.getElementById('editTaskModal').showModal();
-    }
-
-    function openDeleteTaskModal(id) {
-        document.getElementById('deleteTaskId').value = id;
-        document.getElementById('deleteTaskModal').showModal();
-    }
-    </script>
-    {% endblock %}
-</body>
-</html>
+{% block scripts %}
+<script>
+function navigateToTask(event, taskId) {
+    event.stopPropagation();
+    window.location.href = '/task_attendance/' + taskId;
+}
+function toggleStatusDropdown(element) {
+    document.querySelectorAll('.status-dropdown').forEach(function(drop) {
+        if (drop !== element.parentElement) {
+            drop.classList.remove('open');
+        }
+    });
+    element.parentElement.classList.toggle('open');
+}
+function openEditTaskModal(id, name, description, startDate, paymentType, perPartPayout, perPartCurrency, perDayPayout, perDayCurrency) {
+    document.getElementById('editTaskId').value = id;
+    document.getElementById('editTaskName').value = name;
+    document.getElementById('editTaskDescription').value = description;
+    document.getElementById('editTaskStartDate').value = startDate;
+    document.getElementById('editTaskPaymentType').value = paymentType;
+    document.getElementById('editTaskPerPartPayout').value = perPartPayout;
+    document.getElementById('editTaskPerPartCurrency').value = perPartCurrency;
+    document.getElementById('editTaskPerDayPayout').value = perDayPayout;
+    document.getElementById('editTaskPerDayCurrency').value = perDayCurrency;
+    document.getElementById('editTaskModal').showModal();
+}
+function openDeleteTaskModal(id) {
+    document.getElementById('deleteTaskId').value = id;
+    document.getElementById('deleteTaskModal').showModal();
+}
+</script>
+{% endblock %}

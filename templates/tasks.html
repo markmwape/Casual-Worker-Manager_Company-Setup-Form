@@ -291,152 +291,186 @@
                     </div>
 
                     <!-- Tasks Grid -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8" id="tasks-container">
-                        <!-- Task cards will be dynamically loaded here -->
-                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+                        {% for task in tasks %}
+                        <div class="group relative" onclick="navigateToTask(event, {{ task.id|tojson }})" data-payment-type="{{ task.payment_type|tojson }}" data-task-id="{{ task.id|tojson }}">
+                            <div class="task-card bg-white shadow-lg hover:shadow-2xl transition-all duration-300 rounded-2xl border border-gray-200 overflow-visible transform hover:-translate-y-1 cursor-pointer">
+                                <div class="p-7">
+                                    <!-- Header with Title, Badge, and Menu -->
+                                    <div class="flex justify-between items-start mb-6">
+                                        <div class="flex-1 min-w-0 mr-3">
+                                            <div class="flex flex-wrap items-start gap-3 mb-3">
+                                                <h2 class="text-xl font-bold text-gray-900 break-words flex-1 leading-tight">{{ task.name }}</h2>
+                                                <div class="flex gap-2 flex-shrink-0">
+                                                    {% if task.payment_type == 'per_part' %}
+                                                        <span class="per-unit-badge inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-200">
+                                                            <i class="fas fa-cube mr-1.5 text-blue-600"></i>Per Unit
+                                                        </span>
+                                                    {% else %}
+                                                        <span class="per-day-badge inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-200">
+                                                            <i class="fas fa-calendar-day mr-1.5 text-green-600"></i>Per Day
+                                                        </span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="dropdown dropdown-end flex-shrink-0" onclick="event.stopPropagation()" style="position: relative; z-index: 1000;">
+                                            <label tabindex="0" class="btn btn-ghost btn-sm btn-circle hover:bg-gray-100 h-10 w-10">
+                                                <i class="fas fa-ellipsis-v text-gray-600 text-sm"></i>
+                                            </label>
+                                            <ul tabindex="0" class="dropdown-content menu p-2 shadow-xl bg-white rounded-xl w-52 text-sm border border-gray-200" style="position: absolute; z-index: 1000; right: 0; top: 100%; margin-top: 0.5rem; min-width: 160px; overflow: visible;">
+                                                <li>
+                                                    <a href='javascript:void(0);' onclick='openEditTaskModal({{ task.id|tojson }}, {{ task.name|tojson }}, {{ task.description|tojson }}, {{ task.start_date.strftime("%Y-%m-%d")|tojson }}, {{ task.payment_type|tojson }}, {{ task.per_part_payout|tojson }}, {{ task.per_part_currency|tojson }}, {{ task.per_day_payout|tojson }}, {{ task.per_day_currency|tojson }})' class="hover:bg-gray-50 py-3">
+                                                        <i class="fas fa-edit w-4 h-4 text-blue-600"></i>Edit Task
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a onclick="openDeleteTaskModal({{ task.id|tojson }})" class="text-red-600 hover:bg-red-50 py-3">
+                                                        <i class="fas fa-trash-alt w-4 h-4"></i>Delete Task
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
 
-                    <!-- Modals -->
-                    <!-- Add Task Modal -->
-                    <dialog id="add-task-modal" class="modal">
-                        <div class="modal-box">
-                            <h3 class="font-bold text-lg mb-4">Create New Task</h3>
-                            <form id="add-task-form" onsubmit="addTask(event)">
-                                <div class="form-control mb-4">
-                                    <label class="label">
-                                        <span class="label-text">Task Name</span>
-                                    </label>
-                                    <input type="text" name="name" class="input input-bordered" required>
-                                </div>
-                                <div class="form-control mb-4">
-                                    <label class="label">
-                                        <span class="label-text">Description</span>
-                                    </label>
-                                    <textarea name="description" class="textarea textarea-bordered" rows="3"></textarea>
-                                </div>
-                                <div class="form-control mb-4">
-                                    <label class="label">
-                                        <span class="label-text">Start Date</span>
-                                    </label>
-                                    <input type="date" name="start_date" class="input input-bordered" required>
-                                </div>
-                                <div class="form-control mb-4">
-                                    <label class="label">
-                                        <span class="label-text">Payment Type</span>
-                                    </label>
-                                    <div class="flex gap-4">
-                                        <label class="cursor-pointer label">
-                                            <input type="radio" name="payment_type" value="per_day" class="radio checked:bg-blue-500" checked>
-                                            <span class="label-text ml-2">Per Day</span>
-                                        </label>
-                                        <label class="cursor-pointer label">
-                                            <input type="radio" name="payment_type" value="per_part" class="radio checked:bg-blue-500">
-                                            <span class="label-text ml-2">Per Unit</span>
-                                        </label>
+                                    <!-- Description -->
+                                    <div class="mb-6">
+                                        <p class="text-sm text-gray-600 line-clamp-3 leading-relaxed">{{ task.description or 'No description available' }}</p>
                                     </div>
-                                </div>
-                                <div id="per-day-payout-group" class="form-control mb-4">
-                                    <label class="label">
-                                        <span class="label-text">Daily Payout per Worker</span>
-                                    </label>
-                                    <div class="flex gap-2">
-                                        <input type="number" name="per_day_payout" class="input input-bordered flex-1" placeholder="Amount">
-                                        <input type="text" name="per_day_currency" class="input input-bordered w-24" placeholder="Currency" value="$">
-                                    </div>
-                                </div>
-                                <div id="per-part-payout-group" class="form-control mb-4 hidden">
-                                    <label class="label">
-                                        <span class="label-text">Payout per Unit</span>
-                                    </label>
-                                    <div class="flex gap-2">
-                                        <input type="number" name="per_part_payout" class="input input-bordered flex-1" placeholder="Amount">
-                                        <input type="text" name="per_part_currency" class="input input-bordered w-24" placeholder="Currency" value="$">
-                                    </div>
-                                </div>
-                                <div class="modal-action">
-                                    <button type="button" class="btn btn-ghost" onclick="closeAddTaskModal()">Cancel</button>
-                                    <button type="submit" class="btn btn-primary">Create Task</button>
-                                </div>
-                            </form>
-                        </div>
-                    </dialog>
 
-                    <!-- Edit Task Modal -->
-                    <dialog id="edit-task-modal" class="modal">
-                        <div class="modal-box">
-                            <h3 class="font-bold text-lg mb-4">Edit Task</h3>
-                            <form id="edit-task-form" onsubmit="updateTask(event)">
-                                <input type="hidden" id="edit-task-id" name="task_id">
-                                <div class="form-control mb-4">
-                                    <label class="label">
-                                        <span class="label-text">Task Name</span>
-                                    </label>
-                                    <input type="text" id="edit-task-name" name="name" class="input input-bordered" required>
-                                </div>
-                                <div class="form-control mb-4">
-                                    <label class="label">
-                                        <span class="label-text">Description</span>
-                                    </label>
-                                    <textarea id="edit-task-description" name="description" class="textarea textarea-bordered" rows="3"></textarea>
-                                </div>
-                                <div class="form-control mb-4">
-                                    <label class="label">
-                                        <span class="label-text">Start Date</span>
-                                    </label>
-                                    <input type="date" id="edit-task-start-date" name="start_date" class="input input-bordered" required>
-                                </div>
-                                <div class="form-control mb-4">
-                                    <label class="label">
-                                        <span class="label-text">Payment Type</span>
-                                    </label>
-                                    <div class="flex gap-4">
-                                        <label class="cursor-pointer label">
-                                            <input type="radio" id="edit-payment-type-day" name="edit_payment_type" value="per_day" class="radio checked:bg-blue-500" checked>
-                                            <span class="label-text ml-2">Per Day</span>
-                                        </label>
-                                        <label class="cursor-pointer label">
-                                            <input type="radio" id="edit-payment-type-part" name="edit_payment_type" value="per_part" class="radio checked:bg-blue-500">
-                                            <span class="label-text ml-2">Per Unit</span>
-                                        </label>
+                                    <!-- Payment Info -->
+                                    {% if task.payment_type == 'per_part' and task.per_part_payout %}
+                                    <div class="mb-6 p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200">
+                                        <div class="flex items-center text-blue-800 font-semibold">
+                                            <div class="flex-shrink-0 w-10 h-10 bg-blue-200 rounded-lg flex items-center justify-center mr-3">
+                                                <i class="fas fa-coins text-blue-600"></i>
+                                            </div>
+                                            <div>
+                                                <div class="text-sm font-medium text-blue-900">Payout per unit</div>
+                                                <div class="text-lg font-bold text-blue-800">{{ task.per_part_payout }} {{ task.per_part_currency or '' }}</div>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div id="edit-per-day-payout-group" class="form-control mb-4">
-                                    <label class="label">
-                                        <span class="label-text">Daily Payout per Worker</span>
-                                    </label>
-                                    <div class="flex gap-2">
-                                        <input type="number" id="edit-per-day-payout" name="edit_per_day_payout" class="input input-bordered flex-1" placeholder="Amount">
-                                        <input type="text" id="edit-per-day-currency" name="edit_per_day_currency" class="input input-bordered w-24" placeholder="Currency">
+                                    {% elif task.payment_type == 'per_day' and task.per_day_payout %}
+                                    <div class="mb-6 p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-xl border border-green-200">
+                                        <div class="flex items-center text-green-800 font-semibold">
+                                            <div class="flex-shrink-0 w-10 h-10 bg-green-200 rounded-lg flex items-center justify-center mr-3">
+                                                <i class="fas fa-calendar-day text-green-600"></i>
+                                            </div>
+                                            <div>
+                                                <div class="text-sm font-medium text-green-900">Daily payout per worker</div>
+                                                <div class="text-lg font-bold text-green-800">{{ task.per_day_payout }} {{ task.per_day_currency or '' }}</div>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div id="edit-per-part-payout-group" class="form-control mb-4 hidden">
-                                    <label class="label">
-                                        <span class="label-text">Payout per Unit</span>
-                                    </label>
-                                    <div class="flex gap-2">
-                                        <input type="number" id="edit-per-part-payout" name="edit_per_part_payout" class="input input-bordered flex-1" placeholder="Amount">
-                                        <input type="text" id="edit-per-part-currency" name="edit_per_part_currency" class="input input-bordered w-24" placeholder="Currency">
-                                    </div>
-                                </div>
-                                <div class="modal-action">
-                                    <button type="button" class="btn btn-ghost" onclick="closeEditTaskModal()">Cancel</button>
-                                    <button type="submit" class="btn btn-primary">Update Task</button>
-                                </div>
-                            </form>
-                        </div>
-                    </dialog>
+                                    {% endif %}
 
-                    <!-- Delete Task Modal -->
-                    <dialog id="delete-task-modal" class="modal">
-                        <div class="modal-box">
-                            <h3 class="font-bold text-lg mb-4">Delete Task</h3>
-                            <p class="py-4">Are you sure you want to delete this task? This action cannot be undone.</p>
-                            <input type="hidden" id="delete-task-id">
-                            <div class="modal-action">
-                                <button type="button" class="btn btn-ghost" onclick="closeDeleteTaskModal()">Cancel</button>
-                                <button type="button" class="btn btn-error" onclick="deleteTask()">Delete Task</button>
+                                    <!-- Status Section -->
+                                    <div class="mb-6">
+                                        <div class="status-dropdown" onclick="event.stopPropagation()">
+                                            {% if task.status == 'Pending' %}
+                                            <div class="status-badge pending bg-yellow-100 border-2 border-yellow-200 text-yellow-800 font-semibold px-4 py-3 rounded-xl hover:bg-yellow-200 transition-colors" onclick="toggleStatusDropdown(this)">
+                                                <div class="flex items-center justify-between">
+                                                    <div class="flex items-center">
+                                                        <span class="status-indicator pending w-3 h-3 bg-yellow-500 rounded-full mr-3"></span>
+                                                        <span class="text-sm font-medium">Pending</span>
+                                                    </div>
+                                                    <i class="fas fa-chevron-down status-chevron ml-3 text-xs transition-transform duration-200"></i>
+                                                </div>
+                                            </div>
+                                            {% elif task.status == 'In Progress' %}
+                                            <div class="status-badge in-progress bg-blue-100 border-2 border-blue-200 text-blue-800 font-semibold px-4 py-3 rounded-xl hover:bg-blue-200 transition-colors" onclick="toggleStatusDropdown(this)">
+                                                <div class="flex items-center justify-between">
+                                                    <div class="flex items-center">
+                                                        <span class="status-indicator in-progress w-3 h-3 bg-blue-500 rounded-full mr-3 animate-pulse"></span>
+                                                        <span class="text-sm font-medium">In Progress</span>
+                                                    </div>
+                                                    <i class="fas fa-chevron-down status-chevron ml-3 text-xs transition-transform duration-200"></i>
+                                                </div>
+                                            </div>
+                                            {% else %}
+                                            <div class="status-badge completed bg-green-100 border-2 border-green-200 text-green-800 font-semibold px-4 py-3 rounded-xl hover:bg-green-200 transition-colors" onclick="toggleStatusDropdown(this)">
+                                                <div class="flex items-center justify-between">
+                                                    <div class="flex items-center">
+                                                        <span class="status-indicator completed w-3 h-3 bg-green-500 rounded-full mr-3"></span>
+                                                        <span class="text-sm font-medium">Completed</span>
+                                                    </div>
+                                                    <i class="fas fa-chevron-down status-chevron ml-3 text-xs transition-transform duration-200"></i>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                            
+                                            <div class="status-dropdown-menu">
+                                                <div class="status-menu-item pending {% if task.status == 'Pending' %}active{% endif %} {% if task.start_date.strftime('%Y-%m-%d') <= today_date %}disabled{% endif %}" 
+                                                     onclick="handlePendingStatusUpdate({{ task.id }}, '{{ task.start_date.strftime('%Y-%m-%d') }}')"
+                                                     data-task-date="{{ task.start_date.strftime('%Y-%m-%d') }}">
+                                                    <span class="status-indicator pending"></span>
+                                                    <span>Pending</span>
+                                                    {% if task.start_date.strftime('%Y-%m-%d') <= today_date %}
+                                                    <span class="past-task-indicator">(Start date passed)</span>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="status-menu-item in-progress {% if task.status == 'In Progress' %}active{% endif %} {% if task.start_date.strftime('%Y-%m-%d') > today_date %}disabled{% endif %}" 
+                                                     onclick="handleStatusUpdate({{ task.id }}, 'In Progress', '{{ task.start_date.strftime('%Y-%m-%d') }}')"
+                                                     data-task-date="{{ task.start_date.strftime('%Y-%m-%d') }}">
+                                                    <span class="status-indicator in-progress"></span>
+                                                    <span>In Progress</span>
+                                                    {% if task.start_date.strftime('%Y-%m-%d') > today_date %}
+                                                    <span class="future-task-indicator">(Future task)</span>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="status-menu-item completed {% if task.status == 'Completed' %}active{% endif %} {% if task.start_date.strftime('%Y-%m-%d') > today_date %}disabled{% endif %}" 
+                                                     onclick="handleStatusUpdate({{ task.id }}, 'Completed', '{{ task.start_date.strftime('%Y-%m-%d') }}')"
+                                                     data-task-date="{{ task.start_date.strftime('%Y-%m-%d') }}">
+                                                    <span class="status-indicator completed"></span>
+                                                    <span>Completed</span>
+                                                    {% if task.start_date.strftime('%Y-%m-%d') > today_date %}
+                                                    <span class="future-task-indicator">(Future task)</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% if task.completion_date and task.status == 'Completed' %}
+                                        <div class="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                            <div class="flex items-center">
+                                                <i class="fas fa-check-circle text-green-600 mr-2"></i>
+                                                <span class="text-sm font-medium text-green-800">
+                                                    Completed on {{ task.completion_date.strftime('%B %d, %Y') }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- Footer with Date -->
+                                    <div class="pt-4 border-t border-gray-200">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center text-sm text-gray-600">
+                                                <div class="flex-shrink-0 w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center mr-3">
+                                                    <i class="fas fa-calendar-alt text-gray-500 text-xs"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="text-xs text-gray-500 font-medium">Started on</div>
+                                                    <div class="text-sm font-semibold text-gray-800">{{ task.start_date.strftime('%B %d, %Y') }}</div>
+                                                </div>
+                                            </div>
+                                            <div class="flex-shrink-0">
+                                                <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                                    <i class="fas fa-arrow-right text-blue-600 text-xs"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </dialog>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Include your actual modals -->
+                    {% include 'modals/add_task.html' %}
+                    {% include 'modals/delete_task.html' %}
+                    {% include 'modals/edit_task.html' %}
                 </div>
             </div>
         </div>
@@ -450,22 +484,56 @@
                 <div class="flex-shrink-0 p-4 border-b border-white/10 hidden lg:block">
                     <div class="flex items-center justify-center mb-6 mt-4">
                         <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center mr-3 shadow-lg">
-                            <img src="https://via.placeholder.com/32x32?text=Logo" alt="Embee Bee Logo" class="w-8 h-8 object-contain" />
+                            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Embee Bee Logo" class="w-8 h-8 object-contain" />
                         </div>
                         <h2 class="text-lg font-bold text-white whitespace-nowrap">My Workspace</h2>
                     </div>
                     
                     <!-- User Profile Card -->
                     <div class="bg-white/10 rounded-xl p-3 backdrop-blur-sm border border-white/20 flex items-center">
-                        <div class="avatar placeholder mr-3 flex-shrink-0">
-                            <div class="bg-white/20 text-white rounded-full w-12 h-12 profile-avatar ring-2 ring-white/30 flex items-center justify-center">
-                                <span class="text-lg font-bold">J</span>
+                        {% if session.get('user', {}).get('photo_url') %}
+                            <div class="avatar mr-3 flex-shrink-0">
+                                <div class="w-12 h-12 rounded-full profile-avatar ring-2 ring-white/30">
+                                    <img src="{{ session['user']['photo_url'] }}" alt="Profile Picture" class="object-cover rounded-full" />
+                                </div>
                             </div>
-                        </div>
+                        {% else %}
+                            <div class="avatar placeholder mr-3 flex-shrink-0">
+                                <div class="bg-white/20 text-white rounded-full w-12 h-12 profile-avatar ring-2 ring-white/30 flex items-center justify-center">
+                                    <span class="text-lg font-bold">
+                                        {% set display_name = session.get('user', {}).get('display_name', '') %}
+                                        {% set user_email = session.get('user', {}).get('user_email', '') %}
+                                        {% if display_name %}
+                                            {{ display_name[0] | upper }}
+                                        {% elif user_email %}
+                                            {{ user_email.split('@')[0][0] | upper }}
+                                        {% else %}
+                                            U
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        {% endif %}
                         
                         <div class="flex flex-col min-w-0 flex-1">
-                            <h3 class="text-sm font-semibold text-white truncate mb-1">John Doe</h3>
-                            <p class="text-xs text-white/70 truncate">Administrator</p>
+                            <h3 class="text-sm font-semibold text-white truncate mb-1">
+                                {% set display_name = session.get('user', {}).get('display_name', '') %}
+                                {% set user_email = session.get('user', {}).get('user_email', '') %}
+                                {% if display_name %}
+                                    {{ display_name }}
+                                {% elif user_email %}
+                                    {{ user_email.split('@')[0] | title }}
+                                {% else %}
+                                    User
+                                {% endif %}
+                            </h3>
+                            <p class="text-xs text-white/70 truncate">
+                                {% if session.get('current_workspace', {}).get('role') %}
+                                    {{ session.get('current_workspace', {}).get('role') }}
+                                {% else %}
+                                    Administrator
+                                {% endif %}
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -475,7 +543,7 @@
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center">
                             <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center mr-3 shadow-lg">
-                                <img src="https://via.placeholder.com/24x24?text=Logo" alt="Embee Bee Logo" class="w-6 h-6 object-contain" />
+                                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Embee Bee Logo" class="w-6 h-6 object-contain" />
                             </div>
                             <h2 class="text-lg font-bold text-white">My Workspace</h2>
                         </div>
@@ -488,53 +556,39 @@
                 <!-- Navigation Menu -->
                 <nav class="flex-1 overflow-y-auto sidebar-scroll">
                     <div class="space-y-2 p-4">
-                        <div class="w-full">
-                            <a href="/dashboard" 
-                               class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg text-white/90 min-h-[48px] no-underline">
-                                <span class="material-icons mr-3 flex-shrink-0">home</span> 
-                                <span class="font-medium flex-shrink-0">Dashboard</span>
-                            </a>
-                        </div>
+                        {% set menu_items = [
+                            {'endpoint': 'home_route', 'icon': 'home', 'label': 'Dashboard'},
+                            {'endpoint': 'workers_route', 'icon': 'group', 'label': 'Workers'},
+                            {'endpoint': 'tasks_route', 'icon': 'assignment', 'label': 'Tasks'},
+                            {'endpoint': 'reports_route', 'icon': 'bar_chart', 'label': 'Reports'}
+                        ] %}
                         
-                        <div class="w-full">
-                            <a href="/workers" 
-                               class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg text-white/90 min-h-[48px] no-underline">
-                                <span class="material-icons mr-3 flex-shrink-0">group</span> 
-                                <span class="font-medium flex-shrink-0">Workers</span>
-                            </a>
-                        </div>
+                        {% for item in menu_items %}
+                            <div class="w-full">
+                                <a href="{{ url_for(item.endpoint) }}" 
+                                   class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg min-h-[48px] no-underline {% if request.endpoint == item.endpoint %}active{% else %}text-white/90{% endif %}">
+                                    <span class="material-icons mr-3 flex-shrink-0">{{ item.icon }}</span> 
+                                    <span class="font-medium flex-shrink-0">{{ item.label }}</span>
+                                </a>
+                            </div>
+                        {% endfor %}
                         
-                        <!-- TASKS MENU ITEM WITH GOLD ACTIVE INDICATOR -->
-                        <div class="w-full">
-                            <a href="/tasks" 
-                               class="sidebar-menu-item active whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg min-h-[48px] no-underline text-white">
-                                <span class="material-icons mr-3 flex-shrink-0">assignment</span> 
-                                <span class="font-medium flex-shrink-0">Tasks</span>
-                            </a>
-                        </div>
-                        
-                        <div class="w-full">
-                            <a href="/reports" 
-                               class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg text-white/90 min-h-[48px] no-underline">
-                                <span class="material-icons mr-3 flex-shrink-0">bar_chart</span> 
-                                <span class="font-medium flex-shrink-0">Reports</span>
-                            </a>
-                        </div>
-                        
-                        <div class="w-full">
-                            <a href="https://billing.stripe.com/p/login/test_5kQaEX5Jg1o5g8lg0SgEg00" 
-                               target="_blank" 
-                               class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg text-white/90 min-h-[48px] no-underline">
-                                <span class="material-icons mr-3 flex-shrink-0">credit_card</span> 
-                                <span class="font-medium flex-shrink-0">Payments/Billing</span>
-                            </a>
-                        </div>
+                        {% if session.get('current_workspace', {}).get('role') in ['Admin'] %}
+                            <div class="w-full">
+                                <a href="https://billing.stripe.com/p/login/test_5kQaEX5Jg1o5g8lg0SgEg00" 
+                                   target="_blank" 
+                                   class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg text-white/90 min-h-[48px] no-underline">
+                                    <span class="material-icons mr-3 flex-shrink-0">credit_card</span> 
+                                    <span class="font-medium flex-shrink-0">Payments/Billing</span>
+                                </a>
+                            </div>
+                        {% endif %}
                     </div>
                 </nav>
                 
                 <!-- Footer Section -->
                 <div class="flex-shrink-0 p-4 border-t border-white/10">
-                    <a href="/signout" 
+                    <a href="{{ url_for('signout') }}" 
                        class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg text-white/90 min-h-[48px] no-underline">
                         <span class="material-icons mr-3 flex-shrink-0">logout</span> 
                         <span class="font-medium flex-shrink-0">Sign Out</span>
@@ -545,243 +599,7 @@
     </div>
     
     <script>
-        // Sample tasks data
-        const tasks = [
-            {
-                id: 1,
-                name: "Complete Financial Report",
-                description: "Q4 2023 financial analysis and projections for client review and board meeting presentation.",
-                start_date: "2023-12-01",
-                payment_type: "per_part",
-                per_part_payout: 25,
-                per_part_currency: "$",
-                status: "In Progress"
-            },
-            {
-                id: 2,
-                name: "Client Onboarding",
-                description: "New client setup and documentation including account creation and training sessions.",
-                start_date: "2023-12-05",
-                payment_type: "per_day",
-                per_day_payout: 60,
-                per_day_currency: "Kwacha",
-                status: "Completed",
-                completion_date: "2023-12-10"
-            },
-            {
-                id: 3,
-                name: "Tax Preparation",
-                description: "Annual tax filing documents and compliance review for multiple business entities.",
-                start_date: "2024-01-05",
-                payment_type: "per_part",
-                per_part_payout: 45,
-                per_part_currency: "$",
-                status: "Pending"
-            }
-        ];
-
-        // Initialize the page
-        document.addEventListener('DOMContentLoaded', function() {
-            feather.replace();
-            loadTasks();
-            setupPaymentTypeToggle();
-            setupEditPaymentTypeToggle();
-
-            // Sidebar functionality
-            const drawerToggle = document.getElementById('my-drawer');
-
-            // Remove any focus outlines from sidebar items when clicked
-            document.querySelectorAll('.sidebar-menu-item').forEach(item => {
-                item.addEventListener('mousedown', function(e) {
-                    e.preventDefault();
-                });
-                item.addEventListener('click', function() {
-                    // Close sidebar on mobile after clicking a link
-                    if (window.innerWidth < 1024) {
-                        drawerToggle.checked = false;
-                    }
-                });
-            });
-        });
-
-        function loadTasks() {
-            const container = document.getElementById('tasks-container');
-            container.innerHTML = tasks.map(task => `
-                <div class="group relative" onclick="navigateToTask(event, ${task.id})" data-payment-type="${task.payment_type}" data-task-id="${task.id}">
-                    <div class="task-card bg-white shadow-lg hover:shadow-2xl transition-all duration-300 rounded-2xl border border-gray-200 overflow-visible transform hover:-translate-y-1 cursor-pointer">
-                        <div class="p-7">
-                            <!-- Header with Title, Badge, and Menu -->
-                            <div class="flex justify-between items-start mb-6">
-                                <div class="flex-1 min-w-0 mr-3">
-                                    <div class="flex flex-wrap items-start gap-3 mb-3">
-                                        <h2 class="text-xl font-bold text-gray-900 break-words flex-1 leading-tight">${task.name}</h2>
-                                        <div class="flex gap-2 flex-shrink-0">
-                                            ${task.payment_type === 'per_part' ? 
-                                                '<span class="per-unit-badge inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-200"><i class="fas fa-cube mr-1.5 text-blue-600"></i>Per Unit</span>' : 
-                                                '<span class="per-day-badge inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-200"><i class="fas fa-calendar-day mr-1.5 text-green-600"></i>Per Day</span>'
-                                            }
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="dropdown dropdown-end flex-shrink-0" onclick="event.stopPropagation()" style="position: relative; z-index: 1000;">
-                                    <label tabindex="0" class="btn btn-ghost btn-sm btn-circle hover:bg-gray-100 h-10 w-10">
-                                        <i class="fas fa-ellipsis-v text-gray-600 text-sm"></i>
-                                    </label>
-                                    <ul tabindex="0" class="dropdown-content menu p-2 shadow-xl bg-white rounded-xl w-52 text-sm border border-gray-200" style="position: absolute; z-index: 1000; right: 0; top: 100%; margin-top: 0.5rem; min-width: 160px; overflow: visible;">
-                                        <li>
-                                            <a href='javascript:void(0);' onclick='openEditTaskModal(${task.id}, "${task.name}", "${task.description}", "${task.start_date}", "${task.payment_type}", ${task.per_part_payout || null}, "${task.per_part_currency || ''}", ${task.per_day_payout || null}, "${task.per_day_currency || ''}")' class="hover:bg-gray-50 py-3">
-                                                <i class="fas fa-edit w-4 h-4 text-blue-600"></i>Edit Task
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a onclick="openDeleteTaskModal(${task.id})" class="text-red-600 hover:bg-red-50 py-3">
-                                                <i class="fas fa-trash-alt w-4 h-4"></i>Delete Task
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-
-                            <!-- Description -->
-                            <div class="mb-6">
-                                <p class="text-sm text-gray-600 line-clamp-3 leading-relaxed">${task.description}</p>
-                            </div>
-
-                            <!-- Payment Info -->
-                            ${task.payment_type === 'per_part' && task.per_part_payout ? `
-                            <div class="mb-6 p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200">
-                                <div class="flex items-center text-blue-800 font-semibold">
-                                    <div class="flex-shrink-0 w-10 h-10 bg-blue-200 rounded-lg flex items-center justify-center mr-3">
-                                        <i class="fas fa-coins text-blue-600"></i>
-                                    </div>
-                                    <div>
-                                        <div class="text-sm font-medium text-blue-900">Payout per unit</div>
-                                        <div class="text-lg font-bold text-blue-800">${task.per_part_payout} ${task.per_part_currency}</div>
-                                    </div>
-                                </div>
-                            </div>
-                            ` : ''}
-                            ${task.payment_type === 'per_day' && task.per_day_payout ? `
-                            <div class="mb-6 p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-xl border border-green-200">
-                                <div class="flex items-center text-green-800 font-semibold">
-                                    <div class="flex-shrink-0 w-10 h-10 bg-green-200 rounded-lg flex items-center justify-center mr-3">
-                                        <i class="fas fa-calendar-day text-green-600"></i>
-                                    </div>
-                                    <div>
-                                        <div class="text-sm font-medium text-green-900">Daily payout per worker</div>
-                                        <div class="text-lg font-bold text-green-800">${task.per_day_payout} ${task.per_day_currency}</div>
-                                    </div>
-                                </div>
-                            </div>
-                            ` : ''}
-
-                            <!-- Status Section -->
-                            <div class="mb-6">
-                                <div class="status-dropdown" onclick="event.stopPropagation()">
-                                    ${getStatusBadge(task)}
-                                    
-                                    <div class="status-dropdown-menu">
-                                        <div class="status-menu-item pending ${task.status === 'Pending' ? 'active' : ''} ${task.start_date <= new Date().toISOString().split('T')[0] ? 'disabled' : ''}" 
-                                             onclick="handlePendingStatusUpdate(${task.id}, '${task.start_date}')"
-                                             data-task-date="${task.start_date}">
-                                            <span class="status-indicator pending"></span>
-                                            <span>Pending</span>
-                                            ${task.start_date <= new Date().toISOString().split('T')[0] ? '<span class="past-task-indicator">(Start date passed)</span>' : ''}
-                                        </div>
-                                        <div class="status-menu-item in-progress ${task.status === 'In Progress' ? 'active' : ''} ${task.start_date > new Date().toISOString().split('T')[0] ? 'disabled' : ''}" 
-                                             onclick="handleStatusUpdate(${task.id}, 'In Progress', '${task.start_date}')"
-                                             data-task-date="${task.start_date}">
-                                            <span class="status-indicator in-progress"></span>
-                                            <span>In Progress</span>
-                                            ${task.start_date > new Date().toISOString().split('T')[0] ? '<span class="future-task-indicator">(Future task)</span>' : ''}
-                                        </div>
-                                        <div class="status-menu-item completed ${task.status === 'Completed' ? 'active' : ''} ${task.start_date > new Date().toISOString().split('T')[0] ? 'disabled' : ''}" 
-                                             onclick="handleStatusUpdate(${task.id}, 'Completed', '${task.start_date}')"
-                                             data-task-date="${task.start_date}">
-                                            <span class="status-indicator completed"></span>
-                                            <span>Completed</span>
-                                            ${task.start_date > new Date().toISOString().split('T')[0] ? '<span class="future-task-indicator">(Future task)</span>' : ''}
-                                        </div>
-                                    </div>
-                                </div>
-                                ${task.completion_date && task.status === 'Completed' ? `
-                                <div class="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                                    <div class="flex items-center">
-                                        <i class="fas fa-check-circle text-green-600 mr-2"></i>
-                                        <span class="text-sm font-medium text-green-800">
-                                            Completed on ${new Date(task.completion_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-                                        </span>
-                                    </div>
-                                </div>
-                                ` : ''}
-                            </div>
-
-                            <!-- Footer with Date -->
-                            <div class="pt-4 border-t border-gray-200">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center text-sm text-gray-600">
-                                        <div class="flex-shrink-0 w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center mr-3">
-                                            <i class="fas fa-calendar-alt text-gray-500 text-xs"></i>
-                                        </div>
-                                        <div>
-                                            <div class="text-xs text-gray-500 font-medium">Started on</div>
-                                            <div class="text-sm font-semibold text-gray-800">${new Date(task.start_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
-                                        </div>
-                                    </div>
-                                    <div class="flex-shrink-0">
-                                        <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                                            <i class="fas fa-arrow-right text-blue-600 text-xs"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function getStatusBadge(task) {
-            const statusConfig = {
-                'Pending': {
-                    class: 'pending bg-yellow-100 border-2 border-yellow-200 text-yellow-800 hover:bg-yellow-200',
-                    indicator: 'pending bg-yellow-500',
-                    text: 'Pending'
-                },
-                'In Progress': {
-                    class: 'in-progress bg-blue-100 border-2 border-blue-200 text-blue-800 hover:bg-blue-200',
-                    indicator: 'in-progress bg-blue-500 animate-pulse',
-                    text: 'In Progress'
-                },
-                'Completed': {
-                    class: 'completed bg-green-100 border-2 border-green-200 text-green-800 hover:bg-green-200',
-                    indicator: 'completed bg-green-500',
-                    text: 'Completed'
-                }
-            };
-
-            const config = statusConfig[task.status];
-            return `
-                <div class="status-badge ${config.class} font-semibold px-4 py-3 rounded-xl transition-colors" onclick="toggleStatusDropdown(this)">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center">
-                            <span class="status-indicator ${config.indicator} w-3 h-3 rounded-full mr-3"></span>
-                            <span class="text-sm font-medium">${config.text}</span>
-                        </div>
-                        <i class="fas fa-chevron-down status-chevron ml-3 text-xs transition-transform duration-200"></i>
-                    </div>
-                </div>
-            `;
-        }
-
-        // ... (all the other functions from the original code remain the same)
-        // [Keeping all the original functions like navigateToTask, toggleStatusDropdown, closeAllDropdowns, 
-        // setDropdownsDisabled, openEditTaskModal, setupEditPaymentTypeToggle, updateEditPayoutLabels, 
-        // closeEditTaskModal, updateTask, openDeleteTaskModal, closeDeleteTaskModal, deleteTask, 
-        // handleStatusUpdate, handlePendingStatusUpdate, updateTaskStatus, updateTaskCardUI, etc.]
-
-        // Due to character limits, I'm including the most critical functions. The rest would be the same as in your original code.
-
+        // All the original JavaScript functionality remains exactly the same
         function navigateToTask(event, taskId) {
             if (!event.target.closest('.status-dropdown')) {
                 const card = event.currentTarget;
@@ -814,6 +632,16 @@
             }
         }
 
+        document.addEventListener('click', function(event) {
+            if (event.target.closest('.drawer-side') || event.target.closest('[for="my-drawer"]') || event.target.closest('#my-drawer')) {
+                return;
+            }
+            
+            if (!event.target.closest('.status-dropdown') && !event.target.closest('.dropdown')) {
+                closeAllDropdowns();
+            }
+        });
+
         function closeAllDropdowns() {
             document.querySelectorAll('.status-dropdown').forEach(dropdown => {
                 dropdown.classList.remove('open');
@@ -828,71 +656,418 @@
             });
         }
 
-        function setupPaymentTypeToggle() {
-            const perPartGroup = document.getElementById('per-part-payout-group');
-            const perDayGroup = document.getElementById('per-day-payout-group');
-            const radios = document.querySelectorAll('input[name="payment_type"]');
+        function setDropdownsDisabled(disabled) {
+            document.querySelectorAll('.status-dropdown, .dropdown').forEach(el => {
+                if (disabled) {
+                    el.classList.add('dropdown-disabled');
+                } else {
+                    el.classList.remove('dropdown-disabled');
+                }
+            });
+        }
+
+        function openEditTaskModal(taskId, name, description, startDate, paymentType, perPartPayout, perPartCurrency, perDayPayout, perDayCurrency) {
+            closeAllDropdowns();
+            setDropdownsDisabled(true);
+            const modal = document.getElementById('edit-task-modal');
+            document.getElementById('edit-task-id').value = taskId;
+            document.getElementById('edit-task-name').value = name;
+            document.getElementById('edit-task-description').value = description || '';
+            const startDateInput = document.getElementById('edit-task-start-date');
+            startDateInput.value = startDate;
+            if (paymentType === 'per_part') {
+                document.getElementById('edit-payment-type-part').checked = true;
+                document.getElementById('edit-per-part-payout-group').style.display = '';
+                document.getElementById('edit-per-day-payout-group').style.display = 'none';
+            } else {
+                document.getElementById('edit-payment-type-day').checked = true;
+                document.getElementById('edit-per-part-payout-group').style.display = 'none';
+                document.getElementById('edit-per-day-payout-group').style.display = '';
+            }
+            document.getElementById('edit-per-part-payout').value = perPartPayout || '';
+            document.getElementById('edit-per-part-currency').value = perPartCurrency || '';
+            document.getElementById('edit-per-day-payout').value = perDayPayout || '';
+            document.getElementById('edit-per-day-currency').value = perDayCurrency || '';
+            setupEditPaymentTypeToggle();
+            updateEditPayoutLabels(paymentType);
+            modal.classList.add('modal-open');
+            setTimeout(() => {
+                if (startDateInput.datePickerInstance) {
+                    startDateInput.datePickerInstance.setValue(startDate);
+                }
+            }, 100);
+        }
+
+        function setupEditPaymentTypeToggle() {
+            const perPartGroup = document.getElementById('edit-per-part-payout-group');
+            const perDayGroup = document.getElementById('edit-per-day-payout-group');
+            const radios = document.querySelectorAll('input[name="edit_payment_type"]');
             
             radios.forEach(radio => {
                 radio.addEventListener('change', function() {
                     if (this.value === 'per_part') {
-                        perPartGroup.classList.remove('hidden');
-                        perDayGroup.classList.add('hidden');
+                        perPartGroup.style.display = '';
+                        perDayGroup.style.display = 'none';
                     } else {
-                        perPartGroup.classList.add('hidden');
-                        perDayGroup.classList.remove('hidden');
+                        perPartGroup.style.display = 'none';
+                        perDayGroup.style.display = '';
                     }
+                    updateEditPayoutLabels(this.value);
                 });
             });
         }
 
-        function openAddTaskModal() {
-            document.getElementById('add-task-modal').showModal();
-        }
-
-        function closeAddTaskModal() {
-            document.getElementById('add-task-modal').close();
-        }
-
-        function addTask(event) {
-            event.preventDefault();
-            const formData = new FormData(event.target);
-            // Add task logic here
-            closeAddTaskModal();
-            showCustomModal('Success', 'Task created successfully!', 'success');
-        }
-
-        function showCustomModal(title, message, type = 'info') {
-            const modal = document.createElement('dialog');
-            modal.className = 'modal';
+        function updateEditPayoutLabels(paymentType) {
+            const payoutLabel = document.getElementById('edit-payout-label');
+            const payoutInput = document.getElementById('edit-per-day-payout');
             
-            let iconClass = 'fas fa-info-circle text-brand-navy-500';
-            if (type === 'success') {
-                iconClass = 'fas fa-check-circle text-green-500';
-            } else if (type === 'error') {
-                iconClass = 'fas fa-exclamation-circle text-red-500';
-            } else if (type === 'warning') {
-                iconClass = 'fas fa-exclamation-triangle text-yellow-500';
+            if (paymentType === 'per_day') {
+                if (payoutLabel) {
+                    payoutLabel.innerHTML = 'Daily payout per worker <span class="text-xs text-gray-400">(e.g., 25$ , 60 Kwacha)</span>';
+                }
+                if (payoutInput) {
+                    payoutInput.placeholder = 'Enter daily payout per worker';
+                }
+            } else if (paymentType === 'per_part') {
+                if (payoutLabel) {
+                    payoutLabel.innerHTML = 'Payout per part <span class="text-xs text-gray-400">(e.g., 25$ , 60 Kwacha)</span>';
+                }
+                if (payoutInput) {
+                    payoutInput.placeholder = 'Enter payout per part';
+                    }
+            }
+        }
+
+        function closeEditTaskModal() {
+            setDropdownsDisabled(false);
+            document.getElementById('edit-task-modal').classList.remove('modal-open');
+        }
+
+        function updateTask(event) {
+            event.preventDefault();
+            const taskId = document.getElementById('edit-task-id').value;
+            const form = event.target;
+            const formData = new FormData(form);
+            const paymentType = formData.get('edit_payment_type') || 'per_day';
+            let perPartPayout = null;
+            let perPartCurrency = null;
+            let perDayPayout = null;
+            let perDayCurrency = null;
+            
+            if (paymentType === 'per_part') {
+                perPartPayout = formData.get('edit_per_part_payout');
+                perPartCurrency = formData.get('edit_per_part_currency');
+                if (!perPartPayout || isNaN(perPartPayout) || Number(perPartPayout) <= 0) {
+                    showCustomModal('Validation Error', 'Please enter a valid payout per part.', 'warning');
+                    document.getElementById('edit-per-part-payout').focus();
+                    return;
+                }
+                if (!perPartCurrency || perPartCurrency.trim() === '') {
+                    showCustomModal('Validation Error', 'Please select a currency for payout per part.', 'warning');
+                    document.getElementById('edit-per-part-currency').focus();
+                    return;
+                }
+            } else {
+                perDayPayout = formData.get('edit_per_day_payout');
+                perDayCurrency = formData.get('edit_per_day_currency');
+                if (!perDayPayout || isNaN(perDayPayout) || Number(perDayPayout) <= 0) {
+                    showCustomModal('Validation Error', 'Please enter a valid daily payout per worker.', 'warning');
+                    document.getElementById('edit-per-day-payout').focus();
+                    return;
+                }
+                if (!perDayCurrency || perDayCurrency.trim() === '') {
+                    showCustomModal('Validation Error', 'Please select a currency for daily payout.', 'warning');
+                    document.getElementById('edit-per-day-currency').focus();
+                    return;
+                }
             }
             
-            modal.innerHTML = `
-                <div class="modal-box">
-                    <h3 class="font-bold text-lg flex items-center gap-2">
-                        <i class="${iconClass}"></i>
-                        <span>${title}</span>
-                    </h3>
-                    <p class="py-4">${message}</p>
-                    <div class="modal-action">
-                        <button type="button" class="btn btn-primary" onclick="this.closest('dialog').close(); this.closest('dialog').remove();">OK</button>
-                    </div>
-                </div>
-            `;
-            
-            document.body.appendChild(modal);
-            modal.showModal();
+            fetch(`/api/task/${taskId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: formData.get('name'),
+                    description: formData.get('description'),
+                    start_date: formData.get('start_date'),
+                    payment_type: paymentType,
+                    per_part_payout: perPartPayout,
+                    per_part_currency: perPartCurrency,
+                    per_day_payout: perDayPayout,
+                    per_day_currency: perDayCurrency
+                })
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.error) {
+                    showCustomModal('Error', result.error, 'error');
+                } else {
+                    closeEditTaskModal();
+                    window.location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error updating task:', error);
+                showCustomModal('Error', 'Failed to update task', 'error');
+            });
         }
 
-        // Include all the other original functions here...
+        function openDeleteTaskModal(taskId) {
+            closeAllDropdowns();
+            setDropdownsDisabled(true);
+            document.getElementById('delete-task-id').value = taskId;
+            document.getElementById('delete-task-modal').classList.add('modal-open');
+        }
+
+        function closeDeleteTaskModal() {
+            setDropdownsDisabled(false);
+            document.getElementById('delete-task-modal').classList.remove('modal-open');
+        }
+
+        function deleteTask() {
+            const taskId = document.getElementById('delete-task-id').value;
+            
+            fetch(`/api/task/${taskId}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.error) {
+                    showCustomModal('Error', result.error, 'error');
+                } else {
+                    window.location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting task:', error);
+                showCustomModal('Error', 'Failed to delete task', 'error');
+            });
+        }
+
+        function handleStatusUpdate(taskId, newStatus, taskDate) {
+            const currentDate = new Date().toISOString().split('T')[0];
+            
+            if (newStatus !== 'Pending' && taskDate > currentDate) {
+                showCustomModal('Status Update Error', 'Cannot set status to "' + newStatus + '" for tasks with future start dates. Only "Pending" is allowed until the start date is reached.', 'warning');
+                return;
+            }
+            
+            updateTaskStatus(taskId, newStatus);
+        }
+
+        function handlePendingStatusUpdate(taskId, taskDate) {
+            const currentDate = new Date().toISOString().split('T')[0];
+            
+            if (taskDate <= currentDate) {
+                showCustomModal('Status Update Error', 'Cannot set status to "Pending" for tasks where the start date has already passed. Only "In Progress" or "Completed" are allowed.', 'warning');
+                return;
+            }
+            
+            updateTaskStatus(taskId, 'Pending');
+        }
+
+        function updateTaskStatus(taskId, newStatus) {
+            const taskCard = document.querySelector(`[data-task-id="${taskId}"]`);
+            const statusBadge = taskCard?.querySelector('.status-badge');
+            
+            if (statusBadge) {
+                statusBadge.style.opacity = '0.6';
+                statusBadge.style.pointerEvents = 'none';
+                const chevron = statusBadge.querySelector('.status-chevron');
+                if (chevron) {
+                    chevron.className = 'fas fa-spinner fa-spin status-chevron ml-3 text-xs';
+                }
+            }
+            
+            closeAllDropdowns();
+            
+            fetch(`/api/task/${taskId}/status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    status: newStatus
+                })
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.error) {
+                    if (statusBadge) {
+                        statusBadge.style.opacity = '1';
+                        statusBadge.style.pointerEvents = 'auto';
+                        const chevron = statusBadge.querySelector('.status-chevron');
+                        if (chevron) {
+                            chevron.className = 'fas fa-chevron-down status-chevron ml-3 text-xs transition-transform duration-200';
+                        }
+                    }
+                    showCustomModal('Update Error', result.error, 'error');
+                } else {
+                    updateTaskCardUI(taskCard, newStatus, result.completion_date);
+                }
+            })
+            .catch(error => {
+                console.error('Error updating task status:', error);
+                if (statusBadge) {
+                    statusBadge.style.opacity = '1';
+                    statusBadge.style.pointerEvents = 'auto';
+                    const chevron = statusBadge.querySelector('.status-chevron');
+                    if (chevron) {
+                        chevron.className = 'fas fa-chevron-down status-chevron ml-3 text-xs transition-transform duration-200';
+                    }
+                }
+                showCustomModal('Update Error', 'Failed to update task status', 'error');
+            });
+        }
+        
+        function updateTaskCardUI(taskCard, newStatus, completionDate) {
+            const statusBadge = taskCard.querySelector('.status-badge');
+            const statusIndicator = taskCard.querySelector('.status-indicator');
+            const statusText = statusBadge?.querySelector('span:not(.status-indicator)');
+            
+            if (!statusBadge || !statusIndicator || !statusText) return;
+            
+            statusBadge.className = 'status-badge font-semibold px-4 py-3 rounded-xl transition-colors';
+            statusIndicator.className = 'status-indicator w-3 h-3 rounded-full mr-3';
+            
+            switch (newStatus) {
+                case 'Pending':
+                    statusBadge.classList.add('pending', 'bg-yellow-100', 'border-2', 'border-yellow-200', 'text-yellow-800', 'hover:bg-yellow-200');
+                    statusIndicator.classList.add('pending', 'bg-yellow-500');
+                    statusText.textContent = 'Pending';
+                    break;
+                case 'In Progress':
+                    statusBadge.classList.add('in-progress', 'bg-blue-100', 'border-2', 'border-blue-200', 'text-blue-800', 'hover:bg-blue-200');
+                    statusIndicator.classList.add('in-progress', 'bg-blue-500', 'animate-pulse');
+                    statusText.textContent = 'In Progress';
+                    break;
+                case 'Completed':
+                    statusBadge.classList.add('completed', 'bg-green-100', 'border-2', 'border-green-200', 'text-green-800', 'hover:bg-green-200');
+                    statusIndicator.classList.add('completed', 'bg-green-500');
+                    statusText.textContent = 'Completed';
+                    break;
+            }
+            
+            if (newStatus === 'Completed' && completionDate) {
+                let completionDiv = taskCard.querySelector('.completion-section');
+                if (!completionDiv) {
+                    completionDiv = document.createElement('div');
+                    completionDiv.className = 'completion-section mt-4 p-3 bg-green-50 border border-green-200 rounded-lg';
+                    const statusSection = taskCard.querySelector('.mb-6:has(.status-dropdown)');
+                    if (statusSection) {
+                        statusSection.after(completionDiv);
+                    }
+                }
+                const completionDateFormatted = new Date(completionDate).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                completionDiv.innerHTML = `
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-600 mr-2"></i>
+                        <span class="text-sm font-medium text-green-800">
+                            Completed on ${completionDateFormatted}
+                        </span>
+                    </div>
+                `;
+            } else if (newStatus !== 'Completed') {
+                const completionDiv = taskCard.querySelector('.completion-section');
+                if (completionDiv) {
+                    completionDiv.remove();
+                }
+            }
+            
+            statusBadge.style.opacity = '1';
+            statusBadge.style.pointerEvents = 'auto';
+            statusBadge.onclick = function() { toggleStatusDropdown(this); };
+            
+            const chevron = statusBadge.querySelector('.status-chevron');
+            if (chevron) {
+                chevron.className = 'fas fa-chevron-down status-chevron ml-3 text-xs transition-transform duration-200';
+            }
+            
+            const dropdown = taskCard.querySelector('.status-dropdown-menu');
+            if (dropdown) {
+                const menuItems = dropdown.querySelectorAll('.status-menu-item');
+                menuItems.forEach(item => {
+                    item.classList.remove('active');
+                    const itemText = item.querySelector('span:not(.status-indicator)').textContent;
+                    if (itemText === newStatus) {
+                        item.classList.add('active');
+                    }
+                });
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const statusMenuItems = document.querySelectorAll('.status-menu-item');
+            const currentDate = new Date().toISOString().split('T')[0];
+            
+            statusMenuItems.forEach(item => {
+                const taskDate = item.getAttribute('data-task-date');
+                if (taskDate && taskDate > currentDate) {
+                    item.classList.add('disabled');
+                    item.onclick = function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        showCustomModal('Status Update Error', 'Cannot set status for tasks with future start dates. Only "Pending" is allowed until the start date is reached.', 'warning');
+                    };
+                }
+            });
+
+            // Sidebar functionality
+            const drawerToggle = document.getElementById('my-drawer');
+
+            // Remove any focus outlines from sidebar items when clicked
+            document.querySelectorAll('.sidebar-menu-item').forEach(item => {
+                item.addEventListener('mousedown', function(e) {
+                    e.preventDefault();
+                });
+                item.addEventListener('click', function() {
+                    // Close sidebar on mobile after clicking a link
+                    if (window.innerWidth < 1024) {
+                        drawerToggle.checked = false;
+                    }
+                });
+            });
+        });
+
+        // Add showCustomModal function if not defined
+        if (typeof showCustomModal === 'undefined') {
+            function showCustomModal(title, message, type = 'info') {
+                return new Promise((resolve) => {
+                    const modal = document.createElement('dialog');
+                    modal.className = 'modal';
+                    
+                    let iconClass = 'fas fa-info-circle text-brand-navy-500';
+                    if (type === 'success') {
+                        iconClass = 'fas fa-check-circle text-green-500';
+                    } else if (type === 'error') {
+                        iconClass = 'fas fa-exclamation-circle text-red-500';
+                    } else if (type === 'warning') {
+                        iconClass = 'fas fa-exclamation-triangle text-yellow-500';
+                    }
+                    
+                    modal.innerHTML = `
+                        <div class="modal-box">
+                            <h3 class="font-bold text-lg flex items-center gap-2">
+                                <i class="${iconClass}"></i>
+                                <span>${title}</span>
+                            </h3>
+                            <p class="py-4">${message}</p>
+                            <div class="modal-action">
+                                <button type="button" class="btn btn-primary" onclick="this.closest('dialog').close(); this.closest('dialog').remove(); resolve(true);">OK</button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    document.body.appendChild(modal);
+                    modal.showModal();
+                });
+            }
+        }
     </script>
 </body>
 </html>

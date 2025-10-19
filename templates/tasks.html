@@ -56,193 +56,7 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     
     <style>
-        /* Base styles */
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #ffffff;
-            color: #1f2937;
-            line-height: 1.6;
-        }
-
-        html, body {
-            overflow-x: hidden !important;
-        }
-
-        /* Custom Sidebar System - EXACT MATCH */
-        .tasks-layout {
-            display: flex;
-            min-height: 100vh;
-            background: #ffffff;
-            position: relative;
-        }
-        
-        /* Sidebar Container - EXACT match to drawer-side */
-        .tasks-sidebar-container {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 20rem;
-            height: 100vh;
-            display: block;
-            visibility: visible;
-            opacity: 1;
-            z-index: 10001;
-            transform: translateX(0);
-            transition: transform 0.3s ease-in-out;
-        }
-        
-        /* Sidebar Content - EXACT match to inner div */
-        .tasks-sidebar {
-            height: 100%;
-            width: 100%;
-            background: linear-gradient(180deg, #1A2B48 0%, #102038 100%);
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            z-index: 10001;
-            pointer-events: auto;
-            overflow: hidden;
-        }
-        
-        .tasks-main-content {
-            flex: 1;
-            margin-left: 20rem;
-            min-height: 100vh;
-            position: relative;
-            background: #ffffff;
-            transition: transform 0.3s ease-in-out;
-        }
-        
-        /* Mobile Styles - EXACT slide animation */
-        @media (max-width: 1023px) {
-            .tasks-sidebar-container {
-                transform: translateX(-100%);
-            }
-            
-            .tasks-main-content {
-                margin-left: 0;
-                width: 100%;
-            }
-            
-            .sidebar-open .tasks-sidebar-container {
-                transform: translateX(0);
-            }
-            
-            .sidebar-open .tasks-main-content {
-                transform: translateX(20rem);
-            }
-
-            /* Prevent body scroll when sidebar is open */
-            .sidebar-open body {
-                overflow: hidden;
-            }
-        }
-        
-        /* Desktop Styles */
-        @media (min-width: 1024px) {
-            .tasks-sidebar-container {
-                transform: translateX(0) !important;
-            }
-            
-            .tasks-main-content {
-                margin-left: 20rem !important;
-                transform: none !important;
-            }
-            
-            .mobile-menu-btn {
-                display: none !important;
-            }
-        }
-
-        /* Sidebar Menu Items - EXACT match */
-        .sidebar-menu-item {
-            display: flex;
-            align-items: center;
-            width: 100%;
-            padding: 1rem 1rem;
-            border-radius: 0.5rem;
-            color: rgba(255, 255, 255, 0.9);
-            transition: all 0.3s ease;
-            text-decoration: none;
-            min-height: 48px;
-            z-index: 10002;
-            flex-shrink: 0;
-            touch-action: manipulation;
-            cursor: pointer;
-        }
-        
-        .sidebar-menu-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-        }
-        
-        .sidebar-menu-item.active {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-        }
-
-        /* Mobile Overlay - EXACT match to drawer-overlay */
-        .sidebar-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 10000;
-            pointer-events: auto;
-            touch-action: auto;
-        }
-        
-        .sidebar-open .sidebar-overlay {
-            display: block;
-        }
-
-        /* Mobile Menu Button */
-        .mobile-menu-btn {
-            position: fixed;
-            top: 1rem;
-            right: 1rem;
-            z-index: 10002;
-            background: linear-gradient(135deg, #1A2B48 0%, #102038 100%);
-            border: none;
-            border-radius: 50%;
-            width: 3rem;
-            height: 3rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            transition: all 0.3s ease;
-        }
-
-        .mobile-menu-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Scrollbar styles - EXACT match */
-        .sidebar-nav {
-            scrollbar-width: thin;
-            scrollbar-color: rgba(255,255,255,0.2) transparent;
-        }
-
-        .sidebar-nav::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .sidebar-nav::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .sidebar-nav::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 3px;
-        }
-
-        .sidebar-nav::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        /* Task Card Styles */
+        /* Task-specific styles */
         .tasks-container {
             background: #ffffff;
             min-height: 100vh;
@@ -251,9 +65,8 @@
         
         .task-card {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid #e5e7eb;
+            border: 1px solid rgba(255, 255, 255, 0.2);
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            background: white;
         }
         
         .task-card:hover {
@@ -328,30 +141,6 @@
         .status-indicator.completed {
             background: #10b981;
         }
-
-        .status-badge {
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-        }
-
-        .status-badge.pending {
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-            color: #92400e;
-            border-color: #f59e0b;
-        }
-
-        .status-badge.in-progress {
-            background: linear-gradient(135deg, #dbeafe 0%, #93c5fd 100%);
-            color: #1e40af;
-            border-color: #3b82f6;
-        }
-
-        .status-badge.completed {
-            background: linear-gradient(135deg, #dcfce7 0%, #86efac 100%);
-            color: #166534;
-            border-color: #22c55e;
-        }
         
         /* Mobile responsiveness */
         @media (max-width: 768px) {
@@ -361,11 +150,6 @@
             
             .grid {
                 gap: 1rem;
-            }
-
-            .container {
-                padding-left: 1rem;
-                padding-right: 1rem;
             }
         }
         
@@ -377,30 +161,72 @@
             overflow: hidden;
         }
 
-        /* Modal styles */
-        .modal-box {
-            border-radius: 16px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-            border: none;
+        /* Custom layout for standalone sidebar */
+        .tasks-layout {
+            display: flex;
+            min-height: 100vh;
         }
 
-        /* Button styles */
-        .btn-primary {
+        .tasks-main-content {
+            flex: 1;
+            margin-left: 20rem;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        /* Mobile styles */
+        @media (max-width: 1023px) {
+            .tasks-main-content {
+                margin-left: 0;
+            }
+            
+            .sidebar-open .tasks-main-content {
+                transform: translateX(20rem);
+            }
+
+            .mobile-menu-btn {
+                display: block !important;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .mobile-menu-btn {
+                display: none !important;
+            }
+        }
+
+        .mobile-menu-btn {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 10002;
             background: linear-gradient(135deg, #1A2B48 0%, #102038 100%);
             border: none;
-            color: white;
+            border-radius: 50%;
+            width: 3rem;
+            height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #102038 0%, #1A2B48 100%);
-            transform: translateY(-1px);
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+        }
+        
+        .sidebar-open .sidebar-overlay {
+            display: block;
         }
     </style>
 </head>
 <body>
     <div class="tasks-layout" id="tasks-layout">
-        <!-- Mobile Overlay - EXACT match to drawer-overlay -->
-        <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()" aria-hidden="true"></div>
+        <!-- Mobile Overlay -->
+        <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
         
         <!-- Mobile Menu Button -->
         <button class="mobile-menu-btn lg:hidden" onclick="toggleSidebar()">
@@ -408,11 +234,15 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
             </svg>
         </button>
-        
-        <!-- Custom Standalone Sidebar - EXACT MATCH to original -->
-        <div class="tasks-sidebar-container">
-            <div class="tasks-sidebar">
-                <!-- Header Section (Non-scrolling) - EXACT match -->
+
+        <!-- EXACT SIDEBAR CODE FROM ORIGINAL - NO CHANGES -->
+        <div class="drawer-side w-80 z-50" style="position: fixed; left: 0; top: 0; width: 20rem; height: 100vh; display: block; visibility: visible; opacity: 1; z-index: 10001;">
+            <!-- Drawer overlay to close the sidebar when clicking outside on mobile -->
+            <label for="my-drawer" class="drawer-overlay" style="pointer-events: auto; touch-action: auto;" aria-hidden="true"></label>
+            
+            <div class="h-full w-full bg-gradient-to-b from-brand-navy-500 to-brand-navy-700 flex flex-col" style="position: relative; z-index: 10001; background: linear-gradient(180deg, #1A2B48 0%, #102038 100%); pointer-events: auto; display: flex; flex-direction: column; height: 100vh; overflow: hidden;">
+                
+                <!-- Header Section (Non-scrolling) -->
                 <div class="flex-shrink-0 p-4 border-b border-white/10">
                     <div class="flex items-center justify-center mb-6 mt-4">
                         <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center mr-3 shadow-lg">
@@ -467,8 +297,8 @@
                     </div>
                 </div>
                 
-                <!-- Menu Items (Scrollable) - EXACT match -->
-                <nav class="flex-1 overflow-y-auto overflow-x-hidden sidebar-nav">
+                <!-- Menu Items (Scrollable) -->
+                <nav class="flex-1 overflow-y-auto overflow-x-hidden" style="scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.2) transparent;">
                     <div class="space-y-2 p-4" style="gap: 0.5rem; display: flex; flex-direction: column;">
                         <div class="w-full">
                             <a href="{{ url_for('home_route') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg {% if request.endpoint == 'home_route' %}bg-white/20 text-white{% else %}text-white/90{% endif %} hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline" style="z-index:10002; flex-shrink: 0;">
@@ -507,7 +337,7 @@
                     </div>
                 </nav>
                 
-                <!-- Sign Out Section (Non-scrolling) - EXACT match -->
+                <!-- Sign Out Section (Non-scrolling) -->
                 <div class="flex-shrink-0 p-4 border-t border-white/10">
                     <a href="{{ url_for('signout') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg text-white/90 hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline" style="z-index:10002;">
                         <span class="material-icons mr-3 flex-shrink-0">logout</span> 
@@ -518,7 +348,7 @@
         </div>
 
         <!-- Main Content Area -->
-        <div class="tasks-main-content">
+        <div class="tasks-main-content" id="tasks-main-content">
             <div class="tasks-container">
                 <div class="container mx-auto px-4 py-8 max-w-6xl">
                     <!-- Desktop header and actions -->
@@ -536,7 +366,6 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                         {% for task in tasks %}
                         <div class="group relative" onclick="navigateToTask(event, {{ task.id|tojson }})" data-payment-type="{{ task.payment_type|tojson }}" data-task-id="{{ task.id|tojson }}">
-                            <!-- Your existing task card content -->
                             <div class="task-card bg-white rounded-2xl border border-gray-200 overflow-visible transform hover:-translate-y-1 cursor-pointer">
                                 <div class="p-6">
                                     <!-- Header with Title, Badge, and Menu -->
@@ -710,7 +539,6 @@
                         {% endfor %}
                     </div>
 
-                    <!-- Include Modals -->
                     {% include 'modals/add_task.html' %}
                     {% include 'modals/delete_task.html' %}
                     {% include 'modals/edit_task.html' %}
@@ -732,21 +560,26 @@
     </div>
 
     <script>
-        // Sidebar functionality - EXACT slide animation
+        // Mobile sidebar functionality
         function toggleSidebar() {
             const layout = document.getElementById('tasks-layout');
-            const body = document.body;
+            const mainContent = document.getElementById('tasks-main-content');
             
             if (layout.classList.contains('sidebar-open')) {
                 layout.classList.remove('sidebar-open');
-                body.style.overflow = '';
+                document.body.style.overflow = '';
             } else {
                 layout.classList.add('sidebar-open');
-                body.style.overflow = 'hidden';
+                document.body.style.overflow = 'hidden';
             }
         }
 
-        // Close sidebar when clicking on menu items (mobile)
+        // Close sidebar when clicking overlay
+        document.getElementById('sidebar-overlay').addEventListener('click', function() {
+            toggleSidebar();
+        });
+
+        // Close sidebar when clicking menu items on mobile
         document.querySelectorAll('.sidebar-menu-item').forEach(item => {
             item.addEventListener('click', function() {
                 if (window.innerWidth < 1024) {
@@ -755,12 +588,7 @@
             });
         });
 
-        // Close sidebar when clicking overlay
-        document.getElementById('sidebar-overlay').addEventListener('click', function() {
-            toggleSidebar();
-        });
-
-        // Close sidebar when pressing Escape key
+        // Close sidebar on escape key
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Escape') {
                 const layout = document.getElementById('tasks-layout');
@@ -770,7 +598,7 @@
             }
         });
 
-        // Close sidebar on window resize if it becomes desktop
+        // Close sidebar on desktop resize
         window.addEventListener('resize', function() {
             if (window.innerWidth >= 1024) {
                 const layout = document.getElementById('tasks-layout');
@@ -779,13 +607,13 @@
             }
         });
 
-        // Logout modal functions
+        // Logout modal function
         function closeLogoutModal() {
             document.getElementById('logout-modal').close();
         }
 
         // Your existing task JavaScript functions...
-        // ... (include all the JavaScript functions from previous response)
+        // ... (all the task management functions from before)
         
     </script>
 </body>

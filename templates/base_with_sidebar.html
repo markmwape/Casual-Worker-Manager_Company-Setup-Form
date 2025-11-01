@@ -130,7 +130,7 @@
             }
         }
         @media (min-width: 1024px) {
-            .drawer.drawer-open .drawer-side {
+            .drawer.lg\:drawer-open .drawer-side {
                 transform: translateX(0);
                 position: fixed;
                 left: 0;
@@ -140,11 +140,11 @@
                 width: 20rem;
                 height: 100vh;
             }
-            .drawer.drawer-open .drawer-content {
+            .drawer.lg\:drawer-open .drawer-content {
                 margin-left: 20rem;
                 min-height: 100vh;
             }
-            .drawer.drawer-open .drawer-toggle {
+            .drawer.lg\:drawer-open .drawer-toggle {
                 display: none;
             }
         }
@@ -197,7 +197,7 @@
     {% block head %}{% endblock %}
 </head>
 <body class="min-h-screen bg-gray-50">
-    <div class="drawer drawer-open min-h-screen">
+    <div class="drawer min-h-screen lg:drawer-open">
         <input id="my-drawer" type="checkbox" class="drawer-toggle" />
         
         <!-- Main Content Area -->

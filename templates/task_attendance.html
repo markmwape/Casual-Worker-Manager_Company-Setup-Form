@@ -16,31 +16,19 @@
             </a>
         </div>
     </div>
-    <!-- Sticky header for mobile -->
-    <div class="relative lg:hidden">
-        <div class="sticky top-0 left-0 w-full z-50 bg-white/95 border-b border-brand-navy-100 flex flex-col items-start gap-0 shadow-lg rounded-b-2xl px-4 pt-4 pb-2">
-            <!-- Hamburger menu (absolute, top right) -->
-            <label for="my-drawer" class="btn btn-circle btn-primary shadow-lg absolute top-4 right-4 z-[110] lg:hidden">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                </svg>
-            </label>
-            <!-- Title and subtitle -->
-            <h1 class="text-lg font-bold text-black truncate w-full pr-16 mb-1">{{ task.name }}</h1>
-            <p class="text-xs text-gray-500 mb-1 w-full pr-16">View and manage attendance details for this task</p>
-        </div>
-        <!-- Sticky action buttons below title on mobile -->
-        <div class="sticky top-[64px] left-0 w-full z-40 flex flex-col items-center bg-white/95 py-3 border-b border-brand-navy-50 shadow rounded-b-2xl gap-2 px-4">
-            <button onclick="openAddWorkerToTaskModal('{{ task.id }}')" class="btn btn-primary w-full max-w-xs shadow-md text-base py-2">
+    <!-- Mobile header for smaller screens -->
+    <div class="lg:hidden mb-6">
+        <h1 class="text-2xl font-bold text-black mb-2">{{ task.name }}</h1>
+        <p class="text-sm text-gray-600 mb-4">View and manage attendance details for this task</p>
+        <div class="flex flex-col gap-2">
+            <button onclick="openAddWorkerToTaskModal('{{ task.id }}')" class="btn btn-primary w-full">
                 <i data-feather="plus" class="mr-2"></i>Add Worker
             </button>
-            <a href="{{ url_for('tasks_route') }}" class="btn w-full max-w-xs border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 shadow-sm text-base py-2 flex items-center justify-center transition-all duration-150">
+            <a href="{{ url_for('tasks_route') }}" class="btn btn-ghost w-full">
                 <i data-feather="arrow-left" class="mr-2"></i>Back to Tasks
             </a>
         </div>
     </div>
-    <!-- Add margin below sticky action bar so content is never overlapped -->
-    <div class="mb-6 lg:mb-0"></div>
 
     {% if selected_date < task.start_date.date() %}
         <div class="alert alert-error mb-4">

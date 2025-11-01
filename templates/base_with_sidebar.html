@@ -294,16 +294,17 @@
                 <nav class="flex-1 overflow-y-auto sidebar-scroll">
                     <div class="space-y-2 p-4">
                         {% set menu_items = [
-                            {'endpoint': 'home_route', 'icon': 'home', 'label': 'Dashboard'},
-                            {'endpoint': 'workers_route', 'icon': 'group', 'label': 'Workers'},
-                            {'endpoint': 'tasks_route', 'icon': 'assignment', 'label': 'Tasks'},
-                            {'endpoint': 'reports_route', 'icon': 'bar_chart', 'label': 'Reports'}
+                            {'endpoint': 'home_route', 'icon': 'home', 'label': 'Dashboard', 'related': []},
+                            {'endpoint': 'workers_route', 'icon': 'group', 'label': 'Workers', 'related': []},
+                            {'endpoint': 'tasks_route', 'icon': 'assignment', 'label': 'Tasks', 'related': ['task_attendance_route', 'task_units_completed_route']},
+                            {'endpoint': 'reports_route', 'icon': 'bar_chart', 'label': 'Reports', 'related': []}
                         ] %}
                         
                         {% for item in menu_items %}
                             <div class="w-full">
+                                {% set is_active = request.endpoint == item.endpoint or request.endpoint in item.related %}
                                 <a href="{{ url_for(item.endpoint) }}" 
-                                   class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg min-h-[48px] no-underline {% if request.endpoint == item.endpoint %}active{% else %}text-white/90{% endif %}">
+                                   class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg min-h-[48px] no-underline {% if is_active %}active{% else %}text-white/90{% endif %}">
                                     <span class="material-icons mr-3 flex-shrink-0">{{ item.icon }}</span> 
                                     <span class="font-medium flex-shrink-0">{{ item.label }}</span>
                                 </a>

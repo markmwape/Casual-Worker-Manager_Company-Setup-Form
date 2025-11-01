@@ -1372,17 +1372,19 @@ def generate_per_day_report(company, start_date, end_date):
                 Attendance.status == 'Present'
             ).all()
             
-            # Group by task (only per_day tasks)
+            # Group by task (only per_day tasks that are active during the report period)
             per_day_tasks = {}
             for att in attendance_records:
                 if att.task and getattr(att.task, 'payment_type', None) == 'per_day':
-                    task_id = att.task.id
-                    if task_id not in per_day_tasks:
-                        per_day_tasks[task_id] = {
-                            'task': att.task,
-                            'days': 0
-                        }
-                    per_day_tasks[task_id]['days'] += 1
+                    # Only count if task started before or during the report end date
+                    if att.task.start_date.date() <= end_date:
+                        task_id = att.task.id
+                        if task_id not in per_day_tasks:
+                            per_day_tasks[task_id] = {
+                                'task': att.task,
+                                'days': 0
+                            }
+                        per_day_tasks[task_id]['days'] += 1
             
             # Create record for each per_day task
             for task_id, task_data in per_day_tasks.items():
@@ -1447,17 +1449,19 @@ def generate_per_part_report(company, start_date, end_date):
                 Attendance.date.between(start_date, end_date)
             ).all()
             
-            # Group by task (only per_part tasks)
+            # Group by task (only per_part tasks that are active during the report period)
             per_part_tasks = {}
             for att in attendance_records:
                 if att.task and getattr(att.task, 'payment_type', None) == 'per_part':
-                    task_id = att.task.id
-                    if task_id not in per_part_tasks:
-                        per_part_tasks[task_id] = {
-                            'task': att.task,
-                            'units': 0
-                        }
-                    per_part_tasks[task_id]['units'] += getattr(att, 'units_completed', 0)
+                    # Only count if task started before or during the report end date
+                    if att.task.start_date.date() <= end_date:
+                        task_id = att.task.id
+                        if task_id not in per_part_tasks:
+                            per_part_tasks[task_id] = {
+                                'task': att.task,
+                                'units': 0
+                            }
+                        per_part_tasks[task_id]['units'] += getattr(att, 'units_completed', 0)
             
             # Create record for each per_part task
             for task_id, task_data in per_part_tasks.items():
@@ -2675,13 +2679,20 @@ def reports_route():
             per_part_units = {}
             for att in attendance_records:
                 if att.task and getattr(att.task, 'payment_type', None) == 'per_day':
-                    if att.status == 'Present':
-                        per_day_attendance.setdefault(att.task_id, 0)
-                        per_day_attendance[att.task_id] += 1
+                    # Only count attendance if the task is active during the report period
+                    # Check if task started before or during the end date of the report
+                    if att.task.start_date.date() <= end_date:
+                        # Task is relevant to the report period
+                        if att.status == 'Present':
+                            per_day_attendance.setdefault(att.task_id, 0)
+                            per_day_attendance[att.task_id] += 1
                 elif att.task and getattr(att.task, 'payment_type', None) == 'per_part':
-                    if att.units_completed:
-                        per_part_units.setdefault(att.task_id, 0)
-                        per_part_units[att.task_id] += att.units_completed
+                    # Only count units if the task is active during the report period
+                    if att.task.start_date.date() <= end_date:
+                        # Task is relevant to the report period
+                        if att.units_completed:
+                            per_part_units.setdefault(att.task_id, 0)
+                            per_part_units[att.task_id] += att.units_completed
             # For each per_day task, add a record
             for task_id, days in per_day_attendance.items():
                 task = Task.query.get(task_id) if task_id else None

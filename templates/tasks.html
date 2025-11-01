@@ -278,6 +278,7 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
 <script>
         // ALL THE ORIGINAL JAVASCRIPT FUNCTIONS - KEPT COMPLETELY INTACT
         function navigateToTask(event, taskId) {

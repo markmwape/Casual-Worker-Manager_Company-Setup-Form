@@ -14,7 +14,8 @@
     }
     /* Status dropdown styles */
     .status-dropdown { 
-        position: relative; 
+        position: relative;
+        /* Remove z-index to avoid stacking context conflicts with sidebar */
     }
     .status-dropdown-menu {
         position: absolute;
@@ -29,7 +30,7 @@
         visibility: hidden;
         transform: translateY(-10px);
         transition: all 0.2s ease;
-        z-index: 40;
+        /* Remove z-index - let natural stacking work, sidebar has z-index: 10000+ */
     }
     .status-dropdown.open .status-dropdown-menu {
         opacity: 1;
@@ -116,11 +117,11 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="dropdown dropdown-end flex-shrink-0" onclick="event.stopPropagation()" style="position: relative; z-index: 30;">
+                                        <div class="dropdown dropdown-end flex-shrink-0" onclick="event.stopPropagation()" style="position: relative;">
                                             <label tabindex="0" class="btn btn-ghost btn-sm btn-circle hover:bg-gray-100 h-10 w-10">
                                                 <i class="fas fa-ellipsis-v text-gray-600 text-sm"></i>
                                             </label>
-                                            <ul tabindex="0" class="dropdown-content menu p-2 shadow-xl bg-white rounded-xl w-52 text-sm border border-gray-200" style="position: absolute; z-index: 40; right: 0; top: 100%; margin-top: 0.5rem; min-width: 160px; overflow: visible;">
+                                            <ul tabindex="0" class="dropdown-content menu p-2 shadow-xl bg-white rounded-xl w-52 text-sm border border-gray-200" style="position: absolute; right: 0; top: 100%; margin-top: 0.5rem; min-width: 160px; overflow: visible;">
                                                 <li>
                                                     <a href='javascript:void(0);' onclick='openEditTaskModal({{ task.id|tojson }}, {{ task.name|tojson }}, {{ task.description|tojson }}, {{ task.start_date.strftime("%Y-%m-%d")|tojson }}, {{ task.payment_type|tojson }}, {{ task.per_part_payout|tojson }}, {{ task.per_part_currency|tojson }}, {{ task.per_day_payout|tojson }}, {{ task.per_day_currency|tojson }})' class="hover:bg-gray-50 py-3">
                                                         <i class="fas fa-edit w-4 h-4 text-blue-600"></i>Edit Task
@@ -277,9 +278,23 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/script.js') }}"></script>
 <script>
-        // ALL THE ORIGINAL JAVASCRIPT FUNCTIONS - KEPT COMPLETELY INTACT
+        // Modal functions for add task
+        function openAddTaskModal() {
+            const modal = document.getElementById('add-task-modal');
+            if (modal) {
+                modal.classList.add('modal-open');
+            }
+        }
+        
+        function closeAddTaskModal() {
+            const modal = document.getElementById('add-task-modal');
+            if (modal) {
+                modal.classList.remove('modal-open');
+            }
+        }
+        
+        // Task navigation and functionality
         function navigateToTask(event, taskId) {
             if (!event.target.closest('.status-dropdown')) {
                 const card = event.currentTarget;
@@ -683,7 +698,10 @@
         }
         
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize feather icons
             feather.replace();
+            
+            // Task-specific functionality only
             const statusMenuItems = document.querySelectorAll('.status-menu-item');
             const currentDate = new Date().toISOString().split('T')[0];
             
@@ -697,22 +715,6 @@
                         showCustomModal('Status Update Error', 'Cannot set status for tasks with future start dates. Only "Pending" is allowed until the start date is reached.', 'warning');
                     };
                 }
-            });
-
-            // Sidebar functionality
-            const drawerToggle = document.getElementById('my-drawer');
-
-            // Remove any focus outlines from sidebar items when clicked
-            document.querySelectorAll('.sidebar-menu-item').forEach(item => {
-                item.addEventListener('mousedown', function(e) {
-                    e.preventDefault();
-                });
-                item.addEventListener('click', function() {
-                    // Close sidebar on mobile after clicking a link
-                    if (window.innerWidth < 1024) {
-                        drawerToggle.checked = false;
-                    }
-                });
             });
         });
 

@@ -1066,11 +1066,12 @@ input[type="date"]::-webkit-date-and-time-value {
 }
 
 /* ============================================================
-   TASKS PAGE SIDEBAR FIX
-   Force sidebar to be visible on desktop
+   DESKTOP SIDEBAR DISPLAY FIX
+   Force sidebar to be visible on desktop screens
    ============================================================ */
 @media (min-width: 1024px) {
-    body .drawer.lg\:drawer-open .drawer-side {
+    /* Show drawer side on desktop */
+    .drawer .drawer-side {
         display: block !important;
         visibility: visible !important;
         opacity: 1 !important;
@@ -1085,9 +1086,21 @@ input[type="date"]::-webkit-date-and-time-value {
         height: 100vh !important;
     }
     
-    body .drawer.lg\:drawer-open .sidebar-container {
+    /* Ensure sidebar container is visible */
+    .drawer .drawer-side .sidebar-container {
         display: flex !important;
         visibility: visible !important;
         opacity: 1 !important;
+        height: 100% !important;
+    }
+    
+    /* Adjust main content to account for sidebar */
+    .drawer-content {
+        margin-left: 20rem !important;
+    }
+    
+    /* Hide drawer toggle on desktop */
+    .drawer-toggle {
+        display: none !important;
     }
 }

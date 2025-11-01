@@ -22,17 +22,31 @@
         <span>Payout per unit: {{ task.per_part_payout }} {{ task.per_part_currency or '' }}</span>
     </div>
     {% endif %}
-    <!-- Mobile header for smaller screens -->
+    <!-- Mobile header -->
     <div class="lg:hidden mb-6">
-        <h1 class="text-2xl font-bold text-black mb-2">{{ task.name }}</h1>
-        <p class="text-sm text-gray-600 mb-4">View and manage units completed for this task</p>
+        <div class="text-2xl font-bold text-primary mb-4">
+            Units Completed: {{ task.name }}
+        </div>
         <div class="flex flex-col gap-2">
-            <button onclick="openAddWorkerToTaskModal('{{ task.id }}')" class="btn btn-primary w-full">
+            <button onclick="openAddWorkerToTaskModal('{{ task.id }}')" class="btn btn-primary">
                 <i data-feather="plus" class="mr-2"></i>Add Worker
             </button>
-            <a href="{{ url_for('tasks_route') }}" class="btn btn-ghost w-full">
+            <a href="{{ url_for('tasks_route') }}" class="btn btn-ghost">
                 <i data-feather="arrow-left" class="mr-2"></i>Back to Tasks
             </a>
+        </div>
+    </div>
+
+    <!-- Search icon and bar -->
+    <div class="flex justify-end items-center mb-2">
+        <button id="showSearchBtn" class="p-2 rounded-full hover:bg-gray-50 focus:outline-none" onclick="toggleUnitsSearch()">
+            <i data-feather="search"></i>
+        </button>
+        <div id="unitsSearchBar" class="hidden ml-2 w-full max-w-xs">
+            <div class="flex items-center bg-white border border-brand-navy-200 rounded-lg px-2 py-1 shadow">
+                <input id="unitsSearchInput" type="text" class="flex-1 outline-none bg-transparent px-2 py-1 text-sm" placeholder="Search by any field..." oninput="filterUnitsRows()">
+                <button class="ml-2 text-gray-400 hover:text-brand-navy-600" onclick="toggleUnitsSearch()" type="button"><i data-feather="x"></i></button>
+            </div>
         </div>
     </div>
 

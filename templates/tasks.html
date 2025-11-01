@@ -2,101 +2,89 @@
 
 {% block title %}Embee Accounting - Tasks{% endblock %}
 
-{% block head %}
-{{ super() }}
-<style>
-    /* Task-specific styles */
-    .task-card {
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    }
-    .task-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-    }
-    /* Status dropdown styles */
-    .status-dropdown { 
-        position: relative; 
-    }
-    .status-dropdown-menu {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-        border: 1px solid #e5e7eb;
-        opacity: 0;
-        visibility: hidden;
-        transform: translateY(-10px);
-        transition: all 0.2s ease;
-        z-index: 50;
-    }
-    .status-dropdown.open .status-dropdown-menu {
-        opacity: 1;
-        visibility: visible;
-        transform: translateY(5px);
-    }
-    .status-menu-item {
-        padding: 12px 16px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        transition: all 0.2s ease;
-    }
-    .status-menu-item:hover:not(.disabled) { 
-        background: #f3f4f6; 
-    }
-    .status-menu-item.disabled { 
-        opacity: 0.5; 
-        cursor: not-allowed; 
-    }
-    .status-menu-item.active { 
-        background: #eff6ff; 
-    }
-    .status-indicator { 
-        width: 8px; 
-        height: 8px; 
-        border-radius: 50%; 
-        flex-shrink: 0; 
-    }
-    .status-indicator.pending { 
-        background: #eab308; 
-    }
-    .status-indicator.in-progress { 
-        background: #3b82f6; 
-    }
-    .status-indicator.completed { 
-        background: #10b981; 
-    }
-    .line-clamp-3 {
-        display: -webkit-box;
-        -webkit-line-clamp: 3;
-        line-clamp: 3;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-    .dropdown-disabled {
-        pointer-events: none;
-        opacity: 0.6;
-    }
-</style>
-{% endblock %}
-
 {% block content %}
-<!-- Mobile Menu Button -->
-<div class="lg:hidden fixed top-4 right-4 z-50">
-    <label for="my-drawer" class="btn btn-circle btn-primary shadow-lg">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-        </svg>
-    </label>
-</div>
-
 <div class="container mx-auto px-4 w-full max-w-6xl py-8">
+    <style>
+        /* Task-specific styles */
+        .task-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+        .task-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+        /* Status dropdown styles */
+        .status-dropdown { 
+            position: relative; 
+        }
+        .status-dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            border: 1px solid #e5e7eb;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s ease;
+            z-index: 50;
+        }
+        .status-dropdown.open .status-dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(5px);
+        }
+        .status-menu-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s ease;
+        }
+        .status-menu-item:hover:not(.disabled) { 
+            background: #f3f4f6; 
+        }
+        .status-menu-item.disabled { 
+            opacity: 0.5; 
+            cursor: not-allowed; 
+        }
+        .status-menu-item.active { 
+            background: #eff6ff; 
+        }
+        .status-indicator { 
+            width: 8px; 
+            height: 8px; 
+            border-radius: 50%; 
+            flex-shrink: 0; 
+        }
+        .status-indicator.pending { 
+            background: #eab308; 
+        }
+        .status-indicator.in-progress { 
+            background: #3b82f6; 
+        }
+        .status-indicator.completed { 
+            background: #10b981; 
+        }
+        .line-clamp-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .dropdown-disabled {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+    </style>
+
     <!-- Desktop header and actions -->
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
         <h1 class="text-3xl font-bold text-black">Tasks</h1>
@@ -694,6 +682,7 @@
         }
         
         document.addEventListener('DOMContentLoaded', function() {
+            feather.replace();
             const statusMenuItems = document.querySelectorAll('.status-menu-item');
             const currentDate = new Date().toISOString().split('T')[0];
             

@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Workspace - Embee Accounting</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.24/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        window.tailwind = window.tailwind || {};
+        window.tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-navy': {
+                            '50': '#f8fafc',
+                            '100': '#e2e8f0',
+                            '200': '#cbd5e1',
+                            '300': '#94a3b8',
+                            '400': '#64748b',
+                            '500': '#1A2B48',
+                            '600': '#0f1a2e',
+                            '700': '#0a1424',
+                            '800': '#050a12',
+                            '900': '#020508'
+                        },
+                        'brand-gold': {
+                            '50': '#fefce8',
+                            '100': '#fef3c7',
+                            '200': '#fde68a',
+                            '300': '#fcd34d',
+                            '400': '#fbbf24',
+                            '500': '#E5B23A',
+                            '600': '#d4a02a',
+                            '700': '#b45309',
+                            '800': '#92400e',
+                            '900': '#78350f'
+                        },
+                        'brand-gray': {
+                            '50': '#f8fafc',
+                            '100': '#f1f5f9',
+                            '200': '#e2e8f0',
+                            '300': '#cbd5e1',
+                            '400': '#94a3b8',
+                            '500': '#7C8A9A',
+                            '600': '#5a6778',
+                            '700': '#475569',
+                            '800': '#334155',
+                            '900': '#1e293b'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .floating-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #1A2B48;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 2s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-brand-navy-50 to-brand-navy-100 min-h-screen relative py-8">
+    <div class="w-full max-w-2xl mx-auto relative z-10 px-4">
+        <!-- Header Section -->
+        <div class="text-center mb-12">
+            <div class="inline-flex items-center justify-center mb-6">
+                <img src="{{ url_for('static', filename='img/logo + text.png') }}" alt="Embee Accounting Logo" class="h-24 w-auto object-contain floating-animation" />
+            </div>
+            <h1 class="text-4xl md:text-5xl font-bold text-brand-navy-600 mb-4">Create a New Workspace</h1>
+            <p class="text-xl text-brand-gray-600 max-w-2xl mx-auto">Set up a new workspace for your organization</p>
+        </div>
+
+        <!-- Create Workspace Card -->
+        <div class="card bg-white/80 backdrop-blur-sm shadow-2xl border-0">
+            <div class="card-body p-8 md:p-10">
+                <form id="create-workspace-form" class="w-full space-y-6">
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold text-brand-navy-600 text-lg">Company Name</span>
+                        </label>
+                        <input type="text" id="company-name" name="company_name" placeholder="Enter company name" required 
+                               class="input input-bordered w-full text-lg bg-white border-2 border-brand-navy-200 focus:border-brand-navy-500 focus:ring-2 focus:ring-brand-navy-200"
+                               minlength="2" maxlength="100">
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold text-brand-navy-600 text-lg">Country</span>
+                        </label>
+                        <select id="country" name="country" required class="select select-bordered w-full text-lg bg-white border-2 border-brand-navy-200 focus:border-brand-navy-500 focus:ring-2 focus:ring-brand-navy-200">
+                            <option value="">Select country</option>
+                            <option value="United States">United States</option>
+                            <option value="United Kingdom">United Kingdom</option>
+                            <option value="Canada">Canada</option>
+                            <option value="Australia">Australia</option>
+                            <option value="Germany">Germany</option>
+                            <option value="France">France</option>
+                            <option value="Spain">Spain</option>
+                            <option value="Italy">Italy</option>
+                            <option value="Netherlands">Netherlands</option>
+                            <option value="Belgium">Belgium</option>
+                            <option value="Switzerland">Switzerland</option>
+                            <option value="Austria">Austria</option>
+                            <option value="Sweden">Sweden</option>
+                            <option value="Norway">Norway</option>
+                            <option value="Denmark">Denmark</option>
+                            <option value="Finland">Finland</option>
+                            <option value="Ireland">Ireland</option>
+                            <option value="Portugal">Portugal</option>
+                            <option value="Poland">Poland</option>
+                            <option value="Czech Republic">Czech Republic</option>
+                            <option value="Hungary">Hungary</option>
+                            <option value="Slovakia">Slovakia</option>
+                            <option value="Slovenia">Slovenia</option>
+                            <option value="Croatia">Croatia</option>
+                            <option value="Estonia">Estonia</option>
+                            <option value="Latvia">Latvia</option>
+                            <option value="Lithuania">Lithuania</option>
+                            <option value="South Africa">South Africa</option>
+                            <option value="Nigeria">Nigeria</option>
+                            <option value="Kenya">Kenya</option>
+                            <option value="Ghana">Ghana</option>
+                            <option value="Egypt">Egypt</option>
+                            <option value="Morocco">Morocco</option>
+                            <option value="Tunisia">Tunisia</option>
+                            <option value="Algeria">Algeria</option>
+                            <option value="Ethiopia">Ethiopia</option>
+                            <option value="Tanzania">Tanzania</option>
+                            <option value="Uganda">Uganda</option>
+                            <option value="Rwanda">Rwanda</option>
+                            <option value="Zambia">Zambia</option>
+                            <option value="Zimbabwe">Zimbabwe</option>
+                            <option value="Botswana">Botswana</option>
+                            <option value="Namibia">Namibia</option>
+                            <option value="India">India</option>
+                            <option value="China">China</option>
+                            <option value="Japan">Japan</option>
+                            <option value="South Korea">South Korea</option>
+                            <option value="Singapore">Singapore</option>
+                            <option value="Malaysia">Malaysia</option>
+                            <option value="Thailand">Thailand</option>
+                            <option value="Philippines">Philippines</option>
+                            <option value="Indonesia">Indonesia</option>
+                            <option value="Vietnam">Vietnam</option>
+                            <option value="Taiwan">Taiwan</option>
+                            <option value="Hong Kong">Hong Kong</option>
+                            <option value="Brazil">Brazil</option>
+                            <option value="Mexico">Mexico</option>
+                            <option value="Argentina">Argentina</option>
+                            <option value="Chile">Chile</option>
+                            <option value="Colombia">Colombia</option>
+                            <option value="Peru">Peru</option>
+                            <option value="Uruguay">Uruguay</option>
+                            <option value="Ecuador">Ecuador</option>
+                            <option value="Venezuela">Venezuela</option>
+                            <option value="Costa Rica">Costa Rica</option>
+                            <option value="Panama">Panama</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold text-brand-navy-600 text-lg">Industry Type</span>
+                        </label>
+                        <select id="industry-type" name="industry_type" required class="select select-bordered w-full text-lg bg-white border-2 border-brand-navy-200 focus:border-brand-navy-500 focus:ring-2 focus:ring-brand-navy-200">
+                            <option value="">Select industry</option>
+                            <option value="Construction">Construction</option>
+                            <option value="Manufacturing">Manufacturing</option>
+                            <option value="Agriculture">Agriculture</option>
+                            <option value="Hospitality">Hospitality & Tourism</option>
+                            <option value="Retail">Retail & Sales</option>
+                            <option value="Healthcare">Healthcare</option>
+                            <option value="Education">Education</option>
+                            <option value="Transportation">Transportation & Logistics</option>
+                            <option value="Food Service">Food Service</option>
+                            <option value="Cleaning">Cleaning & Maintenance</option>
+                            <option value="Security">Security Services</option>
+                            <option value="Event Management">Event Management</option>
+                            <option value="Technology">Technology</option>
+                            <option value="Finance">Finance & Accounting</option>
+                            <option value="Real Estate">Real Estate</option>
+                            <option value="Entertainment">Entertainment & Media</option>
+                            <option value="Non-Profit">Non-Profit</option>
+                            <option value="Government">Government</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold text-brand-navy-600 text-lg">Expected Workers</span>
+                        </label>
+                        <select id="expected-workers" name="expected_workers" class="select select-bordered w-full text-lg bg-white border-2 border-brand-navy-200 focus:border-brand-navy-500 focus:ring-2 focus:ring-brand-navy-200">
+                            <option value="not_specified">Not specified</option>
+                            <option value="below_100">Below 100</option>
+                            <option value="100_250">100 - 250</option>
+                            <option value="251_500">251 - 500</option>
+                            <option value="501_1000">501 - 1000</option>
+                            <option value="above_1000">Above 1000</option>
+                        </select>
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold text-brand-navy-600 text-lg">Company Phone</span>
+                        </label>
+                        <input type="tel" id="company-phone" name="company_phone" placeholder="Enter company phone number" required 
+                               class="input input-bordered w-full text-lg bg-white border-2 border-brand-navy-200 focus:border-brand-navy-500 focus:ring-2 focus:ring-brand-navy-200">
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold text-brand-navy-600 text-lg">Company Email</span>
+                        </label>
+                        <input type="email" id="company-email" name="company_email" placeholder="Enter company email address" required 
+                               class="input input-bordered w-full text-lg bg-white border-2 border-brand-navy-200 focus:border-brand-navy-500 focus:ring-2 focus:ring-brand-navy-200">
+                    </div>
+
+                    <button type="submit" id="create-btn" class="btn btn-primary w-full text-lg font-semibold bg-gradient-to-r from-brand-navy-500 to-brand-navy-600 border-0 shadow-lg">
+                        <span id="create-btn-text">
+                            <i class="fas fa-plus mr-3"></i>Create Workspace
+                        </span>
+                        <span id="create-btn-loading" class="hidden">
+                            <div class="loading-spinner inline-block mr-3"></div>Creating...
+                        </span>
+                    </button>
+                </form>
+                <div id="create-error" class="text-error text-center mt-4 hidden"></div>
+                <div id="create-warning" class="text-warning text-center mt-4 hidden"></div>
+            </div>
+        </div>
+
+        <!-- Back to workspace selection -->
+        <div class="text-center mt-8">
+            <a href="/workspace-selection" class="text-brand-navy-500 hover:text-brand-navy-700 text-lg">
+                <i class="fas fa-arrow-left mr-2"></i>Back to workspace selection
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Utility functions
+        function showLoading(buttonId, textId, loadingId) {
+            document.getElementById(textId).classList.add('hidden');
+            document.getElementById(loadingId).classList.remove('hidden');
+            document.getElementById(buttonId).disabled = true;
+        }
+
+        function hideLoading(buttonId, textId, loadingId) {
+            document.getElementById(textId).classList.remove('hidden');
+            document.getElementById(loadingId).classList.add('hidden');
+            document.getElementById(buttonId).disabled = false;
+        }
+
+        function showError(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.textContent = message;
+            errorElement.classList.remove('hidden');
+            setTimeout(() => {
+                errorElement.classList.add('hidden');
+            }, 5000);
+        }
+
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+
+        function validatePhone(phone) {
+            const cleanPhone = phone.replace(/[\s\-\(\)]/g, '');
+            return /^[\+]?[1-9][\d]{0,15}$/.test(cleanPhone);
+        }
+
+        // Create workspace form submission
+        document.getElementById('create-workspace-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // Collect form data
+            const formData = {
+                company_name: document.getElementById('company-name').value.trim(),
+                country: document.getElementById('country').value,
+                industry_type: document.getElementById('industry-type').value,
+                expected_workers: document.getElementById('expected-workers').value,
+                company_phone: document.getElementById('company-phone').value.trim(),
+                company_email: document.getElementById('company-email').value.trim()
+            };
+
+            // Validation
+            if (!formData.company_name || formData.company_name.length < 2) {
+                showError('create-error', 'Company name must be at least 2 characters');
+                return;
+            }
+
+            if (!formData.country) {
+                showError('create-error', 'Please select a country');
+                return;
+            }
+
+            if (!formData.industry_type) {
+                showError('create-error', 'Please select an industry type');
+                return;
+            }
+
+            if (!formData.company_phone) {
+                showError('create-error', 'Please enter a company phone number');
+                return;
+            }
+
+            if (!validatePhone(formData.company_phone)) {
+                showError('create-error', 'Please enter a valid phone number');
+                return;
+            }
+
+            if (!formData.company_email) {
+                showError('create-error', 'Please enter a company email address');
+                return;
+            }
+
+            if (!validateEmail(formData.company_email)) {
+                showError('create-error', 'Please enter a valid email address');
+                return;
+            }
+
+            showLoading('create-btn', 'create-btn-text', 'create-btn-loading');
+
+            try {
+                const response = await fetch('/api/workspace/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    if (data.warning) {
+                        document.getElementById('create-warning').textContent = data.warning;
+                        document.getElementById('create-warning').classList.remove('hidden');
+                    }
+                    
+                    // Store workspace data for later use in sessionStorage
+                    sessionStorage.setItem('pending_workspace', JSON.stringify(data.workspace));
+                    
+                    // Show success and redirect to sign-in
+                    alert(`Workspace "${data.workspace.name}" created! Proceeding to sign in...`);
+                    window.location.href = '/signin';
+                } else {
+                    throw new Error(data.error || 'Failed to create workspace');
+                }
+            } catch (error) {
+                console.error('Error creating workspace:', error);
+                showError('create-error', error.message || 'Failed to create workspace. Please try again.');
+            } finally {
+                hideLoading('create-btn', 'create-btn-text', 'create-btn-loading');
+            }
+        });
+    </script>
+</body>
+</html>

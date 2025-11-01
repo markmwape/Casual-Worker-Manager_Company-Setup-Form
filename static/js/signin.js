@@ -162,7 +162,7 @@ function setupEventListeners() {
                         sessionStorage.removeItem('pending_workspace');
                         window.location.href = '/home';
                     } else {
-                        window.location.href = '/workspace-selection';
+                        window.location.href = '/workspace-selection?signed_in=true&email=' + encodeURIComponent(user.email);
                     }
                 } else {
                     const errorData = await sessionResponse.json();
@@ -213,6 +213,9 @@ function setupEventListeners() {
         let finishUrl = runtimeAppSettingsURL + '/finishSignin?email=' + email;
         if (workspaceData) {
             finishUrl += '&workspace=' + encodeURIComponent(workspaceData.code);
+        } else {
+            // If coming from forgot_workspace flow, indicate that to finishSignin
+            finishUrl += '&from=forgot-workspace';
         }
         
         const actionCodeSettings = {

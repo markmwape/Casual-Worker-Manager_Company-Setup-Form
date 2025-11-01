@@ -59,13 +59,18 @@ def workspace_selection_route():
     # If user already has a session and workspace, send them to home
     if 'user' in session and 'current_workspace' in session:
         return redirect(url_for('home_route'))
-    """Route for workspace selection page"""
+    """Route for workspace selection page - user signs in and selects workspace"""
     return render_template('workspace_selection.html')
+
+@app.route('/create-workspace')
+def create_workspace_route():
+    """Route for creating a new workspace"""
+    return render_template('create_workspace.html')
 
 @app.route('/forgot-workspace')
 def forgot_workspace_route():
-    """Route for forgot workspace page"""
-    return render_template('forgot_workspace.html')
+    """Legacy route - redirects to workspace selection"""
+    return redirect(url_for('workspace_selection_route'))
 
 @app.route('/api/user/workspaces', methods=['POST'])
 def get_user_workspaces():

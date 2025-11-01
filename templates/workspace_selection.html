@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Workspace Selection - Embee Accounting</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+                        <title>Sign In - Embee Accounting</title>
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.24/dist/full.min.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -55,6 +55,50 @@
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/mobile-touch.css">
+    <link rel="stylesheet" href="/static/css/date-picker.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        
+        // Load Firebase configuration from server
+        async function initializeFirebase() {
+            try {
+                const response = await fetch('/firebase_config');
+                const firebaseConfig = await response.json();
+                
+                // Fallback configuration if server config is incomplete
+                if (!firebaseConfig.apiKey) {
+                    firebaseConfig.apiKey = "AIzaSyD9_N_0ve9ABFwwnTBn1N2oxlUs6xbT-No";
+                    firebaseConfig.authDomain = "ember-accounting.firebaseapp.com";
+                    firebaseConfig.projectId = "ember-accounting";
+                    firebaseConfig.storageBucket = "ember-accounting.firebasestorage.app";
+                    firebaseConfig.messagingSenderId = "328324461979";
+                    firebaseConfig.appId = "1:328324461979:web:0cc9ddad6aa3f157359d3e";
+                    firebaseConfig.measurementId = "G-F1XTE0TP63";
+                }
+                
+                window.firebaseApp = initializeApp(firebaseConfig);
+                window.firebaseAuth = getAuth(window.firebaseApp);
+                console.log('Firebase initialized successfully');
+            } catch (error) {
+                console.error('Error initializing Firebase:', error);
+                // Show user-friendly error message
+                const errorDiv = document.getElementById('forgot-workspace-error');
+                if (errorDiv) {
+                    errorDiv.textContent = 'Firebase configuration error. Please contact support.';
+                    errorDiv.style.color = 'red';
+                    errorDiv.style.display = 'block';
+                }
+            }
+        }
+        
+        // Initialize Firebase when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initializeFirebase);
+    </script>
     <style>
         .gradient-bg {
             background: linear-gradient(135deg, #1A2B48 0%, #2a3f5f 100%);
@@ -69,20 +113,6 @@
         .icon-glow {
             box-shadow: 0 0 20px rgba(26, 43, 72, 0.3);
         }
-        .input-focus {
-            transition: all 0.3s ease;
-        }
-        .input-focus:focus {
-            transform: scale(1.02);
-            box-shadow: 0 0 0 3px rgba(26, 43, 72, 0.1);
-        }
-        .btn-hover {
-            transition: all 0.3s ease;
-        }
-        .btn-hover:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-        }
         .floating-animation {
             animation: float 6s ease-in-out infinite;
         }
@@ -90,543 +120,574 @@
             0%, 100% { transform: translateY(0px); }
             50% { transform: translateY(-10px); }
         }
-        .shadow-3xl {
-            box-shadow: 0 35px 60px -15px rgba(0, 0, 0, 0.3);
+        .workspace-card {
+            transition: all 0.3s ease;
         }
-        .honeycomb-corner {
-            position: absolute;
-            width: 100px;
-            height: 100px;
-            background: linear-gradient(45deg, rgba(26, 43, 72, 0.1) 0%, rgba(124, 138, 154, 0.05) 100%);
-            clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
-            pointer-events: none;
-            z-index: 1;
+        .workspace-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         }
-        .pulse-animation {
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        .code-display {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            letter-spacing: 0.1em;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border: 2px solid #cbd5e1;
+            transition: all 0.3s ease;
         }
-        .loading-spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #1A2B48;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 2s linear infinite;
+        .code-display:hover {
+            background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+            border-color: #94a3b8;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .success-checkmark {
-            stroke-dasharray: 166;
-            stroke-dashoffset: 166;
-            stroke-width: 2;
-            stroke-miterlimit: 10;
-            stroke: #7bb026;
-            fill: none;
-            animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
-        }
-        @keyframes stroke {
-            100% {
-                stroke-dashoffset: 0;
+        
+        /* Mobile touch optimizations */
+        @media (max-width: 768px) {
+            .btn {
+                min-height: 48px;
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: transparent;
+            }
+            
+            .input {
+                min-height: 48px;
+                touch-action: manipulation;
+            }
+            
+            /* Ensure buttons are easily tappable */
+            button, .btn, a[role="button"] {
+                touch-action: manipulation;
+                user-select: none;
+                -webkit-user-select: none;
+                -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+            }
+            
+            /* Workspace code display touch handling */
+            .code-display {
+                touch-action: manipulation;
+                min-height: 48px;
+                cursor: pointer;
+                -webkit-tap-highlight-color: rgba(26, 43, 72, 0.1);
+            }
+            
+            /* Back link touch optimization */
+            a {
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: rgba(26, 43, 72, 0.1);
+            }
+            
+            /* Form elements */
+            input[type="email"] {
+                font-size: 16px; /* Prevents zoom on iOS */
             }
         }
-        body {
-            font-family: 'Inter', sans-serif;
+        
+        /* Enhanced button press feedback for mobile */
+        @media (max-width: 768px) {
+            .btn:active {
+                transform: scale(0.98);
+                transition: transform 0.1s ease;
+            }
+            
+            .code-display:active {
+                transform: scale(0.98);
+                transition: transform 0.1s ease;
+            }
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-brand-navy-50 to-brand-navy-100 min-h-screen relative py-8">
-    <!-- Honeycomb Pattern Corners -->
-    <div class="honeycomb-corner" style="top:5%;left:5%;transform:rotate(60deg);opacity:0.3;"></div>
-    <div class="honeycomb-corner" style="bottom:10%;right:5%;transform:rotate(-45deg);opacity:0.4;"></div>
-    <div class="honeycomb-corner" style="top:20%;right:10%;transform:rotate(15deg);opacity:0.2;"></div>
-    <div class="honeycomb-corner" style="bottom:30%;left:8%;transform:rotate(-30deg);opacity:0.3;"></div>
-    <div class="honeycomb-corner" style="top:60%;left:15%;transform:rotate(45deg);opacity:0.25;"></div>
-    
-    <div class="w-full max-w-6xl mx-auto relative z-10 px-4">
+<body class="font-inter bg-gradient-to-br from-brand-navy-50 to-brand-navy-100 min-h-screen relative py-8">
+    <div class="w-full max-w-4xl mx-auto relative z-10 px-4">
         <!-- Header Section -->
         <div class="text-center mb-12">
             <div class="inline-flex items-center justify-center mb-6">
-                <img src="{{ url_for('static', filename='img/logo + text.png') }}" alt="Embee Accounting Logo" class="h-24 w-auto object-contain floating-animation" />
+                <img src="{{ url_for('static', filename='img/logo + text.png') }}" alt="Embee Accounting Logo" class="h-20 w-auto object-contain floating-animation" />
             </div>
-            <h1 class="text-4xl md:text-5xl font-bold text-brand-navy-600 mb-4">Welcome to Your Workspace</h1>
-            <p class="text-xl text-brand-gray-600 max-w-2xl mx-auto">Choose how you'd like to get started with your professional workforce management platform</p>
+            <h1 class="text-4xl md:text-5xl font-bold text-brand-navy-600 mb-4">Sign In to Your Workspace</h1>
+            <p class="text-xl text-brand-gray-600 max-w-2xl mx-auto">Sign in with Google or email to access your workspaces</p>
         </div>
-        
-        <!-- Global Success/Error Messages -->
-        <div id="global-success" class="alert alert-success shadow-lg mb-6 hidden">
-            <div>
-                <svg class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <span id="global-success-message"></span>
-            </div>
-        </div>
-        <div id="global-error" class="alert alert-error shadow-lg mb-6 hidden">
-            <div>
-                <svg class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <span id="global-error-message"></span>
-            </div>
-        </div>
-        
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-            <!-- Join Workspace Card -->
-            <div class="card bg-white/80 backdrop-blur-sm shadow-2xl border-0 card-hover border border-emerald-200/30 hover:shadow-3xl">
+
+        <div class="grid grid-cols-1 gap-8">
+            <!-- Sign In Section -->
+            <div id="signin-section" class="card bg-white/80 backdrop-blur-sm shadow-2xl border-0">
                 <div class="card-body p-8 md:p-10">
                     <div class="flex flex-col items-center text-center">
-                        <div class="w-20 h-20 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center mb-6 shadow-xl icon-glow">
-                            <i class="fas fa-users text-3xl text-white"></i>
+                        <div class="w-20 h-20 bg-gradient-to-br from-brand-navy-500 to-brand-navy-600 rounded-2xl flex items-center justify-center mb-6 shadow-xl icon-glow">
+                            <i class="fas fa-search text-3xl text-white"></i>
                         </div>
-                        <h2 class="card-title text-3xl font-bold text-brand-navy-600 mb-3">Join a Workspace</h2>
-                        <p class="text-brand-gray-600 mb-8 text-lg">Enter your workspace code to join an existing team</p>
-                        <form id="join-workspace-form" class="w-full space-y-6">
+                        <h2 class="card-title text-3xl font-bold text-brand-navy-600 mb-3">Sign In</h2>
+                        <p class="text-brand-gray-600 mb-8 text-lg">Enter your email or use Google to sign in</p>
+                        
+                        <form id="email-signin-form" class="w-full max-w-md mx-auto space-y-4 mb-4">
                             <div class="form-control">
                                 <label class="label">
-                                    <span class="label-text font-semibold text-brand-navy-600 text-lg">Workspace Code</span>
+                                    <span class="label-text font-semibold text-brand-navy-600">Email Address</span>
                                 </label>
-                                <input type="text" id="workspace-code" name="workspace_code" placeholder="Enter 16-character code" required 
-                                       class="input input-bordered w-full text-lg font-mono tracking-wider input-focus bg-white border-2 border-emerald-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200" 
-                                       maxlength="16" pattern="[A-Z0-9]{16}" style="text-transform: uppercase;">
-                                <label class="label">
-                                    <span class="label-text-alt text-brand-gray-500">Enter the 16-character workspace code provided by your administrator</span>
-                                </label>
+                                <input type="email" 
+                                       id="user-email-forgot" 
+                                       name="email" 
+                                       placeholder="Enter your email address" 
+                                       required 
+                                       class="input input-bordered w-full text-lg bg-white border-2 border-brand-navy-200 focus:border-brand-navy-500 focus:ring-2 focus:ring-brand-navy-200"
+                                       autocomplete="email">
                             </div>
-                            <button type="submit" id="join-btn" class="btn btn-success w-full text-lg font-semibold btn-hover bg-gradient-to-r from-emerald-500 to-green-600 border-0 shadow-lg">
-                                <span id="join-btn-text">
-                                    <i class="fas fa-sign-in-alt mr-3"></i>Join Workspace
-                                </span>
-                                <span id="join-btn-loading" class="hidden">
-                                    <div class="loading-spinner inline-block mr-3"></div>Joining...
-                                </span>
+                            <button type="submit" class="btn btn-outline btn-primary w-full text-lg font-semibold border-2 hover:bg-brand-navy-500 hover:text-white">
+                                <i class="fas fa-envelope mr-2"></i>Send Sign-in Link
                             </button>
                         </form>
-                        <div id="join-error" class="text-error text-center mt-4 hidden"></div>
-                        <!-- Forgot workspace link -->
-                        <div class="text-center mt-6">
-                            <a href="/forgot-workspace" class="text-emerald-600 hover:text-emerald-700 text-sm font-medium transition-colors">
-                                <i class="fas fa-question-circle mr-1"></i>Forgot your workspace code?
+                        
+                        <div class="divider text-gray-400 max-w-md mx-auto">or</div>
+                        
+                        <button id="google-signin-forgot" type="button" class="btn btn-primary w-full max-w-md mb-4 flex items-center justify-center gap-2 text-lg bg-gradient-to-r from-brand-navy-500 to-brand-navy-600 border-0 shadow-lg text-white hover:from-brand-navy-600 hover:to-brand-navy-700">
+                            <i class="fab fa-google"></i> Sign in with Google
+                        </button>
+                        
+                        <!-- Email sent notification -->
+                        <div id="email-sent-notification" class="hidden bg-green-50 border border-green-200 rounded-lg p-4 mt-6 max-w-md mx-auto">
+                            <div class="flex items-start gap-3">
+                                <i class="fas fa-check-circle text-green-600 text-xl mt-1"></i>
+                                <div>
+                                    <h4 class="font-semibold text-green-800 mb-2">Email Sent Successfully!</h4>
+                                    <p class="text-green-700 text-sm mb-2">
+                                        We've sent a sign-in link to your email address. Click the link to retrieve your workspace codes.
+                                    </p>
+                                    <div class="bg-yellow-50 border border-yellow-200 rounded-md p-3 mt-3">
+                                        <div class="flex items-start gap-2">
+                                            <i class="fas fa-exclamation-triangle text-yellow-600 text-sm mt-0.5"></i>
+                                            <div>
+                                                <p class="text-yellow-800 text-sm font-medium">Don't see the email?</p>
+                                                <p class="text-yellow-700 text-xs mt-1">
+                                                    <strong>Check your spam/junk folder</strong> - sign-in emails sometimes end up there.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p class="text-green-600 text-xs mt-3">
+                                        <i class="fas fa-clock mr-1"></i>
+                                        The sign-in link will expire in 10 minutes for security.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="forgot-workspace-error" class="text-error text-center mt-4 hidden"></div>
+                        <div id="loading-indicator" class="text-center mt-4 hidden">
+                            <i class="fas fa-spinner fa-spin text-2xl text-brand-navy-500"></i>
+                            <p class="text-brand-navy-600 mt-2">Retrieving your workspaces...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Workspaces Display Section -->
+            <div id="workspaces-section" class="hidden">
+                <div class="card bg-white/80 backdrop-blur-sm shadow-2xl border-0">
+                    <div class="card-body p-8 md:p-10">
+                        <div class="text-center mb-8">
+                            <div class="w-16 h-16 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center mb-4 shadow-xl icon-glow mx-auto">
+                                <i class="fas fa-check-circle text-2xl text-white"></i>
+                            </div>
+                            <h2 class="text-3xl font-bold text-brand-navy-600 mb-2">Your Workspaces</h2>
+                            <p id="user-email-display" class="text-brand-gray-600 text-lg"></p>
+                        </div>
+                        
+                        <div id="workspaces-list" class="space-y-4">
+                            <!-- Workspaces will be populated here -->
+                        </div>
+                        
+                        <div class="text-center mt-8 space-y-4">
+                            <button id="try-another-email" class="btn btn-outline btn-primary">
+                                <i class="fas fa-redo mr-2"></i>Try Another Email
+                            </button>
+                            
+                            <!-- Create workspace option -->
+                            <div class="divider text-gray-400">or</div>
+                            
+                            <a href="{{ url_for('create_workspace_route') }}" class="btn btn-outline btn-success w-full">
+                                <i class="fas fa-plus mr-2"></i>Create a New Workspace
                             </a>
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <!-- Create Workspace Card -->
-            <div class="card bg-white/80 backdrop-blur-sm shadow-2xl border-0 card-hover border border-brand-navy-200/30 hover:shadow-3xl">
-                <div class="card-body p-8 md:p-10">
-                    <div class="flex flex-col items-center text-center">
-                        <div class="w-20 h-20 bg-gradient-to-br from-brand-navy-500 to-brand-navy-600 rounded-2xl flex items-center justify-center mb-6 shadow-xl icon-glow">
-                            <i class="fas fa-building text-3xl text-white"></i>
-                        </div>
-                        <h2 class="card-title text-3xl font-bold text-brand-navy-600 mb-3">Create a Workspace</h2>
-                        <p class="text-brand-gray-600 mb-8 text-lg">Set up a new workspace for your organization</p>
-                        <form id="create-workspace-form" class="w-full space-y-6">
-                            <div class="form-control">
-                                <label class="label">
-                                    <span class="label-text font-semibold text-brand-navy-600 text-lg">Company Name</span>
-                                </label>
-                                <input type="text" id="company-name" name="company_name" placeholder="Enter company name" required 
-                                       class="input input-bordered w-full text-lg input-focus bg-white border-2 border-brand-navy-200 focus:border-brand-navy-500 focus:ring-2 focus:ring-brand-navy-200"
-                                       minlength="2" maxlength="100">
-                            </div>
-
-                            <div class="form-control">
-                                <label class="label">
-                                    <span class="label-text font-semibold text-brand-navy-600 text-lg">Country</span>
-                                </label>
-                                <select id="country" name="country" required class="select select-bordered w-full text-lg input-focus bg-white border-2 border-brand-navy-200 focus:border-brand-navy-500 focus:ring-2 focus:ring-brand-navy-200">
-                                    <option value="">Select country</option>
-                                    <option value="United States">United States</option>
-                                    <option value="United Kingdom">United Kingdom</option>
-                                    <option value="Canada">Canada</option>
-                                    <option value="Australia">Australia</option>
-                                    <option value="Germany">Germany</option>
-                                    <option value="France">France</option>
-                                    <option value="Spain">Spain</option>
-                                    <option value="Italy">Italy</option>
-                                    <option value="Netherlands">Netherlands</option>
-                                    <option value="Belgium">Belgium</option>
-                                    <option value="Switzerland">Switzerland</option>
-                                    <option value="Austria">Austria</option>
-                                    <option value="Sweden">Sweden</option>
-                                    <option value="Norway">Norway</option>
-                                    <option value="Denmark">Denmark</option>
-                                    <option value="Finland">Finland</option>
-                                    <option value="Ireland">Ireland</option>
-                                    <option value="Portugal">Portugal</option>
-                                    <option value="Poland">Poland</option>
-                                    <option value="Czech Republic">Czech Republic</option>
-                                    <option value="Hungary">Hungary</option>
-                                    <option value="Slovakia">Slovakia</option>
-                                    <option value="Slovenia">Slovenia</option>
-                                    <option value="Croatia">Croatia</option>
-                                    <option value="Estonia">Estonia</option>
-                                    <option value="Latvia">Latvia</option>
-                                    <option value="Lithuania">Lithuania</option>
-                                    <option value="South Africa">South Africa</option>
-                                    <option value="Nigeria">Nigeria</option>
-                                    <option value="Kenya">Kenya</option>
-                                    <option value="Ghana">Ghana</option>
-                                    <option value="Egypt">Egypt</option>
-                                    <option value="Morocco">Morocco</option>
-                                    <option value="Tunisia">Tunisia</option>
-                                    <option value="Algeria">Algeria</option>
-                                    <option value="Ethiopia">Ethiopia</option>
-                                    <option value="Tanzania">Tanzania</option>
-                                    <option value="Uganda">Uganda</option>
-                                    <option value="Rwanda">Rwanda</option>
-                                    <option value="Zambia">Zambia</option>
-                                    <option value="Zimbabwe">Zimbabwe</option>
-                                    <option value="Botswana">Botswana</option>
-                                    <option value="Namibia">Namibia</option>
-                                    <option value="India">India</option>
-                                    <option value="China">China</option>
-                                    <option value="Japan">Japan</option>
-                                    <option value="South Korea">South Korea</option>
-                                    <option value="Singapore">Singapore</option>
-                                    <option value="Malaysia">Malaysia</option>
-                                    <option value="Thailand">Thailand</option>
-                                    <option value="Philippines">Philippines</option>
-                                    <option value="Indonesia">Indonesia</option>
-                                    <option value="Vietnam">Vietnam</option>
-                                    <option value="Taiwan">Taiwan</option>
-                                    <option value="Hong Kong">Hong Kong</option>
-                                    <option value="Brazil">Brazil</option>
-                                    <option value="Mexico">Mexico</option>
-                                    <option value="Argentina">Argentina</option>
-                                    <option value="Chile">Chile</option>
-                                    <option value="Colombia">Colombia</option>
-                                    <option value="Peru">Peru</option>
-                                    <option value="Uruguay">Uruguay</option>
-                                    <option value="Ecuador">Ecuador</option>
-                                    <option value="Venezuela">Venezuela</option>
-                                    <option value="Costa Rica">Costa Rica</option>
-                                    <option value="Panama">Panama</option>
-                                    <option value="Other">Other</option>
-                                </select>
-                            </div>
-
-                            <div class="form-control">
-                                <label class="label">
-                                    <span class="label-text font-semibold text-brand-navy-600 text-lg">Industry Type</span>
-                                </label>
-                                <select id="industry-type" name="industry_type" required class="select select-bordered w-full text-lg input-focus bg-white border-2 border-brand-navy-200 focus:border-brand-navy-500 focus:ring-2 focus:ring-brand-navy-200">
-                                    <option value="">Select industry</option>
-                                    <option value="Construction">Construction</option>
-                                    <option value="Manufacturing">Manufacturing</option>
-                                    <option value="Agriculture">Agriculture</option>
-                                    <option value="Hospitality">Hospitality & Tourism</option>
-                                    <option value="Retail">Retail & Sales</option>
-                                    <option value="Healthcare">Healthcare</option>
-                                    <option value="Education">Education</option>
-                                    <option value="Transportation">Transportation & Logistics</option>
-                                    <option value="Food Service">Food Service</option>
-                                    <option value="Cleaning">Cleaning & Maintenance</option>
-                                    <option value="Security">Security Services</option>
-                                    <option value="Event Management">Event Management</option>
-                                    <option value="Technology">Technology</option>
-                                    <option value="Finance">Finance & Accounting</option>
-                                    <option value="Real Estate">Real Estate</option>
-                                    <option value="Entertainment">Entertainment & Media</option>
-                                    <option value="Non-Profit">Non-Profit</option>
-                                    <option value="Government">Government</option>
-                                    <option value="Other">Other</option>
-                                </select>
-                            </div>
-
-                            <div class="form-control">
-                                <label class="label">
-                                    <span class="label-text font-semibold text-brand-navy-600 text-lg">Expected Workers</span>
-                                </label>
-                                <select id="expected-workers" name="expected_workers" class="select select-bordered w-full text-lg input-focus bg-white border-2 border-brand-navy-200 focus:border-brand-navy-500 focus:ring-2 focus:ring-brand-navy-200">
-                                    <option value="not_specified">Not specified</option>
-                                    <option value="below_100">Below 100</option>
-                                    <option value="100_250">100 - 250</option>
-                                    <option value="251_500">251 - 500</option>
-                                    <option value="501_1000">501 - 1000</option>
-                                    <option value="above_1000">Above 1000</option>
-                                </select>
-                            </div>
-
-                            <div class="form-control">
-                                <label class="label">
-                                    <span class="label-text font-semibold text-brand-navy-600 text-lg">Company Phone</span>
-                                </label>
-                                <input type="tel" id="company-phone" name="company_phone" placeholder="Enter company phone number" required 
-                                       class="input input-bordered w-full text-lg input-focus bg-white border-2 border-brand-navy-200 focus:border-brand-navy-500 focus:ring-2 focus:ring-brand-navy-200">
-                            </div>
-
-                            <div class="form-control">
-                                <label class="label">
-                                    <span class="label-text font-semibold text-brand-navy-600 text-lg">Company Email</span>
-                                </label>
-                                <input type="email" id="company-email" name="company_email" placeholder="Enter company email address" required 
-                                       class="input input-bordered w-full text-lg input-focus bg-white border-2 border-brand-navy-200 focus:border-brand-navy-500 focus:ring-2 focus:ring-brand-navy-200">
-                            </div>
-
-                            <button type="submit" id="create-btn" class="btn btn-primary w-full text-lg font-semibold btn-hover bg-gradient-to-r from-brand-navy-500 to-brand-navy-600 border-0 shadow-lg">
-                                <span id="create-btn-text">
-                                    <i class="fas fa-plus mr-3"></i>Create Workspace
-                                </span>
-                                <span id="create-btn-loading" class="hidden">
-                                    <div class="loading-spinner inline-block mr-3"></div>Creating...
-                                </span>
-                            </button>
-                        </form>
-                        <div id="create-error" class="text-error text-center mt-4 hidden"></div>
-                        <div id="create-warning" class="text-warning text-center mt-4 hidden"></div>
-                    </div>
-                </div>
-            </div>
         </div>
-
-        <!-- Help Section -->
-        <div class="text-center">
-            <div class="card bg-white/60 backdrop-blur-sm shadow-lg border border-gray-200/50">
-                <div class="card-body p-6">
-                    <h3 class="text-2xl font-bold text-brand-navy-600 mb-4">Need Help?</h3>
-                    <p class="text-brand-gray-600 mb-4">Our support team is here to help you get started</p>
-                    <div class="flex flex-wrap justify-center gap-4">
-                        <a href="mailto:support@embeeaccounting.com" class="btn btn-outline btn-sm">
-                            <i class="fas fa-envelope mr-2"></i>Email Support
-                        </a>
-                        <a href="/terms-of-use" class="btn btn-outline btn-sm">
-                            <i class="fas fa-file-contract mr-2"></i>Terms of Use
-                        </a>
-                        <a href="/privacy-policy" class="btn btn-outline btn-sm">
-                            <i class="fas fa-shield-alt mr-2"></i>Privacy Policy
-                        </a>
-                    </div>
-                </div>
-            </div>
+        
+        <!-- Back to landing -->
+        <div class="text-center mt-8">
+            <a href="/" class="text-brand-navy-500 hover:text-brand-navy-700 text-lg">
+                <i class="fas fa-arrow-left mr-2"></i>Back to home
+            </a>
         </div>
     </div>
 
-    <!-- Firebase SDK -->
+    <script src="/static/js/firebase.js" type="module"></script>
+    <script src="/static/js/runtime_app_settings.js" type="module"></script>
     <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getAuth, signInWithEmailLink, isSignInWithEmailLink, sendSignInLinkToEmail } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { GoogleAuthProvider, signInWithPopup, signOut } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
 
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyDGpqXJZWQWl3lMYX-M_wOrSs2K6v7FNr0",
-            authDomain: "casual-worker-manager.firebaseapp.com",
-            projectId: "casual-worker-manager",
-            storageBucket: "casual-worker-manager.firebasestorage.app",
-            messagingSenderId: "671505306326",
-            appId: "1:671505306326:web:0e64ba0b4b1e69aea79ed5"
-        };
+        let currentUser = null;
 
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        
-        // Store globally for use in other functions
-        window.firebaseAuth = auth;
-        window.signInWithEmailLink = signInWithEmailLink;
-        window.isSignInWithEmailLink = isSignInWithEmailLink;
-        window.sendSignInLinkToEmail = sendSignInLinkToEmail;
-    </script>
-
-    <script>
-        // Utility functions
-        function showLoading(buttonId, textId, loadingId) {
-            document.getElementById(textId).classList.add('hidden');
-            document.getElementById(loadingId).classList.remove('hidden');
-            document.getElementById(buttonId).disabled = true;
-        }
-
-        function hideLoading(buttonId, textId, loadingId) {
-            document.getElementById(textId).classList.remove('hidden');
-            document.getElementById(loadingId).classList.add('hidden');
-            document.getElementById(buttonId).disabled = false;
-        }
-
-        function showError(elementId, message) {
-            const errorElement = document.getElementById(elementId);
-            errorElement.textContent = message;
-            errorElement.classList.remove('hidden');
-            setTimeout(() => {
-                errorElement.classList.add('hidden');
-            }, 5000);
-        }
-
-        function showGlobalMessage(type, message) {
-            const element = document.getElementById(`global-${type}`);
-            const messageElement = document.getElementById(`global-${type}-message`);
-            messageElement.textContent = message;
-            element.classList.remove('hidden');
-            setTimeout(() => {
-                element.classList.add('hidden');
-            }, 5000);
-        }
-
-        function validateEmail(email) {
-            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return re.test(email);
-        }
-
-        function validatePhone(phone) {
-            const cleanPhone = phone.replace(/[\s\-\(\)]/g, '');
-            return /^[\+]?[1-9][\d]{0,15}$/.test(cleanPhone);
-        }
-
-        // Auto-uppercase workspace code input
-        document.getElementById('workspace-code').addEventListener('input', function(e) {
-            e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
-        });
-
-        // Join workspace form submission
-        document.getElementById('join-workspace-form').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const workspaceCode = document.getElementById('workspace-code').value.trim();
-            
-            if (!workspaceCode) {
-                showError('join-error', 'Please enter a workspace code');
-                return;
-            }
-            
-            if (workspaceCode.length !== 16) {
-                showError('join-error', 'Workspace code must be exactly 16 characters');
-                return;
-            }
-
-            showLoading('join-btn', 'join-btn-text', 'join-btn-loading');
-
+        // Global function for selecting workspace (accessible to onclick)
+        window.selectWorkspace = async function(workspaceId, workspaceName) {
             try {
-                const response = await fetch('/api/workspace/join', {
+                if (!currentUser) {
+                    showError('Please sign in first to select a workspace');
+                    return;
+                }
+
+                showLoading();
+                hideError();
+
+                // Set session with the workspace
+                const sessionResponse = await fetch('/set_session', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        workspace_code: workspaceCode
+                        email: currentUser.email,
+                        displayName: currentUser.displayName || '',
+                        photoURL: currentUser.photoURL || '',
+                        uid: currentUser.uid,
+                        workspace_data: {
+                            id: workspaceId
+                        }
                     })
                 });
 
-                const data = await response.json();
-
-                if (response.ok && data.success) {
-                    showGlobalMessage('success', `Found workspace "${data.workspace.name}"! Proceeding to sign in...`);
-                    
-                    // Store workspace data for later use in sessionStorage
-                    sessionStorage.setItem('pending_workspace', JSON.stringify(data.workspace));
-                    
-                    // Redirect to sign-in
-                    setTimeout(() => {
-                        window.location.href = '/signin';
-                    }, 1500);
+                if (sessionResponse.ok) {
+                    console.log(`Successfully selected workspace: ${workspaceName}`);
+                    // Redirect to home
+                    window.location.href = '/home';
                 } else {
-                    throw new Error(data.error || 'Failed to join workspace');
+                    const errorData = await sessionResponse.json();
+                    throw new Error(errorData.error || 'Failed to set session');
                 }
+
             } catch (error) {
-                console.error('Error joining workspace:', error);
-                showError('join-error', error.message || 'Failed to join workspace. Please try again.');
-            } finally {
-                hideLoading('join-btn', 'join-btn-text', 'join-btn-loading');
+                console.error('Error selecting workspace:', error);
+                hideLoading();
+                showError(error.message || 'Failed to select workspace. Please try again.');
             }
-        });
+        };
 
-        // Create workspace form submission
-        document.getElementById('create-workspace-form').addEventListener('submit', async function(e) {
-            e.preventDefault();
+        // Global helper functions (accessible to other functions)
+        window.showError = function(message) {
+            const errorDiv = document.getElementById('forgot-workspace-error');
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+        };
 
-            // Collect form data
-            const formData = {
-                company_name: document.getElementById('company-name').value.trim(),
-                country: document.getElementById('country').value,
-                industry_type: document.getElementById('industry-type').value,
-                expected_workers: document.getElementById('expected-workers').value,
-                company_phone: document.getElementById('company-phone').value.trim(),
-                company_email: document.getElementById('company-email').value.trim()
-            };
+        window.hideError = function() {
+            const errorDiv = document.getElementById('forgot-workspace-error');
+            errorDiv.classList.add('hidden');
+            errorDiv.textContent = '';
+        };
 
-            // Validation
-            if (!formData.company_name || formData.company_name.length < 2) {
-                showError('create-error', 'Company name must be at least 2 characters');
-                return;
-            }
-
-            if (!formData.country) {
-                showError('create-error', 'Please select a country');
-                return;
-            }
-
-            if (!formData.industry_type) {
-                showError('create-error', 'Please select an industry type');
-                return;
-            }
-
-            if (!formData.company_phone) {
-                showError('create-error', 'Please enter a company phone number');
-                return;
-            }
-
-            if (!validatePhone(formData.company_phone)) {
-                showError('create-error', 'Please enter a valid phone number');
-                return;
-            }
-
-            if (!formData.company_email) {
-                showError('create-error', 'Please enter a company email address');
-                return;
-            }
-
-            if (!validateEmail(formData.company_email)) {
-                showError('create-error', 'Please enter a valid email address');
-                return;
-            }
-
-            showLoading('create-btn', 'create-btn-text', 'create-btn-loading');
-
-            try {
-                const response = await fetch('/api/workspace/create', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(formData)
-                });
-
-                const data = await response.json();
-
-                if (response.ok && data.success) {
-                    if (data.warning) {
-                        document.getElementById('create-warning').textContent = data.warning;
-                        document.getElementById('create-warning').classList.remove('hidden');
-                    }
-                    
-                    showGlobalMessage('success', `Workspace "${data.workspace.name}" prepared! Proceeding to sign in...`);
-                    
-                    // Store workspace data for later use in sessionStorage
-                    sessionStorage.setItem('pending_workspace', JSON.stringify(data.workspace));
-                    
-                    // Redirect to sign-in
-                    setTimeout(() => {
-                        window.location.href = '/signin';
-                    }, 1500);
-                } else {
-                    throw new Error(data.error || 'Failed to create workspace');
-                }
-            } catch (error) {
-                console.error('Error creating workspace:', error);
-                showError('create-error', error.message || 'Failed to create workspace. Please try again.');
-            } finally {
-                hideLoading('create-btn', 'create-btn-text', 'create-btn-loading');
-            }
-        });
-
-        // Initialize page
-        document.addEventListener('DOMContentLoaded', function() {
-            // Clear any stored workspace data on page load
-            localStorage.removeItem('pendingWorkspace');
+        window.showLoading = function() {
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const googleSignInButton = document.getElementById('google-signin-forgot');
+            const emailSignInForm = document.getElementById('email-signin-form');
             
-            // Focus on first input
-            document.getElementById('workspace-code').focus();
+            loadingIndicator.classList.remove('hidden');
+            googleSignInButton.disabled = true;
+            emailSignInForm.querySelector('button[type="submit"]').disabled = true;
+        };
+
+        window.hideLoading = function() {
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const googleSignInButton = document.getElementById('google-signin-forgot');
+            const emailSignInForm = document.getElementById('email-signin-form');
+            
+            loadingIndicator.classList.add('hidden');
+            googleSignInButton.disabled = false;
+            emailSignInForm.querySelector('button[type="submit"]').disabled = false;
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const googleSignInButton = document.getElementById('google-signin-forgot');
+            const emailSignInForm = document.getElementById('email-signin-form');
+            const tryAnotherEmailButton = document.getElementById('try-another-email');
+            const signinSection = document.getElementById('signin-section');
+            const workspacesSection = document.getElementById('workspaces-section');
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const errorDiv = document.getElementById('forgot-workspace-error');
+            const emailSentNotification = document.getElementById('email-sent-notification');
+
+            // Check if user just signed in and show their workspaces
+            const urlSearchParams = new URLSearchParams(window.location.search);
+            const signedIn = urlSearchParams.get('signed_in');
+            const emailParam = urlSearchParams.get('email');
+            
+            if (signedIn === 'true' && emailParam) {
+                // User just signed in from email link, show their workspaces
+                showLoading();
+                getUserWorkspaces(decodeURIComponent(emailParam));
+                // Clean up URL
+                window.history.replaceState({}, document.title, '/forgot-workspace');
+            }
+
+            // Google Sign-In
+            googleSignInButton.addEventListener('click', async function() {
+                try {
+                    hideError();
+                    hideEmailNotification();
+                    showLoading();
+                    
+                    if (!window.firebaseAuth) {
+                        throw new Error('Firebase not initialized');
+                    }
+
+                    const provider = new GoogleAuthProvider();
+                    provider.addScope('email');
+                    provider.addScope('profile');
+                    
+                    const result = await signInWithPopup(window.firebaseAuth, provider);
+                    const user = result.user;
+                    currentUser = user;
+                    
+                    console.log('Google sign-in successful:', user.email);
+                    
+                    // Get user's workspaces
+                    await getUserWorkspaces(user.email);
+                    
+                } catch (error) {
+                    console.error('Google sign-in error:', error);
+                    hideLoading();
+                    showError('Failed to sign in with Google. Please try again.');
+                }
+            });
+
+            // Email Sign-In Form
+            emailSignInForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const email = document.getElementById('user-email-forgot').value.trim();
+                
+                if (!email) {
+                    showError('Please enter your email address');
+                    return;
+                }
+
+                // Validate email format
+                const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                if (!emailPattern.test(email)) {
+                    showError('Please enter a valid email address');
+                    return;
+                }
+
+                try {
+                    hideError();
+                    
+                    // First check if user exists and has workspaces
+                    const workspacesResponse = await fetch('/api/user/workspaces', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ email: email })
+                    });
+
+                    if (!workspacesResponse.ok) {
+                        const errorData = await workspacesResponse.json();
+                        throw new Error(errorData.error || 'No workspaces found for this email address');
+                    }
+
+                    // User exists and has workspaces, send Firebase sign-in link
+                    if (!window.firebaseAuth) {
+                        throw new Error('Firebase not initialized');
+                    }
+
+                    const { sendSignInLinkToEmail } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js');
+                    
+                    // Get runtime URL for the finish signin page
+                    const urlResponse = await fetch('/url');
+                    const urlData = await urlResponse.json();
+                    const baseUrl = urlData.url;
+                    
+                    const actionCodeSettings = {
+                        url: `${baseUrl}/finishSignin?email=${encodeURIComponent(email)}&from=forgot-workspace`,
+                        handleCodeInApp: true,
+                    };
+
+                    await sendSignInLinkToEmail(window.firebaseAuth, email, actionCodeSettings);
+                    
+                    // Store email for later verification
+                    window.localStorage.setItem('emailForSignIn', email);
+                    
+                    // Show email sent notification
+                    showEmailSentNotification(email);
+                    
+                } catch (error) {
+                    console.error('Email sign-in error:', error);
+                    showError(error.message || 'Failed to send sign-in link. Please try again.');
+                }
+            });
+
+            // Try another email
+            tryAnotherEmailButton.addEventListener('click', async function() {
+                try {
+                    if (currentUser) {
+                        await signOut(window.firebaseAuth);
+                        currentUser = null;
+                    }
+                } catch (error) {
+                    console.error('Sign out error:', error);
+                }
+                
+                // Reset UI
+                workspacesSection.classList.add('hidden');
+                signinSection.classList.remove('hidden');
+                hideError();
+                hideLoading();
+                hideEmailNotification();
+                // Clear the email input
+                document.getElementById('user-email-forgot').value = '';
+            });
+
+            async function getUserWorkspaces(email) {
+                try {
+                    const response = await fetch('/api/user/workspaces', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ email: email })
+                    });
+
+                    const data = await response.json();
+                    hideLoading();
+
+                    if (!response.ok) {
+                        throw new Error(data.error || 'Failed to retrieve workspaces');
+                    }
+
+                    if (data.success && data.workspaces && data.workspaces.length > 0) {
+                        displayWorkspaces(data.workspaces, data.user_email);
+                    } else {
+                        showError('No workspaces found for this email address.');
+                    }
+
+                } catch (error) {
+                    console.error('Error getting user workspaces:', error);
+                    hideLoading();
+                    showError(error.message || 'Failed to retrieve workspaces. Please try again.');
+                }
+            }
+
+            function displayWorkspaces(workspaces, userEmail) {
+                const workspacesList = document.getElementById('workspaces-list');
+                const userEmailDisplay = document.getElementById('user-email-display');
+                
+                userEmailDisplay.textContent = `Workspaces found for ${userEmail}`;
+                
+                workspacesList.innerHTML = '';
+                
+                workspaces.forEach(workspace => {
+                    const workspaceCard = document.createElement('div');
+                    workspaceCard.className = 'workspace-card bg-gradient-to-r from-white to-gray-50 border-2 border-gray-200 rounded-xl p-6 shadow-md';
+                    
+                    workspaceCard.innerHTML = `
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                            <div class="flex-1">
+                                <h3 class="text-xl font-bold text-brand-navy-600 mb-2">${escapeHtml(workspace.name)}</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-brand-gray-600">
+                                    <div><i class="fas fa-user-tag mr-2 text-brand-navy-500"></i>Role: <span class="font-medium">${escapeHtml(workspace.role)}</span></div>
+                                    <div><i class="fas fa-globe mr-2 text-brand-navy-500"></i>Country: <span class="font-medium">${escapeHtml(workspace.country)}</span></div>
+                                    <div><i class="fas fa-industry mr-2 text-brand-navy-500"></i>Industry: <span class="font-medium">${escapeHtml(workspace.industry)}</span></div>
+                                    <div><i class="fas fa-calendar mr-2 text-brand-navy-500"></i>Created: <span class="font-medium">${workspace.created_at || 'N/A'}</span></div>
+                                </div>
+                            </div>
+                            <div class="flex flex-col items-center gap-3">
+                                <button onclick="selectWorkspace('${workspace.id}', '${escapeHtml(workspace.name)}')" 
+                                   class="btn btn-primary btn-sm bg-gradient-to-r from-emerald-500 to-green-600 border-0 text-white shadow-md hover:shadow-lg">
+                                    <i class="fas fa-sign-in-alt mr-2"></i>Select Workspace
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    workspacesList.appendChild(workspaceCard);
+                });
+                
+                // Show workspaces section, hide signin section
+                signinSection.classList.add('hidden');
+                workspacesSection.classList.remove('hidden');
+            }
+
+            function showEmailSentNotification(email) {
+                errorDiv.textContent = message;
+                errorDiv.classList.remove('hidden');
+            }
+
+            function hideError() {
+                errorDiv.classList.add('hidden');
+                errorDiv.textContent = '';
+            }
+
+            function showLoading() {
+                loadingIndicator.classList.remove('hidden');
+                googleSignInButton.disabled = true;
+                emailSignInForm.querySelector('button[type="submit"]').disabled = true;
+            }
+
+            function hideLoading() {
+                loadingIndicator.classList.add('hidden');
+                googleSignInButton.disabled = false;
+                emailSignInForm.querySelector('button[type="submit"]').disabled = false;
+            }
+
+            function showEmailSentNotification(email) {
+                const emailText = emailSentNotification.querySelector('.text-green-700');
+                emailText.innerHTML = `We've sent a sign-in link to <strong>${email}</strong>. Click the link in the email to retrieve your workspace codes.`;
+                emailSentNotification.classList.remove('hidden');
+                // Scroll to notification
+                emailSentNotification.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+
+            function hideEmailNotification() {
+                emailSentNotification.classList.add('hidden');
+            }
+
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            // Make copyToClipboard available globally
+            window.copyToClipboard = function(text, element) {
+                navigator.clipboard.writeText(text).then(function() {
+                    // Show temporary success feedback
+                    const originalBg = element.style.background;
+                    element.style.background = 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)';
+                    element.style.borderColor = '#10b981';
+                    
+                    // Create temporary success message
+                    const successMsg = document.createElement('div');
+                    successMsg.className = 'text-xs text-green-600 mt-1 font-medium';
+                    successMsg.textContent = 'Copied!';
+                    element.parentNode.appendChild(successMsg);
+                    
+                    setTimeout(() => {
+                        element.style.background = originalBg;
+                        element.style.borderColor = '#cbd5e1';
+                        if (successMsg.parentNode) {
+                            successMsg.parentNode.removeChild(successMsg);
+                        }
+                    }, 2000);
+                }).catch(function(err) {
+                    console.error('Failed to copy: ', err);
+                    showError('Failed to copy to clipboard');
+                });
+            }
+
+            // Handle email sign-in completion (when user clicks link from email)
+            // Check if we came from an email link
+            const urlParams = new URLSearchParams(window.location.search);
+            const emailFromLink = urlParams.get('email');
+            if (emailFromLink) {
+                // Auto-retrieve workspaces for this email
+                getUserWorkspaces(emailFromLink);
+            }
         });
     </script>
 </body>

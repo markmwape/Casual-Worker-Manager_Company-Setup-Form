@@ -67,10 +67,8 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Determine workspaceData from URL parameter or sessionStorage/localStorage
             let workspaceData = null;
-            
-            // First, try to get workspace code from URL parameter
             const urlParams = new URLSearchParams(window.location.search);
-            const workspaceCodeFromUrl = urlParams.get('workspace');
+            const fromForgotWorkspace = urlParams.get('from') === 'forgot-workspace';
             
             if (workspaceCodeFromUrl) {
                 console.log('Found workspace code in URL:', workspaceCodeFromUrl);
@@ -167,11 +165,19 @@ document.addEventListener('DOMContentLoaded', function() {
                     body: JSON.stringify(sessionPayload)
                 });
                 if (response.ok) {
-                    console.log('Session set successfully, redirecting to home');
+                    console.log('Session set successfully');
                     // Clear all pending workspace storage after successful session creation
                     window.localStorage.removeItem('pendingWorkspace');
                     window.sessionStorage.removeItem('pending_workspace');
-                    window.location.href = '/home';
+                    
+                    // If user came from workspace selection page, redirect back there to select workspace
+                    if (fromForgotWorkspace) {
+                        console.log('Redirecting to workspace selection page for workspace selection');
+                        window.location.href = '/workspace-selection?signed_in=true&email=' + encodeURIComponent(user.email);
+                    } else {
+                        console.log('Redirecting to home');
+                        window.location.href = '/home';
+                    }
                 } else {
                     const errorData = await response.json();
                     console.error('Failed to set session:', errorData);

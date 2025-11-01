@@ -95,6 +95,11 @@
             background: linear-gradient(180deg, #1A2B48 0%, #102038 100%);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
+        /* FIX: Override DaisyUI pointer-events on sidebar - Force sidebar to always be interactive */
+        .drawer .drawer-side {
+            pointer-events: auto !important;
+        }
+        
         /* Responsive drawer behavior */
         @media (max-width: 1023px) {
             .mobile-menu-button {
@@ -146,6 +151,13 @@
             }
             .drawer.lg\:drawer-open .drawer-toggle {
                 display: none;
+            }
+            /* CRITICAL FIX: Force sidebar container to be visible on desktop */
+            .drawer.lg\:drawer-open .drawer-side .sidebar-container {
+                transform: translateX(0) !important;
+                display: flex !important;
+                visibility: visible !important;
+                opacity: 1 !important;
             }
         }
         .sidebar-scroll {

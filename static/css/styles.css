@@ -1066,6 +1066,14 @@ input[type="date"]::-webkit-date-and-time-value {
 }
 
 /* ============================================================
+   CRITICAL FIX: Override DaisyUI pointer-events on sidebar
+   This ensures the sidebar is clickable on all screen sizes
+   ============================================================ */
+.drawer .drawer-side {
+    pointer-events: auto !important;
+}
+
+/* ============================================================
    DESKTOP SIDEBAR DISPLAY FIX
    Force sidebar to be visible on desktop screens
    ============================================================ */
@@ -1086,8 +1094,9 @@ input[type="date"]::-webkit-date-and-time-value {
         height: 100vh !important;
     }
     
-    /* Ensure sidebar container is visible */
-    .drawer .drawer-side .sidebar-container {
+    /* CRITICAL FIX: Force sidebar container transform on desktop */
+    .drawer .drawer-side > .sidebar-container {
+        transform: translateX(0) !important;
         display: flex !important;
         visibility: visible !important;
         opacity: 1 !important;

@@ -1,55 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Embee Accounting - Tasks</title>
-    
-    <!-- External Resources -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.24/dist/full.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <script src="https://unpkg.com/feather-icons"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    
-    <!-- Tailwind Configuration -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'brand-navy': {
-                            '50': '#f0f4f8',
-                            '100': '#d9e2ec',
-                            '200': '#bcccdc',
-                            '300': '#9fb3c8',
-                            '400': '#829ab1',
-                            '500': '#1A2B48',
-                            '600': '#102038',
-                            '700': '#0d1a2d',
-                            '800': '#0a1423',
-                            '900': '#060d18'
-                        },
-                        'brand-gold': {
-                            '50': '#fefbf3',
-                            '100': '#fef3d9',
-                            '200': '#fde9b3',
-                            '300': '#fcdd8c',
-                            '400': '#f8cd5f',
-                            '500': '#E5B23A',
-                            '600': '#d19b1f',
-                            '700': '#a87b15',
-                            '800': '#7f5c0f',
-                            '900': '#563d0a'
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    
-    <style>
+{% extends "base_with_sidebar.html" %}
+
+{% block title %}Embee Accounting - Tasks{% endblock %}
+
+{% block head %}
+<style>
         /* Task-specific styles */
         .task-card {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -127,168 +81,20 @@
             pointer-events: none;
             opacity: 0.6;
         }
-
-        /* Mobile Menu Button */
-        .mobile-menu-button {
-            display: none;
-            position: fixed;
-            top: 1rem;
-            right: 1rem;
-            z-index: 50;
-            background: linear-gradient(180deg, #1A2B48 0%, #102038 100%);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            width: 3rem;
-            height: 3rem;
-        }
-
-        /* Sidebar Styles - Exact match from base_with_sidebar */
-        .sidebar-container {
-            background: linear-gradient(180deg, #1A2B48 0%, #102038 100%);
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-        }
-        .sidebar-menu-item {
-            transition: all 0.2s ease;
-            position: relative;
-        }
-        .sidebar-menu-item.active {
-            background-color: rgba(255, 255, 255, 0.2);
-            color: white;
-        }
-        .sidebar-menu-item:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-        /* GOLD ACTIVE INDICATOR */
-        .sidebar-menu-item.active::after {
-            content: '';
-            position: absolute;
-            right: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 3px;
-            height: 60%;
-            background-color: #E5B23A;
-            border-radius: 2px 0 0 2px;
-        }
-        .profile-avatar {
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        }
-        .sidebar-scroll {
-            scrollbar-width: thin;
-            scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
-        }
-        .sidebar-scroll::-webkit-scrollbar {
-            width: 4px;
-        }
-        .sidebar-scroll::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .sidebar-scroll::-webkit-scrollbar-thumb {
-            background-color: rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-        }
-        .sidebar-menu-item:focus {
-            outline: none;
-            box-shadow: none;
-        }
-        button:focus {
-            outline: none;
-            box-shadow: none;
-        }
-
-        /* Responsive drawer behavior */
-        @media (max-width: 1023px) {
-            .mobile-menu-button {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-            .drawer-side {
-                transform: translateX(-100%);
-                transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
-                z-index: 10001;
-                position: fixed;
-                left: 0;
-                top: 0;
-                height: 100vh;
-                width: 20rem;
-                pointer-events: none;
-                opacity: 0;
-            }
-            .drawer-toggle:checked ~ .drawer-side {
-                transform: translateX(0%);
-                pointer-events: auto;
-                opacity: 1;
-            }
-            .drawer-toggle:checked ~ .drawer-content {
-                /* Optionally dim background */
-                filter: blur(0.5px);
-            }
-            .drawer-overlay {
-                display: block;
-                background: rgba(0,0,0,0.3);
-                position: fixed;
-                inset: 0;
-                z-index: 10000;
-            }
-        }
-        @media (min-width: 1024px) {
-            .drawer.lg\:drawer-open .drawer-side {
-                transform: translateX(0);
-                position: fixed;
-                left: 0;
-                top: 0;
-                bottom: 0;
-                z-index: 40;
-                width: 20rem;
-                height: 100vh;
-            }
-            .drawer.lg\:drawer-open .drawer-content {
-                margin-left: 20rem;
-                min-height: 100vh;
-            }
-            .drawer.lg\:drawer-open .drawer-toggle {
-                display: none;
-            }
-        }
-        /* Remove transition/transform from .drawer-content to prevent page animation */
-        .drawer-content {
-            transition: none !important;
-            transform: none !important;
-        }
-        /* Restrict slide-in animation to only the sidebar, not the page */
-        @media (max-width: 1023px) {
-            .drawer-side {
-                transition: none !important;
-            }
-            .sidebar-container {
-                transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
-                transform: translateX(-100%);
-            }
-            .drawer-toggle:checked ~ .drawer-side .sidebar-container {
-                transform: translateX(0);
-            }
-        }
-        /* Remove background from .drawer-side, only sidebar-container should have it */
-        .drawer-side {
-            background: none !important;
-        }
     </style>
-</head>
-<body class="min-h-screen bg-gray-50">
-    <div class="drawer min-h-screen lg:drawer-open">
-        <input id="my-drawer" type="checkbox" class="drawer-toggle" />
-        
-        <!-- Main Content Area -->
-        <div class="drawer-content bg-gray-50 min-h-screen lg:ml-0">
-            <!-- Mobile Menu Button Only (No Header) -->
-            <div class="lg:hidden fixed top-4 right-4 z-50">
-                <label for="my-drawer" class="mobile-menu-button btn btn-ghost btn-circle text-white shadow-lg">
-                    <i class="material-icons text-white">menu</i>
-                </label>
-            </div>
-            
-            <div class="p-4 lg:p-6 pt-16 lg:pt-6">
-                <div class="container mx-auto px-4 w-full max-w-6xl">
+{% endblock %}
+
+{% block content %}
+<!-- Mobile Menu Button -->
+<div class="lg:hidden fixed top-4 right-4 z-50">
+    <label for="my-drawer" class="btn btn-circle btn-primary shadow-lg">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+    </label>
+</div>
+
+<div class="container mx-auto px-4 w-full max-w-6xl pt-8">
                     <!-- Desktop header and actions -->
                     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
                         <h1 class="text-3xl font-bold text-black">Tasks</h1>
@@ -474,138 +280,15 @@
                         {% endfor %}
                     </div>
 
-                    <!-- Include your actual modals -->
-                    {% include 'modals/add_task.html' %}
-                    {% include 'modals/delete_task.html' %}
-                    {% include 'modals/edit_task.html' %}
-                </div>
+                <!-- Include your actual modals -->
+                {% include 'modals/add_task.html' %}
+                {% include 'modals/delete_task.html' %}
+                {% include 'modals/edit_task.html' %}
             </div>
-        </div>
-        
-        <!-- Sidebar -->
-        <div class="drawer-side z-40">
-            <label for="my-drawer" class="drawer-overlay" aria-label="Close sidebar"></label>
-            
-            <div class="sidebar-container h-full w-80 flex flex-col">
-                <!-- Desktop Header Section -->
-                <div class="flex-shrink-0 p-4 border-b border-white/10 hidden lg:block">
-                    <div class="flex items-center justify-center mb-6 mt-4">
-                        <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center mr-3 shadow-lg">
-                            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Embee Bee Logo" class="w-8 h-8 object-contain" />
-                        </div>
-                        <h2 class="text-lg font-bold text-white whitespace-nowrap">My Workspace</h2>
-                    </div>
-                    
-                    <!-- User Profile Card -->
-                    <div class="bg-white/10 rounded-xl p-3 backdrop-blur-sm border border-white/20 flex items-center">
-                        {% if session.get('user', {}).get('photo_url') %}
-                            <div class="avatar mr-3 flex-shrink-0">
-                                <div class="w-12 h-12 rounded-full profile-avatar ring-2 ring-white/30">
-                                    <img src="{{ session['user']['photo_url'] }}" alt="Profile Picture" class="object-cover rounded-full" />
-                                </div>
-                            </div>
-                        {% else %}
-                            <div class="avatar placeholder mr-3 flex-shrink-0">
-                                <div class="bg-white/20 text-white rounded-full w-12 h-12 profile-avatar ring-2 ring-white/30 flex items-center justify-center">
-                                    <span class="text-lg font-bold">
-                                        {% set display_name = session.get('user', {}).get('display_name', '') %}
-                                        {% set user_email = session.get('user', {}).get('user_email', '') %}
-                                        {% if display_name %}
-                                            {{ display_name[0] | upper }}
-                                        {% elif user_email %}
-                                            {{ user_email.split('@')[0][0] | upper }}
-                                        {% else %}
-                                            U
-                                        {% endif %}
-                                    </span>
-                                </div>
-                            </div>
-                        {% endif %}
-                        
-                        <div class="flex flex-col min-w-0 flex-1">
-                            <h3 class="text-sm font-semibold text-white truncate mb-1">
-                                {% set display_name = session.get('user', {}).get('display_name', '') %}
-                                {% set user_email = session.get('user', {}).get('user_email', '') %}
-                                {% if display_name %}
-                                    {{ display_name }}
-                                {% elif user_email %}
-                                    {{ user_email.split('@')[0] | title }}
-                                {% else %}
-                                    User
-                                {% endif %}
-                            </h3>
-                            <p class="text-xs text-white/70 truncate">
-                                {% if session.get('current_workspace', {}).get('role') %}
-                                    {{ session.get('current_workspace', {}).get('role') }}
-                                {% else %}
-                                    Administrator
-                                {% endif %}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Mobile Sidebar Header -->
-                <div class="flex-shrink-0 p-4 border-b border-white/10 lg:hidden">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="flex items-center">
-                            <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center mr-3 shadow-lg">
-                                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Embee Bee Logo" class="w-6 h-6 object-contain" />
-                            </div>
-                            <h2 class="text-lg font-bold text-white">My Workspace</h2>
-                        </div>
-                        <label for="my-drawer" class="btn btn-ghost btn-circle text-white">
-                            <i class="material-icons">close</i>
-                        </label>
-                    </div>
-                </div>
-                
-                <!-- Navigation Menu -->
-                <nav class="flex-1 overflow-y-auto sidebar-scroll">
-                    <div class="space-y-2 p-4">
-                        {% set menu_items = [
-                            {'endpoint': 'home_route', 'icon': 'home', 'label': 'Dashboard'},
-                            {'endpoint': 'workers_route', 'icon': 'group', 'label': 'Workers'},
-                            {'endpoint': 'tasks_route', 'icon': 'assignment', 'label': 'Tasks'},
-                            {'endpoint': 'reports_route', 'icon': 'bar_chart', 'label': 'Reports'}
-                        ] %}
-                        
-                        {% for item in menu_items %}
-                            <div class="w-full">
-                                <a href="{{ url_for(item.endpoint) }}" 
-                                   class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg min-h-[48px] no-underline {% if request.endpoint == item.endpoint %}active{% else %}text-white/90{% endif %}">
-                                    <span class="material-icons mr-3 flex-shrink-0">{{ item.icon }}</span> 
-                                    <span class="font-medium flex-shrink-0">{{ item.label }}</span>
-                                </a>
-                            </div>
-                        {% endfor %}
-                        
-                        {% if session.get('current_workspace', {}).get('role') in ['Admin'] %}
-                            <div class="w-full">
-                                <a href="https://billing.stripe.com/p/login/test_5kQaEX5Jg1o5g8lg0SgEg00" 
-                                   target="_blank" 
-                                   class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg text-white/90 min-h-[48px] no-underline">
-                                    <span class="material-icons mr-3 flex-shrink-0">credit_card</span> 
-                                    <span class="font-medium flex-shrink-0">Payments/Billing</span>
-                                </a>
-                            </div>
-                        {% endif %}
-                    </div>
-                </nav>
-                
-                <!-- Footer Section -->
-                <div class="flex-shrink-0 p-4 border-t border-white/10">
-                    <a href="{{ url_for('signout') }}" 
-                       class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg text-white/90 min-h-[48px] no-underline">
-                        <span class="material-icons mr-3 flex-shrink-0">logout</span> 
-                        <span class="font-medium flex-shrink-0">Sign Out</span>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <script>
+{% endblock %}
+
+{% block scripts %}
+<script>
         // ALL THE ORIGINAL JAVASCRIPT FUNCTIONS - KEPT COMPLETELY INTACT
         function navigateToTask(event, taskId) {
             if (!event.target.closest('.status-dropdown')) {
@@ -1075,6 +758,5 @@
                 });
             }
         }
-    </script>
-</body>
-</html>
+</script>
+{% endblock %}

@@ -63,36 +63,233 @@
             0%, 100% { transform: translateY(0px); }
             50% { transform: translateY(-10px); }
         }
+        /* Modern loading spinner */
         .loading-spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #1e3a8a;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 2s linear infinite;
+            border-top-color: #fff;
+            animation: spin 0.8s linear infinite;
+            display: inline-block;
         }
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            to { transform: rotate(360deg); }
+        }
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes checkmark {
+            0% {
+                stroke-dashoffset: 100;
+            }
+            100% {
+                stroke-dashoffset: 0;
+            }
         }
         body {
             font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+        /* Animated gradient background bubbles */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 20% 50%, rgba(30, 58, 138, 0.3) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.25) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 20%, rgba(30, 64, 175, 0.2) 0%, transparent 50%);
+            animation: bubbleFloat 20s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 60% 40%, rgba(147, 197, 253, 0.15) 0%, transparent 60%),
+                        radial-gradient(circle at 30% 70%, rgba(96, 165, 250, 0.1) 0%, transparent 50%);
+            animation: bubbleFloat 15s ease-in-out infinite reverse;
+            pointer-events: none;
+            z-index: 0;
+        }
+        @keyframes bubbleFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -30px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+        .success-checkmark {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto;
+        }
+        .success-checkmark .check-icon {
+            width: 80px;
+            height: 80px;
+            position: relative;
+            border-radius: 50%;
+            box-sizing: content-box;
+            border: 4px solid #4ade80;
+        }
+        .success-checkmark .check-icon::before {
+            top: 3px;
+            left: -2px;
+            width: 30px;
+            transform-origin: 100% 50%;
+            border-radius: 100px 0 0 100px;
+        }
+        .success-checkmark .check-icon::after {
+            top: 0;
+            left: 30px;
+            width: 60px;
+            transform-origin: 0 50%;
+            border-radius: 0 100px 100px 0;
+            animation: rotate-circle 4.25s ease-in;
+        }
+        .success-checkmark .icon-line {
+            height: 5px;
+            background-color: #4ade80;
+            display: block;
+            border-radius: 2px;
+            position: absolute;
+            z-index: 10;
+        }
+        .success-checkmark .icon-line.line-tip {
+            top: 46px;
+            left: 14px;
+            width: 25px;
+            transform: rotate(45deg);
+            animation: icon-line-tip 0.75s;
+        }
+        .success-checkmark .icon-line.line-long {
+            top: 38px;
+            right: 8px;
+            width: 47px;
+            transform: rotate(-45deg);
+            animation: icon-line-long 0.75s;
+        }
+        @keyframes icon-line-tip {
+            0% {
+                width: 0;
+                left: 1px;
+                top: 19px;
+            }
+            54% {
+                width: 0;
+                left: 1px;
+                top: 19px;
+            }
+            70% {
+                width: 50px;
+                left: -8px;
+                top: 37px;
+            }
+            84% {
+                width: 17px;
+                left: 21px;
+                top: 48px;
+            }
+            100% {
+                width: 25px;
+                left: 14px;
+                top: 46px;
+            }
+        }
+        @keyframes icon-line-long {
+            0% {
+                width: 0;
+                right: 46px;
+                top: 54px;
+            }
+            65% {
+                width: 0;
+                right: 46px;
+                top: 54px;
+            }
+            84% {
+                width: 55px;
+                right: 0;
+                top: 35px;
+            }
+            100% {
+                width: 47px;
+                right: 8px;
+                top: 38px;
+            }
         }
         .gradient-header {
             background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .gradient-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: headerShine 8s linear infinite;
+        }
+        @keyframes headerShine {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50%, 50%); }
         }
         .btn-gradient {
             background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
             transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-gradient::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+        .btn-gradient:hover::before {
+            left: 100%;
         }
         .btn-gradient:hover {
-            background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+            background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(30, 58, 138, 0.4);
+            box-shadow: 0 15px 35px rgba(30, 58, 138, 0.5);
+        }
+        .btn-gradient:active {
+            transform: translateY(0);
+        }
+        .btn-gradient:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none !important;
         }
         .input-focus {
-            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
-            border-color: #1e40af;
+            transition: all 0.3s ease;
             background-color: white;
             color: black;
         }
@@ -101,27 +298,79 @@
             border-color: #1e40af;
             background-color: white;
             color: black;
+            transform: translateY(-1px);
+        }
+        .input-focus:hover {
+            border-color: #94a3b8;
+        }
+        .card-animate {
+            animation: slideInUp 0.6s ease-out;
+        }
+        .feature-card {
+            transition: all 0.3s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+        }
+        .icon-pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .info-section {
+            animation: fadeIn 0.8s ease-out 0.3s both;
+        }
+        .back-link {
+            transition: all 0.3s ease;
+        }
+        .back-link:hover {
+            transform: translateX(-5px);
+        }
+        select.input-focus {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
         }
     </style>
 </head>
-<body class="bg-white min-h-screen relative py-8">
+<body class="min-h-screen relative py-8">
     <div class="w-full max-w-2xl mx-auto relative z-10 px-4">
         <!-- Header Section -->
         <div class="text-center mb-12">
             <div class="inline-flex items-center justify-center mb-6">
-                <img src="/static/img/logo.png" alt="Embee Accounting Logo" class="h-20 w-20 object-contain floating-animation" />
+                <div class="relative">
+                    <img src="/static/img/logo.png" alt="Embee Accounting Logo" class="h-20 w-20 object-contain floating-animation relative z-10" />
+                    <div class="absolute inset-0 bg-blue-400 rounded-full blur-xl opacity-40 animate-pulse"></div>
+                </div>
             </div>
-            <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4 drop-shadow-lg">Create a New Workspace</h1>
-            <p class="text-xl text-gray-600 max-w-2xl mx-auto">Set up a new workspace for your organization</p>
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-4 drop-shadow-lg">Create a New Workspace</h1>
+            <p class="text-xl text-blue-100 max-w-2xl mx-auto">Set up a new workspace for your organization in minutes</p>
+            <div class="flex flex-wrap items-center justify-center gap-3 mt-6">
+                <div class="flex items-center gap-2 px-4 py-2 bg-blue-500/20 backdrop-blur-sm border border-blue-400/30 text-blue-100 rounded-full text-sm font-medium shadow-lg">
+                    <i class="fas fa-clock"></i>
+                    <span>Takes less than 2 minutes</span>
+                </div>
+                <div class="flex items-center gap-2 px-4 py-2 bg-green-500/20 backdrop-blur-sm border border-green-400/30 text-green-100 rounded-full text-sm font-medium shadow-lg">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Free to start</span>
+                </div>
+            </div>
         </div>
 
         <!-- Create Workspace Card -->
-        <div class="card bg-white shadow-2xl border-0 rounded-2xl overflow-hidden">
+        <div class="card bg-white shadow-2xl border-0 rounded-2xl overflow-hidden card-animate backdrop-blur-sm">
             <div class="gradient-header p-6">
-                <h2 class="text-2xl font-bold text-white flex items-center gap-2">
-                    <i class="fas fa-building"></i>
+                <h2 class="text-2xl font-bold text-white flex items-center gap-3 relative z-10">
+                    <i class="fas fa-building icon-pulse"></i>
                     Workspace Details
                 </h2>
+                <p class="text-blue-100 mt-2 text-sm relative z-10">Fill in the information below to create your workspace</p>
             </div>
             <div class="card-body p-8 md:p-10">
                 <form id="create-workspace-form" class="w-full space-y-6">
@@ -131,10 +380,14 @@
                                 <i class="fas fa-building text-blue-600"></i>
                                 Company Name
                             </span>
+                            <span class="label-text-alt text-gray-500">Required</span>
                         </label>
-                        <input type="text" id="company-name" name="company_name" placeholder="Enter company name" required 
+                        <input type="text" id="company-name" name="company_name" placeholder="e.g., ABC Construction Ltd" required 
                                class="input input-bordered w-full text-base bg-white border-2 border-gray-300 input-focus rounded-lg"
                                minlength="2" maxlength="100">
+                        <label class="label">
+                            <span class="label-text-alt text-gray-500">Minimum 2 characters</span>
+                        </label>
                     </div>
 
                     <div class="form-control">
@@ -143,6 +396,7 @@
                                 <i class="fas fa-globe text-blue-600"></i>
                                 Country
                             </span>
+                            <span class="label-text-alt text-gray-500">Required</span>
                         </label>
                         <select id="country" name="country" required class="select select-bordered w-full text-base bg-white border-2 border-gray-300 input-focus rounded-lg">
                             <option value="">Select country</option>
@@ -349,6 +603,7 @@
                                 <i class="fas fa-industry text-blue-600"></i>
                                 Industry Type
                             </span>
+                            <span class="label-text-alt text-gray-500">Required</span>
                         </label>
                         <select id="industry-type" name="industry_type" required class="select select-bordered w-full text-base bg-white border-2 border-gray-300 input-focus rounded-lg">
                             <option value="">Select industry</option>
@@ -380,9 +635,13 @@
                                 <i class="fas fa-phone text-blue-600"></i>
                                 Company Phone
                             </span>
+                            <span class="label-text-alt text-gray-500">Required</span>
                         </label>
-                        <input type="tel" id="company-phone" name="company_phone" placeholder="Enter company phone number" required 
+                        <input type="tel" id="company-phone" name="company_phone" placeholder="+1 (555) 123-4567" required 
                                class="input input-bordered w-full text-base bg-white border-2 border-gray-300 input-focus rounded-lg">
+                        <label class="label">
+                            <span class="label-text-alt text-gray-500">Include country code if international</span>
+                        </label>
                     </div>
 
                     <div class="form-control">
@@ -391,72 +650,110 @@
                                 <i class="fas fa-envelope text-blue-600"></i>
                                 Company Email
                             </span>
+                            <span class="label-text-alt text-gray-500">Required</span>
                         </label>
-                        <input type="email" id="company-email" name="company_email" placeholder="Enter company email address" required 
+                        <input type="email" id="company-email" name="company_email" placeholder="company@example.com" required 
                                class="input input-bordered w-full text-base bg-white text-black border-2 border-gray-300 input-focus rounded-lg">
+                        <label class="label">
+                            <span class="label-text-alt text-gray-500">Official company email address</span>
+                        </label>
                     </div>
 
-                    <button type="submit" id="create-btn" class="btn w-full text-lg font-semibold btn-gradient text-white border-0 py-3 rounded-lg mt-2">
-                        <span id="create-btn-text">
-                            <i class="fas fa-plus mr-2"></i>Create Workspace
+                    <button type="submit" id="create-btn" class="btn w-full text-lg font-semibold btn-gradient text-white border-0 py-3 rounded-lg mt-4 h-14 shadow-lg">
+                        <span id="create-btn-text" class="flex items-center justify-center gap-2">
+                            <i class="fas fa-plus"></i>
+                            <span>Create Workspace</span>
                         </span>
-                        <span id="create-btn-loading" class="hidden flex items-center justify-center"></span>
-                            <div class="loading-spinner inline-block mr-3"></div>Creating...
+                        <span id="create-btn-loading" class="hidden items-center justify-center gap-3">
+                            <div class="loading-spinner"></div>
+                            <span>Creating workspace...</span>
                         </span>
                     </button>
 
-                    <div id="create-error" class="text-error text-center mt-4 hidden"></div>
-                    <div id="create-warning" class="text-warning text-center mt-4 hidden"></div>
+                    <div id="create-error" class="alert alert-error shadow-lg mt-4 hidden">
+                        <div>
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span id="create-error-text"></span>
+                        </div>
+                    </div>
+                    <div id="create-warning" class="alert alert-warning shadow-lg mt-4 hidden">
+                        <div>
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span id="create-warning-text"></span>
+                        </div>
+                    </div>
                 </form>
             </div>
         </div>
 
         <!-- Start Fresh Info Section -->
-        <div class="mt-12 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-8 shadow-2xl border border-blue-200">
-            <div class="flex items-start gap-4 mb-6">
-                <div class="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
-                    <i class="fas fa-rocket text-white text-xl"></i>
+        <div class="mt-12 bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-2xl border border-white/20 info-section">
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-xl icon-pulse mb-4">
+                    <i class="fas fa-rocket text-white text-2xl"></i>
                 </div>
-                <div></div>
-                    <h2 class="text-2xl font-bold text-gray-900 mb-2">Start Fresh</h2>
-                    <p class="text-gray-700 text-base leading-relaxed">
-                        Create a new workspace to manage your workforce, track attendance, and generate reports with ease.
-                    </p>
-                </div>
+                <h2 class="text-3xl font-bold text-white mb-3">Start Fresh</h2>
+                <p class="text-blue-100 text-lg leading-relaxed max-w-xl mx-auto">
+                    Create a new workspace to manage your workforce, track attendance, and generate reports with ease.
+                </p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="flex items-center gap-3 bg-white p-4 rounded-lg shadow-sm"></div>
-                    <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <i class="fas fa-users text-white text-sm"></i>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="group bg-white/10 backdrop-blur-sm border border-white/20 p-5 rounded-xl hover:bg-white/20 transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform">
+                            <i class="fas fa-users text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-white font-semibold text-base mb-1">Manage Workers & Tasks</h3>
+                            <p class="text-blue-200 text-sm">Organize your team efficiently</p>
+                        </div>
                     </div>
-                    <span class="text-gray-700 font-medium">Manage workers & tasks</span>
                 </div>
-                <div class="flex items-center gap-3 bg-white p-4 rounded-lg shadow-sm">
-                    <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <i class="fas fa-calendar-check text-white text-sm"></i>
+                
+                <div class="group bg-white/10 backdrop-blur-sm border border-white/20 p-5 rounded-xl hover:bg-white/20 transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform">
+                            <i class="fas fa-calendar-check text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-white font-semibold text-base mb-1">Track Attendance</h3>
+                            <p class="text-blue-200 text-sm">Monitor time & payroll data</p>
+                        </div>
                     </div>
-                    <span class="text-gray-700 font-medium">Track attendance & payroll</span>
                 </div>
-                <div class="flex items-center gap-3 bg-white p-4 rounded-lg shadow-sm">
-                    <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <i class="fas fa-chart-bar text-white text-sm"></i>
+                
+                <div class="group bg-white/10 backdrop-blur-sm border border-white/20 p-5 rounded-xl hover:bg-white/20 transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform">
+                            <i class="fas fa-chart-bar text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-white font-semibold text-base mb-1">Detailed Reports</h3>
+                            <p class="text-blue-200 text-sm">Generate insightful analytics</p>
+                        </div>
                     </div>
-                    <span class="text-gray-700 font-medium">Generate detailed reports</span>
                 </div>
-                <div class="flex items-center gap-3 bg-white p-4 rounded-lg shadow-sm">
-                    <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <i class="fas fa-user-plus text-white text-sm"></i>
+                
+                <div class="group bg-white/10 backdrop-blur-sm border border-white/20 p-5 rounded-xl hover:bg-white/20 transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform">
+                            <i class="fas fa-user-plus text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-white font-semibold text-base mb-1">Team Collaboration</h3>
+                            <p class="text-blue-200 text-sm">Invite and manage members</p>
+                        </div>
                     </div>
-                    <span class="text-gray-700 font-medium">Invite team members</span>
                 </div>
             </div>
         </div>
 
         <!-- Back to signin -->
         <div class="text-center mt-8">
-            <a href="/signin" class="text-blue-600 hover:text-blue-800 text-lg font-semibold transition">
-                <i class="fas fa-arrow-left mr-2"></i>Back to sign in
+            <a href="/signin" class="text-blue-300 hover:text-white text-lg font-semibold transition back-link inline-flex items-center gap-2 hover:gap-3">
+                <i class="fas fa-arrow-left"></i>
+                <span>Back to sign in</span>
             </a>
         </div>
     </div>
@@ -464,20 +761,37 @@
     <script>
         // Utility functions
         function showLoading(buttonId, textId, loadingId) {
-            document.getElementById(textId).classList.add('hidden');
-            document.getElementById(loadingId).classList.remove('hidden');
-            document.getElementById(buttonId).disabled = true;
+            const textEl = document.getElementById(textId);
+            const loadingEl = document.getElementById(loadingId);
+            const buttonEl = document.getElementById(buttonId);
+            
+            textEl.classList.add('hidden');
+            textEl.classList.remove('flex');
+            loadingEl.classList.remove('hidden');
+            loadingEl.classList.add('flex');
+            buttonEl.disabled = true;
         }
 
         function hideLoading(buttonId, textId, loadingId) {
-            document.getElementById(textId).classList.remove('hidden');
-            document.getElementById(loadingId).classList.add('hidden');
-            document.getElementById(buttonId).disabled = false;
+            const textEl = document.getElementById(textId);
+            const loadingEl = document.getElementById(loadingId);
+            const buttonEl = document.getElementById(buttonId);
+            
+            textEl.classList.remove('hidden');
+            textEl.classList.add('flex');
+            loadingEl.classList.add('hidden');
+            loadingEl.classList.remove('flex');
+            buttonEl.disabled = false;
         }
 
         function showError(elementId, message) {
             const errorElement = document.getElementById(elementId);
-            errorElement.textContent = message;
+            const errorText = document.getElementById(elementId + '-text');
+            if (errorText) {
+                errorText.textContent = message;
+            } else {
+                errorElement.textContent = message;
+            }
             errorElement.classList.remove('hidden');
             setTimeout(() => {
                 errorElement.classList.add('hidden');
@@ -493,6 +807,59 @@
             const cleanPhone = phone.replace(/[\s\-\(\)]/g, '');
             return /^[\+]?[1-9][\d]{0,15}$/.test(cleanPhone);
         }
+
+        // Real-time validation
+        function addValidationFeedback() {
+            const companyName = document.getElementById('company-name');
+            const companyEmail = document.getElementById('company-email');
+            const companyPhone = document.getElementById('company-phone');
+
+            // Company name validation
+            companyName.addEventListener('input', function() {
+                if (this.value.length > 0 && this.value.length < 2) {
+                    this.classList.add('border-red-500');
+                    this.classList.remove('border-green-500');
+                } else if (this.value.length >= 2) {
+                    this.classList.add('border-green-500');
+                    this.classList.remove('border-red-500');
+                } else {
+                    this.classList.remove('border-red-500', 'border-green-500');
+                }
+            });
+
+            // Email validation
+            companyEmail.addEventListener('input', function() {
+                if (this.value.length > 0) {
+                    if (validateEmail(this.value)) {
+                        this.classList.add('border-green-500');
+                        this.classList.remove('border-red-500');
+                    } else {
+                        this.classList.add('border-red-500');
+                        this.classList.remove('border-green-500');
+                    }
+                } else {
+                    this.classList.remove('border-red-500', 'border-green-500');
+                }
+            });
+
+            // Phone validation
+            companyPhone.addEventListener('input', function() {
+                if (this.value.length > 0) {
+                    if (validatePhone(this.value)) {
+                        this.classList.add('border-green-500');
+                        this.classList.remove('border-red-500');
+                    } else {
+                        this.classList.add('border-red-500');
+                        this.classList.remove('border-green-500');
+                    }
+                } else {
+                    this.classList.remove('border-red-500', 'border-green-500');
+                }
+            });
+        }
+
+        // Initialize validation feedback
+        addValidationFeedback();
 
         // Create workspace form submission
         document.getElementById('create-workspace-form').addEventListener('submit', async function(e) {
@@ -558,7 +925,10 @@
 
                 if (response.ok && data.success) {
                     if (data.warning) {
-                        document.getElementById('create-warning').textContent = data.warning;
+                        const warningText = document.getElementById('create-warning-text');
+                        if (warningText) {
+                            warningText.textContent = data.warning;
+                        }
                         document.getElementById('create-warning').classList.remove('hidden');
                     }
                     

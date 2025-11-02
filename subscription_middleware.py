@@ -12,7 +12,7 @@ def subscription_required(f):
         # Skip check for API routes and certain endpoints
         excluded_endpoints = [
             'static', 'landing_route', 'signin_route', 'finish_signin_route',
-            'set_session', 'logout_route', 'signout', 'workspace_selection_route',
+            'set_session', 'logout_route', 'signout',
             'create_workspace', 'join_workspace', 'get_workspace_payments',
             'terms_of_use_route', 'privacy_policy_route', 'legal_compliance_route'
         ]
@@ -33,7 +33,7 @@ def subscription_required(f):
             if not workspace:
                 if request.is_json:
                     return jsonify({'error': 'Workspace not found'}), 404
-                return redirect(url_for('workspace_selection_route'))
+                return redirect(url_for('signin_route'))
             
             # Check subscription status
             subscription_status = check_subscription_status(workspace)
@@ -139,7 +139,7 @@ def admin_required(f):
         if 'current_workspace' not in session:
             if request.is_json:
                 return jsonify({'error': 'No active workspace'}), 400
-            return redirect(url_for('workspace_selection_route'))
+            return redirect(url_for('signin_route'))
         
         user_role = session['current_workspace'].get('role')
         if user_role != 'Admin':
@@ -159,7 +159,7 @@ def feature_required(feature_name):
             if 'current_workspace' not in session:
                 if request.is_json:
                     return jsonify({'error': 'No active workspace'}), 400
-                return redirect(url_for('workspace_selection_route'))
+                return redirect(url_for('signin_route'))
             
             try:
                 workspace_id = session['current_workspace']['id']
@@ -168,7 +168,7 @@ def feature_required(feature_name):
                 if not workspace:
                     if request.is_json:
                         return jsonify({'error': 'Workspace not found'}), 404
-                    return redirect(url_for('workspace_selection_route'))
+                    return redirect(url_for('signin_route'))
                 
                 # Check if tier has this feature
                 is_allowed, reason = validate_tier_access(workspace, feature_name=feature_name)

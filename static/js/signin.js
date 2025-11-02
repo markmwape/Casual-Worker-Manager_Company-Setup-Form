@@ -112,10 +112,8 @@ async function processSignIn(user) {
         if (response.ok) {
             if (workspaceData) {
                 sessionStorage.removeItem('pending_workspace');
-                window.location.href = '/home';
-            } else {
-                window.location.href = '/workspace-selection';
             }
+            window.location.href = '/home';
         } else {
             const err = await response.json();
             console.error('Session set error', err);
@@ -160,10 +158,8 @@ function setupEventListeners() {
                     console.log('Session set successfully');
                     if (workspaceData) {
                         sessionStorage.removeItem('pending_workspace');
-                        window.location.href = '/home';
-                    } else {
-                        window.location.href = '/workspace-selection?signed_in=true&email=' + encodeURIComponent(user.email);
                     }
+                    window.location.href = '/home';
                 } else {
                     const errorData = await sessionResponse.json();
                     console.error('Failed to set session:', errorData);
@@ -213,9 +209,6 @@ function setupEventListeners() {
         let finishUrl = runtimeAppSettingsURL + '/finishSignin?email=' + email;
         if (workspaceData) {
             finishUrl += '&workspace=' + encodeURIComponent(workspaceData.code);
-        } else {
-            // If coming from forgot_workspace flow, indicate that to finishSignin
-            finishUrl += '&from=forgot-workspace';
         }
         
         const actionCodeSettings = {

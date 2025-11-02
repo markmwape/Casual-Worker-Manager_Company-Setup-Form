@@ -3,671 +3,258 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign In</title>
+    <title>Sign In - Embee Accounting</title>
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.24/dist/full.min.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        window.tailwind = window.tailwind || {};
-        window.tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'brand-navy': {
-                            '50': '#f8fafc',
-                            '100': '#e2e8f0',
-                            '200': '#cbd5e1',
-                            '300': '#94a3b8',
-                            '400': '#64748b',
-                            '500': '#1A2B48',
-                            '600': '#0f1a2e',
-                            '700': '#0a1424',
-                            '800': '#050a12',
-                            '900': '#020508'
-                        },
-                        'brand-gold': {
-                            '50': '#fefce8',
-                            '100': '#fef3c7',
-                            '200': '#fde68a',
-                            '300': '#fcd34d',
-                            '400': '#fbbf24',
-                            '500': '#E5B23A',
-                            '600': '#d4a02a',
-                            '700': '#b45309',
-                            '800': '#92400e',
-                            '900': '#78350f'
-                        },
-                        'brand-gray': {
-                            '50': '#f8fafc',
-                            '100': '#f1f5f9',
-                            '200': '#e2e8f0',
-                            '300': '#cbd5e1',
-                            '400': '#94a3b8',
-                            '500': '#7C8A9A',
-                            '600': '#5a6778',
-                            '700': '#475569',
-                            '800': '#334155',
-                            '900': '#1e293b'
-                        }
-                    },
-                    animation: {
-                        'float': 'float 6s ease-in-out infinite',
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-        }
-        .card {
-            backdrop-filter: blur(10px);
-        }
-        .floating-icon {
-            animation: float 6s ease-in-out infinite;
-        }
-        .btn:hover {
-            transform: translateY(-1px);
-        }
-    </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/css/styles.css">
-    <link rel="stylesheet" href="/static/css/date-picker.css">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <!-- Firebase App (the core Firebase SDK) -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .gradient-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .input-field {
+            transition: all 0.3s ease;
+        }
+        .input-field:focus {
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        .btn-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: all 0.3s ease;
+        }
+        .btn-gradient:hover {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
         import { getAuth } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
         
-        // Initialize Firebase with Ember-Accounting config
-        async function initializeFirebase() {
-            try {
-                const firebaseConfig = {
-                    apiKey: "AIzaSyD9_N_0ve9ABFwwnTBn1N2oxlUs6xbT-No",
-                    authDomain: "ember-accounting.firebaseapp.com",
-                    projectId: "ember-accounting",
-                    storageBucket: "ember-accounting.firebasestorage.app",
-                    messagingSenderId: "328324461979",
-                    appId: "1:328324461979:web:0cc9ddad6aa3f157359d3e",
-                    measurementId: "G-F1XTE0TP63"
-                };
-                
-                window.firebaseApp = initializeApp(firebaseConfig);
-                window.firebaseAuth = getAuth(window.firebaseApp);
-                console.log('Firebase initialized successfully');
-            } catch (error) {
-                console.error('Error initializing Firebase:', error);
-                // Show user-friendly error message
-                const errorDiv = document.getElementById('signin-error');
-                if (errorDiv) {
-                    errorDiv.textContent = 'Firebase configuration error. Please contact support.';
-                    errorDiv.style.color = 'red';
-                    errorDiv.style.display = 'block';
-                }
-            }
-        }
+        const firebaseConfig = {
+            apiKey: "AIzaSyD9_N_0ve9ABFwwnTBn1N2oxlUs6xbT-No",
+            authDomain: "ember-accounting.firebaseapp.com",
+            projectId: "ember-accounting",
+            storageBucket: "ember-accounting.firebasestorage.app",
+            messagingSenderId: "328324461979",
+            appId: "1:328324461979:web:0cc9ddad6aa3f157359d3e",
+            measurementId: "G-F1XTE0TP63"
+        };
         
-        // Initialize Firebase when DOM is loaded
-        document.addEventListener('DOMContentLoaded', initializeFirebase);
+        const app = initializeApp(firebaseConfig);
+        window.firebaseAuth = getAuth(app);
     </script>
 </head>
-<body class="font-inter bg-gray-100 min-h-screen flex items-center justify-center relative overflow-hidden">
-    <!-- Background decorative elements - subtle -->
-    <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-gray-50 to-gray-200 opacity-70"></div>
-    <div class="absolute top-20 right-20 w-64 h-64 bg-blue-100 rounded-full opacity-20 blur-3xl"></div>
-    <div class="absolute bottom-20 left-20 w-64 h-64 bg-indigo-100 rounded-full opacity-20 blur-3xl"></div>
-    
+<body class="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 min-h-screen flex items-center justify-center p-4">
     <!-- Main container -->
-    <div class="relative z-10 w-full max-w-5xl">
-        <!-- Header with logo -->
-        <div class="text-center mb-12 animate-fade-in">
+    <div class="w-full max-w-md">
+        <!-- Logo and Title -->
+        <div class="text-center mb-8">
             <div class="inline-block mb-4">
-                <img src="https://embee-accounting.web.app/static/media/logo.6e611219aad92ce64c03.png" alt="Embee Accounting" class="h-14">
+                <img src="https://embee-accounting.web.app/static/media/logo.6e611219aad92ce64c03.png" alt="Embee Accounting" class="h-12">
             </div>
-            <h1 class="text-4xl md:text-5xl font-bold text-white mb-2">Embee Accounting</h1>
-            <p class="text-embee-blue-200 text-lg">Workspace Selection</p>
+            <h1 class="text-3xl font-bold text-white mb-2">Embee Accounting</h1>
+            <p class="text-gray-400">Access your workspace</p>
         </div>
 
-        <!-- Two-column layout: Sign In & Create Workspace -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            
-            <!-- Left: Sign In Section -->
-            <div class="animate-slide-up">
-                <div class="glass-effect rounded-2xl shadow-2xl overflow-hidden">
-                    <div class="bg-gradient-to-r from-embee-blue-600 to-embee-blue-700 p-6 border-b border-white/10">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                                <i class="fas fa-sign-in-alt text-white"></i>
-                            </div>
-                            <div>
-                                <h2 class="text-2xl font-bold text-white">Sign In</h2>
-                                <p class="text-embee-blue-100 text-sm">Access your workspace</p>
-                            </div>
-                        </div>
+        <!-- Sign In Card -->
+        <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+            <div class="gradient-primary p-6">
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Sign In
+                </h2>
+            </div>
+
+            <div class="p-8">
+                <!-- Error Message -->
+                <div id="signin-error" class="hidden mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm"></div>
+
+                <!-- Success Message -->
+                <div id="success-message" class="hidden mb-4 p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm flex items-center gap-2">
+                    <i class="fas fa-check-circle"></i>
+                    <span id="success-text">Sign-in link sent! Check your email.</span>
+                </div>
+
+                <!-- Email Form -->
+                <form id="signin-form" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
+                        <input 
+                            type="email" 
+                            id="user-email" 
+                            placeholder="you@example.com" 
+                            required 
+                            class="input-field w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-purple-500 transition text-gray-900 placeholder:text-gray-500"
+                            autocomplete="email"
+                        >
                     </div>
 
-                    <div class="p-8">
-                        <!-- Workspace Info (shown when joining) -->
-                        <div id="workspace-info" class="hidden mb-6 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border-2 border-emerald-200">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center">
-                                    <i class="fas fa-building text-white"></i>
-                                </div>
-                                <div class="flex-1">
-                                    <p class="text-xs text-emerald-600 font-medium">Joining workspace</p>
-                                    <h3 class="font-bold text-emerald-900" id="workspace-name">Workspace Name</h3>
-                                </div>
-                                <i class="fas fa-check-circle text-emerald-500 text-lg"></i>
-                            </div>
-                        </div>
+                    <button 
+                        type="submit" 
+                        class="btn-gradient w-full py-3 text-white font-semibold rounded-lg flex items-center justify-center gap-2"
+                        id="email-submit-btn"
+                    >
+                        <i class="fas fa-envelope"></i>
+                        Send Sign-in Link
+                    </button>
+                </form>
 
-                        <form id="signin-form" class="flex flex-col gap-5">
-                            <div class="form-control">
-                                <label class="text-sm font-semibold text-gray-700 mb-2">Email Address</label>
-                                <input 
-                                    type="email" 
-                                    name="email" 
-                                    id="user-email" 
-                                    placeholder="your@email.com" 
-                                    required 
-                                    class="input-smooth input w-full bg-gray-50 border-2 border-gray-200 focus:border-embee-blue-500 rounded-lg h-11 text-gray-900 placeholder:text-gray-400" 
-                                    autocomplete="email"
-                                >
-                            </div>
-
-                            <button 
-                                type="submit" 
-                                class="btn-smooth btn w-full bg-gradient-to-r from-embee-blue-600 to-embee-blue-700 hover:from-embee-blue-700 hover:to-embee-blue-800 border-0 text-white rounded-lg h-11 text-base font-semibold"
-                            >
-                                <i class="fas fa-envelope mr-2"></i>Send Sign-in Link
-                            </button>
-
-                            <div id="signin-error" class="hidden text-error text-center font-medium text-sm p-3 bg-red-50 rounded-lg"></div>
-                        </form>
-
-                        <!-- Divider -->
-                        <div class="relative my-6">
-                            <div class="absolute inset-0 flex items-center">
-                                <div class="w-full border-t border-gray-200"></div>
-                            </div>
-                            <div class="relative flex justify-center text-sm">
-                                <span class="px-3 bg-white text-gray-600 font-medium">or</span>
-                            </div>
-                        </div>
-
-                        <!-- Google Sign In -->
-                        <button 
-                            id="google-signin" 
-                            type="button" 
-                            class="btn-smooth btn w-full bg-white border-2 border-gray-200 text-gray-700 hover:bg-gray-50 rounded-lg h-11 text-base font-medium"
-                        >
-                            <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24">
-                                <path fill="#EA4335" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                                <path fill="#4285F4" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                            </svg>
-                            Sign in with Google
-                        </button>
-
-                        <!-- Email sent notification -->
-                        <div id="email-sent-notification" class="hidden mt-6 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border-2 border-emerald-200">
-                            <div class="flex gap-3">
-                                <div class="flex-shrink-0">
-                                    <div class="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center">
-                                        <i class="fas fa-check text-white text-sm"></i>
-                                    </div>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <h4 class="font-bold text-emerald-900 text-sm">Email Sent!</h4>
-                                    <p class="text-emerald-700 text-xs mt-1" id="email-sent-text">
-                                        Check your email for the sign-in link. Don't forget to check your spam folder!
-                                    </p>
-                                    <p class="text-emerald-600 text-xs mt-2 flex items-center gap-1">
-                                        <i class="fas fa-clock text-xs"></i>
-                                        Link expires in 10 minutes
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
+                <!-- Divider -->
+                <div class="relative my-6">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-300"></div>
+                    </div>
+                    <div class="relative flex justify-center">
+                        <span class="px-3 bg-white text-gray-600 text-sm font-medium">or</span>
                     </div>
                 </div>
 
-                <!-- Bottom link -->
-                <div class="text-center mt-4">
-                    <a href="/" class="text-embee-blue-200 hover:text-white text-sm inline-flex items-center gap-2 transition-colors">
-                        <i class="fas fa-arrow-left"></i>
-                        <span>Back to home</span>
+                <!-- Google Sign In -->
+                <button 
+                    id="google-signin" 
+                    type="button" 
+                    class="w-full py-3 px-4 border-2 border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition flex items-center justify-center gap-2"
+                >
+                    <svg class="w-5 h-5" viewBox="0 0 24 24">
+                        <path fill="#EA4335" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path fill="#4285F4" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    Sign in with Google
+                </button>
+
+                <!-- Create Workspace Link -->
+                <div class="mt-6 pt-6 border-t border-gray-300">
+                    <p class="text-center text-gray-600 text-sm mb-3">Don't have a workspace yet?</p>
+                    <a href="/create-workspace" class="block w-full py-2 px-4 border-2 border-green-500 text-green-600 font-semibold rounded-lg hover:bg-green-50 transition text-center">
+                        <i class="fas fa-plus mr-2"></i>Create New Workspace
                     </a>
                 </div>
             </div>
-
-            <!-- Right: Create Workspace Section -->
-            <div class="animate-slide-up" style="animation-delay: 0.1s;">
-                <div class="glass-effect rounded-2xl shadow-2xl overflow-hidden h-full flex flex-col">
-                    <div class="bg-gradient-to-r from-emerald-600 to-teal-600 p-6 border-b border-white/10">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                                <i class="fas fa-plus text-white"></i>
-                            </div>
-                            <div>
-                                <h2 class="text-2xl font-bold text-white">Create Workspace</h2>
-                                <p class="text-emerald-100 text-sm">Set up for your organization</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="p-8 flex-1 flex flex-col justify-between">
-                        <div>
-                            <div class="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-6 mb-6">
-                                <div class="flex items-start gap-4">
-                                    <div class="w-12 h-12 bg-emerald-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                                        <i class="fas fa-chart-line text-white text-lg"></i>
-                                    </div>
-                                    <div>
-                                        <h3 class="font-bold text-gray-900 mb-2">Start Fresh</h3>
-                                        <p class="text-gray-700 text-sm leading-relaxed">
-                                            Create a new workspace to manage your workforce, track attendance, and generate reports with ease.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <ul class="space-y-3 mb-6">
-                                <li class="flex items-center gap-3 text-sm text-gray-700">
-                                    <div class="w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center">
-                                        <i class="fas fa-check text-white text-xs"></i>
-                                    </div>
-                                    <span>Manage workers and tasks</span>
-                                </li>
-                                <li class="flex items-center gap-3 text-sm text-gray-700">
-                                    <div class="w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center">
-                                        <i class="fas fa-check text-white text-xs"></i>
-                                    </div>
-                                    <span>Track attendance & payroll</span>
-                                </li>
-                                <li class="flex items-center gap-3 text-sm text-gray-700">
-                                    <div class="w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center">
-                                        <i class="fas fa-check text-white text-xs"></i>
-                                    </div>
-                                    <span>Generate detailed reports</span>
-                                </li>
-                                <li class="flex items-center gap-3 text-sm text-gray-700">
-                                    <div class="w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center">
-                                        <i class="fas fa-check text-white text-xs"></i>
-                                    </div>
-                                    <span>Invite team members</span>
-                                </li>
-                            </ul>
-                        </div>
-
-                        <a 
-                            href="/create-workspace" 
-                            class="btn-smooth btn w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 border-0 text-white rounded-lg h-11 text-base font-semibold"
-                        >
-                            <i class="fas fa-rocket mr-2"></i>Create New Workspace
-                        </a>
-                    </div>
-                </div>
-            </div>
-
         </div>
 
-        <!-- Footer -->
-        <div class="text-center mt-12 text-embee-blue-200 text-xs">
-            <p>By signing in or creating a workspace, you agree to our <a href="#" class="underline hover:text-white">Terms of Service</a> and <a href="#" class="underline hover:text-white">Privacy Policy</a></p>
+        <!-- Footer Links -->
+        <div class="text-center mt-6 space-y-2">
+            <p class="text-gray-600 text-sm">
+                <a href="/" class="text-purple-600 hover:text-purple-700 font-semibold">← Back to home</a>
+            </p>
+            <p class="text-gray-500 text-xs">
+                By signing in, you agree to our <a href="#" class="text-purple-600 hover:underline">Terms</a> and <a href="#" class="text-purple-600 hover:underline">Privacy Policy</a>
+            </p>
         </div>
     </div>
-    <script src="/static/js/firebase.js" type="module"></script>
-    <script src="/static/js/runtime_app_settings.js" type="module"></script>
+
+    <!-- Firebase Initialization and Sign-in Logic -->
     <script type="module">
-        import { GoogleAuthProvider, signInWithPopup, signOut } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { signInWithPopup, GoogleAuthProvider, sendSignInLinkToEmail } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
 
-        let currentUser = null;
+        const emailForm = document.getElementById('signin-form');
+        const emailInput = document.getElementById('user-email');
+        const googleBtn = document.getElementById('google-signin');
+        const errorDiv = document.getElementById('signin-error');
+        const successDiv = document.getElementById('success-message');
+        const emailSubmitBtn = document.getElementById('email-submit-btn');
 
-        // Global function for selecting workspace (accessible to onclick)
-        window.selectWorkspace = async function(workspaceId, workspaceName) {
+        function showError(message) {
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+            successDiv.classList.add('hidden');
+            setTimeout(() => errorDiv.classList.add('hidden'), 5000);
+        }
+
+        function showSuccess(message) {
+            document.getElementById('success-text').textContent = message;
+            successDiv.classList.remove('hidden');
+            errorDiv.classList.add('hidden');
+            emailInput.value = '';
+            setTimeout(() => successDiv.classList.add('hidden'), 5000);
+        }
+
+        // Email Sign-in
+        emailForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = emailInput.value.trim();
+
+            if (!email) {
+                showError('Please enter your email address');
+                return;
+            }
+
+            emailSubmitBtn.disabled = true;
+            emailSubmitBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="animation: spin 1s linear infinite;"></i> Sending...';
+
             try {
-                if (!currentUser) {
-                    showError('Please sign in first to select a workspace');
-                    return;
-                }
+                // Get runtime URL
+                const urlResponse = await fetch('/url');
+                const urlData = await urlResponse.json();
+                const baseUrl = urlData.url;
 
-                showLoading();
-                hideError();
+                const actionCodeSettings = {
+                    url: `${baseUrl}/finishSignin?email=${encodeURIComponent(email)}`,
+                    handleCodeInApp: true,
+                };
 
-                // Set session with the workspace
+                await sendSignInLinkToEmail(window.firebaseAuth, email, actionCodeSettings);
+                localStorage.setItem('emailForSignIn', email);
+                showSuccess('Sign-in link sent! Check your email (and spam folder)');
+            } catch (error) {
+                console.error('Error:', error);
+                showError(error.message || 'Failed to send sign-in link. Please try again.');
+            } finally {
+                emailSubmitBtn.disabled = false;
+                emailSubmitBtn.innerHTML = '<i class="fas fa-envelope"></i> Send Sign-in Link';
+            }
+        });
+
+        // Google Sign-in
+        googleBtn.addEventListener('click', async () => {
+            googleBtn.disabled = true;
+            googleBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="animation: spin 1s linear infinite;"></i> Signing in...';
+
+            try {
+                const provider = new GoogleAuthProvider();
+                provider.addScope('email');
+                provider.addScope('profile');
+
+                const result = await signInWithPopup(window.firebaseAuth, provider);
+                const user = result.user;
+
+                // Set session
                 const sessionResponse = await fetch('/set_session', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        email: currentUser.email,
-                        displayName: currentUser.displayName || '',
-                        photoURL: currentUser.photoURL || '',
-                        uid: currentUser.uid,
-                        workspace_data: {
-                            id: workspaceId
-                        }
+                        email: user.email,
+                        displayName: user.displayName || '',
+                        photoURL: user.photoURL || '',
+                        uid: user.uid
                     })
                 });
 
                 if (sessionResponse.ok) {
-                    console.log(`Successfully selected workspace: ${workspaceName}`);
-                    // Redirect to home
                     window.location.href = '/home';
                 } else {
-                    const errorData = await sessionResponse.json();
-                    throw new Error(errorData.error || 'Failed to set session');
+                    const data = await sessionResponse.json();
+                    showError(data.error || 'Failed to sign in');
                 }
-
             } catch (error) {
-                console.error('Error selecting workspace:', error);
-                hideLoading();
-                showError(error.message || 'Failed to select workspace. Please try again.');
-            }
-        };
-
-        // Global helper functions (accessible to other functions)
-        window.showError = function(message) {
-            const errorDiv = document.getElementById('forgot-workspace-error');
-            errorDiv.textContent = message;
-            errorDiv.classList.remove('hidden');
-        };
-
-        window.hideError = function() {
-            const errorDiv = document.getElementById('forgot-workspace-error');
-            errorDiv.classList.add('hidden');
-            errorDiv.textContent = '';
-        };
-
-        window.showLoading = function() {
-            const loadingIndicator = document.getElementById('loading-indicator');
-            const googleSignInButton = document.getElementById('google-signin-forgot');
-            const emailSignInForm = document.getElementById('email-signin-form');
-            
-            loadingIndicator.classList.remove('hidden');
-            googleSignInButton.disabled = true;
-            emailSignInForm.querySelector('button[type="submit"]').disabled = true;
-        };
-
-        window.hideLoading = function() {
-            const loadingIndicator = document.getElementById('loading-indicator');
-            const googleSignInButton = document.getElementById('google-signin-forgot');
-            const emailSignInForm = document.getElementById('email-signin-form');
-            
-            loadingIndicator.classList.add('hidden');
-            googleSignInButton.disabled = false;
-            emailSignInForm.querySelector('button[type="submit"]').disabled = false;
-        };
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const googleSignInButton = document.getElementById('google-signin-forgot');
-            const emailSignInForm = document.getElementById('email-signin-form');
-            const tryAnotherEmailButton = document.getElementById('try-another-email');
-            const signinSection = document.getElementById('signin-section');
-            const workspacesSection = document.getElementById('workspaces-section');
-            const loadingIndicator = document.getElementById('loading-indicator');
-            const errorDiv = document.getElementById('forgot-workspace-error');
-            const emailSentNotification = document.getElementById('email-sent-notification');
-
-            // Check if user just signed in and show their workspaces
-            const urlSearchParams = new URLSearchParams(window.location.search);
-            const signedIn = urlSearchParams.get('signed_in');
-            const emailParam = urlSearchParams.get('email');
-            
-            if (signedIn === 'true' && emailParam) {
-                // User just signed in from email link, show their workspaces
-                showLoading();
-                getUserWorkspaces(decodeURIComponent(emailParam));
-                // Clean up URL
-                window.history.replaceState({}, document.title, '/signin');
-            }
-
-            // Google Sign-In
-            googleSignInButton.addEventListener('click', async function() {
-                try {
-                    hideError();
-                    hideEmailNotification();
-                    showLoading();
-                    
-                    if (!window.firebaseAuth) {
-                        throw new Error('Firebase not initialized');
-                    }
-
-                    const provider = new GoogleAuthProvider();
-                    provider.addScope('email');
-                    provider.addScope('profile');
-                    
-                    const result = await signInWithPopup(window.firebaseAuth, provider);
-                    const user = result.user;
-                    currentUser = user;
-                    
-                    console.log('Google sign-in successful:', user.email);
-                    
-                    // Get user's workspaces
-                    await getUserWorkspaces(user.email);
-                    
-                } catch (error) {
-                    console.error('Google sign-in error:', error);
-                    hideLoading();
+                console.error('Google sign-in error:', error);
+                if (error.code !== 'auth/popup-closed-by-user') {
                     showError('Failed to sign in with Google. Please try again.');
                 }
-            });
-
-            // Email Sign-In Form
-            emailSignInForm.addEventListener('submit', async function(e) {
-                e.preventDefault();
-                
-                const email = document.getElementById('user-email-forgot').value.trim();
-                
-                if (!email) {
-                    showError('Please enter your email address');
-                    return;
-                }
-
-                // Validate email format
-                const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-                if (!emailPattern.test(email)) {
-                    showError('Please enter a valid email address');
-                    return;
-                }
-
-                try {
-                    hideError();
-                    
-                    // First check if user exists and has workspaces
-                    const workspacesResponse = await fetch('/api/user/workspaces', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ email: email })
-                    });
-
-                    if (!workspacesResponse.ok) {
-                        const errorData = await workspacesResponse.json();
-                        throw new Error(errorData.error || 'No workspaces found for this email address');
-                    }
-
-                    // User exists and has workspaces, send Firebase sign-in link
-                    if (!window.firebaseAuth) {
-                        throw new Error('Firebase not initialized');
-                    }
-
-                    const { sendSignInLinkToEmail } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js');
-                    
-                    // Get runtime URL for the finish signin page
-                    const urlResponse = await fetch('/url');
-                    const urlData = await urlResponse.json();
-                    const baseUrl = urlData.url;
-                    
-                    const actionCodeSettings = {
-                        url: `${baseUrl}/finishSignin?email=${encodeURIComponent(email)}&from=signin`,
-                        handleCodeInApp: true,
-                    };
-
-                    await sendSignInLinkToEmail(window.firebaseAuth, email, actionCodeSettings);
-                    
-                    // Store email for later verification
-                    window.localStorage.setItem('emailForSignIn', email);
-                    
-                    // Show email sent notification
-                    showEmailSentNotification(email);
-                    
-                } catch (error) {
-                    console.error('Email sign-in error:', error);
-                    showError(error.message || 'Failed to send sign-in link. Please try again.');
-                }
-            });
-
-            // Try another email
-            tryAnotherEmailButton.addEventListener('click', async function() {
-                try {
-                    if (currentUser) {
-                        await signOut(window.firebaseAuth);
-                        currentUser = null;
-                    }
-                } catch (error) {
-                    console.error('Sign out error:', error);
-                }
-                
-                // Reset UI
-                workspacesSection.classList.add('hidden');
-                signinSection.classList.remove('hidden');
-                hideError();
-                hideLoading();
-                hideEmailNotification();
-                // Clear the email input
-                document.getElementById('user-email-forgot').value = '';
-            });
-
-            async function getUserWorkspaces(email) {
-                try {
-                    const response = await fetch('/api/user/workspaces', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ email: email })
-                    });
-
-                    const data = await response.json();
-                    hideLoading();
-
-                    if (!response.ok) {
-                        throw new Error(data.error || 'Failed to retrieve workspaces');
-                    }
-
-                    if (data.success && data.workspaces && data.workspaces.length > 0) {
-                        displayWorkspaces(data.workspaces, data.user_email);
-                    } else {
-                        showError('No workspaces found for this email address.');
-                    }
-
-                } catch (error) {
-                    console.error('Error getting user workspaces:', error);
-                    hideLoading();
-                    showError(error.message || 'Failed to retrieve workspaces. Please try again.');
-                }
-            }
-
-            function displayWorkspaces(workspaces, userEmail) {
-                const workspacesList = document.getElementById('workspaces-list');
-                const userEmailDisplay = document.getElementById('user-email-display');
-                
-                userEmailDisplay.textContent = `Workspaces found for ${userEmail}`;
-                
-                workspacesList.innerHTML = '';
-                
-                workspaces.forEach(workspace => {
-                    const workspaceCard = document.createElement('div');
-                    workspaceCard.className = 'workspace-card bg-gradient-to-r from-white to-gray-50 border-2 border-gray-200 rounded-xl p-6 shadow-md';
-                    
-                    workspaceCard.innerHTML = `
-                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                            <div class="flex-1">
-                                <h3 class="text-xl font-bold text-brand-navy-600 mb-2">${escapeHtml(workspace.name)}</h3>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-brand-gray-600">
-                                    <div><i class="fas fa-user-tag mr-2 text-brand-navy-500"></i>Role: <span class="font-medium">${escapeHtml(workspace.role)}</span></div>
-                                    <div><i class="fas fa-globe mr-2 text-brand-navy-500"></i>Country: <span class="font-medium">${escapeHtml(workspace.country)}</span></div>
-                                    <div><i class="fas fa-industry mr-2 text-brand-navy-500"></i>Industry: <span class="font-medium">${escapeHtml(workspace.industry)}</span></div>
-                                    <div><i class="fas fa-calendar mr-2 text-brand-navy-500"></i>Created: <span class="font-medium">${workspace.created_at || 'N/A'}</span></div>
-                                </div>
-                            </div>
-                            <div class="flex flex-col items-center gap-3">
-                                <button onclick="selectWorkspace('${workspace.id}', '${escapeHtml(workspace.name)}')" 
-                                   class="btn btn-primary btn-sm bg-gradient-to-r from-emerald-500 to-green-600 border-0 text-white shadow-md hover:shadow-lg">
-                                    <i class="fas fa-sign-in-alt mr-2"></i>Select Workspace
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                    
-                    workspacesList.appendChild(workspaceCard);
-                });
-                
-                // Show workspaces section, hide signin section
-                signinSection.classList.add('hidden');
-                workspacesSection.classList.remove('hidden');
-            }
-
-            function showEmailSentNotification(email) {
-                const emailText = emailSentNotification.querySelector('.text-green-700');
-                emailText.innerHTML = `We've sent a sign-in link to <strong>${email}</strong>. Click the link in the email to retrieve your workspace codes.`;
-                emailSentNotification.classList.remove('hidden');
-                // Scroll to notification
-                emailSentNotification.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }
-
-            function hideEmailNotification() {
-                emailSentNotification.classList.add('hidden');
-            }
-
-            function escapeHtml(text) {
-                const div = document.createElement('div');
-                div.textContent = text;
-                return div.innerHTML;
-            }
-
-            // Make copyToClipboard available globally
-            window.copyToClipboard = function(text, element) {
-                navigator.clipboard.writeText(text).then(function() {
-                    // Show temporary success feedback
-                    const originalBg = element.style.background;
-                    element.style.background = 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)';
-                    element.style.borderColor = '#10b981';
-                    
-                    // Create temporary success message
-                    const successMsg = document.createElement('div');
-                    successMsg.className = 'text-xs text-green-600 mt-1 font-medium';
-                    successMsg.textContent = 'Copied!';
-                    element.parentNode.appendChild(successMsg);
-                    
-                    setTimeout(() => {
-                        element.style.background = originalBg;
-                        element.style.borderColor = '#cbd5e1';
-                        if (successMsg.parentNode) {
-                            successMsg.parentNode.removeChild(successMsg);
-                        }
-                    }, 2000);
-                }).catch(function(err) {
-                    console.error('Failed to copy: ', err);
-                    showError('Failed to copy to clipboard');
-                });
-            }
-
-            // Handle email sign-in completion (when user clicks link from email)
-            // Check if we came from an email link
-            const urlParams = new URLSearchParams(window.location.search);
-            const emailFromLink = urlParams.get('email');
-            if (emailFromLink) {
-                // Auto-retrieve workspaces for this email
-                getUserWorkspaces(emailFromLink);
+            } finally {
+                googleBtn.disabled = false;
+                googleBtn.innerHTML = '<svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#EA4335" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#4285F4" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Sign in with Google';
             }
         });
     </script>

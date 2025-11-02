@@ -67,8 +67,6 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Determine workspaceData from URL parameter or sessionStorage/localStorage
             let workspaceData = null;
-            const urlParams = new URLSearchParams(window.location.search);
-            const fromForgotWorkspace = urlParams.get('from') === 'forgot-workspace';
             
             if (workspaceCodeFromUrl) {
                 console.log('Found workspace code in URL:', workspaceCodeFromUrl);
@@ -170,14 +168,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     window.localStorage.removeItem('pendingWorkspace');
                     window.sessionStorage.removeItem('pending_workspace');
                     
-                    // If user came from workspace selection page, redirect back there to select workspace
-                    if (fromForgotWorkspace) {
-                        console.log('Redirecting to workspace selection page for workspace selection');
-                        window.location.href = '/workspace-selection?signed_in=true&email=' + encodeURIComponent(user.email);
-                    } else {
-                        console.log('Redirecting to home');
-                        window.location.href = '/home';
-                    }
+                    console.log('Redirecting to home');
+                    window.location.href = '/home';
                 } else {
                     const errorData = await response.json();
                     console.error('Failed to set session:', errorData);

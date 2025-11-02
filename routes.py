@@ -56,7 +56,7 @@ def get_current_user():
 
 @app.route('/workspace-selection')
 def workspace_selection_route():
-    # Redirect to the new signin page
+    # Redirect to the signin page (workspace selection moved there)
     return redirect(url_for('signin_route'))
 
 @app.route('/create-workspace')
@@ -153,7 +153,7 @@ def send_workspace_email():
         
         # Create the link
         base_url = request.host_url.rstrip('/')
-        workspace_link = f"{base_url}/workspace-selection?email={email}&token={token}"
+        workspace_link = f"{base_url}/signin?email={email}"
         
         # In a real implementation, you would send an actual email here
         # For now, we'll simulate it and return success
@@ -1722,7 +1722,7 @@ def workers_route():
         # Get company from current workspace
         if 'current_workspace' not in session:
             logger.error(f"No active workspace for user: {user_email}")
-            return redirect(url_for('workspace_selection_route'))
+            return redirect(url_for('signin_route'))
             
         workspace_id = session['current_workspace']['id']
 
@@ -1732,7 +1732,7 @@ def workers_route():
         if not workspace_id:
             logger.error("Workspace ID is None in session")
             session.pop('current_workspace', None)
-            return redirect(url_for('workspace_selection_route'))
+            return redirect(url_for('signin_route'))
         
         company = Company.query.filter_by(workspace_id=workspace_id).first()
         
@@ -1923,7 +1923,7 @@ def tasks_route():
         # Check if workspace exists
         if 'current_workspace' not in session:
             logging.error("No current workspace in tasks_route")
-            return redirect(url_for('workspace_selection_route'))
+            return redirect(url_for('signin_route'))
         
         # Get current company from workspace
         company = get_current_company()
@@ -2087,7 +2087,7 @@ def home_route():
         if not workspace:
             logging.error(f"Workspace not found: {workspace_id}")
             session.pop('current_workspace', None)
-            return redirect(url_for('workspace_selection_route'))
+            return redirect(url_for('signin_route'))
         
         # Check subscription status for users with workspaces
         from subscription_middleware import check_subscription_status
@@ -2106,7 +2106,7 @@ def home_route():
         if not workspace:
             logging.error(f"Workspace not found: {workspace_id}")
             session.pop('current_workspace', None)
-            return redirect(url_for('workspace_selection_route'))
+            return redirect(url_for('signin_route'))
         
         # Verify user has access to this workspace
         user_workspace = UserWorkspace.query.filter_by(
@@ -2117,7 +2117,7 @@ def home_route():
         if not user_workspace:
             logging.error(f"User {user_email} does not have access to workspace {workspace_id}")
             session.pop('current_workspace', None)
-            return redirect(url_for('workspace_selection_route'))
+            return redirect(url_for('signin_route'))
         
         company = Company.query.filter_by(workspace_id=workspace_id).first()
 

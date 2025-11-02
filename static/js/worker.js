@@ -1,3 +1,9 @@
+// Import showToast from global scope if available, or provide fallback
+const showToast = window.showToast || function(message, type = 'success') {
+    console.log(`[Toast ${type}]:`, message);
+    alert(message);
+};
+
 // Custom Modal Functions
 function showCustomModal(title, message, type = 'info') {
     return new Promise((resolve) => {
@@ -363,8 +369,161 @@ function confirmDeleteCustomField() {
         });
 }
 
+// Add and close worker modal functions (imported from script.js behavior)
+function openAddWorkerModal() {
+    const modal = document.getElementById('add-worker-modal');
+    if (!modal) {
+        console.error('[openAddWorkerModal] Modal element not found');
+        if (typeof showToast === 'function') showToast('Internal error: cannot open Add Worker modal', 'error');
+        return;
+    }
+    const form = document.getElementById('workerForm');
+    
+    // Reset form and ensure it's in "add" mode
+    if (form) {
+        form.reset();
+        form.removeAttribute('data-edit-worker-id');
+        
+        // Reset modal title
+        const modalTitle = modal.querySelector('h3');
+        if (modalTitle) {
+            modalTitle.textContent = 'Add New Worker';
+        }
+        
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) submitBtn.textContent = 'Add Worker';
+    }
+    
+    modal.showModal();
+    
+    // Replace feather icons
+    if (window.feather) {
+        feather.replace();
+    }
+}
+
+function closeAddWorkerModal() {
+    const modal = document.getElementById('add-worker-modal');
+    if (!modal) return;
+    
+    const form = document.getElementById('workerForm');
+    
+    // Reset form
+    if (form) {
+        form.reset();
+        form.removeAttribute('data-edit-worker-id');
+        
+        // Reset modal title
+        const modalTitle = modal.querySelector('h3');
+        if (modalTitle) {
+            modalTitle.textContent = 'Add New Worker';
+        }
+        
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) submitBtn.textContent = 'Add Worker';
+    }
+    
+    modal.close();
+}
+
+// Import Workers Modal functions
+function openImportWorkersModal() {
+    const modal = document.getElementById('import-workers-modal');
+    if (!modal) {
+        console.error('[openImportWorkersModal] Modal element not found');
+        return;
+    }
+    modal.showModal();
+    loadImportFields();
+    
+    // Replace feather icons if available
+    if (window.feather) {
+        feather.replace();
+    }
+}
+
+function closeImportWorkersModal() {
+    const modal = document.getElementById('import-workers-modal');
+    if (modal) {
+        modal.close();
+    }
+}
+
+function loadImportFields() {
+    console.log('Loading import fields...');
+    // Load existing import fields
+    fetch('/api/import-field')
+    .then(response => {
+        console.log('Load fields response status:', response.status);
+        if (response.status === 401 || response.status === 403) {
+            console.warn('User not authenticated, skipping import fields load');
+            throw new Error('Authentication required. Please log in again.');
+        }
+        if (response.status === 400) {
+            console.warn('No workspace selected, skipping import fields load');
+            throw new Error('No workspace selected');
+        }
+        if (!response.ok) {
+            console.error(`Failed to load import fields: HTTP ${response.status}`);
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(fields => {
+        console.log('Loaded fields:', fields);
+        const currentFields = document.getElementById('currentFields');
+        
+        if (!currentFields) {
+            console.warn('currentFields container not found');
+            return;
+        }
+        
+        // Clear all fields first
+        currentFields.innerHTML = '';
+        
+        // Add default fields back
+        const firstNameDiv = document.createElement('div');
+        firstNameDiv.className = 'bg-blue-100 p-2 rounded-lg text-blue-700 font-medium truncate';
+        firstNameDiv.setAttribute('data-field', 'first_name');
+        firstNameDiv.textContent = 'First Name';
+        currentFields.appendChild(firstNameDiv);
+        
+        const lastNameDiv = document.createElement('div');
+        lastNameDiv.className = 'bg-blue-100 p-2 rounded-lg text-blue-700 font-medium truncate';
+        lastNameDiv.setAttribute('data-field', 'last_name');
+        lastNameDiv.textContent = 'Last Name';
+        currentFields.appendChild(lastNameDiv);
+        
+        const dobDiv = document.createElement('div');
+        dobDiv.className = 'bg-blue-100 p-2 rounded-lg text-blue-700 font-medium truncate';
+        dobDiv.setAttribute('data-field', 'date_of_birth');
+        dobDiv.textContent = 'Date of Birth';
+        currentFields.appendChild(dobDiv);
+        
+        // Add custom fields
+        fields.forEach(field => {
+            const fieldDiv = document.createElement('div');
+            fieldDiv.className = 'bg-blue-100 p-2 rounded-lg text-blue-700 font-medium truncate';
+            fieldDiv.setAttribute('data-field', field.name.replace(/ /g, '_'));
+            fieldDiv.textContent = field.name;
+            currentFields.appendChild(fieldDiv);
+        });
+    })
+    .catch(error => {
+        console.error('Error loading import fields:', error);
+    });
+}
+
 // Expose to global scope
 window.reloadCustomFields = reloadCustomFields;
 window.addCustomField = addCustomField;
 window.deleteCustomField = deleteCustomField;
 window.confirmDeleteCustomField = confirmDeleteCustomField;
+window.openAddWorkerModal = openAddWorkerModal;
+window.closeAddWorkerModal = closeAddWorkerModal;
+window.openDeleteWorkerModal = openDeleteWorkerModal;
+window.closeDeleteWorkerModal = closeDeleteWorkerModal;
+window.deleteWorker = deleteWorker;
+window.openImportWorkersModal = openImportWorkersModal;
+window.closeImportWorkersModal = closeImportWorkersModal;
+window.loadImportFields = loadImportFields;

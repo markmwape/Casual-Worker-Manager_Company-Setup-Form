@@ -1938,6 +1938,16 @@ def tasks_route():
         # Get all tasks and sort them: Pending and In Progress first, then Completed
         tasks = Task.query.filter_by(company_id=company.id).all()
         
+        # Auto-update task statuses based on start date
+        today = date.today()
+        for task in tasks:
+            # If start date has passed and status is still Pending, change to In Progress
+            if task.start_date.date() <= today and task.status == 'Pending':
+                task.status = 'In Progress'
+        
+        # Commit any status changes
+        db.session.commit()
+        
         # Sort tasks: non-completed tasks first (by created date), then completed tasks (by completion date)
         def sort_key(task):
             if task.status == 'Completed':
@@ -1976,6 +1986,13 @@ def task_attendance_route(task_id):
 
         # Get selected date from query parameter, default to today
         from datetime import date
+        today = date.today()
+        
+        # Auto-update task status if start date has passed
+        if task.start_date.date() <= today and task.status == 'Pending':
+            task.status = 'In Progress'
+            db.session.commit()
+        
         selected_date_str = request.args.get('date')
         if selected_date_str:
             selected_date = datetime.strptime(selected_date_str, '%Y-%m-%d').date()
@@ -2793,7 +2810,9 @@ def reports_route():
             custom_fields=custom_fields,
             import_fields=import_fields,
             per_day_records=per_day_records,
-            per_part_records=per_part_records
+            per_part_records=per_part_records,
+            start_date=start_date.strftime('%Y-%m-%d'),
+            end_date=end_date.strftime('%Y-%m-%d')
         )
     except Exception as e:
         logging.error(f"Error generating reports: {str(e)}")
@@ -3905,6 +3924,13 @@ def task_units_completed_route(task_id):
 
         # Get selected date from query parameter, default to today
         from datetime import date
+        today = date.today()
+        
+        # Auto-update task status if start date has passed
+        if task.start_date.date() <= today and task.status == 'Pending':
+            task.status = 'In Progress'
+            db.session.commit()
+        
         selected_date_str = request.args.get('date')
         if selected_date_str:
             selected_date = datetime.strptime(selected_date_str, '%Y-%m-%d').date()

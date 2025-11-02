@@ -22,6 +22,9 @@ function toggleCustomFields(type) {
     }
 }
 
+// Export toggleCustomFields globally
+window.toggleCustomFields = toggleCustomFields;
+
 function downloadReport(type) {
     const startDate = document.getElementById('startDate')?.value;
     const endDate = document.getElementById('endDate')?.value;

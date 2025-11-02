@@ -56,11 +56,8 @@ def get_current_user():
 
 @app.route('/workspace-selection')
 def workspace_selection_route():
-    # If user already has a session and workspace, send them to home
-    if 'user' in session and 'current_workspace' in session:
-        return redirect(url_for('home_route'))
-    """Route for workspace selection page - user signs in and selects workspace"""
-    return render_template('workspace_selection.html')
+    # Redirect to the new signin page
+    return redirect(url_for('signin_route'))
 
 @app.route('/create-workspace')
 def create_workspace_route():

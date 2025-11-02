@@ -114,19 +114,25 @@
         document.addEventListener('DOMContentLoaded', initializeFirebase);
     </script>
 </head>
-<body class="font-inter bg-gradient-to-br from-brand-navy-50 via-white to-brand-gray-100 min-h-screen flex items-center justify-center relative overflow-hidden">
-    <!-- Background decorative elements -->
-    <div class="absolute top-10 left-10 w-32 h-32 bg-brand-navy-100 rounded-full opacity-50 blur-2xl"></div>
-    <div class="absolute bottom-10 right-10 w-40 h-40 bg-brand-gold-100 rounded-full opacity-40 blur-2xl"></div>
-    <div class="absolute top-1/2 left-1/4 w-24 h-24 bg-brand-gray-200 rounded-full opacity-30 blur-xl"></div>
+<body class="font-inter bg-gray-100 min-h-screen flex items-center justify-center relative overflow-hidden">
+    <!-- Background decorative elements - subtle -->
+    <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-gray-50 to-gray-200 opacity-70"></div>
+    <div class="absolute top-20 right-20 w-64 h-64 bg-blue-100 rounded-full opacity-20 blur-3xl"></div>
+    <div class="absolute bottom-20 left-20 w-64 h-64 bg-indigo-100 rounded-full opacity-20 blur-3xl"></div>
     
     <div class="w-full max-w-md mx-auto p-6 relative z-10">
-        <div class="card bg-white/95 backdrop-blur-sm shadow-2xl border-0 border-brand-navy-100">
+        <!-- Logo at the top -->
+        <div class="text-center mb-8">
+            <div class="inline-block">
+                <img src="https://embee-accounting.web.app/static/media/logo.6e611219aad92ce64c03.png" alt="Embee Accounting" class="h-12 mx-auto mb-2">
+            </div>
+        </div>
+        
+        <div class="card bg-white/95 backdrop-blur-sm shadow-2xl border-0 border-brand-navy-100 rounded-3xl">
             <div class="card-body p-8">
                 <div class="flex flex-col items-center">
-                    <div class="w-20 h-20 bg-gradient-to-br from-brand-navy-500 to-brand-navy-600 rounded-full flex items-center justify-center mb-6 shadow-lg relative floating-icon">
-                        <i class="fas fa-user-lock text-3xl text-white"></i>
-                        <div class="absolute inset-0 rounded-full bg-gradient-to-br from-brand-navy-400 to-brand-navy-500 opacity-50 animate-pulse-slow"></div>
+                    <div class="w-16 h-16 bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+                        <i class="fas fa-search text-2xl text-white"></i>
                     </div>
                     
                     <!-- Workspace Info (shown when joining) -->
@@ -145,22 +151,18 @@
                         </div>
                     </div>
                     
-                    <h1 class="card-title text-4xl font-bold bg-gradient-to-r from-brand-navy-800 to-brand-navy-600 bg-clip-text text-transparent mb-3">Sign In</h1>
-                    <p class="text-brand-gray-600 mb-8 text-center font-medium" id="signin-subtitle">Access your workforce dashboard securely</p>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Sign In to Your Workspace</h1>
+                    <p class="text-gray-600 mb-6 text-center" id="signin-subtitle">Sign in with Google or email to access your workspaces</p>
                     
-                    <form id="signin-form" class="w-full flex flex-col gap-5">
+                    <form id="signin-form" class="w-full flex flex-col gap-4">
                         <div class="form-control">
-                            <div class="relative">
-                                <input type="email" name="email" id="user-email" placeholder="Enter your email address" required 
-                                       class="input input-bordered w-full text-lg pl-12 bg-white border-2 border-brand-navy-200 focus:border-brand-navy-500 focus:ring-2 focus:ring-brand-navy-200 transition-all duration-300" 
-                                       autocomplete="email">
-                                <div class="absolute left-4 top-1/2 transform -translate-y-1/2 text-brand-navy-400">
-                                    <i class="fas fa-envelope"></i>
-                                </div>
-                            </div>
+                            <label class="text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                            <input type="email" name="email" id="user-email" placeholder="Enter your email address" required 
+                                   class="input input-bordered w-full bg-white border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg h-12" 
+                                   autocomplete="email">
                         </div>
-                        <button type="submit" class="btn w-full text-lg font-semibold bg-gradient-to-r from-brand-navy-500 to-brand-navy-600 border-0 text-white hover:from-brand-navy-600 hover:to-brand-navy-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5">
-                            <i class="fas fa-paper-plane mr-2"></i>Send Sign-in Link
+                        <button type="submit" class="btn w-full bg-gray-800 hover:bg-gray-900 border-0 text-white rounded-lg h-12 text-base font-medium shadow-sm transition-all duration-200">
+                            <i class="fas fa-envelope mr-2"></i>Send Sign-in Link
                         </button>
                         <div id="signin-error" class="text-error text-center mt-2 font-medium"></div>
                         
@@ -197,34 +199,40 @@
                             </div>
                         </div>
                     </form>
-                    <div class="divider text-gray-400 my-6">or</div>
-                    <button id="google-signin" type="button" class="btn w-full mb-4 flex items-center justify-center gap-3 text-lg font-semibold bg-white border-2 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 shadow-md hover:shadow-lg transition-all duration-300">
-                        <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" class="w-5 h-5">
+                    <div class="divider text-gray-400 my-4 text-sm">or</div>
+                    <button id="google-signin" type="button" class="btn w-full bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg h-12 text-base font-medium shadow-sm transition-all duration-200 flex items-center justify-center gap-2">
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="w-5 h-5">
                         Sign in with Google
                     </button>
                     
-                    <!-- Create Workspace Section -->
-                    <div class="mt-8 p-6 bg-gradient-to-r from-brand-gold-50 to-brand-gold-100 rounded-xl border border-brand-gold-200">
+                    <!-- Create Workspace Section - More Prominent -->
+                    <div class="mt-6 p-5 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border-2 border-blue-200 shadow-sm">
                         <div class="text-center">
-                            <div class="flex items-center justify-center mb-3">
-                                <i class="fas fa-building text-brand-gold-600 text-2xl"></i>
+                            <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <i class="fas fa-building text-white text-lg"></i>
                             </div>
-                            <h3 class="font-semibold text-brand-navy-800 text-lg mb-2">Don't have a workspace?</h3>
-                            <p class="text-brand-navy-600 text-sm mb-4">Create a new workspace for your organization</p>
-                            <a href="/create-workspace" class="btn btn-outline btn-primary w-full text-lg font-semibold bg-white border-2 border-brand-navy-500 text-brand-navy-600 hover:bg-brand-navy-500 hover:text-white hover:border-brand-navy-500 transition-all duration-300">
-                                <i class="fas fa-plus mr-2"></i>Create a Workspace
+                            <h3 class="font-bold text-gray-900 text-base mb-1">Don't have a workspace?</h3>
+                            <p class="text-gray-600 text-sm mb-4">Create a new workspace for your organization</p>
+                            <a href="/create-workspace" class="btn w-full bg-blue-600 hover:bg-blue-700 border-0 text-white rounded-lg h-11 text-sm font-medium shadow-sm transition-all duration-200">
+                                <i class="fas fa-plus-circle mr-2"></i>Create New Workspace
                             </a>
                         </div>
                     </div>
                     
-                    <!-- Back to workspace selection -->
-                    <div class="mt-6 text-center space-y-2">
-                        <a href="/workspace-selection" class="text-brand-navy-500 hover:text-brand-navy-700 text-sm block transition-colors duration-300">
-                            <i class="fas fa-arrow-left mr-1"></i>Back to workspace selection
+                    <!-- Back to home -->
+                    <div class="mt-6 text-center">
+                        <a href="/" class="text-gray-600 hover:text-gray-800 text-sm inline-flex items-center gap-1 transition-colors duration-200">
+                            <i class="fas fa-arrow-left text-xs"></i>
+                            <span>Back to home</span>
                         </a>
                     </div>
                 </div>
             </div>
+        </div>
+        
+        <!-- Footer note -->
+        <div class="mt-6 text-center text-gray-500 text-xs">
+            <p>By signing in, you agree to our Terms of Service and Privacy Policy</p>
         </div>
     </div>
     <script src="/static/js/firebase.js" type="module"></script>

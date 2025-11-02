@@ -41,6 +41,87 @@ function showCustomModal(title, message, type = 'info') {
     });
 }
 
+// Workspace selection modal
+function showWorkspaceSelectionModal(workspaces) {
+    return new Promise((resolve) => {
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+        modal.style.fontFamily = 'Inter, sans-serif';
+        
+        const gradientPrimary = 'background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);';
+        
+        modal.innerHTML = `
+            <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+                <div style="${gradientPrimary}" class="p-6">
+                    <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+                        <i class="fas fa-briefcase"></i>
+                        Select Your Workspace
+                    </h2>
+                    <p class="text-blue-100 mt-2">Choose a workspace to continue</p>
+                </div>
+                <div class="p-6 overflow-y-auto max-h-[calc(90vh-180px)]">
+                    <div class="grid gap-4">
+                        ${workspaces.map(ws => `
+                            <button class="workspace-card text-left p-4 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:shadow-lg transition-all duration-200 group" data-workspace='${JSON.stringify(ws)}'>
+                                <div class="flex items-start justify-between">
+                                    <div class="flex-1">
+                                        <h3 class="text-lg font-bold text-gray-800 group-hover:text-blue-600 mb-1">${ws.name}</h3>
+                                        <div class="space-y-1">
+                                            <p class="text-sm text-gray-600 flex items-center gap-2">
+                                                <i class="fas fa-map-marker-alt text-gray-400"></i>
+                                                ${ws.country || 'N/A'}
+                                            </p>
+                                            <p class="text-sm text-gray-600 flex items-center gap-2">
+                                                <i class="fas fa-building text-gray-400"></i>
+                                                ${ws.industry || 'N/A'}
+                                            </p>
+                                            <p class="text-sm text-gray-600 flex items-center gap-2">
+                                                <i class="fas fa-code text-gray-400"></i>
+                                                Code: <span class="font-mono font-semibold">${ws.code}</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="ml-4">
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                                            ws.role === 'Admin' ? 'bg-purple-100 text-purple-800' :
+                                            ws.role === 'Accountant' ? 'bg-blue-100 text-blue-800' :
+                                            'bg-green-100 text-green-800'
+                                        }">
+                                            ${ws.role}
+                                        </span>
+                                    </div>
+                                </div>
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+                <div class="p-6 border-t border-gray-200 bg-gray-50">
+                    <button id="cancel-workspace-selection" class="w-full py-3 px-4 border-2 border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-100 transition">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Add click handlers for workspace cards
+        modal.querySelectorAll('.workspace-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const workspace = JSON.parse(this.dataset.workspace);
+                modal.remove();
+                resolve(workspace);
+            });
+        });
+        
+        // Cancel button
+        modal.querySelector('#cancel-workspace-selection').addEventListener('click', () => {
+            modal.remove();
+            resolve(null);
+        });
+    });
+}
+
 // Wait for Firebase to be initialized
 document.addEventListener('DOMContentLoaded', function() {
     console.log('FinishSignIn page loaded');
@@ -122,7 +203,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            // Final fallback: fetch and select first workspace if no pendingWorkspace
+            // Final fallback: fetch workspaces and let user select
             if (!workspaceData) {
                 try {
                     const workspacesResponse = await fetch('/api/user/workspaces', {
@@ -134,9 +215,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (workspacesResponse.ok) {
                         const workspacesJson = await workspacesResponse.json();
                         if (workspacesJson.success && workspacesJson.workspaces.length > 0) {
-                            const ws = workspacesJson.workspaces[0];
-                            console.log('Auto-selecting workspace:', ws.name);
-                            workspaceData = { id: ws.id };
+                            // Show workspace selection modal
+                            const selectedWorkspace = await showWorkspaceSelectionModal(workspacesJson.workspaces);
+                            if (selectedWorkspace) {
+                                workspaceData = selectedWorkspace;
+                                console.log('User selected workspace:', selectedWorkspace.name);
+                            } else {
+                                // User cancelled selection
+                                showCustomModal('Selection Required', 'Please select a workspace to continue.', 'warning');
+                                return;
+                            }
                         }
                     }
                 } catch (err) {

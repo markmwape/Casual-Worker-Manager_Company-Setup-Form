@@ -13,22 +13,22 @@
             font-family: 'Inter', sans-serif;
         }
         .gradient-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
         }
         .input-field {
             transition: all 0.3s ease;
         }
         .input-field:focus {
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
         }
         .btn-gradient {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
             transition: all 0.3s ease;
         }
         .btn-gradient:hover {
-            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 10px 25px rgba(30, 58, 138, 0.4);
         }
         @keyframes spin {
             from { transform: rotate(0deg); }
@@ -53,13 +53,13 @@
         window.firebaseAuth = getAuth(app);
     </script>
 </head>
-<body class="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 min-h-screen flex items-center justify-center p-4">
+<body class="bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 min-h-screen flex items-center justify-center p-4">
     <!-- Main container -->
     <div class="w-full max-w-md">
         <!-- Logo and Title -->
         <div class="text-center mb-8">
             <div class="inline-block mb-4">
-                <img src="https://embee-accounting.web.app/static/media/logo.6e611219aad92ce64c03.png" alt="Embee Accounting" class="h-12">
+                <img src="/static/img/logo.png" alt="Embee Accounting" class="h-16 w-16 object-contain">
             </div>
             <h1 class="text-3xl font-bold text-white mb-2">Embee Accounting</h1>
             <p class="text-gray-400">Access your workspace</p>
@@ -136,7 +136,7 @@
                 <!-- Create Workspace Link -->
                 <div class="mt-6 pt-6 border-t border-gray-300">
                     <p class="text-center text-gray-600 text-sm mb-3">Don't have a workspace yet?</p>
-                    <a href="/create-workspace" class="block w-full py-2 px-4 border-2 border-green-500 text-green-600 font-semibold rounded-lg hover:bg-green-50 transition text-center">
+                    <a href="/create-workspace" class="block w-full py-2 px-4 border-2 border-blue-500 text-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition text-center">
                         <i class="fas fa-plus mr-2"></i>Create New Workspace
                     </a>
                 </div>
@@ -145,11 +145,11 @@
 
         <!-- Footer Links -->
         <div class="text-center mt-6 space-y-2">
-            <p class="text-gray-600 text-sm">
-                <a href="/" class="text-purple-600 hover:text-purple-700 font-semibold">← Back to home</a>
+            <p class="text-gray-300 text-sm">
+                <a href="/" class="text-blue-300 hover:text-blue-200 font-semibold">← Back to home</a>
             </p>
-            <p class="text-gray-500 text-xs">
-                By signing in, you agree to our <a href="#" class="text-purple-600 hover:underline">Terms</a> and <a href="#" class="text-purple-600 hover:underline">Privacy Policy</a>
+            <p class="text-gray-400 text-xs">
+                By signing in, you agree to our <a href="/terms-of-use" class="text-blue-300 hover:underline">Terms</a> and <a href="/privacy-policy" class="text-blue-300 hover:underline">Privacy Policy</a>
             </p>
         </div>
     </div>
@@ -229,23 +229,43 @@
                 const result = await signInWithPopup(window.firebaseAuth, provider);
                 const user = result.user;
 
-                // Set session
-                const sessionResponse = await fetch('/set_session', {
+                // Fetch user's workspaces
+                const workspacesResponse = await fetch('/api/user/workspaces', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        email: user.email,
-                        displayName: user.displayName || '',
-                        photoURL: user.photoURL || '',
-                        uid: user.uid
-                    })
+                    body: JSON.stringify({ email: user.email })
                 });
 
-                if (sessionResponse.ok) {
-                    window.location.href = '/home';
+                if (workspacesResponse.ok) {
+                    const workspacesData = await workspacesResponse.json();
+                    
+                    if (workspacesData.success && workspacesData.workspaces.length > 0) {
+                        // Show workspace selection modal
+                        await showWorkspaceSelectionModal(workspacesData.workspaces, user);
+                    } else {
+                        // No workspaces found, set session without workspace and redirect
+                        const sessionResponse = await fetch('/set_session', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                email: user.email,
+                                displayName: user.displayName || '',
+                                photoURL: user.photoURL || '',
+                                uid: user.uid
+                            })
+                        });
+
+                        if (sessionResponse.ok) {
+                            showError('No workspaces found. Please create a new workspace.');
+                            setTimeout(() => window.location.href = '/create-workspace', 2000);
+                        } else {
+                            const data = await sessionResponse.json();
+                            showError(data.error || 'Failed to sign in');
+                        }
+                    }
                 } else {
-                    const data = await sessionResponse.json();
-                    showError(data.error || 'Failed to sign in');
+                    const data = await workspacesResponse.json();
+                    showError(data.error || 'Failed to retrieve workspaces');
                 }
             } catch (error) {
                 console.error('Google sign-in error:', error);
@@ -257,6 +277,115 @@
                 googleBtn.innerHTML = '<svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#EA4335" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#4285F4" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Sign in with Google';
             }
         });
+
+        // Workspace selection modal
+        async function showWorkspaceSelectionModal(workspaces, user) {
+            return new Promise((resolve) => {
+                const modal = document.createElement('div');
+                modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+                modal.innerHTML = `
+                    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+                        <div class="gradient-primary p-6">
+                            <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+                                <i class="fas fa-briefcase"></i>
+                                Select Your Workspace
+                            </h2>
+                            <p class="text-blue-100 mt-2">Choose a workspace to continue</p>
+                        </div>
+                        <div class="p-6 overflow-y-auto max-h-[calc(90vh-180px)]">
+                            <div class="grid gap-4">
+                                ${workspaces.map(ws => `
+                                    <button class="workspace-card text-left p-4 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:shadow-lg transition-all duration-200 group" data-workspace='${JSON.stringify(ws)}'>
+                                        <div class="flex items-start justify-between">
+                                            <div class="flex-1">
+                                                <h3 class="text-lg font-bold text-gray-800 group-hover:text-blue-600 mb-1">${ws.name}</h3>
+                                                <div class="space-y-1">
+                                                    <p class="text-sm text-gray-600 flex items-center gap-2">
+                                                        <i class="fas fa-map-marker-alt text-gray-400"></i>
+                                                        ${ws.country || 'N/A'}
+                                                    </p>
+                                                    <p class="text-sm text-gray-600 flex items-center gap-2">
+                                                        <i class="fas fa-building text-gray-400"></i>
+                                                        ${ws.industry || 'N/A'}
+                                                    </p>
+                                                    <p class="text-sm text-gray-600 flex items-center gap-2">
+                                                        <i class="fas fa-code text-gray-400"></i>
+                                                        Code: <span class="font-mono font-semibold">${ws.code}</span>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div class="ml-4">
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                                                    ws.role === 'Admin' ? 'bg-purple-100 text-purple-800' :
+                                                    ws.role === 'Accountant' ? 'bg-blue-100 text-blue-800' :
+                                                    'bg-green-100 text-green-800'
+                                                }">
+                                                    ${ws.role}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+                        <div class="p-6 border-t border-gray-200 bg-gray-50">
+                            <button id="cancel-workspace-selection" class="w-full py-3 px-4 border-2 border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-100 transition">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+                
+                // Add click handlers for workspace cards
+                modal.querySelectorAll('.workspace-card').forEach(card => {
+                    card.addEventListener('click', async function() {
+                        const workspace = JSON.parse(this.dataset.workspace);
+                        modal.remove();
+                        
+                        // Show loading state
+                        googleBtn.disabled = true;
+                        googleBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="animation: spin 1s linear infinite;"></i> Signing in...';
+                        
+                        // Set session with selected workspace
+                        try {
+                            const sessionResponse = await fetch('/set_session', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    email: user.email,
+                                    displayName: user.displayName || '',
+                                    photoURL: user.photoURL || '',
+                                    uid: user.uid,
+                                    workspace_data: workspace
+                                })
+                            });
+
+                            if (sessionResponse.ok) {
+                                window.location.href = '/home';
+                            } else {
+                                const data = await sessionResponse.json();
+                                showError(data.error || 'Failed to sign in');
+                            }
+                        } catch (error) {
+                            showError('Failed to complete sign-in');
+                        } finally {
+                            googleBtn.disabled = false;
+                            googleBtn.innerHTML = '<svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#EA4335" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#4285F4" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Sign in with Google';
+                        }
+                        
+                        resolve(workspace);
+                    });
+                });
+                
+                // Cancel button
+                modal.querySelector('#cancel-workspace-selection').addEventListener('click', () => {
+                    modal.remove();
+                    resolve(null);
+                });
+            });
+        }
     </script>
 </body>
 </html>

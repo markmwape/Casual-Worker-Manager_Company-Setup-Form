@@ -7,10 +7,15 @@
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         border: 1px solid rgba(255, 255, 255, 0.2);
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        position: relative;
+        overflow: visible;
     }
     .task-card:hover {
         transform: translateY(-4px);
         box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    }
+    .group.relative {
+        overflow: visible;
     }
     /* Status dropdown styles */
     .status-dropdown { 
@@ -36,6 +41,44 @@
         opacity: 1;
         visibility: visible;
         transform: translateY(5px);
+    }
+    
+    /* Task options dropdown (3-dot menu) */
+    .task-options-dropdown {
+        position: relative;
+    }
+    .task-options-menu {
+        position: absolute;
+        top: calc(100% + 0.5rem);
+        right: 0;
+        min-width: 200px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        border: 1px solid #e5e7eb;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.2s ease;
+        z-index: 1000;
+        overflow: visible;
+    }
+    .task-options-dropdown.open .task-options-menu {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+    .task-options-menu li a {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        transition: all 0.2s ease;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+    .task-options-menu li a:hover {
+        background: #f3f4f6;
     }
     .status-menu-item {
         padding: 12px 16px;
@@ -94,6 +137,7 @@
     </div>
 
     <!-- Tasks Grid -->
+    {% if tasks %}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8">
                         {% for task in tasks %}
                         <div class="group relative" onclick="navigateToTask(event, {{ task.id|tojson }})" data-payment-type="{{ task.payment_type|tojson }}" data-task-id="{{ task.id|tojson }}">
@@ -117,18 +161,18 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="dropdown dropdown-end flex-shrink-0" onclick="event.stopPropagation()" style="position: relative;">
-                                            <label tabindex="0" class="btn btn-ghost btn-sm btn-circle hover:bg-gray-100 h-10 w-10">
+                                        <div class="task-options-dropdown flex-shrink-0" onclick="event.stopPropagation()">
+                                            <button type="button" class="btn btn-ghost btn-sm btn-circle hover:bg-gray-100 h-10 w-10" onclick="toggleTaskOptionsDropdown(this, event)">
                                                 <i class="fas fa-ellipsis-v text-gray-600 text-sm"></i>
-                                            </label>
-                                            <ul tabindex="0" class="dropdown-content menu p-2 shadow-xl bg-white rounded-xl w-52 text-sm border border-gray-200" style="position: absolute; right: 0; top: 100%; margin-top: 0.5rem; min-width: 160px; overflow: visible;">
+                                            </button>
+                                            <ul class="task-options-menu menu p-2 shadow-xl bg-white rounded-xl w-52 text-sm border border-gray-200">
                                                 <li>
-                                                    <a href='javascript:void(0);' onclick='openEditTaskModal({{ task.id|tojson }}, {{ task.name|tojson }}, {{ task.description|tojson }}, {{ task.start_date.strftime("%Y-%m-%d")|tojson }}, {{ task.payment_type|tojson }}, {{ task.per_part_payout|tojson }}, {{ task.per_part_currency|tojson }}, {{ task.per_day_payout|tojson }}, {{ task.per_day_currency|tojson }})' class="hover:bg-gray-50 py-3">
+                                                    <a href='javascript:void(0);' onclick='openEditTaskModal({{ task.id|tojson }}, {{ task.name|tojson }}, {{ (task.description or "")|tojson }}, {{ task.start_date.strftime("%Y-%m-%d")|tojson }}, {{ task.payment_type|tojson }}, {{ (task.per_part_payout or "")|tojson }}, {{ (task.per_part_currency or "")|tojson }}, {{ (task.per_day_payout or "")|tojson }}, {{ (task.per_day_currency or "")|tojson }})' class="hover:bg-gray-50 py-3">
                                                         <i class="fas fa-edit w-4 h-4 text-blue-600"></i>Edit Task
                                                     </a>
                                                 </li>
                                                 <li>
-                                                    <a onclick="openDeleteTaskModal({{ task.id|tojson }})" class="text-red-600 hover:bg-red-50 py-3">
+                                                    <a onclick="openDeleteTaskModal({{ task.id|tojson }})" class="text-red-600 hover:bg-red-50 py-3 cursor-pointer">
                                                         <i class="fas fa-trash-alt w-4 h-4"></i>Delete Task
                                                     </a>
                                                 </li>
@@ -269,6 +313,21 @@
                         </div>
                         {% endfor %}
                     </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="flex flex-col items-center justify-center py-16 px-4">
+        <div class="bg-gray-50 rounded-full p-8 mb-6">
+            <i class="fas fa-tasks text-6xl text-gray-400"></i>
+        </div>
+        <h3 class="text-2xl font-bold text-gray-800 mb-2">No Tasks Yet</h3>
+        <p class="text-gray-600 text-center mb-6 max-w-md">
+            Get started by creating your first task. Tasks help you organize work, track progress, and manage worker assignments.
+        </p>
+        <button onclick="openAddTaskModal()" class="btn btn-primary">
+            <i class="fas fa-plus mr-2"></i>Create Your First Task
+        </button>
+    </div>
+    {% endif %}
 
     <!-- Include your actual modals -->
     {% include 'modals/add_task.html' %}
@@ -296,7 +355,8 @@
         
         // Task navigation and functionality
         function navigateToTask(event, taskId) {
-            if (!event.target.closest('.status-dropdown')) {
+            // Don't navigate if clicking on status dropdown or task options menu
+            if (!event.target.closest('.status-dropdown') && !event.target.closest('.task-options-dropdown')) {
                 const card = event.currentTarget;
                 const paymentType = card.getAttribute('data-payment-type');
                 if (paymentType === 'per_part') {
@@ -327,11 +387,26 @@
             }
         }
 
+        // Toggle task options dropdown (3-dot menu)
+        function toggleTaskOptionsDropdown(button, event) {
+            event.stopPropagation();
+            const dropdown = button.closest('.task-options-dropdown');
+            const isOpen = dropdown.classList.contains('open');
+            
+            // Close all other dropdowns first
+            closeAllDropdowns();
+            
+            // Toggle this dropdown
+            if (!isOpen) {
+                dropdown.classList.add('open');
+            }
+        }
+
         document.addEventListener('click', function(event) {
             // Allow drawer functionality to work normally - don't interfere with sidebar clicks
             // Only close dropdowns if clicking outside of them AND outside of the sidebar
             if (!event.target.closest('.status-dropdown') && 
-                !event.target.closest('.dropdown') && 
+                !event.target.closest('.task-options-dropdown') && 
                 !event.target.closest('.drawer-side') && 
                 !event.target.closest('[for="my-drawer"]')) {
                 closeAllDropdowns();
@@ -339,6 +414,7 @@
         });
 
         function closeAllDropdowns() {
+            // Close status dropdowns
             document.querySelectorAll('.status-dropdown').forEach(dropdown => {
                 dropdown.classList.remove('open');
                 const menu = dropdown.querySelector('.status-dropdown-menu');
@@ -347,13 +423,14 @@
                 }
             });
 
-            document.querySelectorAll('.task-card .dropdown .dropdown-content').forEach(menu => {
-                menu.classList.remove('show');
+            // Close task options dropdowns
+            document.querySelectorAll('.task-options-dropdown').forEach(dropdown => {
+                dropdown.classList.remove('open');
             });
         }
 
         function setDropdownsDisabled(disabled) {
-            document.querySelectorAll('.status-dropdown, .dropdown').forEach(el => {
+            document.querySelectorAll('.status-dropdown, .task-options-dropdown').forEach(el => {
                 if (disabled) {
                     el.classList.add('dropdown-disabled');
                 } else {

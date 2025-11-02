@@ -9,7 +9,32 @@
       <div class="bg-red-100 rounded-full p-3 mr-4 flex items-center justify-center">
         <i data-feather="alert-circle" class="w-8 h-8 text-red-500"></i>
       </div>
-      <h3 class="text-2xl font-semibold text-red-700">Report Error</h3>
+            // Check if report has data - look for actual data rows
+        let hasData = false;
+        if (type === 'per_day') {
+            const perDayRecords = document.querySelectorAll('.bg-white.rounded-3xl.shadow-xl.border.border-green-200 tbody tr');
+            hasData = perDayRecords && perDayRecords.length > 0;
+        } else {
+            const perPartRecords = document.querySelectorAll('.bg-white.rounded-3xl.shadow-xl.border.border-blue-200 tbody tr');
+            hasData = perPartRecords && perPartRecords.length > 0;
+        }
+        
+        if (!hasData) {
+            if (typeof showCustomModal === 'function') {
+                showCustomModal('No Data Available', 'There is no data to download for the selected date range. Please adjust your dates or ensure workers have been assigned to tasks.', 'warning');
+            } else {
+                alert('No data available for the selected date range.');
+            }
+            return;
+        }
+        
+        // Store the report type and show format modal
+        pendingReportType = type;
+        document.getElementById('format-selection-modal').showModal();
+        if (typeof feather !== 'undefined') {
+            feather.replace();
+        }
+    };t-2xl font-semibold text-red-700">Report Error</h3>
     </div>
     <div id="reportErrorMessage" class="text-gray-800 leading-relaxed mb-6"></div>
     <div class="text-right">
@@ -593,6 +618,35 @@
         if (selectedDate && targetInputId) {
             const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
             const formatted = `${monthNames[selectedDate.getMonth()]} ${selectedDate.getDate()}, ${selectedDate.getFullYear()}`;
+            
+            // Validate date range BEFORE setting the value
+            const startDateInput = document.getElementById('startDate');
+            const endDateInput = document.getElementById('endDate');
+            
+            if (targetInputId === 'endDate' && startDateInput?.dataset.isoDate) {
+                const startDate = new Date(startDateInput.dataset.isoDate);
+                if (selectedDate < startDate) {
+                    if (typeof showCustomModal === 'function') {
+                        showCustomModal('Invalid Date', 'End date cannot be earlier than start date. Please select a date on or after the start date.', 'warning');
+                    } else {
+                        alert('End date cannot be earlier than start date.');
+                    }
+                    return; // Don't close the picker, let user select a valid date
+                }
+            }
+            
+            if (targetInputId === 'startDate' && endDateInput?.dataset.isoDate) {
+                const endDate = new Date(endDateInput.dataset.isoDate);
+                if (selectedDate > endDate) {
+                    if (typeof showCustomModal === 'function') {
+                        showCustomModal('Invalid Date', 'Start date cannot be later than end date. Please select a date on or before the end date.', 'warning');
+                    } else {
+                        alert('Start date cannot be later than end date.');
+                    }
+                    return; // Don't close the picker, let user select a valid date
+                }
+            }
+            
             document.getElementById(targetInputId).value = formatted;
             
             // Store ISO format in data attribute for API calls
@@ -600,12 +654,16 @@
             
             closeDatePicker();
             
-            // Validate date range if both dates are set
-            validateDateRange();
-            
-            updateReportPreview();
+            // Update report with new dates
+            if (typeof updateReportPreview === 'function') {
+                updateReportPreview();
+            }
         } else {
-            showToast('Please select a date', 'warning');
+            if (typeof showToast === 'function') {
+                showToast('Please select a date', 'warning');
+            } else {
+                alert('Please select a date');
+            }
         }
     }
     

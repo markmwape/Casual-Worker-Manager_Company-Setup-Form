@@ -67,11 +67,6 @@ def create_workspace_route():
     """Route for creating a new workspace"""
     return render_template('create_workspace.html')
 
-@app.route('/forgot-workspace')
-def forgot_workspace_route():
-    """Legacy route - redirects to workspace selection"""
-    return redirect(url_for('workspace_selection_route'))
-
 @app.route('/api/user/workspaces', methods=['POST'])
 def get_user_workspaces():
     """Get all workspaces associated with a user's email"""
@@ -161,7 +156,7 @@ def send_workspace_email():
         
         # Create the link
         base_url = request.host_url.rstrip('/')
-        workspace_link = f"{base_url}/forgot-workspace?email={email}&token={token}"
+        workspace_link = f"{base_url}/workspace-selection?email={email}&token={token}"
         
         # In a real implementation, you would send an actual email here
         # For now, we'll simulate it and return success

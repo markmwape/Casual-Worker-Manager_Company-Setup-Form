@@ -124,6 +124,34 @@
         pointer-events: none;
         opacity: 0.6;
     }
+    
+    /* Modal fixes */
+    .modal {
+        pointer-events: none;
+    }
+    .modal.modal-open {
+        pointer-events: auto;
+    }
+    .modal-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.3);
+        cursor: pointer;
+    }
+    .modal-backdrop button {
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+    }
+    .modal-box {
+        pointer-events: auto;
+        position: relative;
+        z-index: 1;
+    }
 </style>
 {% endblock %}
 
@@ -443,11 +471,14 @@
             closeAllDropdowns();
             setDropdownsDisabled(true);
             const modal = document.getElementById('edit-task-modal');
+            
+            // Populate form fields
             document.getElementById('edit-task-id').value = taskId;
             document.getElementById('edit-task-name').value = name;
             document.getElementById('edit-task-description').value = description || '';
             const startDateInput = document.getElementById('edit-task-start-date');
             startDateInput.value = startDate;
+            
             if (paymentType === 'per_part') {
                 document.getElementById('edit-payment-type-part').checked = true;
                 document.getElementById('edit-per-part-payout-group').style.display = '';
@@ -461,9 +492,23 @@
             document.getElementById('edit-per-part-currency').value = perPartCurrency || '';
             document.getElementById('edit-per-day-payout').value = perDayPayout || '';
             document.getElementById('edit-per-day-currency').value = perDayCurrency || '';
+            
             setupEditPaymentTypeToggle();
             updateEditPayoutLabels(paymentType);
-            modal.classList.add('modal-open');
+            
+            // Open modal
+            if (modal) {
+                modal.classList.add('modal-open');
+                // Add event listener to backdrop
+                const backdrop = modal.querySelector('.modal-backdrop button');
+                if (backdrop) {
+                    backdrop.onclick = (e) => {
+                        e.preventDefault();
+                        closeEditTaskModal();
+                    };
+                }
+            }
+            
             setTimeout(() => {
                 if (startDateInput.datePickerInstance) {
                     startDateInput.datePickerInstance.setValue(startDate);
@@ -590,7 +635,18 @@
             closeAllDropdowns();
             setDropdownsDisabled(true);
             document.getElementById('delete-task-id').value = taskId;
-            document.getElementById('delete-task-modal').classList.add('modal-open');
+            const modal = document.getElementById('delete-task-modal');
+            if (modal) {
+                modal.classList.add('modal-open');
+                // Add event listener to backdrop
+                const backdrop = modal.querySelector('.modal-backdrop button');
+                if (backdrop) {
+                    backdrop.onclick = (e) => {
+                        e.preventDefault();
+                        closeDeleteTaskModal();
+                    };
+                }
+            }
         }
 
         function closeDeleteTaskModal() {

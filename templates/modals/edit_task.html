@@ -1,7 +1,6 @@
 <div id="edit-task-modal" class="modal">
-    <div class="modal-overlay"></div>
-    <div class="modal-box">
-        <h3 class="font-bold text-lg">Edit Task</h3>
+    <div class="modal-box max-w-2xl">
+        <h3 class="font-bold text-lg mb-4">Edit Task</h3>
         <form id="editTaskForm" onsubmit="updateTask(event)">
             <input type="hidden" id="edit-task-id">
             <div class="form-control w-full">
@@ -373,4 +372,7 @@
             </div>
         </form>
     </div>
+    <form method="dialog" class="modal-backdrop">
+        <button onclick="closeEditTaskModal()">close</button>
+    </form>
 </div> 

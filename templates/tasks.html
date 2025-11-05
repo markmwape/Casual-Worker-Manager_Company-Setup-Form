@@ -128,9 +128,12 @@
     /* Modal fixes */
     .modal {
         pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.2s ease-in-out;
     }
     .modal.modal-open {
         pointer-events: auto;
+        opacity: 1;
     }
     .modal-backdrop {
         position: fixed;
@@ -138,19 +141,112 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background-color: rgba(0, 0, 0, 0.3);
+        background-color: rgba(0, 0, 0, 0.5);
         cursor: pointer;
+        z-index: 0;
     }
     .modal-backdrop button {
         width: 100%;
         height: 100%;
         opacity: 0;
         cursor: pointer;
+        border: none;
+        background: transparent;
     }
     .modal-box {
         pointer-events: auto;
         position: relative;
+        z-index: 10;
+        background: white;
+        border-radius: 1rem;
+        padding: 2rem;
+    }
+    
+    /* Ensure form inputs are fully interactive */
+    .modal-box input,
+    .modal-box textarea,
+    .modal-box select,
+    .modal-box button {
+        pointer-events: auto;
+        position: relative;
         z-index: 1;
+    }
+    
+    /* Add task modal specific styles */
+    #add-task-modal .modal-box {
+        max-width: 42rem;
+        animation: modalFadeIn 0.2s ease-out;
+    }
+    
+    @keyframes modalFadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    #add-task-modal input[type="text"],
+    #add-task-modal input[type="date"],
+    #add-task-modal input[type="number"],
+    #add-task-modal textarea,
+    #add-task-modal select {
+        background-color: white;
+        border: 2px solid #e5e7eb;
+        transition: all 0.2s ease;
+        font-size: 0.95rem;
+    }
+    
+    #add-task-modal input[type="text"]:focus,
+    #add-task-modal input[type="date"]:focus,
+    #add-task-modal input[type="number"]:focus,
+    #add-task-modal textarea:focus,
+    #add-task-modal select:focus {
+        border-color: #3b82f6;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+    
+    /* Radio button styling */
+    #add-task-modal input[type="radio"] {
+        cursor: pointer;
+    }
+    
+    #add-task-modal label.cursor-pointer {
+        flex: 1;
+    }
+    
+    #add-task-modal label.cursor-pointer:has(input:checked) {
+        border-color: #3b82f6 !important;
+        background-color: #eff6ff !important;
+    }
+    
+    /* Edit modal styling */
+    #edit-task-modal .modal-box {
+        animation: modalFadeIn 0.2s ease-out;
+    }
+    
+    #edit-task-modal input[type="text"],
+    #edit-task-modal input[type="date"],
+    #edit-task-modal input[type="number"],
+    #edit-task-modal textarea,
+    #edit-task-modal select {
+        background-color: white;
+        border: 2px solid #e5e7eb;
+        transition: all 0.2s ease;
+    }
+    
+    #edit-task-modal input[type="text"]:focus,
+    #edit-task-modal input[type="date"]:focus,
+    #edit-task-modal input[type="number"]:focus,
+    #edit-task-modal textarea:focus,
+    #edit-task-modal select:focus {
+        border-color: #3b82f6;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
     }
 </style>
 {% endblock %}
@@ -371,6 +467,14 @@
             const modal = document.getElementById('add-task-modal');
             if (modal) {
                 modal.classList.add('modal-open');
+                // Add event listener to backdrop
+                const backdrop = modal.querySelector('.modal-backdrop button');
+                if (backdrop) {
+                    backdrop.onclick = (e) => {
+                        e.preventDefault();
+                        closeAddTaskModal();
+                    };
+                }
             }
         }
         
@@ -378,6 +482,11 @@
             const modal = document.getElementById('add-task-modal');
             if (modal) {
                 modal.classList.remove('modal-open');
+                // Reset form
+                const form = modal.querySelector('#taskForm');
+                if (form) {
+                    form.reset();
+                }
             }
         }
         

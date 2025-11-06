@@ -139,11 +139,11 @@
     </form>
 </div>
 
-<!-- Date Picker Modal -->
-<dialog id="add-task-date-picker-modal" class="modal">
-    <div class="modal-box max-w-md">
+<!-- Date Picker Modal - Using native input instead of custom modal -->
+<div id="add-task-date-picker-container" style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div class="bg-white rounded-lg shadow-lg p-6 max-w-md w-full mx-4">
         <h3 class="font-bold text-lg mb-4">Select Start Date</h3>
-        <div id="add-task-calendar-container" class="bg-white rounded-lg p-4">
+        <div id="add-task-calendar-container" class="bg-white rounded-lg p-4 border border-gray-200">
             <!-- Calendar Header -->
             <div class="flex items-center justify-between mb-4">
                 <button type="button" onclick="previousMonth()" class="btn btn-sm btn-circle btn-ghost">
@@ -176,42 +176,65 @@
             <div id="add-task-calendar-grid" class="grid grid-cols-7 gap-1"></div>
         </div>
         
-        <div class="modal-action">
+        <div class="flex justify-end gap-2 mt-4">
             <button type="button" class="btn btn-ghost" onclick="closeDatePickerModal()">Cancel</button>
             <button type="button" class="btn btn-primary" onclick="confirmDateSelection()">Confirm</button>
         </div>
     </div>
-    <form method="dialog" class="modal-backdrop">
-        <button onclick="closeDatePickerModal()">close</button>
-    </form>
-</dialog>
+</div>
 
 <script>
 // Override any potential CSS conflicts for the date picker modal
 const style = document.createElement('style');
 style.textContent = `
-    #add-task-date-picker-modal {
+    #add-task-date-picker-container {
         z-index: 9999 !important;
     }
-    #add-task-date-picker-modal .modal-box {
-        background: white !important;
-        animation: none !important;
-    }
-    #add-task-calendar-container button:hover {
-        background-color: rgb(219 234 254) !important;
+    #add-task-date-picker-container button:not(.btn-sm):not(.btn-circle) {
+        pointer-events: auto;
     }
     
-    /* Ensure payout sections are properly controlled */
+    /* CRITICAL: Ensure payout sections are properly controlled */
     #payout-fields {
         transition: all 0.3s ease;
     }
+    #payout-fields:not(:visible) {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        height: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
     #per-part-payout-group {
         transition: all 0.3s ease;
+    }
+    #per-part-payout-group:not(:visible) {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        height: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
     }
     
     /* Payment type card transitions */
     #fixed-card, #piece-card {
         transition: all 0.3s ease;
+    }
+    
+    /* Ensure sections stay hidden when display is none */
+    #payout-fields[style*="display: none"] {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+    }
+    
+    #per-part-payout-group[style*="display: none"] {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
     }
 `;
 document.head.appendChild(style);
@@ -222,21 +245,16 @@ let selectedDateValue = null;
 function openDatePickerModal() {
     try {
         console.log('Opening date picker modal...');
-        const modal = document.getElementById('add-task-date-picker-modal');
-        console.log('Modal found:', !!modal);
+        const container = document.getElementById('add-task-date-picker-container');
         
-        if (modal) {
-            // Ensure modal is properly initialized
-            modal.showModal();
-            console.log('Modal opened successfully');
+        if (container) {
+            container.style.display = 'flex';
+            console.log('Date picker modal displayed');
             
-            // Small delay to ensure modal is visible before rendering
-            setTimeout(() => {
-                console.log('Rendering calendar...');
-                renderCalendar();
-            }, 50);
+            // Render calendar
+            renderCalendar();
         } else {
-            console.error('Modal element not found');
+            console.error('Date picker container not found');
         }
     } catch (error) {
         console.error('Error opening date picker modal:', error);
@@ -264,9 +282,9 @@ function openDatePickerModal() {
 
 function closeDatePickerModal() {
     try {
-        const modal = document.getElementById('add-task-date-picker-modal');
-        if (modal) {
-            modal.close();
+        const container = document.getElementById('add-task-date-picker-container');
+        if (container) {
+            container.style.display = 'none';
         }
     } catch (error) {
         console.error('Error closing date picker modal:', error);
@@ -398,6 +416,11 @@ function updatePayoutDisplay() {
     const payoutFields = document.getElementById('payout-fields');
     const perPartPayoutGroup = document.getElementById('per-part-payout-group');
     
+    if (!fixedCard || !pieceCard || !payoutFields || !perPartPayoutGroup) {
+        console.error('One or more required elements not found');
+        return;
+    }
+    
     // Reset all cards
     fixedCard.classList.remove('border-blue-500', 'bg-blue-50', 'border-blue-600', 'card-selected');
     pieceCard.classList.remove('border-blue-500', 'bg-blue-50', 'border-blue-600', 'card-selected');
@@ -406,35 +429,47 @@ function updatePayoutDisplay() {
     
     // Hide all selected indicators
     const selectedIndicators = document.querySelectorAll('.selected-indicator');
-    selectedIndicators.forEach(indicator => indicator.style.display = 'none');
+    selectedIndicators.forEach(indicator => {
+        indicator.style.display = 'none !important';
+    });
+    
+    // Force hide both sections first
+    payoutFields.style.display = 'none !important';
+    perPartPayoutGroup.style.display = 'none !important';
     
     if (selectedType) {
         if (selectedType.value === 'per_day') {
             console.log('Showing daily payout fields'); // Debug log
-            payoutFields.style.display = 'block';
-            perPartPayoutGroup.style.display = 'none';
+            // Show daily section
+            payoutFields.style.display = 'block !important';
+            // Make sure per-part is hidden
+            perPartPayoutGroup.style.display = 'none !important';
+            // Update card styling
             fixedCard.classList.remove('border-gray-200');
             fixedCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
             const dailyIndicator = fixedCard.querySelector('.selected-indicator');
-            if (dailyIndicator) dailyIndicator.style.display = 'block';
+            if (dailyIndicator) dailyIndicator.style.display = 'block !important';
         } else if (selectedType.value === 'per_part') {
             console.log('Showing per-part payout fields'); // Debug log
-            payoutFields.style.display = 'none';
-            perPartPayoutGroup.style.display = 'block';
+            // Hide daily section
+            payoutFields.style.display = 'none !important';
+            // Show per-part section
+            perPartPayoutGroup.style.display = 'block !important';
+            // Update card styling
             pieceCard.classList.remove('border-gray-200');
             pieceCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
             const pieceIndicator = pieceCard.querySelector('.selected-indicator');
-            if (pieceIndicator) pieceIndicator.style.display = 'block';
+            if (pieceIndicator) pieceIndicator.style.display = 'block !important';
         }
     } else {
         console.log('No payment type selected, defaulting to daily'); // Debug log
         // Default: show per_day fields
-        payoutFields.style.display = 'block';
-        perPartPayoutGroup.style.display = 'none';
+        payoutFields.style.display = 'block !important';
+        perPartPayoutGroup.style.display = 'none !important';
         fixedCard.classList.remove('border-gray-200');
         fixedCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
         const dailyIndicator = fixedCard.querySelector('.selected-indicator');
-        if (dailyIndicator) dailyIndicator.style.display = 'block';
+        if (dailyIndicator) dailyIndicator.style.display = 'block !important';
     }
 }
 
@@ -491,13 +526,11 @@ function openAddTaskModal() {
 
 document.addEventListener('DOMContentLoaded', function() {
     // Check if required elements exist
-    const modal = document.getElementById('add-task-date-picker-modal');
     const grid = document.getElementById('add-task-calendar-grid');
     const monthYear = document.getElementById('add-task-calendar-month-year');
     
-    if (!modal || !grid || !monthYear) {
-        console.error('Date picker modal elements not found:', {
-            modal: !!modal,
+    if (!grid || !monthYear) {
+        console.error('Date picker elements not found:', {
             grid: !!grid,
             monthYear: !!monthYear
         });
@@ -509,13 +542,32 @@ document.addEventListener('DOMContentLoaded', function() {
     paymentTypeRadios.forEach(radio => {
         radio.addEventListener('change', function() {
             console.log('Payment type changed to:', this.value); // Debug log
-            updatePayoutDisplay();
+            // Call with slight delay to ensure DOM is updated
+            setTimeout(() => {
+                updatePayoutDisplay();
+            }, 10);
         });
     });
     
-    // Initialize display with default state
+    // Initialize display with default state - call multiple times to ensure it sticks
     console.log('Initializing default payout display'); // Debug log
     updatePayoutDisplay();
+    setTimeout(() => {
+        updatePayoutDisplay();
+    }, 50);
+    setTimeout(() => {
+        updatePayoutDisplay();
+    }, 100);
+    
+    // Add click handler to date picker overlay to close modal
+    const datePickerContainer = document.getElementById('add-task-date-picker-container');
+    if (datePickerContainer) {
+        datePickerContainer.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeDatePickerModal();
+            }
+        });
+    }
     
     // Form submission handler
     const addTaskForm = document.getElementById('addTaskForm');

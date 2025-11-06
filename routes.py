@@ -3209,27 +3209,44 @@ def update_task_attendance(task_id):
         company = get_current_company()
         
         if not company:
+            logging.error("Company not found when updating attendance")
             return jsonify({'error': 'Company not found'}), 404
         
         # Get the task
         task = Task.query.filter_by(id=task_id, company_id=company.id).first()
         
         if not task:
+            logging.error(f"Task {task_id} not found for company {company.id}")
             return jsonify({'error': 'Task not found'}), 404
         
         data = request.get_json()
         attendance_data = data.get('attendance_data', [])
         selected_date = datetime.strptime(data.get('date'), '%Y-%m-%d').date()
         
+        logging.info(f"Updating attendance for task {task_id} on {selected_date} with {len(attendance_data)} records")
+        
         # Validation: Prevent attendance before task start date
         if selected_date < task.start_date.date():
+            logging.warning(f"Attempted to record attendance before task start date: {selected_date} < {task.start_date.date()}")
             return jsonify({'error': 'You cannot record attendance before the task start date.'}), 400
+        
+        updated_count = 0
+        created_count = 0
         
         # Update attendance records
         for record in attendance_data:
             worker_id = record.get('worker_id')
             status = record.get('status')
             units_completed = record.get('units_completed')
+            
+            if not worker_id:
+                continue
+                
+            # Verify worker exists and belongs to company
+            worker = Worker.query.filter_by(id=worker_id, company_id=company.id).first()
+            if not worker:
+                logging.warning(f"Worker {worker_id} not found for company {company.id}")
+                continue
             
             # Create new attendance record if it doesn't exist
             attendance = Attendance.query.filter_by(
@@ -3240,11 +3257,15 @@ def update_task_attendance(task_id):
             ).first()
             
             if attendance:
+                # Update existing record
                 if status is not None:
                     attendance.status = status
                 if units_completed is not None:
                     attendance.units_completed = units_completed
+                updated_count += 1
+                logging.info(f"Updated attendance for worker {worker_id}: status={status}, units={units_completed}")
             else:
+                # Create new record
                 new_attendance = Attendance(
                     worker_id=worker_id,
                     company_id=company.id,
@@ -3254,13 +3275,34 @@ def update_task_attendance(task_id):
                     units_completed=units_completed
                 )
                 db.session.add(new_attendance)
+                created_count += 1
+                logging.info(f"Created new attendance for worker {worker_id}: status={status}, units={units_completed}")
         
         db.session.commit()
         
-        return jsonify({'message': 'Attendance updated successfully'}), 200
+        # Verify the records were actually saved
+        total_records = Attendance.query.filter_by(
+            company_id=company.id,
+            date=selected_date,
+            task_id=task.id
+        ).count()
+        
+        success_message = f"Attendance updated successfully. Created: {created_count}, Updated: {updated_count}, Total records for this date: {total_records}"
+        logging.info(success_message)
+        
+        return jsonify({
+            'message': 'Attendance updated successfully',
+            'details': {
+                'created': created_count,
+                'updated': updated_count,
+                'total_records': total_records,
+                'date': selected_date.isoformat(),
+                'task_name': task.name
+            }
+        }), 200
         
     except Exception as e:
-        logging.error(f"Error updating task attendance: {str(e)}")
+        logging.error(f"Error updating task attendance: {str(e)}", exc_info=True)
         db.session.rollback()
         return jsonify({'error': 'Failed to update task attendance'}), 500
 

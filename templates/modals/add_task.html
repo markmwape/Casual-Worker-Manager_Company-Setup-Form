@@ -10,13 +10,13 @@
             <span class="error-text"></span>
         </div>
         
-        <form id="addTaskForm" method="POST" action="/tasks">
+        <form id="addTaskForm">
             <!-- Task Name -->
             <div class="form-control mb-5">
                 <label class="label">
                     <span class="label-text font-semibold text-gray-700">Task Name <span class="text-red-500">*</span></span>
                 </label>
-                <input type="text" name="name" placeholder="e.g., Cleaning Service, Data Entry" class="input input-bordered w-full focus:input-primary" required />
+                <input type="text" name="name" id="task-name" placeholder="e.g., Cleaning Service, Data Entry" class="input input-bordered w-full focus:input-primary" required />
             </div>
 
             <!-- Description -->
@@ -24,32 +24,21 @@
                 <label class="label">
                     <span class="label-text font-semibold text-gray-700">Description</span>
                 </label>
-                <textarea name="description" placeholder="Describe the task details..." class="textarea textarea-bordered w-full focus:textarea-primary" rows="3"></textarea>
+                <textarea name="description" id="task-description" placeholder="Describe the task details..." class="textarea textarea-bordered w-full focus:textarea-primary" rows="3"></textarea>
             </div>
 
-            <!-- Dates Section -->
-            <div class="grid grid-cols-2 gap-4 mb-5">
-                <div class="form-control">
-                    <label class="label">
-                        <span class="label-text font-semibold text-gray-700">Start Date</span>
-                    </label>
-                    <input type="date" name="start_date" class="input input-bordered w-full focus:input-primary" />
-                </div>
-
-                <div class="form-control">
-                    <label class="label">
-                        <span class="label-text font-semibold text-gray-700">Deadline</span>
-                    </label>
-                    <input type="date" name="deadline" class="input input-bordered w-full focus:input-primary" />
-                </div>
-            </div>
-
-            <!-- Expected Workers -->
+            <!-- Start Date -->
             <div class="form-control mb-6">
                 <label class="label">
-                    <span class="label-text font-semibold text-gray-700">Expected Workers</span>
+                    <span class="label-text font-semibold text-gray-700">Start Date <span class="text-red-500">*</span></span>
                 </label>
-                <input type="text" name="expected_workers" placeholder="e.g., 5 or 5-10" class="input input-bordered w-full focus:input-primary" />
+                <button type="button" onclick="openDatePickerModal()" class="input input-bordered w-full focus:input-primary text-left flex items-center justify-between hover:border-blue-400">
+                    <span id="selected-date-display" class="text-gray-500">Click to select start date</span>
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                </button>
+                <input type="hidden" name="start_date" id="task-start-date" required />
             </div>
 
             <!-- Payment Type Selection -->
@@ -60,16 +49,16 @@
                 <div class="grid grid-cols-2 gap-4 mt-2">
                     <label class="cursor-pointer">
                         <div class="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-400 transition flex items-center gap-3" id="fixed-card">
-                            <input type="radio" name="payment_type" value="fixed" class="radio radio-primary" required />
+                            <input type="radio" name="payment_type" value="per_day" class="radio radio-primary" required />
                             <div>
-                                <div class="font-semibold text-gray-900">Fixed Amount</div>
-                                <div class="text-xs text-gray-500">Single payout amount</div>
+                                <div class="font-semibold text-gray-900">Daily Rate</div>
+                                <div class="text-xs text-gray-500">Fixed daily amount</div>
                             </div>
                         </div>
                     </label>
                     <label class="cursor-pointer">
                         <div class="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-400 transition flex items-center gap-3" id="piece-card">
-                            <input type="radio" name="payment_type" value="piece_rate" class="radio radio-primary" required />
+                            <input type="radio" name="payment_type" value="per_part" class="radio radio-primary" required />
                             <div>
                                 <div class="font-semibold text-gray-900">Per Unit/Part</div>
                                 <div class="text-xs text-gray-500">Payment per item completed</div>
@@ -79,7 +68,7 @@
                 </div>
             </div>
 
-            <!-- Fixed Payment Fields -->
+            <!-- Daily Payment Fields -->
             <div id="payout-fields" style="display:none;">
                 <div class="card bg-blue-50 border border-blue-200 p-4 mb-6">
                     <div class="form-control mb-4">
@@ -87,8 +76,8 @@
                             <span class="label-text font-semibold text-gray-700">Daily Payout Amount <span class="text-red-500">*</span></span>
                         </label>
                         <div class="grid grid-cols-2 gap-3">
-                            <input type="number" step="0.01" min="0.01" name="payout" id="payout" placeholder="Enter amount" class="input input-bordered focus:input-primary" />
-                            <select name="currency" id="currency" class="select select-bordered focus:select-primary">
+                            <input type="number" step="0.01" min="0.01" name="per_day_payout" id="per-day-payout" placeholder="Enter amount" class="input input-bordered focus:input-primary" />
+                            <select name="per_day_currency" id="per-day-currency" class="select select-bordered focus:select-primary">
                                 <option value="">Select Currency</option>
                                 <option value="USD">USD ($)</option>
                                 <option value="EUR">EUR (€)</option>
@@ -102,7 +91,7 @@
                         </div>
                     </div>
                     <div class="text-xs text-blue-700 bg-blue-100 p-2 rounded">
-                        <strong>ℹ️ Tip:</strong> This is the total amount each worker will earn for this task
+                        <strong>ℹ️ Tip:</strong> This is the amount each worker will earn per day for this task
                     </div>
                 </div>
             </div>
@@ -138,7 +127,7 @@
             <!-- Action Buttons -->
             <div class="modal-action justify-end gap-3 mt-8">
                 <button type="button" class="btn btn-outline" onclick="closeAddTaskModal()">Cancel</button>
-                <button type="submit" class="btn btn-primary">
+                <button type="submit" class="btn btn-primary" id="submit-task-btn">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                     </svg>
@@ -152,7 +141,157 @@
     </form>
 </div>
 
+<!-- Date Picker Modal -->
+<div id="date-picker-modal" class="modal">
+    <div class="modal-box max-w-md">
+        <h3 class="font-bold text-lg mb-4">Select Start Date</h3>
+        <div id="calendar-container" class="bg-white rounded-lg p-4">
+            <!-- Calendar Header -->
+            <div class="flex items-center justify-between mb-4">
+                <button type="button" onclick="previousMonth()" class="btn btn-sm btn-circle btn-ghost">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </button>
+                <div class="text-center">
+                    <div class="font-bold text-lg" id="calendar-month-year"></div>
+                </div>
+                <button type="button" onclick="nextMonth()" class="btn btn-sm btn-circle btn-ghost">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Calendar Days -->
+            <div class="grid grid-cols-7 gap-1 mb-2 text-center text-sm font-semibold text-gray-600">
+                <div>Sun</div>
+                <div>Mon</div>
+                <div>Tue</div>
+                <div>Wed</div>
+                <div>Thu</div>
+                <div>Fri</div>
+                <div>Sat</div>
+            </div>
+            
+            <!-- Calendar Grid -->
+            <div id="calendar-grid" class="grid grid-cols-7 gap-1"></div>
+        </div>
+        
+        <div class="modal-action">
+            <button type="button" class="btn btn-ghost" onclick="closeDatePickerModal()">Cancel</button>
+            <button type="button" class="btn btn-primary" onclick="confirmDateSelection()">Confirm</button>
+        </div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+        <button onclick="closeDatePickerModal()">close</button>
+    </form>
+</div>
+
 <script>
+let currentDate = new Date();
+let selectedDateValue = null;
+
+function openDatePickerModal() {
+    document.getElementById('date-picker-modal').showModal();
+    renderCalendar();
+}
+
+function closeDatePickerModal() {
+    document.getElementById('date-picker-modal').close();
+}
+
+function renderCalendar() {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    
+    // Update header
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                       'July', 'August', 'September', 'October', 'November', 'December'];
+    document.getElementById('calendar-month-year').textContent = `${monthNames[month]} ${year}`;
+    
+    // Get first day of month and number of days
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Clear calendar grid
+    const grid = document.getElementById('calendar-grid');
+    grid.innerHTML = '';
+    
+    // Add empty cells for days before month starts
+    for (let i = 0; i < firstDay; i++) {
+        const emptyCell = document.createElement('div');
+        emptyCell.className = 'p-2';
+        grid.appendChild(emptyCell);
+    }
+    
+    // Add day cells
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dateCell = document.createElement('button');
+        dateCell.type = 'button';
+        dateCell.textContent = day;
+        dateCell.className = 'p-2 rounded hover:bg-blue-100 text-center transition';
+        
+        const cellDate = new Date(year, month, day);
+        cellDate.setHours(0, 0, 0, 0);
+        
+        // Disable past dates
+        if (cellDate < today) {
+            dateCell.className += ' text-gray-300 cursor-not-allowed';
+            dateCell.disabled = true;
+        } else {
+            dateCell.className += ' hover:bg-blue-100 cursor-pointer';
+            dateCell.onclick = () => selectDate(cellDate);
+            
+            // Highlight today
+            if (cellDate.getTime() === today.getTime()) {
+                dateCell.className += ' font-bold border-2 border-blue-500';
+            }
+            
+            // Highlight selected date
+            if (selectedDateValue && cellDate.getTime() === new Date(selectedDateValue).getTime()) {
+                dateCell.className += ' bg-blue-500 text-white font-bold';
+            }
+        }
+        
+        grid.appendChild(dateCell);
+    }
+}
+
+function selectDate(date) {
+    selectedDateValue = date.toISOString().split('T')[0];
+    renderCalendar(); // Re-render to show selection
+}
+
+function previousMonth() {
+    currentDate.setMonth(currentDate.getMonth() - 1);
+    renderCalendar();
+}
+
+function nextMonth() {
+    currentDate.setMonth(currentDate.getMonth() + 1);
+    renderCalendar();
+}
+
+function confirmDateSelection() {
+    if (selectedDateValue) {
+        document.getElementById('task-start-date').value = selectedDateValue;
+        const displayDate = new Date(selectedDateValue + 'T00:00:00').toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+        document.getElementById('selected-date-display').textContent = displayDate;
+        document.getElementById('selected-date-display').classList.remove('text-gray-500');
+        document.getElementById('selected-date-display').classList.add('text-gray-900');
+        closeDatePickerModal();
+    } else {
+        alert('Please select a date');
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const paymentTypeRadios = document.querySelectorAll('input[name="payment_type"]');
     const payoutFields = document.getElementById('payout-fields');
@@ -168,17 +307,14 @@ document.addEventListener('DOMContentLoaded', function() {
         pieceCard.classList.remove('border-blue-500', 'bg-blue-50');
         
         if (selectedType) {
-            if (selectedType.value === 'fixed') {
+            if (selectedType.value === 'per_day') {
                 payoutFields.style.display = 'block';
                 perPartPayoutGroup.style.display = 'none';
                 fixedCard.classList.add('border-blue-500', 'bg-blue-50');
-            } else if (selectedType.value === 'piece_rate') {
+            } else if (selectedType.value === 'per_part') {
                 payoutFields.style.display = 'none';
                 perPartPayoutGroup.style.display = 'block';
                 pieceCard.classList.add('border-blue-500', 'bg-blue-50');
-            } else {
-                payoutFields.style.display = 'none';
-                perPartPayoutGroup.style.display = 'none';
             }
         }
     }
@@ -188,54 +324,94 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     updatePayoutDisplay();
-});
-
-function closeAddTaskModal() {
-    const modal = document.getElementById('add-task-modal');
-    const form = document.getElementById('addTaskForm');
     
-    if (form) {
-        form.reset();
-        const payoutFields = document.getElementById('payout-fields');
-        const perPartPayoutGroup = document.getElementById('per-part-payout-group');
-        if (payoutFields) payoutFields.style.display = 'none';
-        if (perPartPayoutGroup) perPartPayoutGroup.style.display = 'none';
-    }
-    
-    if (modal) {
-        modal.close();
-    }
-}
-</script>
-
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const paymentTypeRadios = document.querySelectorAll('input[name="payment_type"]');
-    const payoutFields = document.getElementById('payout-fields');
-    const perPartPayoutGroup = document.getElementById('per-part-payout-group');
-    
-    function updatePayoutDisplay() {
-        const selectedType = document.querySelector('input[name="payment_type"]:checked');
-        if (selectedType) {
-            if (selectedType.value === 'fixed') {
-                payoutFields.style.display = 'block';
-                perPartPayoutGroup.style.display = 'none';
-            } else if (selectedType.value === 'piece_rate') {
-                payoutFields.style.display = 'none';
-                perPartPayoutGroup.style.display = 'block';
-            } else {
-                payoutFields.style.display = 'none';
-                perPartPayoutGroup.style.display = 'none';
+    // Form submission handler
+    const addTaskForm = document.getElementById('addTaskForm');
+    if (addTaskForm) {
+        addTaskForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submit-task-btn');
+            const originalBtnText = submitBtn.innerHTML;
+            
+            const taskName = document.getElementById('task-name').value.trim();
+            const description = document.getElementById('task-description').value.trim();
+            const startDate = document.getElementById('task-start-date').value;
+            const paymentType = document.querySelector('input[name="payment_type"]:checked');
+            
+            if (!taskName) {
+                alert('Please enter a task name');
+                return;
             }
-        }
+            
+            if (!startDate) {
+                alert('Please select a start date');
+                return;
+            }
+            
+            if (!paymentType) {
+                alert('Please select a payment type');
+                return;
+            }
+            
+            const data = {
+                name: taskName,
+                description: description,
+                start_date: startDate,
+                payment_type: paymentType.value
+            };
+            
+            if (paymentType.value === 'per_day') {
+                const payout = document.getElementById('per-day-payout').value;
+                const currency = document.getElementById('per-day-currency').value;
+                
+                if (!payout || !currency) {
+                    alert('Please enter daily payout amount and select currency');
+                    return;
+                }
+                
+                data.per_day_payout = parseFloat(payout);
+                data.per_day_currency = currency;
+            } else if (paymentType.value === 'per_part') {
+                const payout = document.getElementById('per-part-payout').value;
+                const currency = document.getElementById('per-part-currency').value;
+                
+                if (!payout || !currency) {
+                    alert('Please enter per part payout amount and select currency');
+                    return;
+                }
+                
+                data.per_part_payout = parseFloat(payout);
+                data.per_part_currency = currency;
+            }
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="loading loading-spinner loading-sm"></span> Creating...';
+            
+            fetch('/api/task', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => {
+                        throw new Error(err.error || 'Failed to create task');
+                    });
+                }
+                return response.json();
+            })
+            .then(result => {
+                closeAddTaskModal();
+                window.location.reload();
+            })
+            .catch(error => {
+                alert(error.message || 'Failed to create task. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+            });
+        });
     }
-    
-    paymentTypeRadios.forEach(radio => {
-        radio.addEventListener('change', updatePayoutDisplay);
-    });
-    
-    updatePayoutDisplay();
 });
 
 function closeAddTaskModal() {
@@ -244,10 +420,20 @@ function closeAddTaskModal() {
     
     if (form) {
         form.reset();
+        selectedDateValue = null;
+        document.getElementById('selected-date-display').textContent = 'Click to select start date';
+        document.getElementById('selected-date-display').classList.remove('text-gray-900');
+        document.getElementById('selected-date-display').classList.add('text-gray-500');
+        
         const payoutFields = document.getElementById('payout-fields');
         const perPartPayoutGroup = document.getElementById('per-part-payout-group');
         if (payoutFields) payoutFields.style.display = 'none';
         if (perPartPayoutGroup) perPartPayoutGroup.style.display = 'none';
+        
+        const fixedCard = document.getElementById('fixed-card');
+        const pieceCard = document.getElementById('piece-card');
+        fixedCard.classList.remove('border-blue-500', 'bg-blue-50');
+        pieceCard.classList.remove('border-blue-500', 'bg-blue-50');
     }
     
     if (modal) {

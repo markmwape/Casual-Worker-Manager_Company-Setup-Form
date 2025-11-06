@@ -12,7 +12,7 @@
         
         <form id="addTaskForm">
             <!-- Task Name -->
-            <div class="form-control mb-6">
+            <div class="form-control mb-5">
                 <label class="label">
                     <span class="label-text font-semibold text-gray-700">Task Name <span class="text-red-500">*</span></span>
                 </label>
@@ -20,7 +20,7 @@
             </div>
 
             <!-- Description -->
-            <div class="form-control mb-6">
+            <div class="form-control mb-5">
                 <label class="label">
                     <span class="label-text font-semibold text-gray-700">Description</span>
                 </label>
@@ -32,14 +32,12 @@
                 <label class="label">
                     <span class="label-text font-semibold text-gray-700">Start Date <span class="text-red-500">*</span></span>
                 </label>
-                <div class="relative">
-                    <input type="text" id="task-start-date-display" placeholder="Click to select start date" class="input input-bordered w-full focus:input-primary cursor-pointer pr-10" readonly onclick="openDatePickerModal()" />
-                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                        </svg>
-                    </div>
-                </div>
+                <button type="button" onclick="openDatePickerModal()" class="input input-bordered w-full focus:input-primary text-left flex items-center justify-between hover:border-blue-400">
+                    <span id="selected-date-display" class="text-gray-500">Click to select start date</span>
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                </button>
                 <input type="hidden" name="start_date" id="task-start-date" required />
             </div>
 
@@ -84,7 +82,7 @@
 
             <!-- Daily Payment Fields -->
             <div id="payout-fields">
-                <div class="card bg-blue-50 border border-blue-200 p-6 mb-6 rounded-xl">
+                <div class="card bg-blue-50 border border-blue-200 p-4 mb-6">
                     <div class="form-control mb-4">
                         <label class="label">
                             <span class="label-text font-semibold text-gray-700">Daily Payout Amount <span class="text-red-500">*</span></span>
@@ -105,7 +103,7 @@
                         </div>
                         <div id="daily-amount-error" class="text-red-500 text-sm mt-1" style="display:none;"></div>
                     </div>
-                    <div class="text-xs text-blue-700 bg-blue-100 p-3 rounded-lg">
+                    <div class="text-xs text-blue-700 bg-blue-100 p-2 rounded">
                         <strong>ℹ️ Tip:</strong> This is the amount each worker will earn per day for this task
                     </div>
                 </div>
@@ -113,7 +111,7 @@
 
             <!-- Piece Rate Fields -->
             <div id="per-part-payout-group">
-                <div class="card bg-green-50 border border-green-200 p-6 mb-6 rounded-xl">
+                <div class="card bg-green-50 border border-green-200 p-4 mb-6">
                     <div class="form-control mb-4">
                         <label class="label">
                             <span class="label-text font-semibold text-gray-700">Payout per Unit/Part <span class="text-red-500">*</span></span>
@@ -134,7 +132,7 @@
                         </div>
                         <div id="per-part-amount-error" class="text-red-500 text-sm mt-1" style="display:none;"></div>
                     </div>
-                    <div class="text-xs text-green-700 bg-green-100 p-3 rounded-lg">
+                    <div class="text-xs text-green-700 bg-green-100 p-2 rounded">
                         <strong>ℹ️ Tip:</strong> Workers earn this amount for each unit/part they complete
                     </div>
                 </div>
@@ -305,9 +303,9 @@ function confirmDateSelection() {
             month: 'long', 
             day: 'numeric' 
         });
-        document.getElementById('task-start-date-display').textContent = displayDate;
-        document.getElementById('task-start-date-display').classList.remove('text-gray-500');
-        document.getElementById('task-start-date-display').classList.add('text-gray-900');
+        document.getElementById('selected-date-display').textContent = displayDate;
+        document.getElementById('selected-date-display').classList.remove('text-gray-500');
+        document.getElementById('selected-date-display').classList.add('text-gray-900');
         closeDatePickerModal();
     } else {
         alert('Please select a date');
@@ -358,10 +356,9 @@ function closeAddTaskModal() {
     if (form) {
         form.reset();
         selectedDateValue = null;
-        const displayInput = document.getElementById('task-start-date-display');
-        displayInput.value = 'Click to select start date';
-        displayInput.classList.remove('text-gray-900');
-        displayInput.classList.add('text-gray-500');
+        document.getElementById('selected-date-display').textContent = 'Click to select start date';
+        document.getElementById('selected-date-display').classList.remove('text-gray-900');
+        document.getElementById('selected-date-display').classList.add('text-gray-500');
         
         // Reset error messages
         document.getElementById('daily-amount-error').style.display = 'none';
@@ -488,13 +485,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 window.location.reload();
             })
             .catch(error => {
-                console.error('Error creating task:', error);
                 alert(error.message || 'Failed to create task. Please try again.');
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalBtnText;
-            })
-            .finally(() => {
-                // Ensure button is always re-enabled
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalBtnText;
             });

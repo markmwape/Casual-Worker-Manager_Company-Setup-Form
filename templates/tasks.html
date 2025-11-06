@@ -433,6 +433,25 @@
                                             {% if task.status == 'Pending' %}
                                             <div class="status-badge pending bg-yellow-100 border-2 border-yellow-200 text-yellow-800 font-semibold px-4 py-3 rounded-xl hover:bg-yellow-200 transition-colors" onclick="toggleStatusDropdown(this)">
                                                 <div class="flex items-center justify-between">
+                                    <div class="mb-6 p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-xl border border-green-200">
+                                        <div class="flex items-center text-green-800 font-semibold">
+                                            <div class="flex-shrink-0 w-10 h-10 bg-green-200 rounded-lg flex items-center justify-center mr-3">
+                                                <i class="fas fa-calendar-day text-green-600"></i>
+                                            </div>
+                                            <div>
+                                                <div class="text-sm font-medium text-green-900">Daily payout per worker</div>
+                                                <div class="text-lg font-bold text-green-800">{{ task.per_day_payout }} {{ task.per_day_currency or '' }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+
+                                    <!-- Status Section -->
+                                    <div class="mb-6">
+                                        <div class="status-dropdown" onclick="event.stopPropagation()">
+                                            {% if task.status == 'Pending' %}
+                                            <div class="status-badge pending bg-yellow-100 border-2 border-yellow-200 text-yellow-800 font-semibold px-4 py-3 rounded-xl hover:bg-yellow-200 transition-colors" onclick="toggleStatusDropdown(this)">
+                                                <div class="flex items-center justify-between">
                                                     <div class="flex items-center">
                                                         <span class="status-indicator pending w-3 h-3 bg-yellow-500 rounded-full mr-3"></span>
                                                         <span class="text-sm font-medium">Pending</span>
@@ -440,25 +459,6 @@
                                                     <i class="fas fa-chevron-down status-chevron ml-3 text-xs transition-transform duration-200"></i>
                                                 </div>
                                             </div>
-                                            {% elif task.status == 'In Progress' %}
-                                            <div class="status-badge in-progress bg-blue-100 border-2 border-blue-200 text-blue-800 font-semibold px-4 py-3 rounded-xl hover:bg-blue-200 transition-colors" onclick="toggleStatusDropdown(this)">
-                                                <div class="flex items-center justify-between">
-                                                    <div class="flex items-center">
-                                                        <span class="status-indicator in-progress w-3 h-3 bg-blue-500 rounded-full mr-3 animate-pulse"></span>
-                                                        <span class="text-sm font-medium">In Progress</span>
-                                                    </div>
-                                                    <i class="fas fa-chevron-down status-chevron ml-3 text-xs transition-transform duration-200"></i>
-                                                </div>
-                                            </div>
-                                            {% else %}
-                                            <div class="status-badge completed bg-green-100 border-2 border-green-200 text-green-800 font-semibold px-4 py-3 rounded-xl hover:bg-green-200 transition-colors" onclick="toggleStatusDropdown(this)">
-                                                <div class="flex items-center justify-between">
-                                                    <div class="flex items-center">
-                                                        <span class="status-indicator completed w-3 h-3 bg-green-500 rounded-full mr-3"></span>
-                                                        <span class="text-sm font-medium">Completed</span>
-                                                    </div>
-                                                    <i class="fas fa-chevron-down status-chevron ml-3 text-xs transition-transform duration-200"></i>
-                                                </div>
                                             </div>
                                             {% endif %}
                                             
@@ -706,28 +706,14 @@
             const startDateInput = document.getElementById('edit-task-start-date');
             startDateInput.value = startDate;
             
-            // Reset all cards first
-            const fixedCard = document.getElementById('edit-fixed-card');
-            const pieceCard = document.getElementById('edit-piece-card');
-            fixedCard.classList.remove('border-blue-500', 'bg-blue-50', 'border-blue-600', 'card-selected');
-            pieceCard.classList.remove('border-blue-500', 'bg-blue-50', 'border-blue-600', 'card-selected');
-            const selectedIndicators = document.querySelectorAll('#edit-task-modal .selected-indicator');
-            selectedIndicators.forEach(indicator => indicator.style.display = 'none');
-            
             if (paymentType === 'per_part') {
                 document.getElementById('edit-payment-type-part').checked = true;
                 document.getElementById('edit-per-part-payout-group').style.display = '';
                 document.getElementById('edit-per-day-payout-group').style.display = 'none';
-                pieceCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
-                const pieceIndicator = pieceCard.querySelector('.selected-indicator');
-                if (pieceIndicator) pieceIndicator.style.display = 'block';
             } else {
                 document.getElementById('edit-payment-type-day').checked = true;
                 document.getElementById('edit-per-part-payout-group').style.display = 'none';
                 document.getElementById('edit-per-day-payout-group').style.display = '';
-                fixedCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
-                const dailyIndicator = fixedCard.querySelector('.selected-indicator');
-                if (dailyIndicator) dailyIndicator.style.display = 'block';
             }
             document.getElementById('edit-per-part-payout').value = perPartPayout || '';
             document.getElementById('edit-per-part-currency').value = perPartCurrency || '';
@@ -761,31 +747,15 @@
             const perPartGroup = document.getElementById('edit-per-part-payout-group');
             const perDayGroup = document.getElementById('edit-per-day-payout-group');
             const radios = document.querySelectorAll('input[name="edit_payment_type"]');
-            const fixedCard = document.getElementById('edit-fixed-card');
-            const pieceCard = document.getElementById('edit-piece-card');
             
             radios.forEach(radio => {
                 radio.addEventListener('change', function() {
-                    // Reset all cards
-                    fixedCard.classList.remove('border-blue-500', 'bg-blue-50', 'border-blue-600', 'card-selected');
-                    pieceCard.classList.remove('border-blue-500', 'bg-blue-50', 'border-blue-600', 'card-selected');
-                    
-                    // Hide all selected indicators
-                    const selectedIndicators = document.querySelectorAll('#edit-task-modal .selected-indicator');
-                    selectedIndicators.forEach(indicator => indicator.style.display = 'none');
-                    
                     if (this.value === 'per_part') {
                         perPartGroup.style.display = '';
                         perDayGroup.style.display = 'none';
-                        pieceCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
-                        const pieceIndicator = pieceCard.querySelector('.selected-indicator');
-                        if (pieceIndicator) pieceIndicator.style.display = 'block';
                     } else {
                         perPartGroup.style.display = 'none';
                         perDayGroup.style.display = '';
-                        fixedCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
-                        const dailyIndicator = fixedCard.querySelector('.selected-indicator');
-                        if (dailyIndicator) dailyIndicator.style.display = 'block';
                     }
                     updateEditPayoutLabels(this.value);
                 });

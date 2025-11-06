@@ -69,7 +69,7 @@
                     </label>
                 </div>
             </div>
-            <div id="payout-fields" class="visible">
+            <div id="payout-fields" class="visible" style="display: block;">
                 <div class="card bg-blue-50 border border-blue-200 p-4 mb-6">
                     <div class="form-control mb-4">
                         <label class="label">
@@ -207,11 +207,19 @@ style.textContent = `
     }
     
     /* Payment type sections - use absolute control */
+    #payout-fields {
+        display: block !important;
+    }
+    
     #payout-fields.hidden {
         display: none !important;
         visibility: hidden !important;
         opacity: 0 !important;
         pointer-events: none !important;
+    }
+    
+    #per-part-payout-group {
+        display: none !important;
     }
     
     #per-part-payout-group.hidden {

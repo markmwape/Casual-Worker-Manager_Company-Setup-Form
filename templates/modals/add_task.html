@@ -69,7 +69,7 @@
                     </label>
                 </div>
             </div>
-            <div id="payout-fields">
+            <div id="payout-fields" class="visible">
                 <div class="card bg-blue-50 border border-blue-200 p-4 mb-6">
                     <div class="form-control mb-4">
                         <label class="label">
@@ -145,14 +145,29 @@
         <h3 class="font-bold text-lg mb-4">Select Start Date</h3>
         <div id="add-task-calendar-container" class="bg-white rounded-lg p-4 border border-gray-200">
             <!-- Calendar Header -->
-            <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center justify-between mb-4 gap-2">
                 <button type="button" onclick="previousMonth()" class="btn btn-sm btn-circle btn-ghost">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                     </svg>
                 </button>
-                <div class="text-center">
-                    <div class="font-bold text-lg" id="add-task-calendar-month-year"></div>
+                <div class="flex-1 flex items-center gap-2 justify-center">
+                    <select id="add-task-month-select" onchange="selectMonthYear()" class="select select-sm select-bordered w-24">
+                        <option value="0">January</option>
+                        <option value="1">February</option>
+                        <option value="2">March</option>
+                        <option value="3">April</option>
+                        <option value="4">May</option>
+                        <option value="5">June</option>
+                        <option value="6">July</option>
+                        <option value="7">August</option>
+                        <option value="8">September</option>
+                        <option value="9">October</option>
+                        <option value="10">November</option>
+                        <option value="11">December</option>
+                    </select>
+                    <select id="add-task-year-select" onchange="selectMonthYear()" class="select select-sm select-bordered w-20">
+                    </select>
                 </div>
                 <button type="button" onclick="nextMonth()" class="btn btn-sm btn-circle btn-ghost">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -184,57 +199,40 @@
 </div>
 
 <script>
-// Override any potential CSS conflicts for the date picker modal
+// Add CSS for proper payment type control
 const style = document.createElement('style');
 style.textContent = `
     #add-task-date-picker-container {
         z-index: 9999 !important;
     }
-    #add-task-date-picker-container button:not(.btn-sm):not(.btn-circle) {
-        pointer-events: auto;
-    }
     
-    /* CRITICAL: Ensure payout sections are properly controlled */
-    #payout-fields {
-        transition: all 0.3s ease;
-    }
-    #payout-fields:not(:visible) {
+    /* Payment type sections - use absolute control */
+    #payout-fields.hidden {
         display: none !important;
         visibility: hidden !important;
         opacity: 0 !important;
-        height: 0 !important;
-        padding: 0 !important;
-        margin: 0 !important;
+        pointer-events: none !important;
     }
     
-    #per-part-payout-group {
-        transition: all 0.3s ease;
-    }
-    #per-part-payout-group:not(:visible) {
+    #per-part-payout-group.hidden {
         display: none !important;
         visibility: hidden !important;
         opacity: 0 !important;
-        height: 0 !important;
-        padding: 0 !important;
-        margin: 0 !important;
+        pointer-events: none !important;
     }
     
-    /* Payment type card transitions */
-    #fixed-card, #piece-card {
-        transition: all 0.3s ease;
+    #payout-fields.visible {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
     }
     
-    /* Ensure sections stay hidden when display is none */
-    #payout-fields[style*="display: none"] {
-        display: none !important;
-        visibility: hidden !important;
-        opacity: 0 !important;
-    }
-    
-    #per-part-payout-group[style*="display: none"] {
-        display: none !important;
-        visibility: hidden !important;
-        opacity: 0 !important;
+    #per-part-payout-group.visible {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
     }
 `;
 document.head.appendChild(style);
@@ -258,25 +256,6 @@ function openDatePickerModal() {
         }
     } catch (error) {
         console.error('Error opening date picker modal:', error);
-        // Fallback to native date input
-        const nativeDateInput = document.createElement('input');
-        nativeDateInput.type = 'date';
-        nativeDateInput.min = new Date().toISOString().split('T')[0];
-        nativeDateInput.onchange = function() {
-            if (this.value) {
-                selectedDateValue = this.value;
-                const displayDate = new Date(this.value + 'T00:00:00').toLocaleDateString('en-US', { 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                });
-                document.getElementById('selected-date-display').textContent = displayDate;
-                document.getElementById('selected-date-display').classList.remove('text-gray-500');
-                document.getElementById('selected-date-display').classList.add('text-gray-900');
-                document.getElementById('task-start-date').value = this.value;
-            }
-        };
-        nativeDateInput.click();
     }
 }
 
@@ -296,12 +275,26 @@ function renderCalendar() {
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
         
-        // Update header
-        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
-                           'July', 'August', 'September', 'October', 'November', 'December'];
-        const monthYearElement = document.getElementById('add-task-calendar-month-year');
-        if (monthYearElement) {
-            monthYearElement.textContent = `${monthNames[month]} ${year}`;
+        // Update month/year selectors
+        const monthSelect = document.getElementById('add-task-month-select');
+        const yearSelect = document.getElementById('add-task-year-select');
+        
+        if (monthSelect) {
+            monthSelect.value = month;
+        }
+        
+        if (yearSelect) {
+            // Populate year select if empty
+            if (yearSelect.options.length === 0) {
+                const currentYear = new Date().getFullYear();
+                for (let y = currentYear - 1; y <= currentYear + 5; y++) {
+                    const option = document.createElement('option');
+                    option.value = y;
+                    option.textContent = y;
+                    yearSelect.appendChild(option);
+                }
+            }
+            yearSelect.value = year;
         }
         
         // Get first day of month and number of days
@@ -331,27 +324,35 @@ function renderCalendar() {
             const dateCell = document.createElement('button');
             dateCell.type = 'button';
             dateCell.textContent = day;
-            dateCell.className = 'p-2 rounded hover:bg-blue-100 text-center transition';
+            dateCell.className = 'p-2 rounded text-center transition text-sm font-medium';
             
+            // Create date at midnight UTC to avoid timezone issues
             const cellDate = new Date(year, month, day);
             cellDate.setHours(0, 0, 0, 0);
             
             // Disable past dates
             if (cellDate < today) {
-                dateCell.className += ' text-gray-300 cursor-not-allowed';
+                dateCell.className += ' text-gray-300 cursor-not-allowed bg-gray-50';
                 dateCell.disabled = true;
             } else {
-                dateCell.className += ' hover:bg-blue-100 cursor-pointer';
-                dateCell.onclick = () => selectDate(cellDate);
+                dateCell.className += ' hover:bg-blue-100 cursor-pointer text-gray-900';
+                dateCell.onclick = (e) => {
+                    e.preventDefault();
+                    selectDate(cellDate);
+                };
                 
                 // Highlight today
                 if (cellDate.getTime() === today.getTime()) {
-                    dateCell.className += ' font-bold border-2 border-blue-500';
+                    dateCell.className += ' font-bold border-2 border-blue-500 bg-blue-50';
                 }
                 
                 // Highlight selected date
-                if (selectedDateValue && cellDate.getTime() === new Date(selectedDateValue).getTime()) {
-                    dateCell.className += ' bg-blue-500 text-white font-bold';
+                if (selectedDateValue) {
+                    const selectedDate = new Date(selectedDateValue);
+                    selectedDate.setHours(0, 0, 0, 0);
+                    if (cellDate.getTime() === selectedDate.getTime()) {
+                        dateCell.className = 'p-2 rounded text-center transition text-sm font-bold bg-blue-500 text-white';
+                    }
                 }
             }
             
@@ -364,10 +365,35 @@ function renderCalendar() {
 
 function selectDate(date) {
     try {
-        selectedDateValue = date.toISOString().split('T')[0];
+        // Format date as YYYY-MM-DD to avoid timezone issues
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        selectedDateValue = `${year}-${month}-${day}`;
+        console.log('Date selected:', selectedDateValue);
         renderCalendar(); // Re-render to show selection
     } catch (error) {
         console.error('Error selecting date:', error);
+    }
+}
+
+function selectMonthYear() {
+    try {
+        const monthSelect = document.getElementById('add-task-month-select');
+        const yearSelect = document.getElementById('add-task-year-select');
+        
+        if (monthSelect && yearSelect) {
+            const newMonth = parseInt(monthSelect.value);
+            const newYear = parseInt(yearSelect.value);
+            
+            currentDate.setFullYear(newYear);
+            currentDate.setMonth(newMonth);
+            currentDate.setDate(1);
+            
+            renderCalendar();
+        }
+    } catch (error) {
+        console.error('Error selecting month/year:', error);
     }
 }
 
@@ -392,7 +418,8 @@ function nextMonth() {
 function confirmDateSelection() {
     if (selectedDateValue) {
         document.getElementById('task-start-date').value = selectedDateValue;
-        const displayDate = new Date(selectedDateValue + 'T00:00:00').toLocaleDateString('en-US', { 
+        const dateObj = new Date(selectedDateValue + 'T00:00:00');
+        const displayDate = dateObj.toLocaleDateString('en-US', { 
             year: 'numeric', 
             month: 'long', 
             day: 'numeric' 
@@ -407,69 +434,65 @@ function confirmDateSelection() {
 }
 
 function updatePayoutDisplay() {
-    console.log('updatePayoutDisplay called'); // Debug log
-    const selectedType = document.querySelector('input[name="payment_type"]:checked');
-    console.log('Selected payment type:', selectedType ? selectedType.value : 'none'); // Debug log
-    
-    const fixedCard = document.getElementById('fixed-card');
-    const pieceCard = document.getElementById('piece-card');
-    const payoutFields = document.getElementById('payout-fields');
-    const perPartPayoutGroup = document.getElementById('per-part-payout-group');
-    
-    if (!fixedCard || !pieceCard || !payoutFields || !perPartPayoutGroup) {
-        console.error('One or more required elements not found');
-        return;
-    }
-    
-    // Reset all cards
-    fixedCard.classList.remove('border-blue-500', 'bg-blue-50', 'border-blue-600', 'card-selected');
-    pieceCard.classList.remove('border-blue-500', 'bg-blue-50', 'border-blue-600', 'card-selected');
-    fixedCard.classList.add('border-gray-200');
-    pieceCard.classList.add('border-gray-200');
-    
-    // Hide all selected indicators
-    const selectedIndicators = document.querySelectorAll('.selected-indicator');
-    selectedIndicators.forEach(indicator => {
-        indicator.style.display = 'none !important';
-    });
-    
-    // Force hide both sections first
-    payoutFields.style.display = 'none !important';
-    perPartPayoutGroup.style.display = 'none !important';
-    
-    if (selectedType) {
-        if (selectedType.value === 'per_day') {
-            console.log('Showing daily payout fields'); // Debug log
-            // Show daily section
-            payoutFields.style.display = 'block !important';
-            // Make sure per-part is hidden
-            perPartPayoutGroup.style.display = 'none !important';
-            // Update card styling
-            fixedCard.classList.remove('border-gray-200');
-            fixedCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
-            const dailyIndicator = fixedCard.querySelector('.selected-indicator');
-            if (dailyIndicator) dailyIndicator.style.display = 'block !important';
-        } else if (selectedType.value === 'per_part') {
-            console.log('Showing per-part payout fields'); // Debug log
-            // Hide daily section
-            payoutFields.style.display = 'none !important';
-            // Show per-part section
-            perPartPayoutGroup.style.display = 'block !important';
-            // Update card styling
-            pieceCard.classList.remove('border-gray-200');
-            pieceCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
-            const pieceIndicator = pieceCard.querySelector('.selected-indicator');
-            if (pieceIndicator) pieceIndicator.style.display = 'block !important';
+    try {
+        const selectedType = document.querySelector('input[name="payment_type"]:checked');
+        const payoutFields = document.getElementById('payout-fields');
+        const perPartPayoutGroup = document.getElementById('per-part-payout-group');
+        
+        if (!payoutFields || !perPartPayoutGroup) {
+            console.error('Payout elements not found');
+            return;
         }
-    } else {
-        console.log('No payment type selected, defaulting to daily'); // Debug log
-        // Default: show per_day fields
-        payoutFields.style.display = 'block !important';
-        perPartPayoutGroup.style.display = 'none !important';
-        fixedCard.classList.remove('border-gray-200');
-        fixedCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
-        const dailyIndicator = fixedCard.querySelector('.selected-indicator');
-        if (dailyIndicator) dailyIndicator.style.display = 'block !important';
+        
+        // Reset both sections with classes
+        payoutFields.classList.remove('visible');
+        payoutFields.classList.add('hidden');
+        perPartPayoutGroup.classList.remove('visible');
+        perPartPayoutGroup.classList.add('hidden');
+        
+        // Update card selection visuals
+        const fixedCard = document.getElementById('fixed-card');
+        const pieceCard = document.getElementById('piece-card');
+        
+        if (fixedCard) {
+            fixedCard.classList.remove('border-blue-500', 'bg-blue-50', 'card-selected');
+            fixedCard.classList.add('border-gray-200');
+            const indicator = fixedCard.querySelector('.selected-indicator');
+            if (indicator) indicator.style.display = 'none';
+        }
+        
+        if (pieceCard) {
+            pieceCard.classList.remove('border-blue-500', 'bg-blue-50', 'card-selected');
+            pieceCard.classList.add('border-gray-200');
+            const indicator = pieceCard.querySelector('.selected-indicator');
+            if (indicator) indicator.style.display = 'none';
+        }
+        
+        // Show appropriate section based on selection
+        if (selectedType && selectedType.value === 'per_part') {
+            perPartPayoutGroup.classList.remove('hidden');
+            perPartPayoutGroup.classList.add('visible');
+            
+            if (pieceCard) {
+                pieceCard.classList.remove('border-gray-200');
+                pieceCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
+                const indicator = pieceCard.querySelector('.selected-indicator');
+                if (indicator) indicator.style.display = 'block';
+            }
+        } else {
+            // Default to per_day
+            payoutFields.classList.remove('hidden');
+            payoutFields.classList.add('visible');
+            
+            if (fixedCard) {
+                fixedCard.classList.remove('border-gray-200');
+                fixedCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
+                const indicator = fixedCard.querySelector('.selected-indicator');
+                if (indicator) indicator.style.display = 'block';
+            }
+        }
+    } catch (error) {
+        console.error('Error in updatePayoutDisplay:', error);
     }
 }
 
@@ -516,48 +539,35 @@ function openAddTaskModal() {
             perDayRadio.checked = true;
         }
         
-        // Initialize display - ensure per_day is shown by default
-        setTimeout(() => {
-            console.log('Initializing payout display on modal open');
-            updatePayoutDisplay();
-        }, 50);
+        // Initialize display
+        updatePayoutDisplay();
     }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Check if required elements exist
-    const grid = document.getElementById('add-task-calendar-grid');
-    const monthYear = document.getElementById('add-task-calendar-month-year');
-    
-    if (!grid || !monthYear) {
-        console.error('Date picker elements not found:', {
-            grid: !!grid,
-            monthYear: !!monthYear
-        });
+    // Initialize year selector for date picker
+    const yearSelect = document.getElementById('add-task-year-select');
+    if (yearSelect && yearSelect.options.length === 0) {
+        const currentYear = new Date().getFullYear();
+        for (let y = currentYear - 1; y <= currentYear + 5; y++) {
+            const option = document.createElement('option');
+            option.value = y;
+            option.textContent = y;
+            yearSelect.appendChild(option);
+        }
     }
     
+    // Add event listeners to payment type radios
     const paymentTypeRadios = document.querySelectorAll('input[name="payment_type"]');
-    console.log('Found payment type radios:', paymentTypeRadios.length); // Debug log
-    
     paymentTypeRadios.forEach(radio => {
         radio.addEventListener('change', function() {
-            console.log('Payment type changed to:', this.value); // Debug log
-            // Call with slight delay to ensure DOM is updated
-            setTimeout(() => {
-                updatePayoutDisplay();
-            }, 10);
+            console.log('Payment type changed to:', this.value);
+            updatePayoutDisplay();
         });
     });
     
-    // Initialize display with default state - call multiple times to ensure it sticks
-    console.log('Initializing default payout display'); // Debug log
+    // Initialize payout display
     updatePayoutDisplay();
-    setTimeout(() => {
-        updatePayoutDisplay();
-    }, 50);
-    setTimeout(() => {
-        updatePayoutDisplay();
-    }, 100);
     
     // Add click handler to date picker overlay to close modal
     const datePickerContainer = document.getElementById('add-task-date-picker-container');

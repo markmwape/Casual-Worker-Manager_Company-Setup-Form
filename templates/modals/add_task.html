@@ -81,7 +81,7 @@
             </div>
 
             <!-- Daily Payment Fields -->
-            <div id="payout-fields">
+            <div id="payout-fields" style="display:block;">
                 <div class="card bg-blue-50 border border-blue-200 p-4 mb-6">
                     <div class="form-control mb-4">
                         <label class="label">
@@ -110,7 +110,7 @@
             </div>
 
             <!-- Piece Rate Fields -->
-            <div id="per-part-payout-group">
+            <div id="per-part-payout-group" style="display:none;">
                 <div class="card bg-green-50 border border-green-200 p-4 mb-6">
                     <div class="form-control mb-4">
                         <label class="label">
@@ -323,6 +323,8 @@ function updatePayoutDisplay() {
     // Reset all cards
     fixedCard.classList.remove('border-blue-500', 'bg-blue-50', 'border-blue-600', 'card-selected');
     pieceCard.classList.remove('border-blue-500', 'bg-blue-50', 'border-blue-600', 'card-selected');
+    fixedCard.classList.add('border-gray-200');
+    pieceCard.classList.add('border-gray-200');
     
     // Hide all selected indicators
     const selectedIndicators = document.querySelectorAll('.selected-indicator');
@@ -332,12 +334,14 @@ function updatePayoutDisplay() {
         if (selectedType.value === 'per_day') {
             payoutFields.style.display = 'block';
             perPartPayoutGroup.style.display = 'none';
+            fixedCard.classList.remove('border-gray-200');
             fixedCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
             const dailyIndicator = fixedCard.querySelector('.selected-indicator');
             if (dailyIndicator) dailyIndicator.style.display = 'block';
         } else if (selectedType.value === 'per_part') {
             payoutFields.style.display = 'none';
             perPartPayoutGroup.style.display = 'block';
+            pieceCard.classList.remove('border-gray-200');
             pieceCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
             const pieceIndicator = pieceCard.querySelector('.selected-indicator');
             if (pieceIndicator) pieceIndicator.style.display = 'block';
@@ -346,6 +350,10 @@ function updatePayoutDisplay() {
         // Default: show per_day fields
         payoutFields.style.display = 'block';
         perPartPayoutGroup.style.display = 'none';
+        fixedCard.classList.remove('border-gray-200');
+        fixedCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
+        const dailyIndicator = fixedCard.querySelector('.selected-indicator');
+        if (dailyIndicator) dailyIndicator.style.display = 'block';
     }
 }
 
@@ -401,8 +409,15 @@ document.addEventListener('DOMContentLoaded', function() {
     if (addTaskForm) {
         addTaskForm.addEventListener('submit', function(e) {
             e.preventDefault();
+            e.stopPropagation();
             
             const submitBtn = document.getElementById('submit-task-btn');
+            
+            // Prevent double submission
+            if (submitBtn.disabled) {
+                return false;
+            }
+            
             const originalBtnText = submitBtn.innerHTML;
             
             const taskName = document.getElementById('task-name').value.trim();
@@ -417,18 +432,18 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (!taskName) {
                 alert('Please enter a task name');
-                return;
+                return false;
             }
             
             if (!startDate) {
                 document.getElementById('task-date-error').innerHTML = '<span class="error-text">Please select a start date</span>';
                 document.getElementById('task-date-error').style.display = 'block';
-                return;
+                return false;
             }
             
             if (!paymentType) {
                 alert('Please select a payment type');
-                return;
+                return false;
             }
             
             const data = {
@@ -445,7 +460,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!payout || !currency) {
                     document.getElementById('daily-amount-error').innerHTML = 'Please enter daily payout amount and select currency';
                     document.getElementById('daily-amount-error').style.display = 'block';
-                    return;
+                    return false;
                 }
                 
                 data.per_day_payout = parseFloat(payout);
@@ -457,13 +472,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!payout || !currency) {
                     document.getElementById('per-part-amount-error').innerHTML = 'Please enter per part payout amount and select currency';
                     document.getElementById('per-part-amount-error').style.display = 'block';
-                    return;
+                    return false;
                 }
                 
                 data.per_part_payout = parseFloat(payout);
                 data.per_part_currency = currency;
             }
             
+            // Disable button and show loading
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<span class="loading loading-spinner loading-sm"></span> Creating...';
             
@@ -489,6 +505,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalBtnText;
             });
+            
+            return false;
         });
     }
 });

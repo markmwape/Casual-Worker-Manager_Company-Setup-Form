@@ -706,22 +706,32 @@
             const startDateInput = document.getElementById('edit-task-start-date');
             startDateInput.value = startDate;
             
+            // Set payment type and show/hide appropriate sections
+            const fixedCard = document.getElementById('edit-fixed-card');
+            const pieceCard = document.getElementById('edit-piece-card');
+            const perDayGroup = document.getElementById('edit-per-day-payout-group');
+            const perPartGroup = document.getElementById('edit-per-part-payout-group');
+            
             if (paymentType === 'per_part') {
                 document.getElementById('edit-payment-type-part').checked = true;
-                document.getElementById('edit-per-part-payout-group').style.display = '';
-                document.getElementById('edit-per-day-payout-group').style.display = 'none';
+                perPartGroup.style.display = 'block';
+                perDayGroup.style.display = 'none';
+                pieceCard.classList.add('border-blue-500', 'bg-blue-50');
+                fixedCard.classList.remove('border-blue-500', 'bg-blue-50');
             } else {
                 document.getElementById('edit-payment-type-day').checked = true;
-                document.getElementById('edit-per-part-payout-group').style.display = 'none';
-                document.getElementById('edit-per-day-payout-group').style.display = '';
+                perPartGroup.style.display = 'none';
+                perDayGroup.style.display = 'block';
+                fixedCard.classList.add('border-blue-500', 'bg-blue-50');
+                pieceCard.classList.remove('border-blue-500', 'bg-blue-50');
             }
+            
             document.getElementById('edit-per-part-payout').value = perPartPayout || '';
             document.getElementById('edit-per-part-currency').value = perPartCurrency || '';
             document.getElementById('edit-per-day-payout').value = perDayPayout || '';
             document.getElementById('edit-per-day-currency').value = perDayCurrency || '';
             
             setupEditPaymentTypeToggle();
-            updateEditPayoutLabels(paymentType);
             
             // Open modal
             if (modal) {
@@ -735,52 +745,32 @@
                     };
                 }
             }
-            
-            setTimeout(() => {
-                if (startDateInput.datePickerInstance) {
-                    startDateInput.datePickerInstance.setValue(startDate);
-                }
-            }, 100);
         }
 
         function setupEditPaymentTypeToggle() {
             const perPartGroup = document.getElementById('edit-per-part-payout-group');
             const perDayGroup = document.getElementById('edit-per-day-payout-group');
+            const fixedCard = document.getElementById('edit-fixed-card');
+            const pieceCard = document.getElementById('edit-piece-card');
             const radios = document.querySelectorAll('input[name="edit_payment_type"]');
             
             radios.forEach(radio => {
                 radio.addEventListener('change', function() {
+                    // Reset card styles
+                    fixedCard.classList.remove('border-blue-500', 'bg-blue-50');
+                    pieceCard.classList.remove('border-blue-500', 'bg-blue-50');
+                    
                     if (this.value === 'per_part') {
-                        perPartGroup.style.display = '';
+                        perPartGroup.style.display = 'block';
                         perDayGroup.style.display = 'none';
+                        pieceCard.classList.add('border-blue-500', 'bg-blue-50');
                     } else {
                         perPartGroup.style.display = 'none';
-                        perDayGroup.style.display = '';
+                        perDayGroup.style.display = 'block';
+                        fixedCard.classList.add('border-blue-500', 'bg-blue-50');
                     }
-                    updateEditPayoutLabels(this.value);
                 });
             });
-        }
-
-        function updateEditPayoutLabels(paymentType) {
-            const payoutLabel = document.getElementById('edit-payout-label');
-            const payoutInput = document.getElementById('edit-per-day-payout');
-            
-            if (paymentType === 'per_day') {
-                if (payoutLabel) {
-                    payoutLabel.innerHTML = 'Daily payout per worker <span class="text-xs text-gray-400">(e.g., 25$ , 60 Kwacha)</span>';
-                }
-                if (payoutInput) {
-                    payoutInput.placeholder = 'Enter daily payout per worker';
-                }
-            } else if (paymentType === 'per_part') {
-                if (payoutLabel) {
-                    payoutLabel.innerHTML = 'Payout per part <span class="text-xs text-gray-400">(e.g., 25$ , 60 Kwacha)</span>';
-                }
-                if (payoutInput) {
-                    payoutInput.placeholder = 'Enter payout per part';
-                    }
-            }
         }
 
         function closeEditTaskModal() {

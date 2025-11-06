@@ -48,20 +48,32 @@
                 </label>
                 <div class="grid grid-cols-2 gap-4 mt-2">
                     <label class="cursor-pointer">
-                        <div class="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-400 transition flex items-center gap-3" id="fixed-card">
-                            <input type="radio" name="payment_type" value="per_day" class="radio radio-primary" required />
+                        <div class="p-4 border-2 border-blue-500 bg-blue-50 rounded-lg hover:border-blue-600 transition card-selected" id="fixed-card">
+                            <input type="radio" name="payment_type" value="per_day" class="radio radio-primary" required checked />
                             <div>
                                 <div class="font-semibold text-gray-900">Daily Rate</div>
                                 <div class="text-xs text-gray-500">Fixed daily amount</div>
                             </div>
+                            <div class="mt-2 text-blue-600 font-medium selected-indicator">
+                                <svg class="w-5 h-5 inline" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                                Selected
+                            </div>
                         </div>
                     </label>
                     <label class="cursor-pointer">
-                        <div class="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-400 transition flex items-center gap-3" id="piece-card">
+                        <div class="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-400 transition" id="piece-card">
                             <input type="radio" name="payment_type" value="per_part" class="radio radio-primary" required />
                             <div>
                                 <div class="font-semibold text-gray-900">Per Unit/Part</div>
                                 <div class="text-xs text-gray-500">Payment per item completed</div>
+                            </div>
+                            <div class="mt-2 text-blue-600 font-medium selected-indicator" style="display:none;">
+                                <svg class="w-5 h-5 inline" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                                Selected
                             </div>
                         </div>
                     </label>
@@ -69,7 +81,7 @@
             </div>
 
             <!-- Daily Payment Fields -->
-            <div id="payout-fields" style="display:none;">
+            <div id="payout-fields" style="display:block;">
                 <div class="card bg-blue-50 border border-blue-200 p-4 mb-6">
                     <div class="form-control mb-4">
                         <label class="label">
@@ -89,6 +101,7 @@
                                 <option value="NGN">NGN (₦)</option>
                             </select>
                         </div>
+                        <div id="daily-amount-error" class="text-red-500 text-sm mt-1" style="display:none;"></div>
                     </div>
                     <div class="text-xs text-blue-700 bg-blue-100 p-2 rounded">
                         <strong>ℹ️ Tip:</strong> This is the amount each worker will earn per day for this task
@@ -117,6 +130,7 @@
                                 <option value="NGN">NGN (₦)</option>
                             </select>
                         </div>
+                        <div id="per-part-amount-error" class="text-red-500 text-sm mt-1" style="display:none;"></div>
                     </div>
                     <div class="text-xs text-green-700 bg-green-100 p-2 rounded">
                         <strong>ℹ️ Tip:</strong> Workers earn this amount for each unit/part they complete
@@ -127,8 +141,8 @@
             <!-- Action Buttons -->
             <div class="modal-action justify-end gap-3 mt-8">
                 <button type="button" class="btn btn-outline" onclick="closeAddTaskModal()">Cancel</button>
-                <button type="submit" class="btn btn-primary" id="submit-task-btn">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <button type="submit" class="btn btn-primary btn-lg" id="submit-task-btn">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                     </svg>
                     Create Task
@@ -303,141 +317,43 @@ document.addEventListener('DOMContentLoaded', function() {
         const selectedType = document.querySelector('input[name="payment_type"]:checked');
         
         // Update card styling
-        fixedCard.classList.remove('border-blue-500', 'bg-blue-50');
-        pieceCard.classList.remove('border-blue-500', 'bg-blue-50');
+        const fixedCard = document.getElementById('fixed-card');
+        const pieceCard = document.getElementById('piece-card');
+        const payoutFields = document.getElementById('payout-fields');
+        const perPartPayoutGroup = document.getElementById('per-part-payout-group');
+        
+        // Reset all cards
+        fixedCard.classList.remove('border-blue-500', 'bg-blue-50', 'border-blue-600', 'card-selected');
+        pieceCard.classList.remove('border-blue-500', 'bg-blue-50', 'border-blue-600', 'card-selected');
+        
+        // Hide selected indicators
+        const selectedIndicators = document.querySelectorAll('.selected-indicator');
+        selectedIndicators.forEach(indicator => indicator.style.display = 'none');
         
         if (selectedType) {
             if (selectedType.value === 'per_day') {
                 payoutFields.style.display = 'block';
                 perPartPayoutGroup.style.display = 'none';
-                fixedCard.classList.add('border-blue-500', 'bg-blue-50');
-            } else if (selectedType.value === 'per_part') {
+                fixedCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
+                // Show selected indicator for daily rate
+                const dailyIndicator = fixedCard.querySelector('.selected-indicator');
+                if (dailyIndicator) dailyIndicator.style.display = 'block';
+            } else {
                 payoutFields.style.display = 'none';
                 perPartPayoutGroup.style.display = 'block';
-                pieceCard.classList.add('border-blue-500', 'bg-blue-50');
+                pieceCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
+                // Show selected indicator for piece rate
+                const pieceIndicator = pieceCard.querySelector('.selected-indicator');
+                if (pieceIndicator) pieceIndicator.style.display = 'block';
             }
         }
     }
-    
+
     paymentTypeRadios.forEach(radio => {
         radio.addEventListener('change', updatePayoutDisplay);
     });
-    
-    updatePayoutDisplay();
-    
-    // Form submission handler
-    const addTaskForm = document.getElementById('addTaskForm');
-    if (addTaskForm) {
-        addTaskForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const submitBtn = document.getElementById('submit-task-btn');
-            const originalBtnText = submitBtn.innerHTML;
-            
-            const taskName = document.getElementById('task-name').value.trim();
-            const description = document.getElementById('task-description').value.trim();
-            const startDate = document.getElementById('task-start-date').value;
-            const paymentType = document.querySelector('input[name="payment_type"]:checked');
-            
-            if (!taskName) {
-                alert('Please enter a task name');
-                return;
-            }
-            
-            if (!startDate) {
-                alert('Please select a start date');
-                return;
-            }
-            
-            if (!paymentType) {
-                alert('Please select a payment type');
-                return;
-            }
-            
-            const data = {
-                name: taskName,
-                description: description,
-                start_date: startDate,
-                payment_type: paymentType.value
-            };
-            
-            if (paymentType.value === 'per_day') {
-                const payout = document.getElementById('per-day-payout').value;
-                const currency = document.getElementById('per-day-currency').value;
-                
-                if (!payout || !currency) {
-                    alert('Please enter daily payout amount and select currency');
-                    return;
-                }
-                
-                data.per_day_payout = parseFloat(payout);
-                data.per_day_currency = currency;
-            } else if (paymentType.value === 'per_part') {
-                const payout = document.getElementById('per-part-payout').value;
-                const currency = document.getElementById('per-part-currency').value;
-                
-                if (!payout || !currency) {
-                    alert('Please enter per part payout amount and select currency');
-                    return;
-                }
-                
-                data.per_part_payout = parseFloat(payout);
-                data.per_part_currency = currency;
-            }
-            
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="loading loading-spinner loading-sm"></span> Creating...';
-            
-            fetch('/api/task', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            })
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(err => {
-                        throw new Error(err.error || 'Failed to create task');
-                    });
-                }
-                return response.json();
-            })
-            .then(result => {
-                closeAddTaskModal();
-                window.location.reload();
-            })
-            .catch(error => {
-                alert(error.message || 'Failed to create task. Please try again.');
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalBtnText;
-            });
-        });
-    }
-});
 
-function closeAddTaskModal() {
-    const modal = document.getElementById('add-task-modal');
-    const form = document.getElementById('addTaskForm');
-    
-    if (form) {
-        form.reset();
-        selectedDateValue = null;
-        document.getElementById('selected-date-display').textContent = 'Click to select start date';
-        document.getElementById('selected-date-display').classList.remove('text-gray-900');
-        document.getElementById('selected-date-display').classList.add('text-gray-500');
-        
-        const payoutFields = document.getElementById('payout-fields');
-        const perPartPayoutGroup = document.getElementById('per-part-payout-group');
-        if (payoutFields) payoutFields.style.display = 'none';
-        if (perPartPayoutGroup) perPartPayoutGroup.style.display = 'none';
-        
-        const fixedCard = document.getElementById('fixed-card');
-        const pieceCard = document.getElementById('piece-card');
-        fixedCard.classList.remove('border-blue-500', 'bg-blue-50');
-        pieceCard.classList.remove('border-blue-500', 'bg-blue-50');
-    }
-    
-    if (modal) {
-        modal.close();
-    }
-}
+    // Initialize display
+    updatePayoutDisplay();
+});
 </script>

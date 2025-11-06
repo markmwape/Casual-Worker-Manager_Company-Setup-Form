@@ -207,12 +207,18 @@ let currentDate = new Date();
 let selectedDateValue = null;
 
 function openDatePickerModal() {
-    document.getElementById('date-picker-modal').showModal();
-    renderCalendar();
+    const modal = document.getElementById('date-picker-modal');
+    if (modal) {
+        modal.showModal();
+        renderCalendar();
+    }
 }
 
 function closeDatePickerModal() {
-    document.getElementById('date-picker-modal').close();
+    const modal = document.getElementById('date-picker-modal');
+    if (modal) {
+        modal.close();
+    }
 }
 
 function renderCalendar() {
@@ -309,7 +315,6 @@ function confirmDateSelection() {
 function updatePayoutDisplay() {
     const selectedType = document.querySelector('input[name="payment_type"]:checked');
     
-    // Update card styling
     const fixedCard = document.getElementById('fixed-card');
     const pieceCard = document.getElementById('piece-card');
     const payoutFields = document.getElementById('payout-fields');
@@ -319,7 +324,7 @@ function updatePayoutDisplay() {
     fixedCard.classList.remove('border-blue-500', 'bg-blue-50', 'border-blue-600', 'card-selected');
     pieceCard.classList.remove('border-blue-500', 'bg-blue-50', 'border-blue-600', 'card-selected');
     
-    // Hide selected indicators
+    // Hide all selected indicators
     const selectedIndicators = document.querySelectorAll('.selected-indicator');
     selectedIndicators.forEach(indicator => indicator.style.display = 'none');
     
@@ -328,30 +333,21 @@ function updatePayoutDisplay() {
             payoutFields.style.display = 'block';
             perPartPayoutGroup.style.display = 'none';
             fixedCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
-            // Show selected indicator for daily rate
             const dailyIndicator = fixedCard.querySelector('.selected-indicator');
             if (dailyIndicator) dailyIndicator.style.display = 'block';
-        } else {
+        } else if (selectedType.value === 'per_part') {
             payoutFields.style.display = 'none';
             perPartPayoutGroup.style.display = 'block';
             pieceCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
-            // Show selected indicator for piece rate
             const pieceIndicator = pieceCard.querySelector('.selected-indicator');
             if (pieceIndicator) pieceIndicator.style.display = 'block';
         }
+    } else {
+        // Default: show per_day fields
+        payoutFields.style.display = 'block';
+        perPartPayoutGroup.style.display = 'none';
     }
 }
-
-document.addEventListener('DOMContentLoaded', function() {
-    const paymentTypeRadios = document.querySelectorAll('input[name="payment_type"]');
-    
-    paymentTypeRadios.forEach(radio => {
-        radio.addEventListener('change', updatePayoutDisplay);
-    });
-    
-    // Initialize display
-    updatePayoutDisplay();
-});
 
 function closeAddTaskModal() {
     const modal = document.getElementById('add-task-modal');
@@ -364,7 +360,13 @@ function closeAddTaskModal() {
         document.getElementById('selected-date-display').classList.remove('text-gray-900');
         document.getElementById('selected-date-display').classList.add('text-gray-500');
         
-        // Reset payout display
+        // Reset error messages
+        document.getElementById('daily-amount-error').style.display = 'none';
+        document.getElementById('per-part-amount-error').style.display = 'none';
+        document.getElementById('task-date-error').style.display = 'none';
+        
+        // Reset to default state
+        document.querySelector('input[name="payment_type"][value="per_day"]').checked = true;
         updatePayoutDisplay();
     }
     
@@ -377,8 +379,117 @@ function openAddTaskModal() {
     const modal = document.getElementById('add-task-modal');
     if (modal) {
         modal.classList.add('modal-open');
-        // Initialize display
-        updatePayoutDisplay();
+        // Initialize display - ensure per_day is shown by default
+        setTimeout(() => {
+            updatePayoutDisplay();
+        }, 50);
     }
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const paymentTypeRadios = document.querySelectorAll('input[name="payment_type"]');
+    
+    paymentTypeRadios.forEach(radio => {
+        radio.addEventListener('change', updatePayoutDisplay);
+    });
+    
+    // Initialize display
+    updatePayoutDisplay();
+    
+    // Form submission handler
+    const addTaskForm = document.getElementById('addTaskForm');
+    if (addTaskForm) {
+        addTaskForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submit-task-btn');
+            const originalBtnText = submitBtn.innerHTML;
+            
+            const taskName = document.getElementById('task-name').value.trim();
+            const description = document.getElementById('task-description').value.trim();
+            const startDate = document.getElementById('task-start-date').value;
+            const paymentType = document.querySelector('input[name="payment_type"]:checked');
+            
+            // Clear previous errors
+            document.getElementById('daily-amount-error').style.display = 'none';
+            document.getElementById('per-part-amount-error').style.display = 'none';
+            document.getElementById('task-date-error').style.display = 'none';
+            
+            if (!taskName) {
+                alert('Please enter a task name');
+                return;
+            }
+            
+            if (!startDate) {
+                document.getElementById('task-date-error').innerHTML = '<span class="error-text">Please select a start date</span>';
+                document.getElementById('task-date-error').style.display = 'block';
+                return;
+            }
+            
+            if (!paymentType) {
+                alert('Please select a payment type');
+                return;
+            }
+            
+            const data = {
+                name: taskName,
+                description: description,
+                start_date: startDate,
+                payment_type: paymentType.value
+            };
+            
+            if (paymentType.value === 'per_day') {
+                const payout = document.getElementById('per-day-payout').value;
+                const currency = document.getElementById('per-day-currency').value;
+                
+                if (!payout || !currency) {
+                    document.getElementById('daily-amount-error').innerHTML = 'Please enter daily payout amount and select currency';
+                    document.getElementById('daily-amount-error').style.display = 'block';
+                    return;
+                }
+                
+                data.per_day_payout = parseFloat(payout);
+                data.per_day_currency = currency;
+            } else if (paymentType.value === 'per_part') {
+                const payout = document.getElementById('per-part-payout').value;
+                const currency = document.getElementById('per-part-currency').value;
+                
+                if (!payout || !currency) {
+                    document.getElementById('per-part-amount-error').innerHTML = 'Please enter per part payout amount and select currency';
+                    document.getElementById('per-part-amount-error').style.display = 'block';
+                    return;
+                }
+                
+                data.per_part_payout = parseFloat(payout);
+                data.per_part_currency = currency;
+            }
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="loading loading-spinner loading-sm"></span> Creating...';
+            
+            fetch('/api/task', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => {
+                        throw new Error(err.error || 'Failed to create task');
+                    });
+                }
+                return response.json();
+            })
+            .then(result => {
+                closeAddTaskModal();
+                window.location.reload();
+            })
+            .catch(error => {
+                alert(error.message || 'Failed to create task. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+            });
+        });
+    }
+});
 </script>

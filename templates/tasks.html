@@ -125,45 +125,27 @@
         opacity: 0.6;
     }
     
-    /* Modal fixes - CRITICAL: Keep modals hidden and non-blocking by default */
-    .modal:not(dialog) {
-        pointer-events: none !important;
+    /* Modal fixes */
+    .modal {
+        pointer-events: none;
         opacity: 0;
-        visibility: hidden;
-        transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
-        display: none !important;
+        transition: opacity 0.3s ease-in-out;
+        display: none;
+    }
+    .modal.modal-open {
+        pointer-events: auto;
+        opacity: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
-        z-index: -1;
-    }
-    
-    .modal.modal-open:not(dialog) {
-        pointer-events: auto !important;
-        opacity: 1;
-        visibility: visible;
-        display: flex !important;
-        align-items: center;
-        justify-content: center;
         z-index: 9999;
         background-color: rgba(0, 0, 0, 0.6);
     }
-    
-    /* Date picker modal (dialog element) - different handling */
-    dialog.modal {
-        border: none;
-        padding: 0;
-        background: transparent;
-        max-width: none;
-        max-height: none;
-    }
-    
-    dialog.modal::backdrop {
-        background-color: rgba(0, 0, 0, 0.6);
-    }
-    
     .modal-backdrop {
         position: absolute;
         top: 0;
@@ -174,7 +156,6 @@
         cursor: pointer;
         z-index: 1;
     }
-    
     .modal-backdrop button {
         width: 100%;
         height: 100%;
@@ -183,14 +164,13 @@
         border: none;
         background: transparent;
     }
-    
     .modal-box {
         pointer-events: auto !important;
         position: relative;
         z-index: 10;
         background: white !important;
         border-radius: 1rem;
-        padding: 2rem;
+        padding: 0;
         margin: 1rem;
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         max-height: 90vh;
@@ -199,14 +179,140 @@
         max-width: 42rem;
     }
     
-    /* Ensure all form elements are interactive ONLY when modal is open */
-    .modal.modal-open .modal-box *,
-    .modal.modal-open .modal-box input,
-    .modal.modal-open .modal-box textarea,
-    .modal.modal-open .modal-box select,
-    .modal.modal-open .modal-box button,
-    .modal.modal-open .modal-box label {
+    /* Ensure all form elements are interactive */
+    .modal-box *,
+    .modal-box input,
+    .modal-box textarea,
+    .modal-box select,
+    .modal-box button,
+    .modal-box label {
         pointer-events: auto !important;
+        position: relative;
+        z-index: 1;
+    }
+    
+    /* Add task modal specific styles */
+    #add-task-modal .modal-box {
+        padding: 2rem;
+        background: white !important;
+    }
+    
+    #add-task-modal h3 {
+        color: #1f2937 !important;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+    }
+    
+    #add-task-modal .form-control {
+        margin-bottom: 1.5rem;
+    }
+    
+    #add-task-modal label {
+        color: #374151 !important;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    
+    #add-task-modal input[type="text"],
+    #add-task-modal input[type="date"],
+    #add-task-modal input[type="number"],
+    #add-task-modal textarea,
+    #add-task-modal select {
+        background-color: white !important;
+        border: 2px solid #d1d5db !important;
+        border-radius: 0.5rem;
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+        color: #1f2937 !important;
+        transition: all 0.2s ease;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    #add-task-modal input[type="text"]:focus,
+    #add-task-modal input[type="date"]:focus,
+    #add-task-modal input[type="number"]:focus,
+    #add-task-modal textarea:focus,
+    #add-task-modal select:focus {
+        border-color: #3b82f6 !important;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+        background-color: white !important;
+    }
+    
+    #add-task-modal input::placeholder,
+    #add-task-modal textarea::placeholder {
+        color: #9ca3af;
+    }
+    
+    /* Radio button styling */
+    #add-task-modal input[type="radio"] {
+        margin-right: 0.75rem;
+        transform: scale(1.2);
+    }
+    
+    #add-task-modal label.cursor-pointer {
+        flex: 1;
+        padding: 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 0.75rem;
+        background-color: #f9fafb;
+        transition: all 0.2s ease;
+        margin-bottom: 0;
+    }
+    
+    #add-task-modal label.cursor-pointer:hover {
+        background-color: #f3f4f6;
+        border-color: #d1d5db;
+    }
+    
+    #add-task-modal label.cursor-pointer:has(input:checked) {
+        border-color: #3b82f6 !important;
+        background-color: #eff6ff !important;
+    }
+    
+    #add-task-modal .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    
+    #add-task-modal .btn-primary {
+        background-color: #3b82f6 !important;
+        border-color: #3b82f6 !important;
+        color: white !important;
+    }
+    
+    #add-task-modal .btn-primary:hover {
+        background-color: #2563eb !important;
+        border-color: #2563eb !important;
+    }
+    
+    #add-task-modal .btn-ghost {
+        background-color: transparent !important;
+        border-color: #d1d5db !important;
+        color: #6b7280 !important;
+    }
+    
+    #add-task-modal .btn-ghost:hover {
+        background-color: #f3f4f6 !important;
+        color: #374151 !important;
+    }
+    
+    /* Reset any conflicting styles */
+    #add-task-modal * {
+        box-sizing: border-box;
+    }
+    
+    #add-task-modal .alert {
+        display: none;
+    }
+    
+    #add-task-modal .alert.show {
+        display: block;
     }
     
     /* Edit modal styling */
@@ -214,21 +320,21 @@
         animation: modalFadeIn 0.2s ease-out;
     }
     
-    input[type="text"],
-    input[type="date"],
-    input[type="number"],
-    textarea,
-    select {
+    #edit-task-modal input[type="text"],
+    #edit-task-modal input[type="date"],
+    #edit-task-modal input[type="number"],
+    #edit-task-modal textarea,
+    #edit-task-modal select {
         background-color: white;
         border: 2px solid #e5e7eb;
         transition: all 0.2s ease;
     }
     
-    input[type="text"]:focus,
-    input[type="date"]:focus,
-    input[type="number"]:focus,
-    textarea:focus,
-    select:focus {
+    #edit-task-modal input[type="text"]:focus,
+    #edit-task-modal input[type="date"]:focus,
+    #edit-task-modal input[type="number"]:focus,
+    #edit-task-modal textarea:focus,
+    #edit-task-modal select:focus {
         border-color: #3b82f6;
         outline: none;
         box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
@@ -600,32 +706,36 @@
             const startDateInput = document.getElementById('edit-task-start-date');
             startDateInput.value = startDate;
             
-            // Set payment type and show/hide appropriate sections
+            // Reset all cards first
             const fixedCard = document.getElementById('edit-fixed-card');
             const pieceCard = document.getElementById('edit-piece-card');
-            const perDayGroup = document.getElementById('edit-per-day-payout-group');
-            const perPartGroup = document.getElementById('edit-per-part-payout-group');
+            fixedCard.classList.remove('border-blue-500', 'bg-blue-50', 'border-blue-600', 'card-selected');
+            pieceCard.classList.remove('border-blue-500', 'bg-blue-50', 'border-blue-600', 'card-selected');
+            const selectedIndicators = document.querySelectorAll('#edit-task-modal .selected-indicator');
+            selectedIndicators.forEach(indicator => indicator.style.display = 'none');
             
             if (paymentType === 'per_part') {
                 document.getElementById('edit-payment-type-part').checked = true;
-                perPartGroup.style.display = 'block';
-                perDayGroup.style.display = 'none';
-                pieceCard.classList.add('border-blue-500', 'bg-blue-50');
-                fixedCard.classList.remove('border-blue-500', 'bg-blue-50');
+                document.getElementById('edit-per-part-payout-group').style.display = '';
+                document.getElementById('edit-per-day-payout-group').style.display = 'none';
+                pieceCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
+                const pieceIndicator = pieceCard.querySelector('.selected-indicator');
+                if (pieceIndicator) pieceIndicator.style.display = 'block';
             } else {
                 document.getElementById('edit-payment-type-day').checked = true;
-                perPartGroup.style.display = 'none';
-                perDayGroup.style.display = 'block';
-                fixedCard.classList.add('border-blue-500', 'bg-blue-50');
-                pieceCard.classList.remove('border-blue-500', 'bg-blue-50');
+                document.getElementById('edit-per-part-payout-group').style.display = 'none';
+                document.getElementById('edit-per-day-payout-group').style.display = '';
+                fixedCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
+                const dailyIndicator = fixedCard.querySelector('.selected-indicator');
+                if (dailyIndicator) dailyIndicator.style.display = 'block';
             }
-            
             document.getElementById('edit-per-part-payout').value = perPartPayout || '';
             document.getElementById('edit-per-part-currency').value = perPartCurrency || '';
             document.getElementById('edit-per-day-payout').value = perDayPayout || '';
             document.getElementById('edit-per-day-currency').value = perDayCurrency || '';
             
             setupEditPaymentTypeToggle();
+            updateEditPayoutLabels(paymentType);
             
             // Open modal
             if (modal) {
@@ -639,32 +749,68 @@
                     };
                 }
             }
+            
+            setTimeout(() => {
+                if (startDateInput.datePickerInstance) {
+                    startDateInput.datePickerInstance.setValue(startDate);
+                }
+            }, 100);
         }
 
         function setupEditPaymentTypeToggle() {
             const perPartGroup = document.getElementById('edit-per-part-payout-group');
             const perDayGroup = document.getElementById('edit-per-day-payout-group');
+            const radios = document.querySelectorAll('input[name="edit_payment_type"]');
             const fixedCard = document.getElementById('edit-fixed-card');
             const pieceCard = document.getElementById('edit-piece-card');
-            const radios = document.querySelectorAll('input[name="edit_payment_type"]');
             
             radios.forEach(radio => {
                 radio.addEventListener('change', function() {
-                    // Reset card styles
-                    fixedCard.classList.remove('border-blue-500', 'bg-blue-50');
-                    pieceCard.classList.remove('border-blue-500', 'bg-blue-50');
+                    // Reset all cards
+                    fixedCard.classList.remove('border-blue-500', 'bg-blue-50', 'border-blue-600', 'card-selected');
+                    pieceCard.classList.remove('border-blue-500', 'bg-blue-50', 'border-blue-600', 'card-selected');
+                    
+                    // Hide all selected indicators
+                    const selectedIndicators = document.querySelectorAll('#edit-task-modal .selected-indicator');
+                    selectedIndicators.forEach(indicator => indicator.style.display = 'none');
                     
                     if (this.value === 'per_part') {
-                        perPartGroup.style.display = 'block';
+                        perPartGroup.style.display = '';
                         perDayGroup.style.display = 'none';
-                        pieceCard.classList.add('border-blue-500', 'bg-blue-50');
+                        pieceCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
+                        const pieceIndicator = pieceCard.querySelector('.selected-indicator');
+                        if (pieceIndicator) pieceIndicator.style.display = 'block';
                     } else {
                         perPartGroup.style.display = 'none';
-                        perDayGroup.style.display = 'block';
-                        fixedCard.classList.add('border-blue-500', 'bg-blue-50');
+                        perDayGroup.style.display = '';
+                        fixedCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
+                        const dailyIndicator = fixedCard.querySelector('.selected-indicator');
+                        if (dailyIndicator) dailyIndicator.style.display = 'block';
                     }
+                    updateEditPayoutLabels(this.value);
                 });
             });
+        }
+
+        function updateEditPayoutLabels(paymentType) {
+            const payoutLabel = document.getElementById('edit-payout-label');
+            const payoutInput = document.getElementById('edit-per-day-payout');
+            
+            if (paymentType === 'per_day') {
+                if (payoutLabel) {
+                    payoutLabel.innerHTML = 'Daily payout per worker <span class="text-xs text-gray-400">(e.g., 25$ , 60 Kwacha)</span>';
+                }
+                if (payoutInput) {
+                    payoutInput.placeholder = 'Enter daily payout per worker';
+                }
+            } else if (paymentType === 'per_part') {
+                if (payoutLabel) {
+                    payoutLabel.innerHTML = 'Payout per part <span class="text-xs text-gray-400">(e.g., 25$ , 60 Kwacha)</span>';
+                }
+                if (payoutInput) {
+                    payoutInput.placeholder = 'Enter payout per part';
+                    }
+            }
         }
 
         function closeEditTaskModal() {

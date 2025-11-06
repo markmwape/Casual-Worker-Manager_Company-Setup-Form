@@ -129,21 +129,32 @@
     .modal {
         pointer-events: none;
         opacity: 0;
-        transition: opacity 0.2s ease-in-out;
+        transition: opacity 0.3s ease-in-out;
+        display: none;
     }
     .modal.modal-open {
         pointer-events: auto;
         opacity: 1;
-    }
-    .modal-backdrop {
+        display: flex;
+        align-items: center;
+        justify-content: center;
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
-        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 9999;
+        background-color: rgba(0, 0, 0, 0.6);
+    }
+    .modal-backdrop {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: transparent;
         cursor: pointer;
-        z-index: 0;
+        z-index: 1;
     }
     .modal-backdrop button {
         width: 100%;
@@ -154,74 +165,404 @@
         background: transparent;
     }
     .modal-box {
-        pointer-events: auto;
+        pointer-events: auto !important;
         position: relative;
         z-index: 10;
-        background: white;
+        background: white !important;
         border-radius: 1rem;
-        padding: 2rem;
+        padding: 0;
+        margin: 1rem;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        max-height: 90vh;
+        overflow-y: auto;
+        width: 100%;
+        max-width: 42rem;
     }
     
-    /* Ensure form inputs are fully interactive */
+    /* Ensure all form elements are interactive */
+    .modal-box *,
     .modal-box input,
     .modal-box textarea,
     .modal-box select,
-    .modal-box button {
-        pointer-events: auto;
+    .modal-box button,
+    .modal-box label {
+        pointer-events: auto !important;
         position: relative;
         z-index: 1;
     }
     
     /* Add task modal specific styles */
     #add-task-modal .modal-box {
-        max-width: 42rem;
-        animation: modalFadeIn 0.2s ease-out;
+        padding: 0;
+        background: white !important;
+        border-radius: 16px;
+        max-width: 600px;
+        width: 95%;
+        max-height: 90vh;
+        overflow: hidden;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     }
     
-    @keyframes modalFadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(-20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    /* Modal Header */
+    #add-task-modal .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 24px 24px 16px 24px;
+        border-bottom: 1px solid #f1f5f9;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
     }
     
-    #add-task-modal input[type="text"],
-    #add-task-modal input[type="date"],
-    #add-task-modal input[type="number"],
-    #add-task-modal textarea,
-    #add-task-modal select {
-        background-color: white;
-        border: 2px solid #e5e7eb;
+    #add-task-modal .modal-close-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        border: none;
+        background: rgba(0, 0, 0, 0.05);
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
         transition: all 0.2s ease;
-        font-size: 0.95rem;
     }
     
-    #add-task-modal input[type="text"]:focus,
-    #add-task-modal input[type="date"]:focus,
-    #add-task-modal input[type="number"]:focus,
-    #add-task-modal textarea:focus,
-    #add-task-modal select:focus {
-        border-color: #3b82f6;
+    #add-task-modal .modal-close-btn:hover {
+        background: rgba(0, 0, 0, 0.1);
+        color: #334155;
+    }
+    
+    /* Form Container */
+    #add-task-modal .task-form {
+        padding: 24px;
+        max-height: calc(90vh - 120px);
+        overflow-y: auto;
+    }
+    
+    /* Form Groups */
+    #add-task-modal .form-group {
+        margin-bottom: 24px;
+    }
+    
+    #add-task-modal .form-label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 8px;
+    }
+    
+    #add-task-modal .label-text {
+        font-weight: 600;
+        color: #1e293b;
+        font-size: 14px;
+    }
+    
+    #add-task-modal .label-required {
+        color: #ef4444;
+        font-weight: 600;
+    }
+    
+    #add-task-modal .label-optional {
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 400;
+    }
+    
+    /* Input Styling */
+    #add-task-modal .input-wrapper {
+        position: relative;
+    }
+    
+    #add-task-modal .input-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 2;
+    }
+    
+    #add-task-modal .form-input,
+    #add-task-modal .form-textarea {
+        width: 100%;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 12px 16px;
+        font-size: 14px;
+        color: #1e293b;
+        background: white;
+        transition: all 0.2s ease;
+        box-sizing: border-box;
+    }
+    
+    #add-task-modal .form-input:has(+ .input-icon),
+    #add-task-modal .input-wrapper:has(.input-icon) .form-input {
+        padding-left: 44px;
+    }
+    
+    #add-task-modal .form-input:focus,
+    #add-task-modal .form-textarea:focus {
         outline: none;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
     
-    /* Radio button styling */
-    #add-task-modal input[type="radio"] {
+    #add-task-modal .form-input::placeholder,
+    #add-task-modal .form-textarea::placeholder {
+        color: #94a3b8;
+    }
+    
+    /* Select Styling */
+    #add-task-modal .select-wrapper {
+        position: relative;
+    }
+    
+    #add-task-modal .form-select {
+        width: 100%;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 12px 44px 12px 16px;
+        font-size: 14px;
+        color: #1e293b;
+        background: white;
+        transition: all 0.2s ease;
+        appearance: none;
         cursor: pointer;
     }
     
-    #add-task-modal label.cursor-pointer {
+    #add-task-modal .form-select:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    #add-task-modal .select-icon {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+    }
+    
+    /* Payment Type Grid */
+    #add-task-modal .payment-type-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+    
+    #add-task-modal .payment-option {
+        cursor: pointer;
+    }
+    
+    #add-task-modal .payment-radio {
+        display: none;
+    }
+    
+    #add-task-modal .payment-card {
+        position: relative;
+        padding: 20px;
+        border: 2px solid #e2e8f0;
+        border-radius: 16px;
+        background: white;
+        transition: all 0.2s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 12px;
+    }
+    
+    #add-task-modal .payment-card:hover {
+        border-color: #cbd5e1;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+    
+    #add-task-modal .payment-radio:checked + .payment-card {
+        border-color: #3b82f6;
+        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        box-shadow: 0 8px 24px rgba(59, 130, 246, 0.15);
+    }
+    
+    #add-task-modal .payment-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: #f8fafc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+    
+    #add-task-modal .payment-radio:checked + .payment-card .payment-icon {
+        background: white;
+    }
+    
+    #add-task-modal .payment-content {
         flex: 1;
     }
     
-    #add-task-modal label.cursor-pointer:has(input:checked) {
-        border-color: #3b82f6 !important;
-        background-color: #eff6ff !important;
+    #add-task-modal .payment-title {
+        font-weight: 600;
+        color: #1e293b;
+        font-size: 16px;
+        display: block;
+        margin-bottom: 4px;
+    }
+    
+    #add-task-modal .payment-description {
+        color: #64748b;
+        font-size: 12px;
+        margin: 0;
+    }
+    
+    #add-task-modal .payment-check {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: #3b82f6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transform: scale(0.5);
+        transition: all 0.2s ease;
+    }
+    
+    #add-task-modal .payment-radio:checked + .payment-card .payment-check {
+        opacity: 1;
+        transform: scale(1);
+    }
+    
+    /* Payout Grid */
+    #add-task-modal .payout-grid {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+        align-items: start;
+    }
+    
+    #add-task-modal .payout-hint {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 8px;
+        padding: 8px 12px;
+        background: #f8fafc;
+        border-radius: 8px;
+        grid-column: 1 / -1;
+    }
+    
+    /* Status Indicator */
+    #add-task-modal .status-indicator {
+        margin-top: 8px;
+        padding: 12px;
+        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        border: 1px solid #bfdbfe;
+        border-radius: 10px;
+    }
+    
+    #add-task-modal .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+    }
+    
+    /* Error Alert */
+    #add-task-modal .error-alert {
+        margin: 0 24px 16px 24px;
+        padding: 12px 16px;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 10px;
+        color: #dc2626;
+    }
+    
+    /* Action Buttons */
+    #add-task-modal .modal-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        padding-top: 24px;
+        border-top: 1px solid #f1f5f9;
+        margin-top: 8px;
+    }
+    
+    #add-task-modal .btn-primary,
+    #add-task-modal .btn-secondary {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px 24px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 14px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        min-width: 120px;
+    }
+    
+    #add-task-modal .btn-primary {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+    
+    #add-task-modal .btn-primary:hover {
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+        transform: translateY(-1px);
+    }
+    
+    #add-task-modal .btn-secondary {
+        background: white;
+        color: #64748b;
+        border: 2px solid #e2e8f0;
+    }
+    
+    #add-task-modal .btn-secondary:hover {
+        background: #f8fafc;
+        border-color: #cbd5e1;
+        color: #475569;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 640px) {
+        #add-task-modal .payment-type-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        #add-task-modal .payout-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        #add-task-modal .modal-actions {
+            flex-direction: column-reverse;
+        }
+        
+        #add-task-modal .btn-primary,
+        #add-task-modal .btn-secondary {
+            width: 100%;
+        }
+    }
+    
+    /* Reset any conflicting styles */
+    #add-task-modal * {
+        box-sizing: border-box;
+    }
+    
+    #add-task-modal .alert {
+        display: none;
+    }
+    
+    #add-task-modal .alert.show {
+        display: block;
     }
     
     /* Edit modal styling */
@@ -464,21 +805,47 @@
 <script>
         // Modal functions for add task
         function openAddTaskModal() {
+            console.log('Opening add task modal...');
             const modal = document.getElementById('add-task-modal');
+            console.log('Modal found:', modal);
             if (modal) {
+                // Remove any existing classes first
+                modal.classList.remove('modal-open');
+                
+                // Force reflow
+                modal.offsetHeight;
+                
+                // Add the open class
                 modal.classList.add('modal-open');
+                console.log('Modal classes:', modal.classList);
+                
                 // Add event listener to backdrop
-                const backdrop = modal.querySelector('.modal-backdrop button');
-                if (backdrop) {
-                    backdrop.onclick = (e) => {
-                        e.preventDefault();
-                        closeAddTaskModal();
-                    };
-                }
+                setTimeout(() => {
+                    const backdrop = modal.querySelector('.modal-backdrop button');
+                    console.log('Backdrop found:', backdrop);
+                    if (backdrop) {
+                        backdrop.onclick = (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            console.log('Backdrop clicked');
+                            closeAddTaskModal();
+                        };
+                    }
+                }, 100);
+                
+                // Focus first input
+                setTimeout(() => {
+                    const firstInput = modal.querySelector('input[name="name"]');
+                    if (firstInput) {
+                        firstInput.focus();
+                        console.log('Focused first input');
+                    }
+                }, 200);
             }
         }
         
         function closeAddTaskModal() {
+            console.log('Closing add task modal...');
             const modal = document.getElementById('add-task-modal');
             if (modal) {
                 modal.classList.remove('modal-open');
@@ -486,6 +853,7 @@
                 const form = modal.querySelector('#taskForm');
                 if (form) {
                     form.reset();
+                    console.log('Form reset');
                 }
             }
         }

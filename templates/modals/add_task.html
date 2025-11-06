@@ -37,7 +37,7 @@
                     <span class="label-text font-semibold text-gray-700">Payment Type <span class="text-red-500">*</span></span>
                 </label>
                 <div class="grid grid-cols-2 gap-4 mt-2">
-                    <label class="cursor-pointer">
+                    <label class="cursor-pointer" onclick="setTimeout(() => updatePayoutDisplay(), 0)">
                         <div class="p-4 border-2 border-blue-500 bg-blue-50 rounded-lg hover:border-blue-600 transition card-selected" id="fixed-card">
                             <input type="radio" name="payment_type" value="per_day" class="radio radio-primary" required checked />
                             <div>
@@ -52,7 +52,7 @@
                             </div>
                         </div>
                     </label>
-                    <label class="cursor-pointer">
+                    <label class="cursor-pointer" onclick="setTimeout(() => updatePayoutDisplay(), 0)">
                         <div class="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-400 transition" id="piece-card">
                             <input type="radio" name="payment_type" value="per_part" class="radio radio-primary" required />
                             <div>
@@ -96,7 +96,7 @@
                     </div>
                 </div>
             </div>
-            <div id="per-part-payout-group">
+            <div id="per-part-payout-group" style="display:none;">
                 <div class="card bg-green-50 border border-green-200 p-4 mb-6">
                     <div class="form-control mb-4">
                         <label class="label">
@@ -443,62 +443,84 @@ function confirmDateSelection() {
 
 function updatePayoutDisplay() {
     try {
+        // Get the selected payment type
         const selectedType = document.querySelector('input[name="payment_type"]:checked');
+        console.log('updatePayoutDisplay called. Selected type:', selectedType ? selectedType.value : 'NONE');
+        
+        // Get elements
         const payoutFields = document.getElementById('payout-fields');
         const perPartPayoutGroup = document.getElementById('per-part-payout-group');
-        
-        if (!payoutFields || !perPartPayoutGroup) {
-            console.error('Payout elements not found');
-            return;
-        }
-        
-        // Reset both sections with classes
-        payoutFields.classList.remove('visible');
-        payoutFields.classList.add('hidden');
-        perPartPayoutGroup.classList.remove('visible');
-        perPartPayoutGroup.classList.add('hidden');
-        
-        // Update card selection visuals
         const fixedCard = document.getElementById('fixed-card');
         const pieceCard = document.getElementById('piece-card');
         
+        if (!payoutFields || !perPartPayoutGroup) {
+            console.error('ERROR: Payout elements not found!');
+            return;
+        }
+        
+        // STEP 1: Hide ALL selected indicators first
+        const allIndicators = document.querySelectorAll('.selected-indicator');
+        allIndicators.forEach(indicator => {
+            indicator.style.display = 'none';
+        });
+        
+        // STEP 2: Reset ALL card styles
         if (fixedCard) {
             fixedCard.classList.remove('border-blue-500', 'bg-blue-50', 'card-selected');
             fixedCard.classList.add('border-gray-200');
-            const indicator = fixedCard.querySelector('.selected-indicator');
-            if (indicator) indicator.style.display = 'none';
         }
         
         if (pieceCard) {
             pieceCard.classList.remove('border-blue-500', 'bg-blue-50', 'card-selected');
             pieceCard.classList.add('border-gray-200');
-            const indicator = pieceCard.querySelector('.selected-indicator');
-            if (indicator) indicator.style.display = 'none';
         }
         
-        // Show appropriate section based on selection
+        // STEP 3: Hide BOTH payout sections
+        payoutFields.classList.remove('visible');
+        payoutFields.classList.add('hidden');
+        perPartPayoutGroup.classList.remove('visible');
+        perPartPayoutGroup.classList.add('hidden');
+        
+        console.log('Hidden both sections. Now showing the selected one...');
+        
+        // STEP 4: Show appropriate section based on selection
         if (selectedType && selectedType.value === 'per_part') {
+            console.log('SHOWING: Per Part payout section');
+            
+            // Show per-part section
             perPartPayoutGroup.classList.remove('hidden');
             perPartPayoutGroup.classList.add('visible');
             
+            // Update piece card styling
             if (pieceCard) {
                 pieceCard.classList.remove('border-gray-200');
                 pieceCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
-                const indicator = pieceCard.querySelector('.selected-indicator');
-                if (indicator) indicator.style.display = 'block';
+                const pieceIndicator = pieceCard.querySelector('.selected-indicator');
+                if (pieceIndicator) {
+                    pieceIndicator.style.display = 'block';
+                    console.log('Piece card indicator shown');
+                }
             }
         } else {
-            // Default to per_day
+            console.log('SHOWING: Daily payout section (default)');
+            
+            // Show daily section (default)
             payoutFields.classList.remove('hidden');
             payoutFields.classList.add('visible');
             
+            // Update fixed card styling
             if (fixedCard) {
                 fixedCard.classList.remove('border-gray-200');
                 fixedCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
-                const indicator = fixedCard.querySelector('.selected-indicator');
-                if (indicator) indicator.style.display = 'block';
+                const fixedIndicator = fixedCard.querySelector('.selected-indicator');
+                if (fixedIndicator) {
+                    fixedIndicator.style.display = 'block';
+                    console.log('Fixed card indicator shown');
+                }
             }
         }
+        
+        console.log('updatePayoutDisplay complete');
     } catch (error) {
         console.error('Error in updatePayoutDisplay:', error);
     }
@@ -565,16 +587,25 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Add event listeners to payment type radios
+    // Add event listeners to payment type radios - CRITICAL!
     const paymentTypeRadios = document.querySelectorAll('input[name="payment_type"]');
+    console.log('Found payment type radios:', paymentTypeRadios.length);
+    
     paymentTypeRadios.forEach(radio => {
         radio.addEventListener('change', function() {
-            console.log('Payment type changed to:', this.value);
+            console.log('Radio change event fired! Value:', this.value);
+            updatePayoutDisplay();
+        });
+        
+        // Also add click handler as backup
+        radio.addEventListener('click', function() {
+            console.log('Radio click event fired! Value:', this.value);
             updatePayoutDisplay();
         });
     });
     
-    // Initialize payout display
+    // Initialize payout display - call immediately
+    console.log('Initial display setup...');
     updatePayoutDisplay();
     
     // Add click handler to date picker overlay to close modal

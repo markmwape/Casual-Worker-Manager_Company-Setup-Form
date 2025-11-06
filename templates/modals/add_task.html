@@ -1,112 +1,149 @@
 <div id="add-task-modal" class="modal">
-    <div class="modal-box">
-        <h3 class="font-bold text-lg mb-4">Create New Task</h3>
+    <div class="modal-box w-full max-w-2xl">
+        <!-- Header -->
+        <div class="mb-6">
+            <h3 class="font-bold text-2xl text-gray-900 mb-1">Create New Task</h3>
+            <p class="text-sm text-gray-500">Fill in the details to create a task for your workers</p>
+        </div>
         
         <div id="task-date-error" class="alert alert-error mb-4" style="display:none;">
             <span class="error-text"></span>
         </div>
         
         <form id="addTaskForm" method="POST" action="/tasks">
-            <div class="form-control mb-4">
+            <!-- Task Name -->
+            <div class="form-control mb-5">
                 <label class="label">
-                    <span class="label-text font-semibold">Task Name *</span>
+                    <span class="label-text font-semibold text-gray-700">Task Name <span class="text-red-500">*</span></span>
                 </label>
-                <input type="text" name="name" placeholder="Enter task name" class="input input-bordered w-full" required />
+                <input type="text" name="name" placeholder="e.g., Cleaning Service, Data Entry" class="input input-bordered w-full focus:input-primary" required />
             </div>
 
-            <div class="form-control mb-4">
+            <!-- Description -->
+            <div class="form-control mb-5">
                 <label class="label">
-                    <span class="label-text font-semibold">Description</span>
+                    <span class="label-text font-semibold text-gray-700">Description</span>
                 </label>
-                <textarea name="description" placeholder="Task description (optional)" class="textarea textarea-bordered w-full" rows="3"></textarea>
+                <textarea name="description" placeholder="Describe the task details..." class="textarea textarea-bordered w-full focus:textarea-primary" rows="3"></textarea>
             </div>
 
-            <div class="grid grid-cols-2 gap-4 mb-4">
+            <!-- Dates Section -->
+            <div class="grid grid-cols-2 gap-4 mb-5">
                 <div class="form-control">
                     <label class="label">
-                        <span class="label-text font-semibold">Start Date</span>
+                        <span class="label-text font-semibold text-gray-700">Start Date</span>
                     </label>
-                    <input type="date" name="start_date" class="input input-bordered w-full" />
+                    <input type="date" name="start_date" class="input input-bordered w-full focus:input-primary" />
                 </div>
 
                 <div class="form-control">
                     <label class="label">
-                        <span class="label-text font-semibold">Deadline</span>
+                        <span class="label-text font-semibold text-gray-700">Deadline</span>
                     </label>
-                    <input type="date" name="deadline" class="input input-bordered w-full" />
+                    <input type="date" name="deadline" class="input input-bordered w-full focus:input-primary" />
                 </div>
             </div>
 
-            <div class="form-control mb-4">
+            <!-- Expected Workers -->
+            <div class="form-control mb-6">
                 <label class="label">
-                    <span class="label-text font-semibold">Expected Workers</span>
+                    <span class="label-text font-semibold text-gray-700">Expected Workers</span>
                 </label>
-                <input type="text" name="expected_workers" placeholder="e.g., 5 or 5-10" class="input input-bordered w-full" />
+                <input type="text" name="expected_workers" placeholder="e.g., 5 or 5-10" class="input input-bordered w-full focus:input-primary" />
             </div>
 
-            <div class="form-control mb-4">
+            <!-- Payment Type Selection -->
+            <div class="form-control mb-6">
                 <label class="label">
-                    <span class="label-text font-semibold">Payment Type *</span>
+                    <span class="label-text font-semibold text-gray-700">Payment Type <span class="text-red-500">*</span></span>
                 </label>
-                <div class="flex gap-4 flex-wrap">
-                    <label class="cursor-pointer flex items-center gap-2 p-3 border rounded-lg">
-                        <input type="radio" name="payment_type" value="hourly" class="radio radio-primary" required />
-                        <span>Hourly Rate</span>
+                <div class="grid grid-cols-2 gap-4 mt-2">
+                    <label class="cursor-pointer">
+                        <div class="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-400 transition flex items-center gap-3" id="fixed-card">
+                            <input type="radio" name="payment_type" value="fixed" class="radio radio-primary" required />
+                            <div>
+                                <div class="font-semibold text-gray-900">Fixed Amount</div>
+                                <div class="text-xs text-gray-500">Single payout amount</div>
+                            </div>
+                        </div>
                     </label>
-                    <label class="cursor-pointer flex items-center gap-2 p-3 border rounded-lg">
-                        <input type="radio" name="payment_type" value="fixed" class="radio radio-primary" required />
-                        <span>Fixed Amount</span>
-                    </label>
-                    <label class="cursor-pointer flex items-center gap-2 p-3 border rounded-lg">
-                        <input type="radio" name="payment_type" value="piece_rate" class="radio radio-primary" required />
-                        <span>Piece Rate</span>
+                    <label class="cursor-pointer">
+                        <div class="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-400 transition flex items-center gap-3" id="piece-card">
+                            <input type="radio" name="payment_type" value="piece_rate" class="radio radio-primary" required />
+                            <div>
+                                <div class="font-semibold text-gray-900">Per Unit/Part</div>
+                                <div class="text-xs text-gray-500">Payment per item completed</div>
+                            </div>
+                        </div>
                     </label>
                 </div>
             </div>
 
             <!-- Fixed Payment Fields -->
             <div id="payout-fields" style="display:none;">
-                <div class="form-control mb-4">
-                    <label class="label">
-                        <span class="label-text font-semibold">Fixed Payout Amount *</span>
-                    </label>
-                    <div class="grid grid-cols-2 gap-4">
-                        <input type="number" step="0.01" min="0.01" name="payout" id="payout" placeholder="Amount" class="input input-bordered w-full" />
-                        <select name="currency" id="currency" class="select select-bordered w-full">
-                            <option value="">Select Currency</option>
-                            <option value="USD">USD - US Dollar ($)</option>
-                            <option value="EUR">EUR - Euro (€)</option>
-                            <option value="GBP">GBP - British Pound (£)</option>
-                            <option value="ZAR">ZAR - South African Rand (R)</option>
-                            <option value="ZMW">ZMW - Zambian Kwacha (K)</option>
-                        </select>
+                <div class="card bg-blue-50 border border-blue-200 p-4 mb-6">
+                    <div class="form-control mb-4">
+                        <label class="label">
+                            <span class="label-text font-semibold text-gray-700">Daily Payout Amount <span class="text-red-500">*</span></span>
+                        </label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <input type="number" step="0.01" min="0.01" name="payout" id="payout" placeholder="Enter amount" class="input input-bordered focus:input-primary" />
+                            <select name="currency" id="currency" class="select select-bordered focus:select-primary">
+                                <option value="">Select Currency</option>
+                                <option value="USD">USD ($)</option>
+                                <option value="EUR">EUR (€)</option>
+                                <option value="GBP">GBP (£)</option>
+                                <option value="ZAR">ZAR (R)</option>
+                                <option value="ZMW">ZMW (K)</option>
+                                <option value="BWP">BWP (P)</option>
+                                <option value="KES">KES (Sh)</option>
+                                <option value="NGN">NGN (₦)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="text-xs text-blue-700 bg-blue-100 p-2 rounded">
+                        <strong>ℹ️ Tip:</strong> This is the total amount each worker will earn for this task
                     </div>
                 </div>
             </div>
 
             <!-- Piece Rate Fields -->
             <div id="per-part-payout-group" style="display:none;">
-                <div class="form-control mb-4">
-                    <label class="label">
-                        <span class="label-text font-semibold">Payout per Part *</span>
-                    </label>
-                    <div class="grid grid-cols-2 gap-4">
-                        <input type="number" step="0.01" min="0.01" name="per_part_payout" id="per-part-payout" placeholder="Amount per part" class="input input-bordered w-full" />
-                        <select name="per_part_currency" id="per-part-currency" class="select select-bordered w-full">
-                            <option value="">Select Currency</option>
-                            <option value="USD">USD - US Dollar ($)</option>
-                            <option value="EUR">EUR - Euro (€)</option>
-                            <option value="GBP">GBP - British Pound (£)</option>
-                            <option value="ZAR">ZAR - South African Rand (R)</option>
-                            <option value="ZMW">ZMW - Zambian Kwacha (K)</option>
-                        </select>
+                <div class="card bg-green-50 border border-green-200 p-4 mb-6">
+                    <div class="form-control mb-4">
+                        <label class="label">
+                            <span class="label-text font-semibold text-gray-700">Payout per Unit/Part <span class="text-red-500">*</span></span>
+                        </label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <input type="number" step="0.01" min="0.01" name="per_part_payout" id="per-part-payout" placeholder="Enter amount per unit" class="input input-bordered focus:input-primary" />
+                            <select name="per_part_currency" id="per-part-currency" class="select select-bordered focus:select-primary">
+                                <option value="">Select Currency</option>
+                                <option value="USD">USD ($)</option>
+                                <option value="EUR">EUR (€)</option>
+                                <option value="GBP">GBP (£)</option>
+                                <option value="ZAR">ZAR (R)</option>
+                                <option value="ZMW">ZMW (K)</option>
+                                <option value="BWP">BWP (P)</option>
+                                <option value="KES">KES (Sh)</option>
+                                <option value="NGN">NGN (₦)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="text-xs text-green-700 bg-green-100 p-2 rounded">
+                        <strong>ℹ️ Tip:</strong> Workers earn this amount for each unit/part they complete
                     </div>
                 </div>
             </div>
 
-            <div class="modal-action">
-                <button type="button" class="btn btn-ghost" onclick="closeAddTaskModal()">Cancel</button>
-                <button type="submit" class="btn btn-primary">Create Task</button>
+            <!-- Action Buttons -->
+            <div class="modal-action justify-end gap-3 mt-8">
+                <button type="button" class="btn btn-outline" onclick="closeAddTaskModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Create Task
+                </button>
             </div>
         </form>
     </div>
@@ -114,6 +151,63 @@
         <button onclick="closeAddTaskModal()">close</button>
     </form>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const paymentTypeRadios = document.querySelectorAll('input[name="payment_type"]');
+    const payoutFields = document.getElementById('payout-fields');
+    const perPartPayoutGroup = document.getElementById('per-part-payout-group');
+    const fixedCard = document.getElementById('fixed-card');
+    const pieceCard = document.getElementById('piece-card');
+    
+    function updatePayoutDisplay() {
+        const selectedType = document.querySelector('input[name="payment_type"]:checked');
+        
+        // Update card styling
+        fixedCard.classList.remove('border-blue-500', 'bg-blue-50');
+        pieceCard.classList.remove('border-blue-500', 'bg-blue-50');
+        
+        if (selectedType) {
+            if (selectedType.value === 'fixed') {
+                payoutFields.style.display = 'block';
+                perPartPayoutGroup.style.display = 'none';
+                fixedCard.classList.add('border-blue-500', 'bg-blue-50');
+            } else if (selectedType.value === 'piece_rate') {
+                payoutFields.style.display = 'none';
+                perPartPayoutGroup.style.display = 'block';
+                pieceCard.classList.add('border-blue-500', 'bg-blue-50');
+            } else {
+                payoutFields.style.display = 'none';
+                perPartPayoutGroup.style.display = 'none';
+            }
+        }
+    }
+    
+    paymentTypeRadios.forEach(radio => {
+        radio.addEventListener('change', updatePayoutDisplay);
+    });
+    
+    updatePayoutDisplay();
+});
+
+function closeAddTaskModal() {
+    const modal = document.getElementById('add-task-modal');
+    const form = document.getElementById('addTaskForm');
+    
+    if (form) {
+        form.reset();
+        const payoutFields = document.getElementById('payout-fields');
+        const perPartPayoutGroup = document.getElementById('per-part-payout-group');
+        if (payoutFields) payoutFields.style.display = 'none';
+        if (perPartPayoutGroup) perPartPayoutGroup.style.display = 'none';
+    }
+    
+    if (modal) {
+        modal.close();
+    }
+}
+</script>
+
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

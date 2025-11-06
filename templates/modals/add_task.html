@@ -96,7 +96,7 @@
                     </div>
                 </div>
             </div>
-            <div id="per-part-payout-group">
+            <div id="per-part-payout-group" style="display:none;">
                 <div class="card bg-green-50 border border-green-200 p-4 mb-6">
                     <div class="form-control mb-4">
                         <label class="label">
@@ -199,6 +199,19 @@ style.textContent = `
     }
     #add-task-calendar-container button:hover {
         background-color: rgb(219 234 254) !important;
+    }
+    
+    /* Ensure payout sections are properly controlled */
+    #payout-fields {
+        transition: all 0.3s ease;
+    }
+    #per-part-payout-group {
+        transition: all 0.3s ease;
+    }
+    
+    /* Payment type card transitions */
+    #fixed-card, #piece-card {
+        transition: all 0.3s ease;
     }
 `;
 document.head.appendChild(style);
@@ -376,7 +389,9 @@ function confirmDateSelection() {
 }
 
 function updatePayoutDisplay() {
+    console.log('updatePayoutDisplay called'); // Debug log
     const selectedType = document.querySelector('input[name="payment_type"]:checked');
+    console.log('Selected payment type:', selectedType ? selectedType.value : 'none'); // Debug log
     
     const fixedCard = document.getElementById('fixed-card');
     const pieceCard = document.getElementById('piece-card');
@@ -386,6 +401,8 @@ function updatePayoutDisplay() {
     // Reset all cards
     fixedCard.classList.remove('border-blue-500', 'bg-blue-50', 'border-blue-600', 'card-selected');
     pieceCard.classList.remove('border-blue-500', 'bg-blue-50', 'border-blue-600', 'card-selected');
+    fixedCard.classList.add('border-gray-200');
+    pieceCard.classList.add('border-gray-200');
     
     // Hide all selected indicators
     const selectedIndicators = document.querySelectorAll('.selected-indicator');
@@ -393,22 +410,31 @@ function updatePayoutDisplay() {
     
     if (selectedType) {
         if (selectedType.value === 'per_day') {
+            console.log('Showing daily payout fields'); // Debug log
             payoutFields.style.display = 'block';
             perPartPayoutGroup.style.display = 'none';
+            fixedCard.classList.remove('border-gray-200');
             fixedCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
             const dailyIndicator = fixedCard.querySelector('.selected-indicator');
             if (dailyIndicator) dailyIndicator.style.display = 'block';
         } else if (selectedType.value === 'per_part') {
+            console.log('Showing per-part payout fields'); // Debug log
             payoutFields.style.display = 'none';
             perPartPayoutGroup.style.display = 'block';
+            pieceCard.classList.remove('border-gray-200');
             pieceCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
             const pieceIndicator = pieceCard.querySelector('.selected-indicator');
             if (pieceIndicator) pieceIndicator.style.display = 'block';
         }
     } else {
+        console.log('No payment type selected, defaulting to daily'); // Debug log
         // Default: show per_day fields
         payoutFields.style.display = 'block';
         perPartPayoutGroup.style.display = 'none';
+        fixedCard.classList.remove('border-gray-200');
+        fixedCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
+        const dailyIndicator = fixedCard.querySelector('.selected-indicator');
+        if (dailyIndicator) dailyIndicator.style.display = 'block';
     }
 }
 
@@ -442,8 +468,22 @@ function openAddTaskModal() {
     const modal = document.getElementById('add-task-modal');
     if (modal) {
         modal.classList.add('modal-open');
+        
+        // Reset form to default state
+        const form = document.getElementById('addTaskForm');
+        if (form) {
+            form.reset();
+        }
+        
+        // Ensure the per_day radio is checked by default
+        const perDayRadio = document.querySelector('input[name="payment_type"][value="per_day"]');
+        if (perDayRadio) {
+            perDayRadio.checked = true;
+        }
+        
         // Initialize display - ensure per_day is shown by default
         setTimeout(() => {
+            console.log('Initializing payout display on modal open');
             updatePayoutDisplay();
         }, 50);
     }
@@ -464,12 +504,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     const paymentTypeRadios = document.querySelectorAll('input[name="payment_type"]');
+    console.log('Found payment type radios:', paymentTypeRadios.length); // Debug log
     
     paymentTypeRadios.forEach(radio => {
-        radio.addEventListener('change', updatePayoutDisplay);
+        radio.addEventListener('change', function() {
+            console.log('Payment type changed to:', this.value); // Debug log
+            updatePayoutDisplay();
+        });
     });
     
-    // Initialize display
+    // Initialize display with default state
+    console.log('Initializing default payout display'); // Debug log
     updatePayoutDisplay();
     
     // Form submission handler

@@ -433,25 +433,6 @@
                                             {% if task.status == 'Pending' %}
                                             <div class="status-badge pending bg-yellow-100 border-2 border-yellow-200 text-yellow-800 font-semibold px-4 py-3 rounded-xl hover:bg-yellow-200 transition-colors" onclick="toggleStatusDropdown(this)">
                                                 <div class="flex items-center justify-between">
-                                    <div class="mb-6 p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-xl border border-green-200">
-                                        <div class="flex items-center text-green-800 font-semibold">
-                                            <div class="flex-shrink-0 w-10 h-10 bg-green-200 rounded-lg flex items-center justify-center mr-3">
-                                                <i class="fas fa-calendar-day text-green-600"></i>
-                                            </div>
-                                            <div>
-                                                <div class="text-sm font-medium text-green-900">Daily payout per worker</div>
-                                                <div class="text-lg font-bold text-green-800">{{ task.per_day_payout }} {{ task.per_day_currency or '' }}</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {% endif %}
-
-                                    <!-- Status Section -->
-                                    <div class="mb-6">
-                                        <div class="status-dropdown" onclick="event.stopPropagation()">
-                                            {% if task.status == 'Pending' %}
-                                            <div class="status-badge pending bg-yellow-100 border-2 border-yellow-200 text-yellow-800 font-semibold px-4 py-3 rounded-xl hover:bg-yellow-200 transition-colors" onclick="toggleStatusDropdown(this)">
-                                                <div class="flex items-center justify-between">
                                                     <div class="flex items-center">
                                                         <span class="status-indicator pending w-3 h-3 bg-yellow-500 rounded-full mr-3"></span>
                                                         <span class="text-sm font-medium">Pending</span>
@@ -459,6 +440,25 @@
                                                     <i class="fas fa-chevron-down status-chevron ml-3 text-xs transition-transform duration-200"></i>
                                                 </div>
                                             </div>
+                                            {% elif task.status == 'In Progress' %}
+                                            <div class="status-badge in-progress bg-blue-100 border-2 border-blue-200 text-blue-800 font-semibold px-4 py-3 rounded-xl hover:bg-blue-200 transition-colors" onclick="toggleStatusDropdown(this)">
+                                                <div class="flex items-center justify-between">
+                                                    <div class="flex items-center">
+                                                        <span class="status-indicator in-progress w-3 h-3 bg-blue-500 rounded-full mr-3 animate-pulse"></span>
+                                                        <span class="text-sm font-medium">In Progress</span>
+                                                    </div>
+                                                    <i class="fas fa-chevron-down status-chevron ml-3 text-xs transition-transform duration-200"></i>
+                                                </div>
+                                            </div>
+                                            {% else %}
+                                            <div class="status-badge completed bg-green-100 border-2 border-green-200 text-green-800 font-semibold px-4 py-3 rounded-xl hover:bg-green-200 transition-colors" onclick="toggleStatusDropdown(this)">
+                                                <div class="flex items-center justify-between">
+                                                    <div class="flex items-center">
+                                                        <span class="status-indicator completed w-3 h-3 bg-green-500 rounded-full mr-3"></span>
+                                                        <span class="text-sm font-medium">Completed</span>
+                                                    </div>
+                                                    <i class="fas fa-chevron-down status-chevron ml-3 text-xs transition-transform duration-200"></i>
+                                                </div>
                                             </div>
                                             {% endif %}
                                             
@@ -703,17 +703,47 @@
             document.getElementById('edit-task-id').value = taskId;
             document.getElementById('edit-task-name').value = name;
             document.getElementById('edit-task-description').value = description || '';
-            const startDateInput = document.getElementById('edit-task-start-date');
-            startDateInput.value = startDate;
+            document.getElementById('edit-task-start-date').value = startDate;
+            
+            // Update date display
+            const displayDate = new Date(startDate + 'T00:00:00').toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            document.getElementById('edit-selected-date-display').textContent = displayDate;
+            document.getElementById('edit-selected-date-display').classList.remove('text-gray-500');
+            document.getElementById('edit-selected-date-display').classList.add('text-gray-900');
+            editSelectedDateValue = startDate;
+            
+            // Reset card styling
+            const fixedCard = document.getElementById('edit-fixed-card');
+            const pieceCard = document.getElementById('edit-piece-card');
+            fixedCard.classList.remove('border-blue-500', 'bg-blue-50', 'card-selected');
+            pieceCard.classList.remove('border-blue-500', 'bg-blue-50', 'card-selected');
+            fixedCard.classList.add('border-gray-200');
+            pieceCard.classList.add('border-gray-200');
+            
+            // Hide all selected indicators
+            const selectedIndicators = document.querySelectorAll('#edit-fixed-card .selected-indicator, #edit-piece-card .selected-indicator');
+            selectedIndicators.forEach(indicator => indicator.style.display = 'none');
             
             if (paymentType === 'per_part') {
                 document.getElementById('edit-payment-type-part').checked = true;
-                document.getElementById('edit-per-part-payout-group').style.display = '';
+                document.getElementById('edit-per-part-payout-group').style.display = 'block';
                 document.getElementById('edit-per-day-payout-group').style.display = 'none';
+                pieceCard.classList.remove('border-gray-200');
+                pieceCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
+                const pieceIndicator = pieceCard.querySelector('.selected-indicator');
+                if (pieceIndicator) pieceIndicator.style.display = 'block';
             } else {
                 document.getElementById('edit-payment-type-day').checked = true;
                 document.getElementById('edit-per-part-payout-group').style.display = 'none';
-                document.getElementById('edit-per-day-payout-group').style.display = '';
+                document.getElementById('edit-per-day-payout-group').style.display = 'block';
+                fixedCard.classList.remove('border-gray-200');
+                fixedCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
+                const dailyIndicator = fixedCard.querySelector('.selected-indicator');
+                if (dailyIndicator) dailyIndicator.style.display = 'block';
             }
             document.getElementById('edit-per-part-payout').value = perPartPayout || '';
             document.getElementById('edit-per-part-currency').value = perPartCurrency || '';
@@ -735,27 +765,41 @@
                     };
                 }
             }
-            
-            setTimeout(() => {
-                if (startDateInput.datePickerInstance) {
-                    startDateInput.datePickerInstance.setValue(startDate);
-                }
-            }, 100);
         }
 
         function setupEditPaymentTypeToggle() {
             const perPartGroup = document.getElementById('edit-per-part-payout-group');
             const perDayGroup = document.getElementById('edit-per-day-payout-group');
             const radios = document.querySelectorAll('input[name="edit_payment_type"]');
+            const fixedCard = document.getElementById('edit-fixed-card');
+            const pieceCard = document.getElementById('edit-piece-card');
             
             radios.forEach(radio => {
                 radio.addEventListener('change', function() {
+                    // Update card styling
+                    fixedCard.classList.remove('border-blue-500', 'bg-blue-50', 'card-selected');
+                    pieceCard.classList.remove('border-blue-500', 'bg-blue-50', 'card-selected');
+                    fixedCard.classList.add('border-gray-200');
+                    pieceCard.classList.add('border-gray-200');
+                    
+                    // Hide all selected indicators
+                    const selectedIndicators = document.querySelectorAll('#edit-fixed-card .selected-indicator, #edit-piece-card .selected-indicator');
+                    selectedIndicators.forEach(indicator => indicator.style.display = 'none');
+                    
                     if (this.value === 'per_part') {
-                        perPartGroup.style.display = '';
+                        perPartGroup.style.display = 'block';
                         perDayGroup.style.display = 'none';
+                        pieceCard.classList.remove('border-gray-200');
+                        pieceCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
+                        const pieceIndicator = pieceCard.querySelector('.selected-indicator');
+                        if (pieceIndicator) pieceIndicator.style.display = 'block';
                     } else {
                         perPartGroup.style.display = 'none';
-                        perDayGroup.style.display = '';
+                        perDayGroup.style.display = 'block';
+                        fixedCard.classList.remove('border-gray-200');
+                        fixedCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
+                        const dailyIndicator = fixedCard.querySelector('.selected-indicator');
+                        if (dailyIndicator) dailyIndicator.style.display = 'block';
                     }
                     updateEditPayoutLabels(this.value);
                 });
@@ -1110,6 +1154,108 @@
                     document.body.appendChild(modal);
                     modal.showModal();
                 });
+            }
+        }
+
+        // Edit Task Date Picker Functions
+        let editCurrentDate = new Date();
+        let editSelectedDateValue = null;
+
+        function openEditDatePickerModal() {
+            const modal = document.getElementById('edit-date-picker-modal');
+            if (modal) {
+                modal.showModal();
+                renderEditCalendar();
+            }
+        }
+
+        function closeEditDatePickerModal() {
+            const modal = document.getElementById('edit-date-picker-modal');
+            if (modal) {
+                modal.close();
+            }
+        }
+
+        function renderEditCalendar() {
+            const year = editCurrentDate.getFullYear();
+            const month = editCurrentDate.getMonth();
+            
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                               'July', 'August', 'September', 'October', 'November', 'December'];
+            document.getElementById('edit-calendar-month-year').textContent = `${monthNames[month]} ${year}`;
+            
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            const grid = document.getElementById('edit-calendar-grid');
+            grid.innerHTML = '';
+            
+            for (let i = 0; i < firstDay; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = 'p-2';
+                grid.appendChild(emptyCell);
+            }
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateCell = document.createElement('button');
+                dateCell.type = 'button';
+                dateCell.textContent = day;
+                dateCell.className = 'p-2 rounded hover:bg-blue-100 text-center transition';
+                
+                const cellDate = new Date(year, month, day);
+                cellDate.setHours(0, 0, 0, 0);
+                
+                if (cellDate < today) {
+                    dateCell.className += ' text-gray-300 cursor-not-allowed';
+                    dateCell.disabled = true;
+                } else {
+                    dateCell.className += ' hover:bg-blue-100 cursor-pointer';
+                    dateCell.onclick = () => selectEditDate(cellDate);
+                    
+                    if (cellDate.getTime() === today.getTime()) {
+                        dateCell.className += ' font-bold border-2 border-blue-500';
+                    }
+                    
+                    if (editSelectedDateValue && cellDate.getTime() === new Date(editSelectedDateValue).getTime()) {
+                        dateCell.className += ' bg-blue-500 text-white font-bold';
+                    }
+                }
+                
+                grid.appendChild(dateCell);
+            }
+        }
+
+        function selectEditDate(date) {
+            editSelectedDateValue = date.toISOString().split('T')[0];
+            renderEditCalendar();
+        }
+
+        function editPreviousMonth() {
+            editCurrentDate.setMonth(editCurrentDate.getMonth() - 1);
+            renderEditCalendar();
+        }
+
+        function editNextMonth() {
+            editCurrentDate.setMonth(editCurrentDate.getMonth() + 1);
+            renderEditCalendar();
+        }
+
+        function confirmEditDateSelection() {
+            if (editSelectedDateValue) {
+                document.getElementById('edit-task-start-date').value = editSelectedDateValue;
+                const displayDate = new Date(editSelectedDateValue + 'T00:00:00').toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+                document.getElementById('edit-selected-date-display').textContent = displayDate;
+                document.getElementById('edit-selected-date-display').classList.remove('text-gray-500');
+                document.getElementById('edit-selected-date-display').classList.add('text-gray-900');
+                closeEditDatePickerModal();
+            } else {
+                alert('Please select a date');
             }
         }
 </script>

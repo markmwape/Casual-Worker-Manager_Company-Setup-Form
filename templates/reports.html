@@ -988,7 +988,23 @@
             })
             .catch(error => {
                 console.error('Error verifying report data:', error);
-                showCustomModal('Error', 'Failed to verify report data. Please try again.', 'error');
+                // Even if verification fails, attempt the download anyway
+                // The backend will handle validation during actual download
+                const url = `/api/reports?type=${pendingReportType}&start_date=${startDate}&end_date=${endDate}&format=${selectedFormat}`;
+                
+                const link = document.createElement('a');
+                link.href = url;
+                
+                const extension = selectedFormat === 'excel' ? 'xlsx' : 'csv';
+                link.download = `${pendingReportType}_report_${startDate}_to_${endDate}.${extension}`;
+                
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                closeFormatModal();
+                showToast(`${pendingReportType.replace('_', ' ')} report download started! Format: ${selectedFormat.toUpperCase()}`, 'success');
+                
                 downloadBtn.disabled = false;
                 downloadBtn.innerHTML = originalText;
             });

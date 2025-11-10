@@ -954,10 +954,10 @@
         downloadBtn.innerHTML = '<span class="loading loading-spinner loading-sm mr-2"></span>Preparing Download...';
         
         // First, verify data exists on the backend
-        fetch(`/api/verify-report-data?type=${pendingReportType}&start_date=${startDate}&end_date=${endDate}`)
+        fetch(`/api/reports/verify?type=${pendingReportType}&start_date=${startDate}&end_date=${endDate}`)
             .then(response => response.json())
             .then(result => {
-                if (!result.hasData) {
+                if (!result.has_data) {
                     showCustomModal('No Data Available', 'The backend returned no data for the selected date range. Please ensure:\n1. Workers are assigned to tasks\n2. Attendance or units have been recorded\n3. The date range includes your data', 'warning');
                     downloadBtn.disabled = false;
                     downloadBtn.innerHTML = originalText;

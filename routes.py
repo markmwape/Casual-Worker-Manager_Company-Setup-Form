@@ -3553,7 +3553,6 @@ def add_worker_to_task(task_id):
 
 @app.route("/api/worker/bulk-delete", methods=['POST'])
 @subscription_required
-@feature_required('bulk_operations')
 def bulk_delete_workers():
     try:
         data = request.get_json()
@@ -3572,20 +3571,23 @@ def bulk_delete_workers():
         if not workers:
             return jsonify({'error': 'No matching workers found'}), 404
 
+        logging.info(f"Bulk deleting {len(workers)} workers from company {company.id}")
+
         # Delete related custom field values and attendance records
         WorkerCustomFieldValue.query.filter(WorkerCustomFieldValue.worker_id.in_(worker_ids)).delete(synchronize_session=False)
         Attendance.query.filter(Attendance.worker_id.in_(worker_ids)).delete(synchronize_session=False)
         Worker.query.filter(Worker.id.in_(worker_ids), Worker.company_id == company.id).delete(synchronize_session=False)
         db.session.commit()
+        logging.info(f"Successfully deleted {len(worker_ids)} workers")
         return jsonify({'message': f'{len(worker_ids)} workers deleted successfully'}), 200
     except Exception as e:
         logging.error(f"Error bulk deleting workers: {str(e)}")
+        logging.error(traceback.format_exc())
         db.session.rollback()
         return jsonify({'error': 'Failed to bulk delete workers'}), 500
 
 @app.route("/api/worker/delete-all", methods=['DELETE'])
 @subscription_required
-@feature_required('bulk_operations')
 def delete_all_workers():
     try:
         # Get current company from workspace
@@ -3600,6 +3602,8 @@ def delete_all_workers():
         if not worker_ids:
             return jsonify({'message': 'No workers to delete'}), 200
 
+        logging.info(f"Deleting all {len(worker_ids)} workers from company {company.id}")
+
         # Delete related custom field values and attendance records
         WorkerCustomFieldValue.query.filter(WorkerCustomFieldValue.worker_id.in_(worker_ids)).delete(synchronize_session=False)
         Attendance.query.filter(Attendance.worker_id.in_(worker_ids)).delete(synchronize_session=False)
@@ -3608,11 +3612,12 @@ def delete_all_workers():
         Worker.query.filter_by(company_id=company.id).delete(synchronize_session=False)
         
         db.session.commit()
-        logging.info(f"All {len(worker_ids)} workers deleted from company {company.id}")
+        logging.info(f"Successfully deleted all {len(worker_ids)} workers from company {company.id}")
         return jsonify({'message': f'All {len(worker_ids)} workers deleted successfully'}), 200
         
     except Exception as e:
         logging.error(f"Error deleting all workers: {str(e)}")
+        logging.error(traceback.format_exc())
         db.session.rollback()
         return jsonify({'error': 'Failed to delete all workers'}), 500
 

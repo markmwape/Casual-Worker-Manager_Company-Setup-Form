@@ -1214,6 +1214,63 @@ def import_workers_endpoint():
     """Worker import endpoint - alias for existing import function"""
     return import_workers()
 
+@app.route("/api/reports/verify", methods=['GET'])
+@subscription_required
+@feature_required('advanced_reporting')
+def verify_report_data():
+    """Verify if report data exists for given date range"""
+    try:
+        report_type = request.args.get('type', 'per_day')
+        start_date = request.args.get('start_date')
+        end_date = request.args.get('end_date')
+        
+        if not start_date or not end_date:
+            return jsonify({'has_data': False, 'message': 'Missing dates'}), 400
+        
+        # Get current company from workspace
+        company = get_current_company()
+        if not company:
+            return jsonify({'has_data': False, 'message': 'Company not found'}), 404
+        
+        try:
+            start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+        except ValueError:
+            return jsonify({'has_data': False, 'message': 'Invalid date format'}), 400
+        
+        # Check for data based on report type
+        if report_type == 'per_day':
+            # Look for attendance records marked as Present for per_day tasks
+            count = Attendance.query.filter(
+                Attendance.company_id == company.id,
+                Attendance.date.between(start_date, end_date),
+                Attendance.status == 'Present',
+                Attendance.task_id.isnot(None)
+            ).count()
+        elif report_type == 'per_part':
+            # Look for any attendance records with units completed for per_part tasks
+            count = Attendance.query.filter(
+                Attendance.company_id == company.id,
+                Attendance.date.between(start_date, end_date),
+                Attendance.units_completed.isnot(None)
+            ).count()
+        else:
+            return jsonify({'has_data': False, 'message': 'Invalid report type'}), 400
+        
+        has_data = count > 0
+        
+        logging.info(f"Report verification for {report_type}: {count} records found")
+        
+        return jsonify({
+            'has_data': has_data,
+            'record_count': count,
+            'message': f'Found {count} records' if has_data else 'No records found'
+        }), 200
+        
+    except Exception as e:
+        logging.error(f"Error verifying report data: {str(e)}")
+        return jsonify({'has_data': False, 'message': str(e)}), 500
+
 @app.route("/api/reports", methods=['GET'])
 @subscription_required
 @feature_required('advanced_reporting')
@@ -1223,7 +1280,9 @@ def download_reports():
         report_type = request.args.get('type', 'per_day')
         start_date = request.args.get('start_date')
         end_date = request.args.get('end_date')
-        format_type = request.args.get('format', 'csv').lower()  # New: format parameter
+        format_type = request.args.get('format', 'csv').lower()
+        
+        logging.info(f"Report download request: type={report_type}, format={format_type}, dates={start_date} to {end_date}")
         
         if not start_date or not end_date:
             return jsonify({'error': 'Start date and end date are required'}), 400
@@ -1236,33 +1295,46 @@ def download_reports():
         company = get_current_company()
         
         if not company:
+            logging.error("Company not found for current workspace")
             return jsonify({'error': 'Company not found'}), 404
         
         # Parse dates
         try:
-            start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
-            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
-        except ValueError:
+            start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
+            end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').date()
+        except ValueError as e:
+            logging.error(f"Invalid date format: {str(e)}")
             return jsonify({'error': 'Invalid date format. Use YYYY-MM-DD'}), 400
         
         # Generate report data based on type
         if report_type == 'per_day':
-            # Generate per day report
-            report_data = generate_per_day_report(company, start_date, end_date)
+            logging.info(f"Generating per_day report for company {company.id} from {start_date_obj} to {end_date_obj}")
+            report_data = generate_per_day_report(company, start_date_obj, end_date_obj)
         elif report_type == 'per_part':
-            # Generate per part report
-            report_data = generate_per_part_report(company, start_date, end_date)
+            logging.info(f"Generating per_part report for company {company.id} from {start_date_obj} to {end_date_obj}")
+            report_data = generate_per_part_report(company, start_date_obj, end_date_obj)
         else:
             return jsonify({'error': 'Invalid report type'}), 400
         
+        logging.info(f"Report generated with {len(report_data) if report_data else 0} records")
+        
+        # Check if we have data
+        if not report_data:
+            logging.warning(f"No data found for {report_type} report from {start_date_obj} to {end_date_obj}")
+            return jsonify({'error': 'No data available for the selected date range'}), 400
+        
         # Generate file based on format
         if format_type == 'csv':
-            return generate_csv_response(report_data, report_type, start_date, end_date)
+            response = generate_csv_response(report_data, report_type, start_date_obj, end_date_obj)
         elif format_type in ['excel', 'xlsx']:
-            return generate_excel_response(report_data, report_type, start_date, end_date)
+            response = generate_excel_response(report_data, report_type, start_date_obj, end_date_obj)
+        
+        logging.info(f"Report successfully generated and ready for download")
+        return response
         
     except Exception as e:
         logging.error(f"Error generating report: {str(e)}")
+        logging.error(traceback.format_exc())
         return jsonify({'error': 'Failed to generate report'}), 500
 
 def generate_csv_response(report_data, report_type, start_date, end_date):
@@ -1270,39 +1342,68 @@ def generate_csv_response(report_data, report_type, start_date, end_date):
     import io
     import csv
     
-    filename = f'{report_type}_report_{start_date}_to_{end_date}.csv'
-    
-    output = io.StringIO()
-    if report_data:
-        writer = csv.DictWriter(output, fieldnames=report_data[0].keys())
-        writer.writeheader()
-        writer.writerows(report_data)
-    
-    output.seek(0)
-    
-    # Create response
-    response = make_response(output.getvalue())
-    response.headers['Content-Type'] = 'text/csv'
-    response.headers['Content-Disposition'] = f'attachment; filename={filename}'
-    
-    return response
+    try:
+        filename = f'{report_type}_report_{start_date}_to_{end_date}.csv'
+        
+        output = io.StringIO()
+        
+        if report_data and len(report_data) > 0:
+            # Get fieldnames from first record
+            fieldnames = list(report_data[0].keys())
+            
+            # Create CSV writer with explicit parameters
+            writer = csv.DictWriter(output, fieldnames=fieldnames, restval='', extrasaction='ignore')
+            
+            # Write header
+            writer.writeheader()
+            
+            # Write data rows
+            for row in report_data:
+                writer.writerow(row)
+            
+            logging.info(f"CSV generated with {len(report_data)} rows and {len(fieldnames)} columns")
+        else:
+            logging.warning("No data to write to CSV")
+        
+        output.seek(0)
+        csv_content = output.getvalue()
+        
+        # Create response with proper encoding
+        response = make_response(csv_content.encode('utf-8-sig'))  # utf-8-sig includes BOM for Excel compatibility
+        response.headers['Content-Type'] = 'text/csv; charset=utf-8'
+        response.headers['Content-Disposition'] = f'attachment; filename="{filename}"'
+        response.headers['Content-Length'] = len(response.get_data())
+        
+        logging.info(f"CSV response prepared: {filename} ({len(response.get_data())} bytes)")
+        
+        return response
+        
+    except Exception as e:
+        logging.error(f"Error generating CSV response: {str(e)}")
+        logging.error(traceback.format_exc())
+        raise
 
 def generate_excel_response(report_data, report_type, start_date, end_date):
     """Generate Excel file response"""
     try:
         import pandas as pd
+        from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+        from openpyxl.utils import get_column_letter
         import io
         
         filename = f'{report_type}_report_{start_date}_to_{end_date}.xlsx'
         
         # Create DataFrame from report data
-        if report_data:
+        if report_data and len(report_data) > 0:
             df = pd.DataFrame(report_data)
+            logging.info(f"Created DataFrame with {len(df)} rows and {len(df.columns)} columns")
         else:
+            logging.warning("No data provided for Excel generation, creating empty workbook")
             df = pd.DataFrame()
         
         # Create Excel file in memory
         output = io.BytesIO()
+        
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
             # Write data to 'Report' sheet
             df.to_excel(writer, sheet_name='Report', index=False)
@@ -1311,57 +1412,98 @@ def generate_excel_response(report_data, report_type, start_date, end_date):
             workbook = writer.book
             worksheet = writer.sheets['Report']
             
+            # Define styles
+            header_fill = PatternFill(start_color='1F4E78', end_color='1F4E78', fill_type='solid')
+            header_font = Font(bold=True, color='FFFFFF', size=11)
+            border = Border(
+                left=Side(style='thin'),
+                right=Side(style='thin'),
+                top=Side(style='thin'),
+                bottom=Side(style='thin')
+            )
+            
+            # Format header row
+            for cell in worksheet[1]:
+                cell.fill = header_fill
+                cell.font = header_font
+                cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+                cell.border = border
+            
+            # Format data rows
+            for row in worksheet.iter_rows(min_row=2, max_row=worksheet.max_row, min_col=1, max_col=worksheet.max_column):
+                for cell in row:
+                    cell.border = border
+                    cell.alignment = Alignment(horizontal='left', vertical='center', wrap_text=True)
+                    
+                    # Right-align numbers
+                    if isinstance(cell.value, (int, float)):
+                        cell.alignment = Alignment(horizontal='right', vertical='center')
+            
             # Auto-adjust column widths
-            for column in worksheet.columns:
+            for idx, column in enumerate(worksheet.columns, 1):
                 max_length = 0
-                column_letter = column[0].column_letter
+                column_letter = get_column_letter(idx)
+                
                 for cell in column:
                     try:
-                        if len(str(cell.value)) > max_length:
-                            max_length = len(str(cell.value))
+                        if cell.value:
+                            cell_length = len(str(cell.value))
+                            if cell_length > max_length:
+                                max_length = cell_length
                     except:
                         pass
-                adjusted_width = min(max_length + 2, 50)  # Cap at 50 characters
+                
+                adjusted_width = min(max_length + 3, 50)  # Cap at 50 characters
                 worksheet.column_dimensions[column_letter].width = adjusted_width
+            
+            # Set row height for header
+            worksheet.row_dimensions[1].height = 25
+            
+            logging.info(f"Excel formatting completed: {worksheet.max_row} rows, {worksheet.max_column} columns")
         
         output.seek(0)
+        excel_bytes = output.getvalue()
         
         # Create response
-        response = make_response(output.getvalue())
+        response = make_response(excel_bytes)
         response.headers['Content-Type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        response.headers['Content-Disposition'] = f'attachment; filename={filename}'
+        response.headers['Content-Disposition'] = f'attachment; filename="{filename}"'
+        response.headers['Content-Length'] = len(excel_bytes)
+        
+        logging.info(f"Excel response prepared: {filename} ({len(excel_bytes)} bytes)")
         
         return response
         
-    except ImportError:
-        # Fallback to CSV if pandas/openpyxl is not available
-        logging.warning("pandas or openpyxl not available, falling back to CSV")
+    except ImportError as e:
+        logging.warning(f"pandas or openpyxl not available, falling back to CSV: {str(e)}")
         return generate_csv_response(report_data, report_type, start_date, end_date)
     except Exception as e:
         logging.error(f"Error generating Excel file: {str(e)}")
+        logging.error(traceback.format_exc())
         # Fallback to CSV on error
-        return generate_csv_response(report_data, report_type, start_date, end_date)
-        
-    except Exception as e:
-        logging.error(f"Error generating report: {str(e)}")
-        return jsonify({'error': 'Failed to generate report'}), 500
+        try:
+            return generate_csv_response(report_data, report_type, start_date, end_date)
+        except Exception as csv_error:
+            logging.error(f"CSV fallback also failed: {str(csv_error)}")
+            return jsonify({'error': 'Failed to generate report file'}), 500
 
 def generate_per_day_report(company, start_date, end_date):
     """Generate per day report data"""
     try:
+        logging.info(f"Starting per_day report generation for company {company.id}")
+        
         # Get all workers for the company
         workers = Worker.query.filter_by(company_id=company.id).all()
+        logging.info(f"Found {len(workers)} workers")
         
         # Get custom fields for this company
         import_fields = ImportField.query.filter_by(company_id=company.id).all()
-        
-        # Get custom report fields
         custom_fields = ReportField.query.filter_by(company_id=company.id).all()
         
         report_data = []
         
         for worker in workers:
-            # Find all attendance records for this worker in the date range for per_day tasks
+            # Find all attendance records for this worker in the date range
             attendance_records = Attendance.query.filter(
                 Attendance.worker_id == worker.id,
                 Attendance.company_id == company.id,
@@ -1369,7 +1511,9 @@ def generate_per_day_report(company, start_date, end_date):
                 Attendance.status == 'Present'
             ).all()
             
-            # Group by task (only per_day tasks that are active during the report period)
+            logging.debug(f"Worker {worker.id}: Found {len(attendance_records)} attendance records")
+            
+            # Group by task (only per_day tasks)
             per_day_tasks = {}
             for att in attendance_records:
                 if att.task and getattr(att.task, 'payment_type', None) == 'per_day':
@@ -1405,34 +1549,39 @@ def generate_per_day_report(company, start_date, end_date):
                     ).first()
                     record[field.name] = custom_value.value if custom_value else ''
                 
-                # Add custom report fields (simplified)
+                # Add custom report fields
                 for field in custom_fields:
                     if field.field_type == 'numeric' and field.formula:
-                        # Simple formula evaluation (you might want to make this more robust)
                         try:
-                            # Replace variables in formula with actual values
                             formula = field.formula
                             formula = formula.replace('attendance_days', str(days))
                             formula = formula.replace('daily_rate', str(record['daily_rate'] or 0))
                             record[field.name] = eval(formula)
-                        except:
+                        except Exception as e:
+                            logging.warning(f"Failed to evaluate formula for field {field.name}: {str(e)}")
                             record[field.name] = 0
                     else:
                         record[field.name] = field.value or ''
                 
                 report_data.append(record)
         
+        logging.info(f"Per_day report generation complete: {len(report_data)} records")
         return report_data
         
     except Exception as e:
         logging.error(f"Error generating per day report: {str(e)}")
+        logging.error(traceback.format_exc())
         return []
 
 def generate_per_part_report(company, start_date, end_date):
     """Generate per part report data"""
     try:
-        # Similar to per_day but for per_part tasks
+        logging.info(f"Starting per_part report generation for company {company.id}")
+        
+        # Get all workers for the company
         workers = Worker.query.filter_by(company_id=company.id).all()
+        logging.info(f"Found {len(workers)} workers")
+        
         import_fields = ImportField.query.filter_by(company_id=company.id).all()
         custom_fields = ReportField.query.filter_by(company_id=company.id).all()
         
@@ -1446,7 +1595,9 @@ def generate_per_part_report(company, start_date, end_date):
                 Attendance.date.between(start_date, end_date)
             ).all()
             
-            # Group by task (only per_part tasks that are active during the report period)
+            logging.debug(f"Worker {worker.id}: Found {len(attendance_records)} attendance records")
+            
+            # Group by task (only per_part tasks)
             per_part_tasks = {}
             for att in attendance_records:
                 if att.task and getattr(att.task, 'payment_type', None) == 'per_part':
@@ -1458,7 +1609,9 @@ def generate_per_part_report(company, start_date, end_date):
                                 'task': att.task,
                                 'units': 0
                             }
-                        per_part_tasks[task_id]['units'] += getattr(att, 'units_completed', 0)
+                        # Sum up the units completed
+                        units = getattr(att, 'units_completed', 0) or 0
+                        per_part_tasks[task_id]['units'] += units
             
             # Create record for each per_part task
             for task_id, task_data in per_part_tasks.items():
@@ -1490,17 +1643,20 @@ def generate_per_part_report(company, start_date, end_date):
                             formula = formula.replace('units_completed', str(units))
                             formula = formula.replace('per_part_rate', str(record['per_part_rate'] or 0))
                             record[field.name] = eval(formula)
-                        except:
+                        except Exception as e:
+                            logging.warning(f"Failed to evaluate formula for field {field.name}: {str(e)}")
                             record[field.name] = 0
                     else:
                         record[field.name] = field.value or ''
                 
                 report_data.append(record)
         
+        logging.info(f"Per_part report generation complete: {len(report_data)} records")
         return report_data
         
     except Exception as e:
         logging.error(f"Error generating per part report: {str(e)}")
+        logging.error(traceback.format_exc())
         return []
 
 @app.route("/api/worker", methods=['POST'])

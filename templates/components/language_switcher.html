@@ -1,14 +1,14 @@
 <!-- Language Switcher Component -->
 <div class="language-switcher-container">
     <div class="dropdown dropdown-end">
-        <button class="btn btn-sm btn-ghost gap-2" id="languageToggle">
+        <label tabindex="0" class="btn btn-sm btn-ghost gap-2" id="languageToggle">
             <span class="text-lg">🌐</span>
             <span id="currentLangLabel">English</span>
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
             </svg>
-        </button>
-        <ul class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52" id="languageMenu">
+        </label>
+        <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52 mt-2" id="languageMenu">
             <!-- Populated by JavaScript -->
         </ul>
     </div>
@@ -49,27 +49,39 @@
                     const languageMenu = document.getElementById('languageMenu');
                     if (languageMenu) {
                         languageMenu.innerHTML = ''; // Clear existing items
+                        let itemCount = 0;
                         for (const [code, name] of Object.entries(languages)) {
                             const li = document.createElement('li');
                             const a = document.createElement('a');
                             a.textContent = name;
-                            a.href = '#';
-                            a.onclick = (e) => {
+                            a.href = 'javascript:void(0)';
+                            a.setAttribute('data-lang', code);
+                            a.style.cursor = 'pointer';
+                            
+                            // Add click handler
+                            a.addEventListener('click', function(e) {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                console.log('Language clicked:', code);
-                                changeLanguage(code);
-                                return false;
-                            };
+                                const lang = this.getAttribute('data-lang');
+                                console.log('Language clicked:', lang, '(' + name + ')');
+                                changeLanguage(lang);
+                            });
                             
                             if (code === currentLanguage) {
-                                a.classList.add('active');
+                                a.classList.add('active', 'font-bold');
                             }
                             
                             li.appendChild(a);
                             languageMenu.appendChild(li);
+                            itemCount++;
                         }
-                        console.log('Language menu populated with', Object.keys(languages).length, 'languages');
+                        console.log('Language menu populated with', itemCount, 'languages');
+                        
+                        // Test that menu is visible
+                        setTimeout(() => {
+                            const menuRect = languageMenu.getBoundingClientRect();
+                            console.log('Language menu position:', menuRect);
+                        }, 100);
                     } else {
                         console.error('Language menu element not found');
                     }

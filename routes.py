@@ -2,6 +2,7 @@ from models import WorkerImportLog, ImportField, WorkerCustomFieldValue, ReportF
 from models import Attendance, Task, Worker, Company, User, Workspace, UserWorkspace, MasterAdmin
 from flask import render_template, session, redirect, url_for, make_response, abort, request, jsonify, send_file
 from app_init import app, db
+from flask_babel import gettext
 from datetime import timedelta
 from sqlalchemy import and_
 import json

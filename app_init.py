@@ -5,6 +5,7 @@ import traceback
 import subprocess
 from datetime import datetime
 from models import db, User, Company, Workspace, UserWorkspace
+from flask_babel import Babel, gettext, ngettext
 
 # Load environment variables from .env file
 try:
@@ -74,8 +75,46 @@ app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # 1 hour
 
+# Configure Flask-Babel
+app.config['BABEL_DEFAULT_LOCALE'] = 'en'
+app.config['BABEL_DEFAULT_TIMEZONE'] = 'UTC'
+app.config['LANGUAGES'] = {
+    'en': 'English',
+    'fr': 'Français',
+    'sw': 'Swahili',
+    'pt': 'Português',
+    'es': 'Español',
+    'tr': 'Türkçe',
+    'hi': 'हिंदी',
+    'zh': '中文',
+    'ar': 'العربية',
+    'vi': 'Tiếng Việt'
+}
+
 # Initialize extensions
 db.init_app(app)
+
+# Initialize Babel
+babel = Babel(app)
+
+@babel.localeselector
+def get_locale():
+    """Select the best language for the user"""
+    if 'user' in session and 'user_email' in session['user']:
+        try:
+            user = User.query.filter_by(email=session['user']['user_email']).first()
+            if user and user.language_preference:
+                return user.language_preference
+        except Exception as e:
+            logging.warning(f"Could not get user language preference: {e}")
+    
+    # Check URL argument for language override
+    lang = request.args.get('lang')
+    if lang in app.config['LANGUAGES']:
+        return lang
+    
+    # Use browser language preference
+    return request.accept_languages.best_match(app.config['LANGUAGES'].keys()) or 'en'
 
 # Initialize database tables with better error handling
 def init_database_safely():
@@ -183,6 +222,7 @@ def master_admin_required(f):
 
 # Import routes to register them with the app early
 import routes
+import language_routes
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

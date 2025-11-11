@@ -13,3 +13,4 @@ psycopg2-binary
 alembic
 python-dotenv
 google-cloud-secret-manager
+Flask-Babel==2.0.0

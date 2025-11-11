@@ -1,0 +1,97 @@
+<!-- Language Switcher Component -->
+<div class="language-switcher-container">
+    <div class="dropdown dropdown-end">
+        <button class="btn btn-sm btn-ghost gap-2" id="languageToggle">
+            <span class="text-lg">🌐</span>
+            <span id="currentLangLabel">English</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+            </svg>
+        </button>
+        <ul class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52" id="languageMenu">
+            <!-- Populated by JavaScript -->
+        </ul>
+    </div>
+</div>
+
+<style>
+    .language-switcher-container {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    @media (max-width: 768px) {
+        .language-switcher-container {
+            margin: 0.5rem 0;
+        }
+    }
+</style>
+
+<script>
+    // Initialize language switcher
+    document.addEventListener('DOMContentLoaded', async function() {
+        try {
+            // Fetch available languages
+            const response = await fetch('/api/languages');
+            const data = await response.json();
+            const languages = data.languages || {};
+            const currentLanguage = data.current_language || 'en';
+            
+            // Populate language menu
+            const languageMenu = document.getElementById('languageMenu');
+            if (languageMenu) {
+                for (const [code, name] of Object.entries(languages)) {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.textContent = name;
+                    a.onclick = (e) => {
+                        e.preventDefault();
+                        changeLanguage(code);
+                    };
+                    
+                    if (code === currentLanguage) {
+                        a.classList.add('active');
+                    }
+                    
+                    li.appendChild(a);
+                    languageMenu.appendChild(li);
+                }
+            }
+            
+            // Update current language label
+            const currentLangLabel = document.getElementById('currentLangLabel');
+            if (currentLangLabel && languages[currentLanguage]) {
+                currentLangLabel.textContent = languages[currentLanguage];
+            }
+        } catch (error) {
+            console.error('Error loading languages:', error);
+        }
+    });
+    
+    // Change language function
+    async function changeLanguage(langCode) {
+        try {
+            const response = await fetch('/api/change-language', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ language: langCode })
+            });
+            
+            if (response.ok) {
+                // Reload page to apply new language
+                window.location.reload();
+            } else {
+                alert('Error changing language');
+            }
+        } catch (error) {
+            console.error('Error changing language:', error);
+            alert('Error changing language');
+        }
+    }
+    
+    // Make changeLanguage globally available
+    window.changeLanguage = changeLanguage;
+</script>

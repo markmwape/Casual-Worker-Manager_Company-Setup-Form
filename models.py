@@ -118,6 +118,7 @@ class User(db.Model):
     email = db.Column(db.String(150), unique=True, nullable=False)
     profile_picture = db.Column(db.String(255))
     role = db.Column(db.String(20), default='Viewer')
+    language_preference = db.Column(db.String(10), default='en', nullable=False)  # Language code: en, fr, sw, pt, es, tr, hi, zh, ar
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     companies = db.relationship('Company', backref='creator', lazy=True)
     workers = db.relationship('Worker', backref='creator', lazy=True)

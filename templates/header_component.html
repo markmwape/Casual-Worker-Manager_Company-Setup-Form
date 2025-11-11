@@ -1,11 +1,13 @@
 <div>Lazy AI Test Website</div>
 {% if user %}
 <div class="header-buttons">
+    {% include 'components/language_switcher.html' %}
     <button class="profile-button" id="profile-button">My Profile</button>
     <button class="signout-button" id="signout-button">Sign Out</button>
 </div>
 {% else %}
 <div>
+    {% include 'components/language_switcher.html' %}
     <button class="signin-button" onclick="location.href='/signin'">Sign In</button>
 </div>
 {% endif %}

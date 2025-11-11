@@ -90,6 +90,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-touch.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/date-picker.css') }}">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="{{ url_for('static', filename='js/i18n.js') }}"></script>
 
     {% block head %}{% endblock %}
     
@@ -272,6 +273,10 @@
         
         <!-- Sign Out Section (Non-scrolling) -->
         <div class="flex-shrink-0 p-4 border-t border-white/10">
+            <!-- Language Switcher in Sidebar -->
+            <div class="mb-4">
+                {% include 'components/language_switcher.html' %}
+            </div>
             <a href="{{ url_for('signout') }}" class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg text-white/90 hover:bg-white/10 transition-all duration-200 touch-manipulation min-h-[48px] cursor-pointer no-underline" style="z-index:41;">
                 <span class="material-icons mr-3 flex-shrink-0">logout</span> 
                 <span class="font-medium flex-shrink-0">Sign Out</span>

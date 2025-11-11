@@ -14,7 +14,7 @@ def change_language():
         language = data.get('language', 'en').lower()
         
         # Validate language code
-        valid_languages = ['en', 'fr', 'sw', 'pt', 'es', 'tr', 'hi', 'zh', 'ar']
+        valid_languages = ['en', 'fr', 'sw', 'pt', 'es', 'tr', 'hi', 'zh', 'ar', 'vi']
         if language not in valid_languages:
             return jsonify({"error": "Invalid language code"}), 400
         

@@ -338,6 +338,10 @@
                 
                 <!-- Footer Section -->
                 <div class="flex-shrink-0 p-4 border-t border-white/10">
+                    <!-- Language Switcher in Sidebar -->
+                    <div class="mb-4">
+                        {% include 'components/language_switcher.html' %}
+                    </div>
                     <a href="{{ url_for('signout') }}" 
                        class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg text-white/90 min-h-[48px] no-underline">
                         <span class="material-icons mr-3 flex-shrink-0">logout</span> 

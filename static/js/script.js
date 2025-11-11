@@ -1636,16 +1636,25 @@ window.importWithMapping = async function() {
         if (result.error) {
             showCustomModal('Import Failed', `Import failed: ${result.error}`, 'error');
         } else {
-            // Show success message with details
-            const successMsg = `Import completed successfully!\n\nTotal records: ${result.total_records}\nSuccessful imports: ${result.successful_imports}\nDuplicates skipped: ${result.duplicate_records}\nErrors: ${result.error_records}`;
+            // Build success message
+            let successMsg = `Import completed!\n\nTotal records: ${result.total_records}\nSuccessful imports: ${result.successful_imports}\nDuplicates skipped: ${result.duplicate_records}\nErrors: ${result.error_records}`;
+            
+            // Add limit warning if applicable
+            if (result.limit_warning) {
+                successMsg += `\n\n⚠️ LIMIT WARNING:\n${result.limit_warning}\n\nYour current plan allows ${result.current_limit} workers. You now have ${result.current_count} workers.`;
+            }
+            
+            // Determine modal type based on errors and limits
+            const modalType = (result.error_records > 0 || result.limit_exceeded) ? 'warning' : 'success';
+            const modalTitle = result.limit_exceeded ? 'Import Completed - Limit Reached' : 'Import Success';
             
             if (result.error_records > 0) {
-                const showDetails = await showCustomConfirm('Import Completed', successMsg + '\n\nWould you like to see the error details?');
+                const showDetails = await showCustomConfirm(modalTitle, successMsg + '\n\nWould you like to see the error details?');
                 if (showDetails && result.error_details) {
                     showCustomModal('Error Details', 'Error details:\n' + result.error_details.join('\n'), 'warning');
                 }
             } else {
-                showCustomModal('Import Success', successMsg, 'success');
+                showCustomModal(modalTitle, successMsg, modalType);
             }
             
             // Switch to results view

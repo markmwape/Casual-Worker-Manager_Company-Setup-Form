@@ -1209,7 +1209,6 @@ def handle_workers():
 
 @app.route("/api/workers/import", methods=['POST'])
 @subscription_required
-@worker_limit_check
 def import_workers_endpoint():
     """Worker import endpoint - alias for existing import function"""
     return import_workers()
@@ -2051,7 +2050,6 @@ from abilities import llm
 
 @app.route("/api/worker/import", methods=['POST'])
 @subscription_required
-@worker_limit_check
 def import_workers():
     try:
         # Validate upload
@@ -3009,7 +3007,6 @@ def analyze_columns():
         return jsonify({'error': f'Failed to analyze Excel file: {str(e)}'}), 500
 @app.route("/api/worker/import-mapped", methods=['POST'])
 @subscription_required
-@worker_limit_check
 def import_mapped_workers():
     file_path = None
     try:
@@ -3047,15 +3044,53 @@ def import_mapped_workers():
         if not company:
             return jsonify({'error': 'Company not found'}), 404
         
+        # Check worker limit before importing
+        from tier_config import validate_tier_access, get_worker_limit
+        workspace_id = session['current_workspace']['id']
+        workspace = Workspace.query.get(workspace_id)
+        
+        current_worker_count = Worker.query.filter_by(company_id=company.id).count()
+        worker_limit = get_worker_limit(workspace.subscription_tier or 'starter')
+        
+        # Calculate how many workers can be imported
+        limit_exceeded = False
+        limit_warning = None
+        max_can_import = None
+        
+        if worker_limit is not None:  # None means unlimited
+            max_can_import = worker_limit - current_worker_count
+            if max_can_import < 0:
+                max_can_import = 0
+            
+            if max_can_import == 0:
+                return jsonify({
+                    'error': f'Worker limit reached. Your {workspace.subscription_tier or "starter"} tier allows {worker_limit} workers, and you already have {current_worker_count} workers.'
+                }), 403
+            
+            # Check if we're trying to import more than allowed
+            # We'll allow partial imports up to the limit
+            if len(df) > max_can_import:
+                limit_exceeded = True
+                limit_warning = f'You can only import {max_can_import} out of {len(df)} workers due to your subscription limit.'
+        
         total_records = len(df)
         successful_imports = 0
         duplicate_records = 0
         error_records = 0
         error_details = []
+        limited_by_tier = False
+        rows_skipped_due_to_limit = 0
         
         # Process each row individually
         for index, row in df.iterrows():
             try:
+                # Check if we've reached the import limit
+                if worker_limit is not None and successful_imports >= max_can_import:
+                    logging.info(f"Stopped importing at limit. Imported {successful_imports} out of {len(df)} workers.")
+                    rows_skipped_due_to_limit = len(df) - index
+                    limited_by_tier = True
+                    break
+                
                 # Check if this is an empty row - skip if all mapped values are empty
                 row_has_data = False
                 for field, excel_col in mapping.items():
@@ -3221,14 +3256,25 @@ def import_mapped_workers():
         except Exception as e:
             logging.warning(f"Could not remove uploaded file {file_path}: {str(e)}")
         
-        return jsonify({
+        # Build response with warning if applicable
+        response_data = {
             'message': 'Import completed',
             'total_records': total_records,
             'successful_imports': successful_imports,
             'duplicate_records': duplicate_records,
             'error_records': error_records,
             'error_details': error_details
-        }), 200
+        }
+        
+        # Add limit warning if applicable
+        if limited_by_tier:
+            response_data['limit_warning'] = limit_warning
+            response_data['limit_exceeded'] = True
+            response_data['current_limit'] = worker_limit
+            response_data['current_count'] = current_worker_count + successful_imports
+            response_data['rows_skipped_due_to_limit'] = rows_skipped_due_to_limit
+        
+        return jsonify(response_data), 200
         
     except Exception as e:
         logging.error(f"Error importing mapped workers: {str(e)}")

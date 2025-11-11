@@ -127,7 +127,9 @@ def init_database_safely():
             
             # Add missing columns if needed
             from sqlalchemy import text
-            columns_to_add = [
+            
+            # Workspace columns
+            workspace_columns = [
                 ("subscription_tier", "VARCHAR(50)", "free"),
                 ("subscription_status", "VARCHAR(50)", "active"), 
                 ("trial_end_date", "DATETIME", None),
@@ -135,7 +137,7 @@ def init_database_safely():
                 ("stripe_subscription_id", "VARCHAR(255)", None)
             ]
             
-            for column_name, column_type, default_value in columns_to_add:
+            for column_name, column_type, default_value in workspace_columns:
                 try:
                     if default_value:
                         sql = f"ALTER TABLE workspace ADD COLUMN IF NOT EXISTS {column_name} {column_type} DEFAULT '{default_value}'"
@@ -144,6 +146,24 @@ def init_database_safely():
                     
                     db.session.execute(text(sql))
                     logging.info(f"✅ Added column {column_name} to workspace table")
+                except Exception as col_error:
+                    logging.info(f"Column {column_name} already exists or couldn't be added: {str(col_error)}")
+                    continue
+            
+            # User table columns - for multi-language support
+            user_columns = [
+                ("language_preference", "VARCHAR(10)", "en")
+            ]
+            
+            for column_name, column_type, default_value in user_columns:
+                try:
+                    if default_value:
+                        sql = f"ALTER TABLE \"user\" ADD COLUMN IF NOT EXISTS {column_name} {column_type} DEFAULT '{default_value}'"
+                    else:
+                        sql = f"ALTER TABLE \"user\" ADD COLUMN IF NOT EXISTS {column_name} {column_type}"
+                    
+                    db.session.execute(text(sql))
+                    logging.info(f"✅ Added column {column_name} to user table")
                 except Exception as col_error:
                     logging.info(f"Column {column_name} already exists or couldn't be added: {str(col_error)}")
                     continue

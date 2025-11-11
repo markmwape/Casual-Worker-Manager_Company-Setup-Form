@@ -1911,8 +1911,8 @@ async function deleteSelectedWorkers() {
     
     const workerIds = Array.from(checkedBoxes).map(cb => cb.dataset.workerId);
     
-    fetch('/api/worker/delete-selected', {
-        method: 'DELETE',
+    fetch('/api/worker/bulk-delete', {
+        method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
@@ -1923,7 +1923,7 @@ async function deleteSelectedWorkers() {
         if (result.error) {
             showToast(result.error, 'error');
         } else {
-            showToast(`${result.deleted_count} worker(s) deleted successfully!`, 'success');
+            showToast(`${checkedBoxes.length} worker(s) deleted successfully!`, 'success');
             setTimeout(() => {
                 window.location.reload();
             }, 1000);

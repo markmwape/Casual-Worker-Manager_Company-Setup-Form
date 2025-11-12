@@ -115,9 +115,15 @@
             .then(response => {
                 console.log('Change language response status:', response.status);
                 if (response.ok) {
-                    console.log('Language changed successfully, reloading page...');
-                    // Reload page to apply new language
-                    window.location.reload();
+                    console.log('Language changed successfully, updating page...');
+                    // Update the page using i18n system instead of full reload
+                    if (window.i18n && typeof window.i18n.setLanguage === 'function') {
+                        console.log('Using i18n.setLanguage to update page');
+                        window.i18n.setLanguage(langCode);
+                    } else {
+                        console.log('i18n system not available, reloading page');
+                        window.location.reload();
+                    }
                 } else {
                     console.error('Error response from change-language endpoint');
                     alert('Error changing language');
@@ -131,9 +137,7 @@
             console.error('Error in changeLanguage function:', error);
             alert('Error changing language');
         }
-    }
-    
-    // Make changeLanguage globally available
+    }    // Make changeLanguage globally available
     window.changeLanguage = changeLanguage;
     
     // Initialize on DOM ready

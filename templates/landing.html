@@ -122,33 +122,33 @@
         
         <div class="hero-content flex-col lg:flex-row justify-between items-center max-w-7xl mx-auto px-4 relative z-10">
             <div class="text-center lg:text-left w-full lg:w-1/2">
-                <div class="badge badge-primary mb-4 text-sm font-semibold">
+                <div class="badge badge-primary mb-4 text-sm font-semibold" data-i18n="75% Time Savings for Firms">
                     <i class="fas fa-chart-line mr-1"></i>75% Time Savings for Firms
                 </div>
                 <h1 class="text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-                    Professional 
+                    <span data-i18n="Professional Workforce Management">Professional 
                     <span class="text-brand-navy-200">Workforce</span> 
-                    Management
+                    Management</span>
                 </h1>
-                <p class="text-xl text-brand-navy-100 mb-8 leading-relaxed">
+                <p class="text-xl text-brand-navy-100 mb-8 leading-relaxed" data-i18n="Transform your casual workforce operations with smart attendance tracking, automated payroll, and powerful analytics that save time and reduce costs.">
                     Transform your casual workforce operations with smart attendance tracking, automated payroll, and powerful analytics that save time and reduce costs.
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                     <a href="{{ url_for('signin_route') }}" class="btn btn-primary btn-lg font-semibold text-lg px-8 bg-brand-navy-500 text-white hover:bg-brand-navy-600">
-                        <i class="fas fa-rocket mr-2"></i>Login / Sign Up
+                        <i class="fas fa-rocket mr-2"></i><span data-i18n="Login / Sign Up">Login / Sign Up</span>
                     </a>
                     <a href="#demo" class="btn btn-outline btn-lg font-semibold text-lg px-8 border-white text-white hover:bg-white hover:text-brand-navy-500">
-                        <i class="fas fa-eye mr-2"></i>Watch Demo
+                        <i class="fas fa-eye mr-2"></i><span data-i18n="Watch Demo">Watch Demo</span>
                     </a>
                 </div>
                 <div class="flex items-center justify-center lg:justify-start mt-8 space-x-6 text-brand-navy-200">
                     <div class="flex items-center">
                         <i class="fas fa-check-circle mr-2 text-green-400"></i>
-                        <span class="text-sm">No Credit Card Required</span>
+                        <span class="text-sm" data-i18n="No Credit Card Required">No Credit Card Required</span>
                     </div>
                     <div class="flex items-center">
                         <i class="fas fa-check-circle mr-2 text-green-400"></i>
-                        <span class="text-sm">30-Day Free Trial</span>
+                        <span class="text-sm" data-i18n="30-Day Free Trial">30-Day Free Trial</span>
                     </div>
                 </div>
             </div>
@@ -167,19 +167,19 @@
             <div class="flex flex-wrap justify-center items-center space-x-8 lg:space-x-16 opacity-60">
                 <div class="flex items-center">
                     <i class="fas fa-shield-alt text-2xl text-brand-navy-500 mr-3"></i>
-                    <span class="font-semibold text-gray-700">Bank-Level Security</span>
+                    <span class="font-semibold text-gray-700" data-i18n="Bank-Level Security">Bank-Level Security</span>
                 </div>
                 <div class="flex items-center">
                     <i class="fas fa-clock text-2xl text-brand-navy-500 mr-3"></i>
-                    <span class="font-semibold text-gray-700">99.9% Uptime</span>
+                    <span class="font-semibold text-gray-700" data-i18n="99.9% Uptime">99.9% Uptime</span>
                 </div>
                 <div class="flex items-center">
                     <i class="fas fa-headset text-2xl text-brand-navy-500 mr-3"></i>
-                    <span class="font-semibold text-gray-700">24/7 Support</span>
+                    <span class="font-semibold text-gray-700" data-i18n="24/7 Support">24/7 Support</span>
                 </div>
                 <div class="flex items-center">
                     <i class="fas fa-certificate text-2xl text-brand-navy-500 mr-3"></i>
-                    <span class="font-semibold text-gray-700">GDPR Compliant</span>
+                    <span class="font-semibold text-gray-700" data-i18n="GDPR Compliant">GDPR Compliant</span>
                 </div>
             </div>
         </div>
@@ -189,8 +189,8 @@
     <section id="features" class="py-20 bg-gradient-to-br from-white via-gray-50 to-brand-navy-50 relative">
         <div class="container mx-auto px-4 max-w-6xl relative z-10">
             <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold mb-4 text-gray-900">Everything You Need to Manage Your Workforce</h2>
-                <p class="text-xl text-gray-600 max-w-3xl mx-auto">From attendance tracking to payroll processing, we've got you covered with enterprise-grade features.</p>
+                <h2 class="text-4xl font-bold mb-4 text-gray-900" data-i18n="Everything You Need to Manage Your Workforce">Everything You Need to Manage Your Workforce</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto" data-i18n="From attendance tracking to payroll processing, we've got you covered with enterprise-grade features.">From attendance tracking to payroll processing, we've got you covered with enterprise-grade features.</p>
             </div>
             
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -461,6 +461,7 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/daisyui@4.4.24/dist/full.min.js"></script>
+    <script src="{{ url_for('static', filename='js/i18n.js') }}"></script>
     
     <script>
         // Simple mobile menu toggle

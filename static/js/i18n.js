@@ -16,9 +16,12 @@ async function initializeTranslations() {
         const langData = await langResponse.json();
         currentLanguage = langData.current_language || 'en';
         
+        console.log('Current language from API:', currentLanguage);
+        
         // Load translations for the current language
         if (currentLanguage !== 'en') {
             await loadTranslations(currentLanguage);
+            translatePage();
         }
     } catch (error) {
         console.warn('Error initializing translations:', error);
@@ -34,6 +37,9 @@ async function loadTranslations(languageCode) {
         const response = await fetch(`/static/translations/${languageCode}.json`);
         if (response.ok) {
             translationsCache[languageCode] = await response.json();
+            console.log(`Loaded ${Object.keys(translationsCache[languageCode]).length} translations for ${languageCode}`);
+        } else {
+            console.warn(`Failed to load translations for ${languageCode}: ${response.status}`);
         }
     } catch (error) {
         console.warn(`Error loading translations for ${languageCode}:`, error);
@@ -58,10 +64,16 @@ function t(text) {
  */
 function translatePage() {
     const elements = document.querySelectorAll('[data-i18n]');
+    console.log(`Found ${elements.length} elements with data-i18n attribute`);
     
+    let translatedCount = 0;
     elements.forEach(element => {
         const key = element.getAttribute('data-i18n');
         const translated = t(key);
+        
+        if (translated !== key) {
+            translatedCount++;
+        }
         
         // Handle different element types
         if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
@@ -72,6 +84,8 @@ function translatePage() {
             element.textContent = translated;
         }
     });
+    
+    console.log(`Translated ${translatedCount} elements`);
 }
 
 /**

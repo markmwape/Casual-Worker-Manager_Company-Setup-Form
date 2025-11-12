@@ -1,14 +1,14 @@
 <!-- Language Switcher Component -->
 <div class="language-switcher-container">
-    <div class="dropdown dropdown-end dropdown-top">
-        <label tabindex="0" class="btn btn-sm btn-ghost gap-2" id="languageToggle">
+    <div class="dropdown dropdown-end">
+        <label tabindex="0" class="btn btn-sm btn-ghost gap-2 bg-white hover:bg-gray-100" id="languageToggle">
             <span class="text-lg">🌐</span>
-            <span id="currentLangLabel">English</span>
+            <span id="currentLangLabel" class="font-medium text-gray-700">English</span>
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
             </svg>
         </label>
-        <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52 mb-2" id="languageMenu">
+        <ul tabindex="0" class="dropdown-content z-[200] menu p-2 shadow-xl bg-white border border-gray-200 rounded-box w-52 mt-2" id="languageMenu">
             <!-- Populated by JavaScript -->
         </ul>
     </div>
@@ -21,9 +21,41 @@
         gap: 0.5rem;
     }
     
+    .language-switcher-container .dropdown {
+        position: relative;
+    }
+    
+    .language-switcher-container .btn {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    
+    .language-switcher-container .dropdown-content {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+    
+    /* Make dropdown open upward only in sidebar */
+    .sidebar-language-switcher .dropdown {
+        position: relative;
+    }
+    
+    .sidebar-language-switcher .dropdown-content {
+        bottom: 100%;
+        top: auto !important;
+        margin-bottom: 0.5rem;
+        margin-top: 0;
+    }
+    
     @media (max-width: 768px) {
         .language-switcher-container {
             margin: 0.5rem 0;
+            width: 100%;
+        }
+        
+        .language-switcher-container .btn {
+            width: 100%;
+            justify-content: space-between;
         }
     }
 </style>

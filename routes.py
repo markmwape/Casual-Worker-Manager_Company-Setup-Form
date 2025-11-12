@@ -3291,7 +3291,9 @@ def import_mapped_workers():
         
         db.session.rollback()
         return jsonify({'error': f'Failed to import workers: {str(e)}'}), 500
+
 @app.route("/api/worker/<int:worker_id>", methods=['GET', 'DELETE', 'PUT'])
+@subscription_required
 def handle_single_worker(worker_id):
     """Handle individual worker operations - get, update, or delete"""
     try:
@@ -3344,8 +3346,9 @@ def handle_single_worker(worker_id):
         db.session.rollback()
         return jsonify({'error': 'Failed to handle worker'}), 500
 
-@app.route("/api/worker/<int:worker_id>", methods=['DELETE'])
+# Helper function for deleting a worker (not a route)
 def delete_worker(worker_id):
+    """Helper function to delete a worker - called by handle_single_worker route"""
     try:
         # Get current company from workspace
         company = get_current_company()
@@ -3377,8 +3380,9 @@ def delete_worker(worker_id):
         db.session.rollback()
         return jsonify({'error': 'Failed to delete worker'}), 500
 
-@app.route("/api/worker/<int:worker_id>", methods=['PUT'])
+# Helper function for updating a worker (not a route)
 def update_worker(worker_id):
+    """Helper function to update a worker - called by handle_single_worker route"""
     try:
         data = request.get_json()
         # Get current company from workspace

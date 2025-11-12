@@ -1,6 +1,6 @@
-/* Language Switcher Visibility Fix - Standalone CSS */
+/* Language Switcher Visibility Fix - Enhanced Cross-Page Compatibility */
 
-/* Container positioning */
+/* Container positioning - Enhanced for all page contexts */
 .language-switcher-container {
     position: relative;
     z-index: 50;
@@ -11,11 +11,25 @@
     overflow: visible !important;
 }
 
-/* Button styling */
+/* Context-specific z-index management */
+.sidebar-language-switcher {
+    z-index: 1100 !important;
+}
+
+.landing-language-switcher {
+    z-index: 200 !important;
+}
+
+.mobile-menu-language-switcher {
+    z-index: 1050 !important;
+}
+
+/* Button styling - Enhanced for all contexts */
 .language-switcher-btn {
     cursor: pointer;
     user-select: none;
     position: relative;
+    z-index: 1;
 }
 
 .language-switcher-btn:hover {
@@ -35,36 +49,63 @@
     transform: rotate(180deg);
 }
 
-/* Global ensures for language switcher menus */
-/* Base menu - HIDDEN by default */
-.language-menu {
-    position: fixed !important;
-    top: 60px !important;
-    right: 20px !important;
+/* Enhanced Menu Styling - Works for both .language-menu and .dropdown-menu */
+.language-menu,
+.dropdown-menu {
+    position: absolute !important;
+    top: 100%;
+    right: 0;
     min-width: 200px;
-    background: white !important;
-    border: 3px solid #ff0000 !important;
+    background: white;
+    border: 1px solid #e5e7eb;
     border-radius: 0.5rem;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
-    z-index: 99999 !important;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    z-index: 9999 !important;
+    margin-top: 0.5rem;
     max-height: 400px;
     overflow-y: auto;
+    transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
     
     /* Hidden by default */
     opacity: 0 !important;
     visibility: hidden !important;
     pointer-events: none !important;
-    display: block !important;
+    display: none !important;
+    transform: translateY(-10px);
 }
 
-/* VISIBLE state - override everything */
+/* VISIBLE state - Multiple selectors for maximum compatibility */
 .language-menu.opacity-100.visible,
-.language-menu.opacity-100,
-.language-menu.visible {
+.language-menu.visible,
+.dropdown-menu.opacity-100.visible,
+.dropdown-menu.visible {
     opacity: 1 !important;
     visibility: visible !important;
     pointer-events: auto !important;
     display: block !important;
+    transform: translateY(0) !important;
+}
+
+/* Enhanced state selectors for button-triggered visibility */
+.language-switcher-btn[aria-expanded="true"] ~ .language-menu,
+.language-switcher-btn[aria-expanded="true"] + ul.language-menu,
+.language-switcher-btn[aria-expanded="true"] ~ .dropdown-menu,
+.language-switcher-btn[aria-expanded="true"] + ul.dropdown-menu {
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    display: block !important;
+    transform: translateY(0) !important;
+}
+
+/* Fallback for older browser compatibility - no :has() */
+.dropdown.show .language-menu,
+.dropdown.show .dropdown-menu {
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    display: block !important;
+    transform: translateY(0) !important;
 }
 
 /* Menu items styling */

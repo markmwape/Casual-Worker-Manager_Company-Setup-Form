@@ -19,6 +19,13 @@ from app_init import master_admin_required
 from sqlalchemy import func, desc
 from subscription_middleware import subscription_required, check_subscription_status, admin_required, feature_required, worker_limit_check
 from tier_config import get_tier_spec, get_price_by_product_and_amount, STRIPE_PRICE_MAPPING
+
+# Import language routes
+try:
+    import language_routes
+    logging.info("Language routes imported successfully")
+except Exception as e:
+    logging.warning(f"Could not import language routes: {e}")
 import stripe
 import hmac
 import hashlib
@@ -1530,7 +1537,7 @@ def generate_per_day_report(company, start_date, end_date):
             per_day_tasks = {}
             for att in attendance_records:
                 if att.task and getattr(att.task, 'payment_type', None) == 'per_day':
-                    # Only count if task started before or during the report end date
+                    # Only count if task started before or during the end date of the report
                     if att.task.start_date.date() <= end_date:
                         task_id = att.task.id
                         if task_id not in per_day_tasks:
@@ -1614,7 +1621,7 @@ def generate_per_part_report(company, start_date, end_date):
             per_part_tasks = {}
             for att in attendance_records:
                 if att.task and getattr(att.task, 'payment_type', None) == 'per_part':
-                    # Only count if task started before or during the report end date
+                    # Only count if task started before or during the end date of the report
                     if att.task.start_date.date() <= end_date:
                         task_id = att.task.id
                         if task_id not in per_part_tasks:
@@ -2062,7 +2069,7 @@ def import_workers():
 
         # Save file using existing helpers – returns a storage identifier we can reuse later
         file_id = upload_file_to_storage(file)
-        file_path = file_id  # upload_file_to_storage already returns the full path
+        file_path = file_id  # The file_id we stored is the actual path on disk
 
         # Analyse the Excel contents – get column names and a small preview (first 5 rows)
         df = pd.read_excel(file_path, na_filter=False).dropna(how='all')
@@ -2426,7 +2433,7 @@ def add_team_member():
             # Create new user if they don't exist
             existing_user = User(email=email)
             db.session.add(existing_user)
-            db.session.flush()  # Get the user ID without committing
+            db.session.commit()  # Commit to generate user ID
 
         # Add user to workspace
         user_workspace = UserWorkspace(
@@ -2498,41 +2505,6 @@ def update_team_member_role(user_id):
         db.session.rollback()
         return jsonify({'error': f'Failed to update role: {str(e)}'}), 500
 
-@app.route("/api/trial-info", methods=['GET'])
-def get_trial_info():
-    """Get trial information for current workspace"""
-    try:
-        if 'current_workspace' not in session:
-            return jsonify({'success': False, 'error': 'No active workspace'}), 400
-        
-        workspace_id = session['current_workspace']['id']
-        workspace = Workspace.query.get(workspace_id)
-        
-        if not workspace:
-            return jsonify({'success': False, 'error': 'Workspace not found'}), 404
-        
-        # Calculate trial days remaining
-        from datetime import date
-        today = date.today()
-        
-        if workspace.trial_end_date:
-            days_remaining = (workspace.trial_end_date - today).days
-            if days_remaining < 0:
-                days_remaining = 0
-        else:
-            days_remaining = 0
-        
-        return jsonify({
-            'success': True,
-            'days_remaining': days_remaining,
-            'trial_end_date': workspace.trial_end_date.isoformat() if workspace.trial_end_date else None,
-            'is_trial': workspace.subscription_status == 'trial' or workspace.subscription_tier == 'trial'
-        })
-        
-    except Exception as e:
-        logging.error(f"Error getting trial info: {str(e)}")
-        return jsonify({'success': False, 'error': 'Failed to get trial info'}), 500
-
 @app.route("/api/team-members", methods=['GET', 'POST'])
 def handle_team_members():
     """Handle team member operations"""
@@ -2589,7 +2561,7 @@ def handle_team_members():
                 # Create new user if they don't exist
                 existing_user = User(email=email)
                 db.session.add(existing_user)
-                db.session.flush()  # Get the user ID without committing
+                db.session.commit()  # Commit to generate user ID
 
             # Add user to workspace
             user_workspace = UserWorkspace(
@@ -2615,7 +2587,7 @@ def handle_team_members():
     except Exception as e:
         logging.error(f"Error handling team members: {str(e)}")
         db.session.rollback()
-        return jsonify({'success': False, 'error': 'Failed to handle team members'}), 500
+        return jsonify({'error': 'Failed to handle team members'}), 500
 
 @app.route("/api/team-members/<int:user_id>/role", methods=['PUT'])
 def update_team_member_role_api(user_id):
@@ -3354,31 +3326,32 @@ def delete_worker(worker_id):
         company = get_current_company()
         
         if not company:
+            logging.error(f"Company not found when deleting worker {worker_id}")
             return jsonify({'error': 'Company not found'}), 404
             
         # Find worker and verify they belong to user's company
         worker = Worker.query.filter_by(id=worker_id, company_id=company.id).first()
         
         if not worker:
+            logging.error(f"Worker {worker_id} not found for company {company.id}")
             return jsonify({'error': 'Worker not found'}), 404
+        
+        # Remove worker from all tasks first (task_workers association table)
+        worker.tasks = []
+        db.session.flush()
             
-        # Delete custom field values first
-        WorkerCustomFieldValue.query.filter_by(worker_id=worker_id).delete()
-        
-        # Delete attendance records
-        Attendance.query.filter_by(worker_id=worker_id).delete()
-        
-        # Delete worker
+        # Delete worker (cascade deletes will handle attendance and custom fields)
         db.session.delete(worker)
         db.session.commit()
         
-        logging.info(f"Worker {worker_id} deleted from company {company.id}")
+        logging.info(f"Worker {worker_id} deleted successfully from company {company.id}")
         return jsonify({'message': 'Worker deleted successfully'}), 200
         
     except Exception as e:
-        logging.error(f"Error deleting worker: {str(e)}")
+        logging.error(f"Error deleting worker {worker_id}: {str(e)}")
+        logging.error(traceback.format_exc())
         db.session.rollback()
-        return jsonify({'error': 'Failed to delete worker'}), 500
+        return jsonify({'error': f'Failed to delete worker: {str(e)}'}), 500
 
 # Helper function for updating a worker (not a route)
 def update_worker(worker_id):
@@ -3607,35 +3580,57 @@ def add_worker_to_task(task_id):
 def bulk_delete_workers():
     try:
         data = request.get_json()
+        
+        if not data:
+            logging.error("No JSON data received in bulk delete request")
+            return jsonify({'error': 'No data provided'}), 400
+            
         # Convert all worker_ids to integers and filter out invalids
         worker_ids = [int(wid) for wid in data.get('worker_ids', []) if str(wid).isdigit()]
+        
         if not worker_ids:
-            return jsonify({'error': 'No worker IDs provided'}), 400
+            logging.error("No valid worker IDs provided")
+            return jsonify({'error': 'No valid worker IDs provided'}), 400
 
         # Get current company from workspace
         company = get_current_company()
         if not company:
+            logging.error("Company not found in bulk delete")
             return jsonify({'error': 'Company not found'}), 404
 
+        logging.info(f"Attempting to bulk delete workers with IDs: {worker_ids} for company {company.id}")
+
         # Only delete workers belonging to this company
-        workers = Worker.query.filter(Worker.id.in_(worker_ids), Worker.company_id == company.id).all()
+        workers = Worker.query.filter(
+            Worker.id.in_(worker_ids), 
+            Worker.company_id == company.id
+        ).all()
+        
         if not workers:
+            logging.warning(f"No matching workers found for IDs: {worker_ids}")
             return jsonify({'error': 'No matching workers found'}), 404
 
-        logging.info(f"Bulk deleting {len(workers)} workers from company {company.id}")
+        logging.info(f"Found {len(workers)} workers to delete from company {company.id}")
 
-        # Delete related custom field values and attendance records
-        WorkerCustomFieldValue.query.filter(WorkerCustomFieldValue.worker_id.in_(worker_ids)).delete(synchronize_session=False)
-        Attendance.query.filter(Attendance.worker_id.in_(worker_ids)).delete(synchronize_session=False)
-        Worker.query.filter(Worker.id.in_(worker_ids), Worker.company_id == company.id).delete(synchronize_session=False)
+        # Remove workers from all tasks first (task_workers association table)
+        for worker in workers:
+            worker.tasks = []
+        db.session.flush()
+        
+        # Delete workers (cascade deletes will handle attendance and custom fields)
+        for worker in workers:
+            db.session.delete(worker)
+        
         db.session.commit()
-        logging.info(f"Successfully deleted {len(worker_ids)} workers")
-        return jsonify({'message': f'{len(worker_ids)} workers deleted successfully'}), 200
+        
+        logging.info(f"Successfully deleted {len(workers)} workers")
+        return jsonify({'message': f'{len(workers)} worker(s) deleted successfully'}), 200
+        
     except Exception as e:
         logging.error(f"Error bulk deleting workers: {str(e)}")
         logging.error(traceback.format_exc())
         db.session.rollback()
-        return jsonify({'error': 'Failed to bulk delete workers'}), 500
+        return jsonify({'error': f'Failed to bulk delete workers: {str(e)}'}), 500
 
 @app.route("/api/worker/delete-all", methods=['DELETE'])
 @subscription_required
@@ -3644,33 +3639,38 @@ def delete_all_workers():
         # Get current company from workspace
         company = get_current_company()
         if not company:
+            logging.error("Company not found when deleting all workers")
             return jsonify({'error': 'Company not found'}), 404
 
         # Get all workers for this company
         workers = Worker.query.filter_by(company_id=company.id).all()
-        worker_ids = [worker.id for worker in workers]
         
-        if not worker_ids:
+        if not workers:
+            logging.info(f"No workers to delete for company {company.id}")
             return jsonify({'message': 'No workers to delete'}), 200
 
-        logging.info(f"Deleting all {len(worker_ids)} workers from company {company.id}")
+        worker_count = len(workers)
+        logging.info(f"Deleting all {worker_count} workers from company {company.id}")
 
-        # Delete related custom field values and attendance records
-        WorkerCustomFieldValue.query.filter(WorkerCustomFieldValue.worker_id.in_(worker_ids)).delete(synchronize_session=False)
-        Attendance.query.filter(Attendance.worker_id.in_(worker_ids)).delete(synchronize_session=False)
+        # Remove all workers from all tasks first (task_workers association table)
+        for worker in workers:
+            worker.tasks = []
+        db.session.flush()
         
-        # Delete all workers for this company
-        Worker.query.filter_by(company_id=company.id).delete(synchronize_session=False)
+        # Delete all workers (cascade deletes will handle attendance and custom fields)
+        for worker in workers:
+            db.session.delete(worker)
         
         db.session.commit()
-        logging.info(f"Successfully deleted all {len(worker_ids)} workers from company {company.id}")
-        return jsonify({'message': f'All {len(worker_ids)} workers deleted successfully'}), 200
+        
+        logging.info(f"Successfully deleted all {worker_count} workers from company {company.id}")
+        return jsonify({'message': f'All {worker_count} worker(s) deleted successfully'}), 200
         
     except Exception as e:
         logging.error(f"Error deleting all workers: {str(e)}")
         logging.error(traceback.format_exc())
         db.session.rollback()
-        return jsonify({'error': 'Failed to delete all workers'}), 500
+        return jsonify({'error': f'Failed to delete all workers: {str(e)}'}), 500
 
 @app.route("/api/task/<int:task_id>/update-date", methods=['POST'])
 def update_task_date(task_id):
@@ -5249,3 +5249,13 @@ def get_firebase_config():
             "appId": "1:328324461979:web:0cc9ddad6aa3f157359d3e",
             "measurementId": "G-F1XTE0TP63"
         })
+
+@app.route('/test-language-switcher')
+def test_language_switcher():
+    """Test page for language switcher functionality"""
+    return render_template('test_language_switcher.html')
+
+@app.route('/dropdown-test')
+def dropdown_test():
+    """Test page for dropdown functionality across all page contexts"""
+    return render_template('dropdown_test.html')

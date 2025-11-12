@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Language Switcher Test - Complete</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- DaisyUI -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.24/dist/full.css" rel="stylesheet" type="text/css" />
+    
+    <!-- Language Switcher CSS -->
+    <link rel="stylesheet" href="/static/css/language-switcher-fixes.css">
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .test-section {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+        
+        .test-status.pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .test-status.pass {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .test-status.fail {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .console-log {
+            background: #1f2937;
+            color: #10b981;
+            font-family: 'Courier New', monospace;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 0.875rem;
+            margin-top: 1rem;
+        }
+        
+        .console-log div {
+            margin: 0.25rem 0;
+        }
+        
+        .console-log .error {
+            color: #ef4444;
+        }
+        
+        .console-log .warning {
+            color: #f59e0b;
+        }
+        
+        .console-log .success {
+            color: #10b981;
+        }
+        
+        .console-log .info {
+            color: #60a5fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="max-w-6xl mx-auto">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-white mb-2">🌐 Language Switcher Test Suite</h1>
+            <p class="text-white/80">Comprehensive testing for language switcher functionality</p>
+        </div>
+
+        <!-- Test 1: Desktop Language Switcher -->
+        <div class="test-section">
+            <h2 class="text-2xl font-bold mb-4">
+                Test 1: Desktop Language Switcher
+                <span class="test-status pending" id="test1-status">Pending</span>
+            </h2>
+            <p class="text-gray-600 mb-4">
+                Click the language switcher below. The dropdown should appear with all available languages.
+            </p>
+            
+            <div class="flex items-center justify-center p-8 bg-gray-50 rounded-lg">
+                {% include 'components/language_switcher.html' %}
+            </div>
+            
+            <div class="mt-4">
+                <button class="btn btn-primary btn-sm" onclick="runTest1()">Run Test</button>
+                <button class="btn btn-outline btn-sm" onclick="clearTest1()">Clear</button>
+            </div>
+            
+            <div class="console-log" id="test1-console">
+                <div class="info">Waiting for test to run...</div>
+            </div>
+        </div>
+
+        <!-- Test 2: API Endpoints -->
+        <div class="test-section">
+            <h2 class="text-2xl font-bold mb-4">
+                Test 2: API Endpoints
+                <span class="test-status pending" id="test2-status">Pending</span>
+            </h2>
+            <p class="text-gray-600 mb-4">
+                Test if the language API endpoints are responding correctly.
+            </p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <h3 class="font-semibold mb-2">GET /api/languages</h3>
+                    <button class="btn btn-primary btn-sm" onclick="testGetLanguages()">Test</button>
+                    <pre class="bg-gray-100 p-2 rounded mt-2 text-xs overflow-auto max-h-40" id="api-get-result">Not tested yet</pre>
+                </div>
+                
+                <div>
+                    <h3 class="font-semibold mb-2">POST /api/change-language</h3>
+                    <select class="select select-bordered select-sm w-full max-w-xs mb-2" id="test-lang-select">
+                        <option value="en">English</option>
+                        <option value="fr">Français</option>
+                        <option value="es">Español</option>
+                        <option value="pt">Português</option>
+                        <option value="sw">Swahili</option>
+                    </select>
+                    <button class="btn btn-primary btn-sm" onclick="testChangeLanguage()">Test</button>
+                    <pre class="bg-gray-100 p-2 rounded mt-2 text-xs overflow-auto max-h-40" id="api-post-result">Not tested yet</pre>
+                </div>
+            </div>
+            
+            <div class="console-log mt-4" id="test2-console">
+                <div class="info">Click test buttons above to run API tests...</div>
+            </div>
+        </div>
+
+        <!-- Test 3: Multiple Instances -->
+        <div class="test-section">
+            <h2 class="text-2xl font-bold mb-4">
+                Test 3: Multiple Language Switchers
+                <span class="test-status pending" id="test3-status">Pending</span>
+            </h2>
+            <p class="text-gray-600 mb-4">
+                Test that multiple instances work independently and show the same current language.
+            </p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h3 class="font-semibold mb-2">Instance 1</h3>
+                    {% include 'components/language_switcher.html' %}
+                </div>
+                <div class="p-4 bg-green-50 rounded-lg">
+                    <h3 class="font-semibold mb-2">Instance 2</h3>
+                    {% include 'components/language_switcher.html' %}
+                </div>
+                <div class="p-4 bg-purple-50 rounded-lg">
+                    <h3 class="font-semibold mb-2">Instance 3</h3>
+                    {% include 'components/language_switcher.html' %}
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <button class="btn btn-primary btn-sm" onclick="runTest3()">Run Test</button>
+            </div>
+            
+            <div class="console-log" id="test3-console">
+                <div class="info">Waiting for test to run...</div>
+            </div>
+        </div>
+
+        <!-- Test 4: Keyboard Navigation -->
+        <div class="test-section">
+            <h2 class="text-2xl font-bold mb-4">
+                Test 4: Keyboard Navigation
+                <span class="test-status pending" id="test4-status">Pending</span>
+            </h2>
+            <p class="text-gray-600 mb-4">
+                Test keyboard accessibility: Tab to focus, Enter to open, Escape to close.
+            </p>
+            
+            <div class="flex items-center justify-center p-8 bg-gray-50 rounded-lg">
+                {% include 'components/language_switcher.html' %}
+            </div>
+            
+            <div class="mt-4 space-x-2">
+                <button class="btn btn-sm" onclick="focusLanguageSwitcher()">Focus Switcher (Tab)</button>
+                <button class="btn btn-sm" onclick="pressEscape()">Press Escape</button>
+            </div>
+            
+            <div class="console-log" id="test4-console">
+                <div class="info">Use Tab key to focus the language switcher, then test keyboard navigation...</div>
+            </div>
+        </div>
+
+        <!-- Test Summary -->
+        <div class="test-section bg-gradient-to-r from-purple-100 to-pink-100">
+            <h2 class="text-2xl font-bold mb-4">Test Summary</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                <div>
+                    <div class="text-3xl font-bold text-purple-600" id="summary-total">4</div>
+                    <div class="text-sm text-gray-600">Total Tests</div>
+                </div>
+                <div>
+                    <div class="text-3xl font-bold text-green-600" id="summary-pass">0</div>
+                    <div class="text-sm text-gray-600">Passed</div>
+                </div>
+                <div>
+                    <div class="text-3xl font-bold text-red-600" id="summary-fail">0</div>
+                    <div class="text-sm text-gray-600">Failed</div>
+                </div>
+                <div>
+                    <div class="text-3xl font-bold text-yellow-600" id="summary-pending">4</div>
+                    <div class="text-sm text-gray-600">Pending</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Language Switcher JavaScript -->
+    <script src="/static/js/language-switcher.js"></script>
+    
+    <!-- Test Scripts -->
+    <script>
+        // Intercept console logs
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        function addConsoleLog(testId, message, type = 'info') {
+            const consoleEl = document.getElementById(`${testId}-console`);
+            if (consoleEl) {
+                const div = document.createElement('div');
+                div.className = type;
+                div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+                consoleEl.appendChild(div);
+                consoleEl.scrollTop = consoleEl.scrollHeight;
+            }
+        }
+        
+        // Test 1: Desktop Language Switcher
+        function runTest1() {
+            clearTest1();
+            addConsoleLog('test1', 'Starting desktop language switcher test...', 'info');
+            
+            setTimeout(() => {
+                const buttons = document.querySelectorAll('.language-switcher-btn');
+                const menus = document.querySelectorAll('.language-menu');
+                
+                addConsoleLog('test1', `Found ${buttons.length} language switcher buttons`, 'info');
+                addConsoleLog('test1', `Found ${menus.length} language menus`, 'info');
+                
+                if (buttons.length > 0 && menus.length > 0) {
+                    addConsoleLog('test1', 'Elements found successfully', 'success');
+                    
+                    // Check if menu has items
+                    const firstMenu = menus[0];
+                    const items = firstMenu.querySelectorAll('li');
+                    addConsoleLog('test1', `Menu has ${items.length} language options`, items.length > 0 ? 'success' : 'error');
+                    
+                    if (items.length > 0) {
+                        updateTestStatus('test1', 'pass');
+                        addConsoleLog('test1', '✅ Test PASSED: Language switcher is properly initialized', 'success');
+                    } else {
+                        updateTestStatus('test1', 'fail');
+                        addConsoleLog('test1', '❌ Test FAILED: Menu has no items', 'error');
+                    }
+                } else {
+                    updateTestStatus('test1', 'fail');
+                    addConsoleLog('test1', '❌ Test FAILED: Elements not found', 'error');
+                }
+            }, 1000);
+        }
+        
+        function clearTest1() {
+            document.getElementById('test1-console').innerHTML = '<div class="info">Console cleared...</div>';
+        }
+        
+        // Test 2: API Endpoints
+        async function testGetLanguages() {
+            addConsoleLog('test2', 'Testing GET /api/languages...', 'info');
+            
+            try {
+                const response = await fetch('/api/languages');
+                const data = await response.json();
+                
+                document.getElementById('api-get-result').textContent = JSON.stringify(data, null, 2);
+                
+                if (response.ok && data.languages) {
+                    addConsoleLog('test2', '✅ GET /api/languages - SUCCESS', 'success');
+                    addConsoleLog('test2', `Received ${Object.keys(data.languages).length} languages`, 'info');
+                    addConsoleLog('test2', `Current language: ${data.current_language}`, 'info');
+                } else {
+                    addConsoleLog('test2', '⚠️ GET /api/languages - Unexpected response', 'warning');
+                }
+            } catch (error) {
+                addConsoleLog('test2', `❌ GET /api/languages - ERROR: ${error.message}`, 'error');
+                document.getElementById('api-get-result').textContent = `Error: ${error.message}`;
+            }
+        }
+        
+        async function testChangeLanguage() {
+            const language = document.getElementById('test-lang-select').value;
+            addConsoleLog('test2', `Testing POST /api/change-language with language: ${language}...`, 'info');
+            
+            try {
+                const response = await fetch('/api/change-language', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ language })
+                });
+                const data = await response.json();
+                
+                document.getElementById('api-post-result').textContent = JSON.stringify(data, null, 2);
+                
+                if (response.ok && data.success) {
+                    addConsoleLog('test2', '✅ POST /api/change-language - SUCCESS', 'success');
+                    addConsoleLog('test2', `Language changed to: ${data.language}`, 'info');
+                    updateTestStatus('test2', 'pass');
+                } else {
+                    addConsoleLog('test2', '❌ POST /api/change-language - FAILED', 'error');
+                    updateTestStatus('test2', 'fail');
+                }
+            } catch (error) {
+                addConsoleLog('test2', `❌ POST /api/change-language - ERROR: ${error.message}`, 'error');
+                document.getElementById('api-post-result').textContent = `Error: ${error.message}`;
+                updateTestStatus('test2', 'fail');
+            }
+        }
+        
+        // Test 3: Multiple Instances
+        function runTest3() {
+            document.getElementById('test3-console').innerHTML = '<div class="info">Running test...</div>';
+            addConsoleLog('test3', 'Testing multiple language switcher instances...', 'info');
+            
+            setTimeout(() => {
+                const labels = document.querySelectorAll('.current-lang-label');
+                addConsoleLog('test3', `Found ${labels.length} language labels`, 'info');
+                
+                // Check if all show the same language
+                const languages = Array.from(labels).map(l => l.textContent.trim());
+                const uniqueLanguages = [...new Set(languages)];
+                
+                addConsoleLog('test3', `Languages displayed: ${languages.join(', ')}`, 'info');
+                
+                if (uniqueLanguages.length === 1) {
+                    addConsoleLog('test3', '✅ All instances show the same language', 'success');
+                    updateTestStatus('test3', 'pass');
+                } else {
+                    addConsoleLog('test3', '❌ Instances show different languages', 'error');
+                    updateTestStatus('test3', 'fail');
+                }
+            }, 1000);
+        }
+        
+        // Test 4: Keyboard Navigation
+        function focusLanguageSwitcher() {
+            const button = document.querySelector('.language-switcher-btn');
+            if (button) {
+                button.focus();
+                addConsoleLog('test4', '✅ Language switcher focused', 'success');
+            }
+        }
+        
+        function pressEscape() {
+            const event = new KeyboardEvent('keydown', { key: 'Escape' });
+            document.dispatchEvent(event);
+            addConsoleLog('test4', 'Escape key pressed - dropdowns should close', 'info');
+        }
+        
+        // Update test status
+        function updateTestStatus(testId, status) {
+            const statusEl = document.getElementById(`${testId}-status`);
+            statusEl.className = `test-status ${status}`;
+            statusEl.textContent = status === 'pass' ? 'Passed ✓' : status === 'fail' ? 'Failed ✗' : 'Pending';
+            updateSummary();
+        }
+        
+        // Update summary
+        function updateSummary() {
+            const statuses = ['test1', 'test2', 'test3', 'test4'].map(id => {
+                const el = document.getElementById(`${id}-status`);
+                return el.textContent.toLowerCase().includes('passed') ? 'pass' : 
+                       el.textContent.toLowerCase().includes('failed') ? 'fail' : 'pending';
+            });
+            
+            document.getElementById('summary-pass').textContent = statuses.filter(s => s === 'pass').length;
+            document.getElementById('summary-fail').textContent = statuses.filter(s => s === 'fail').length;
+            document.getElementById('summary-pending').textContent = statuses.filter(s => s === 'pending').length;
+        }
+        
+        // Monitor initialization
+        setTimeout(() => {
+            addConsoleLog('test1', 'Page loaded - checking initialization...', 'info');
+        }, 500);
+    </script>
+</body>
+</html>

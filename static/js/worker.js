@@ -93,28 +93,45 @@ function closeDeleteWorkerModal() {
 function deleteWorker() {
     const workerId = document.getElementById('delete-worker-id').value;
     
+    if (!workerId) {
+        console.error('No worker ID found');
+        showCustomModal('Error', 'No worker ID found', 'error');
+        closeDeleteWorkerModal();
+        return;
+    }
+    
+    console.log('Deleting worker with ID:', workerId);
+    
     fetch(`/api/worker/${workerId}`, {
         method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json'
+        }
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('Delete response status:', response.status);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(result => {
+        console.log('Delete result:', result);
+        closeDeleteWorkerModal();
+        
         if (result.error) {
             showCustomModal('Error', result.error, 'error');
         } else {
-            // Remove the deleted worker's row from the table
-            const checkbox = document.querySelector(`.worker-checkbox[data-worker-id="${workerId}"]`);
-            if (checkbox) {
-                const row = checkbox.closest('tr');
-                if (row) row.remove();
-            }
-            showCustomModal('Success', 'Worker deleted successfully!', 'success');
+            // Reload the page to reflect changes
+            showCustomModal('Success', 'Worker deleted successfully!', 'success').then(() => {
+                window.location.reload();
+            });
         }
     })
     .catch(error => {
-        showCustomModal('Error', 'Error deleting worker: ' + error.message, 'error');
-    })
-    .finally(() => {
         closeDeleteWorkerModal();
+        console.error('Delete worker error:', error);
+        showCustomModal('Error', 'Error deleting worker: ' + error.message, 'error');
     });
 }
 
@@ -123,22 +140,35 @@ function openDeleteAllWorkersModal() {
 }
 
 function deleteAllWorkers() {
+    const modal = document.getElementById('delete-all-workers-modal');
+    
     fetch('/api/worker/delete-all', {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json'
+        }
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(result => {
+        if (modal) modal.close();
+        
         if (result.error) {
             showCustomModal('Error', result.error, 'error');
         } else {
-            window.location.reload();
+            showCustomModal('Success', result.message || 'All workers deleted successfully!', 'success').then(() => {
+                window.location.reload();
+            });
         }
     })
     .catch(error => {
+        if (modal) modal.close();
+        console.error('Delete all workers error:', error);
         showCustomModal('Error', 'Error deleting all workers: ' + error.message, 'error');
-    })
-    .finally(() => {
-        document.getElementById('delete-all-workers-modal').close();
     });
 }
 
@@ -148,6 +178,8 @@ async function deleteSelectedWorkers() {
         .filter(cb => cb.checked)
         .map(cb => cb.getAttribute('data-worker-id'));
     
+    console.log('Selected worker IDs for deletion:', selectedIds);
+    
     if (selectedIds.length === 0) {
         showCustomModal('Selection Required', 'Please select workers to delete', 'warning');
         return;
@@ -155,23 +187,36 @@ async function deleteSelectedWorkers() {
     
     const confirmed = await showCustomConfirm('Confirm Delete', `Are you sure you want to delete ${selectedIds.length} selected worker(s)?`);
     if (!confirmed) {
+        console.log('User cancelled bulk deletion');
         return;
     }
+    
+    console.log('Proceeding with bulk deletion');
     
     fetch('/api/worker/bulk-delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ worker_ids: selectedIds })
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('Bulk delete response status:', response.status);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(result => {
+        console.log('Bulk delete result:', result);
         if (result.error) {
             showCustomModal('Error', result.error, 'error');
         } else {
-            window.location.reload();
+            showCustomModal('Success', result.message || 'Selected workers deleted successfully!', 'success').then(() => {
+                window.location.reload();
+            });
         }
     })
     .catch(error => {
+        console.error('Delete selected workers error:', error);
         showCustomModal('Error', 'Error deleting selected workers: ' + error.message, 'error');
     });
 }
@@ -184,10 +229,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateDeleteSelectedBtn() {
         const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
-        if (anyChecked) {
-            deleteSelectedBtn.classList.remove('hidden');
-        } else {
-            deleteSelectedBtn.classList.add('hidden');
+        if (deleteSelectedBtn) {
+            if (anyChecked) {
+                deleteSelectedBtn.classList.remove('hidden');
+            } else {
+                deleteSelectedBtn.classList.add('hidden');
+            }
         }
     }
 
@@ -197,43 +244,18 @@ document.addEventListener('DOMContentLoaded', function() {
             updateDeleteSelectedBtn();
         });
     }
+    
     checkboxes.forEach(cb => {
         cb.addEventListener('change', function() {
             updateDeleteSelectedBtn();
-            if (!cb.checked && selectAll.checked) {
+            if (!cb.checked && selectAll && selectAll.checked) {
                 selectAll.checked = false;
             }
         });
     });
-
-    if (deleteSelectedBtn) {
-        deleteSelectedBtn.addEventListener('click', async function() {
-            const selectedIds = Array.from(checkboxes)
-                .filter(cb => cb.checked)
-                .map(cb => cb.getAttribute('data-worker-id'));
-            if (selectedIds.length === 0) return;
-            
-            const confirmed = await showCustomConfirm('Confirm Delete', 'Are you sure you want to delete the selected workers?');
-            if (!confirmed) return;
-            
-            fetch('/api/worker/bulk-delete', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ worker_ids: selectedIds })
-            })
-            .then(res => res.json())
-            .then(result => {
-                if (result.error) {
-                    showCustomModal('Error', result.error, 'error');
-                } else {
-                    window.location.reload();
-                }
-            })
-            .catch(error => {
-                showCustomModal('Error', 'Error deleting selected workers: ' + error.message, 'error');
-            });
-        });
-    }
+    
+    // Initialize the button state on page load
+    updateDeleteSelectedBtn();
 });
 
 // --- Edit Worker Modal ---
@@ -524,6 +546,9 @@ window.closeAddWorkerModal = closeAddWorkerModal;
 window.openDeleteWorkerModal = openDeleteWorkerModal;
 window.closeDeleteWorkerModal = closeDeleteWorkerModal;
 window.deleteWorker = deleteWorker;
+window.deleteSelectedWorkers = deleteSelectedWorkers;
+window.deleteAllWorkers = deleteAllWorkers;
+window.openDeleteAllWorkersModal = openDeleteAllWorkersModal;
 window.openImportWorkersModal = openImportWorkersModal;
 window.closeImportWorkersModal = closeImportWorkersModal;
 window.loadImportFields = loadImportFields;

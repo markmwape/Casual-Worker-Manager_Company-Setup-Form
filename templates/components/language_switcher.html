@@ -1,14 +1,14 @@
 <!-- Language Switcher Component -->
 <div class="language-switcher-container">
     <div class="dropdown dropdown-end">
-        <label tabindex="0" class="btn btn-sm btn-ghost gap-2 bg-white hover:bg-gray-100" id="languageToggle">
-            <span class="text-lg">🌐</span>
-            <span id="currentLangLabel" class="font-medium text-gray-700">English</span>
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <label tabindex="0" class="btn btn-sm gap-2 language-switcher-btn" id="languageToggle">
+            <span class="text-xl">🌐</span>
+            <span id="currentLangLabel" class="font-semibold text-sm">English</span>
+            <svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
             </svg>
         </label>
-        <ul tabindex="0" class="dropdown-content z-[200] menu p-2 shadow-xl bg-white border border-gray-200 rounded-box w-52 mt-2" id="languageMenu">
+        <ul tabindex="0" class="dropdown-content z-[200] menu p-2 shadow-xl bg-white border border-gray-200 rounded-lg w-56 mt-2" id="languageMenu">
             <!-- Populated by JavaScript -->
         </ul>
     </div>
@@ -25,14 +25,71 @@
         position: relative;
     }
     
-    .language-switcher-container .btn {
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(0, 0, 0, 0.1);
+    /* Modern button styling */
+    .language-switcher-btn {
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        border: 2px solid #e2e8f0;
+        color: #1e293b;
+        padding: 0.5rem 1rem;
+        border-radius: 0.75rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.05);
+        transition: all 0.2s ease;
+        font-weight: 600;
+        cursor: pointer;
     }
     
+    .language-switcher-btn:hover {
+        background: linear-gradient(135deg, #f8f9fa 0%, #f1f5f9 100%);
+        border-color: #cbd5e1;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.08);
+        transform: translateY(-1px);
+    }
+    
+    .language-switcher-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Dropdown menu styling */
     .language-switcher-container .dropdown-content {
         max-height: 400px;
         overflow-y: auto;
+        animation: slideDown 0.2s ease-out;
+    }
+    
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Menu item styling */
+    .language-switcher-container .dropdown-content li a {
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        transition: all 0.15s ease;
+        font-weight: 500;
+        color: #475569;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .language-switcher-container .dropdown-content li a:hover {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+        transform: translateX(4px);
+    }
+    
+    .language-switcher-container .dropdown-content li a.active {
+        background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+        color: white;
+        font-weight: 700;
     }
     
     /* Make dropdown open upward only in sidebar */
@@ -45,6 +102,31 @@
         top: auto !important;
         margin-bottom: 0.5rem;
         margin-top: 0;
+        animation: slideUp 0.2s ease-out;
+    }
+    
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Make dropdown open upward in mobile menu footer */
+    .mobile-menu-language-switcher .dropdown {
+        position: relative;
+    }
+    
+    .mobile-menu-language-switcher .dropdown-content {
+        bottom: 100%;
+        top: auto !important;
+        margin-bottom: 0.5rem;
+        margin-top: 0;
+        animation: slideUp 0.2s ease-out;
     }
     
     @media (max-width: 768px) {
@@ -53,9 +135,10 @@
             width: 100%;
         }
         
-        .language-switcher-container .btn {
+        .language-switcher-btn {
             width: 100%;
             justify-content: space-between;
+            padding: 0.75rem 1rem;
         }
     }
 </style>

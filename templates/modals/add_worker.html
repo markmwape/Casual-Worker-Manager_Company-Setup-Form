@@ -1,24 +1,24 @@
 <dialog id="add-worker-modal" class="modal">
     <div class="modal-box max-w-4xl">
-        <h3 class="font-bold text-lg mb-4">Add New Worker</h3>
+        <h3 class="font-bold text-lg mb-4" data-i18n="modals.addWorker.title">Add New Worker</h3>
         <form id="workerForm">
             <!-- Default Fields -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="form-control w-full">
                     <label class="label">
-                        <span class="label-text text-black">First Name</span>
+                        <span class="label-text text-black" data-i18n="modals.addWorker.firstName">First Name</span>
                     </label>
                     <input type="text" name="first_name" class="input input-bordered w-full h-10" required>
                 </div>
                 <div class="form-control w-full">
                     <label class="label">
-                        <span class="label-text text-black">Last Name</span>
+                        <span class="label-text text-black" data-i18n="modals.addWorker.lastName">Last Name</span>
                     </label>
                     <input type="text" name="last_name" class="input input-bordered w-full h-10" required>
                 </div>
                 <div class="form-control w-full">
                     <label class="label">
-                        <span class="label-text text-black">Date of Birth</span>
+                        <span class="label-text text-black" data-i18n="modals.addWorker.dateOfBirth">Date of Birth</span>
                     </label>
                     <input type="text" name="date_of_birth" class="input input-bordered w-full h-10">
                 </div>
@@ -26,7 +26,7 @@
             
             <!-- Custom Fields Section -->
             <div class="mt-6">
-                <h5 class="text-sm font-medium text-gray-600 mb-3">Custom Fields</h5>
+                <h5 class="text-sm font-medium text-gray-600 mb-3" data-i18n="modals.addWorker.customFields">Custom Fields</h5>
                 <div id="customFieldsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <!-- Custom fields items will render here -->
                     {% for field in all_fields %}
@@ -47,20 +47,20 @@
             
             <!-- Add New Custom Field Section -->
             <div class="border-t border-gray-200 pt-4 mt-4">
-                <h5 class="text-sm font-medium text-gray-600 mb-3">Add Custom Field</h5>
+                <h5 class="text-sm font-medium text-gray-600 mb-3" data-i18n="modals.addWorker.addCustomField">Add Custom Field</h5>
                 <div class="flex flex-wrap items-center gap-2">
                     <div class="flex-1 min-w-[200px]">
                         <input type="text" id="newFieldName" class="input input-bordered bg-white w-full h-10" placeholder="Enter field name...">
                     </div>
                     <button type="button" class="btn btn-primary whitespace-nowrap" onclick="addCustomField()">
-                        <i data-feather="plus" class="mr-1 h-4 w-4"></i>Add Field
+                        <i data-feather="plus" class="mr-1 h-4 w-4"></i><span data-i18n="modals.addWorker.addField">Add Field</span>
                     </button>
                 </div>
             </div>
             
             <div class="modal-action">
-                <button type="button" class="btn btn-ghost" onclick="closeAddWorkerModal()">Cancel</button>
-                <button type="submit" class="btn btn-primary">Add Worker</button>
+                <button type="button" class="btn btn-ghost" onclick="closeAddWorkerModal()" data-i18n="modals.addWorker.cancel">Cancel</button>
+                <button type="submit" class="btn btn-primary" data-i18n="modals.addWorker.addWorker">Add Worker</button>
             </div>
         </form>
     </div>

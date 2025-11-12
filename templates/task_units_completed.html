@@ -1,38 +1,46 @@
 {% extends "base_with_sidebar.html" %}
 
-{% block content %}
-<div class="container mx-auto px-4 w-full max-w-6xl pt-8">
+{% block con    {% if selected_date < task.start_date.date() %}
+        <div class="alert alert-error mb-4">
+            <i class="fas fa-exclamation-triangle mr-2"></i>
+            <span data-i18n="units.cannotRecordBefore">Units cannot be recorded before the task's start date.</span>
+        </div>
+        <div class="flex justify-center mb-8">
+            <a href="{{ url_for('task_units_completed_route', task_id=task.id, date=task.start_date.strftime('%Y-%m-%d')) }}" class="btn btn-primary">
+                <i class="fas fa-calendar-day mr-2"></i><span data-i18n="units.backToToday">Back to Today</span>
+            </a>
+        </div>iv class="container mx-auto px-4 w-full max-w-6xl pt-8">
     <!-- Desktop header and actions -->
     <div class="hidden lg:flex items-center justify-between mb-6">
-        <div class="text-2xl font-bold text-primary">
+        <div class="text-2xl font-bold text-primary" data-i18n="units.title">
             Units Completed: {{ task.name }}
         </div>
         <div class="flex gap-2">
             <button onclick="openAddWorkerToTaskModal('{{ task.id }}')" class="btn btn-primary">
-                <i data-feather="plus" class="mr-2"></i>Add Worker
+                <i data-feather="plus" class="mr-2"></i><span data-i18n="units.addWorker">Add Worker</span>
             </button>
             <a href="{{ url_for('tasks_route') }}" class="btn btn-ghost">
-                <i data-feather="arrow-left" class="mr-2"></i>Back to Tasks
+                <i data-feather="arrow-left" class="mr-2"></i><span data-i18n="units.backToTasks">Back to Tasks</span>
             </a>
         </div>
     </div>
     {% if task.payment_type == 'per_part' and task.per_part_payout %}
     <div class="flex items-center text-brand-navy-700 font-semibold mb-4">
         <i class="fas fa-coins mr-2"></i>
-        <span>Payout per unit: {{ task.per_part_payout }} {{ task.per_part_currency or '' }}</span>
+        <span data-i18n="units.payoutPerUnit">Payout per unit</span>: {{ task.per_part_payout }} {{ task.per_part_currency or '' }}
     </div>
     {% endif %}
     <!-- Mobile header -->
     <div class="lg:hidden mb-6">
-        <div class="text-2xl font-bold text-primary mb-4">
+        <div class="text-2xl font-bold text-primary mb-4" data-i18n="units.title">
             Units Completed: {{ task.name }}
         </div>
         <div class="flex flex-col gap-2">
             <button onclick="openAddWorkerToTaskModal('{{ task.id }}')" class="btn btn-primary">
-                <i data-feather="plus" class="mr-2"></i>Add Worker
+                <i data-feather="plus" class="mr-2"></i><span data-i18n="units.addWorker">Add Worker</span>
             </button>
             <a href="{{ url_for('tasks_route') }}" class="btn btn-ghost">
-                <i data-feather="arrow-left" class="mr-2"></i>Back to Tasks
+                <i data-feather="arrow-left" class="mr-2"></i><span data-i18n="units.backToTasks">Back to Tasks</span>
             </a>
         </div>
     </div>
@@ -115,8 +123,8 @@
                     <table class="table w-full">
                         <thead>
                             <tr>
-                                <th>Name</th>
-                                <th>Units Completed</th>
+                                <th><span data-i18n="units.name">Name</span></th>
+                                <th><span data-i18n="units.unitsCompleted">Units Completed</span></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -134,7 +142,7 @@
                     </table>
                     <div class="mt-4 flex justify-end">
                         <button type="button" onclick="saveUnitsCompleted('{{ task.id }}')" class="btn btn-primary">
-                            <i data-feather="save" class="mr-2"></i>Save
+                            <i data-feather="save" class="mr-2"></i><span data-i18n="units.save">Save</span>
                         </button>
                     </div>
                 </form>
@@ -143,7 +151,7 @@
     {% else %}
         <div class="alert alert-info mt-8">
             <i class="fas fa-info-circle mr-2"></i>
-            Units completed is only available for tasks that are In Progress or Completed.
+            <span data-i18n="units.unitsOnlyAvailable">Units completed is only available for tasks that are In Progress or Completed.</span>
         </div>
     {% endif %}
 

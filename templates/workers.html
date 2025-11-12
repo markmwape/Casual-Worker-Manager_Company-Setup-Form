@@ -3,12 +3,12 @@
 {% block content %}
 <div class="container mx-auto px-4 w-full max-w-6xl pt-8">
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
-        <h1 class="text-3xl font-bold text-black">Workers</h1>
+        <h1 class="text-3xl font-bold text-black" data-i18n="workers.title">Workers</h1>
         <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-            <button onclick="openImportWorkersModal()" class="btn btn-secondary w-full sm:w-auto">
+            <button onclick="openImportWorkersModal()" class="btn btn-secondary w-full sm:w-auto" data-i18n="workers.importWorkers">
                 <i data-feather="upload" class="mr-2"></i>Import Workers
             </button>
-            <button onclick="openAddWorkerModal()" class="btn btn-primary w-full sm:w-auto">
+            <button onclick="openAddWorkerModal()" class="btn btn-primary w-full sm:w-auto" data-i18n="workers.addWorker">
                 <i data-feather="plus" class="mr-2"></i>Add Worker
             </button>
         </div>
@@ -21,7 +21,7 @@
                     <div class="border border-brand-navy-200 rounded p-1">
                         <input type="checkbox" id="selectAllWorkers" class="checkbox checkbox-primary align-middle">
                     </div>
-                    <label for="selectAllWorkers" class="font-semibold text-brand-navy-900 cursor-pointer">Select All</label>
+                    <label for="selectAllWorkers" class="font-semibold text-brand-navy-900 cursor-pointer" data-i18n="workers.selectAll">Select All</label>
                     <button id="deleteSelectedBtn" class="gradient-circle-btn-red ml-4 hidden" title="Delete Selected" onclick="deleteSelectedWorkers()">
                         <i data-feather="trash-2"></i>
                     </button>
@@ -36,7 +36,7 @@
                             {% for field in all_fields %}
                             <th class="py-3 px-4 font-semibold text-brand-navy-900 whitespace-nowrap">{{ field.name }}</th>
                             {% endfor %}
-                            <th class="py-3 px-4 font-semibold text-brand-navy-900 whitespace-nowrap">Created At</th>
+                            <th class="py-3 px-4 font-semibold text-brand-navy-900 whitespace-nowrap" data-i18n="workers.createdAt">Created At</th>
                             <th class="py-3 px-4 font-semibold text-brand-navy-900 whitespace-nowrap text-center">Actions</th>
                         </tr>
                     </thead>

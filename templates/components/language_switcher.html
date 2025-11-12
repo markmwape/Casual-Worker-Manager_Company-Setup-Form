@@ -1,14 +1,14 @@
 <!-- Language Switcher Component -->
 <div class="language-switcher-container">
     <div class="dropdown dropdown-end">
-        <label tabindex="0" class="btn btn-sm gap-2 language-switcher-btn" id="languageToggle">
+        <label tabindex="0" class="btn btn-sm gap-2 language-switcher-btn language-toggle">
             <span class="text-xl">🌐</span>
-            <span id="currentLangLabel" class="font-semibold text-sm">English</span>
+            <span class="current-lang-label font-semibold text-sm">English</span>
             <svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
             </svg>
         </label>
-        <ul tabindex="0" class="dropdown-content z-[200] menu p-2 shadow-xl bg-white border border-gray-200 rounded-lg w-56 mt-2" id="languageMenu">
+        <ul tabindex="0" class="dropdown-content z-[300] menu p-2 shadow-xl bg-white border border-gray-200 rounded-lg w-56 mt-2 language-menu">
             <!-- Populated by JavaScript -->
         </ul>
     </div>
@@ -97,12 +97,13 @@
         position: relative;
     }
     
-    .sidebar-language-switcher .dropdown-content {
+    .sidebar-language-switcher .language-menu {
         bottom: 100%;
         top: auto !important;
         margin-bottom: 0.5rem;
         margin-top: 0;
         animation: slideUp 0.2s ease-out;
+        z-index: 400;
     }
     
     @keyframes slideUp {
@@ -121,12 +122,46 @@
         position: relative;
     }
     
-    .mobile-menu-language-switcher .dropdown-content {
+    .mobile-menu-language-switcher .language-menu {
         bottom: 100%;
         top: auto !important;
         margin-bottom: 0.5rem;
         margin-top: 0;
         animation: slideUp 0.2s ease-out;
+        z-index: 500;
+    }
+    
+    /* Fix mobile menu dropdown positioning */
+    .mobile-menu-language-switcher {
+        position: relative;
+        z-index: 100;
+    }
+    
+    /* Ensure dropdowns are visible above everything */
+    .language-menu {
+        position: absolute;
+        z-index: 300;
+    }
+    
+    /* Fix dropdown on mobile screens */
+    @media (max-width: 768px) {
+        .language-menu {
+            position: fixed !important;
+            right: 1rem;
+            left: auto;
+            width: calc(100vw - 2rem);
+            max-width: 280px;
+            z-index: 1000;
+        }
+        
+        .mobile-menu-language-switcher .language-menu {
+            position: absolute !important;
+            bottom: 100%;
+            right: 0;
+            left: auto;
+            width: 200px;
+            z-index: 1000;
+        }
     }
     
     @media (max-width: 768px) {
@@ -140,11 +175,43 @@
             justify-content: space-between;
             padding: 0.75rem 1rem;
         }
+        
+        /* Ensure mobile dropdowns work properly */
+        .dropdown:focus-within .dropdown-content,
+        .dropdown:hover .dropdown-content,
+        .dropdown.dropdown-open .dropdown-content {
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+    }
+    
+    /* Fix for DaisyUI dropdown behavior */
+    .dropdown:focus-within .dropdown-content,
+    .dropdown-content:focus-within {
+        display: block;
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    /* Improve dropdown accessibility */
+    .language-toggle:focus + .language-menu,
+    .language-menu:focus-within {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+    
+    /* Better click handling */
+    .language-switcher-btn:active,
+    .language-switcher-btn:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
     }
 </style>
 
 <script>
-    // Initialize language switcher
+    // Initialize language switcher - handles multiple instances
     function initLanguageSwitcher() {
         try {
             console.log('Initializing language switcher...');
@@ -160,56 +227,90 @@
                     const languages = data.languages || {};
                     const currentLanguage = data.current_language || 'en';
                     
-                    // Populate language menu
-                    const languageMenu = document.getElementById('languageMenu');
-                    if (languageMenu) {
-                        languageMenu.innerHTML = ''; // Clear existing items
-                        let itemCount = 0;
-                        for (const [code, name] of Object.entries(languages)) {
-                            const li = document.createElement('li');
-                            const a = document.createElement('a');
-                            a.textContent = name;
-                            a.href = 'javascript:void(0)';
-                            a.setAttribute('data-lang', code);
-                            a.style.cursor = 'pointer';
-                            
-                            // Add click handler
-                            a.addEventListener('click', function(e) {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                const lang = this.getAttribute('data-lang');
-                                console.log('Language clicked:', lang, '(' + name + ')');
-                                changeLanguage(lang);
-                            });
-                            
-                            if (code === currentLanguage) {
-                                a.classList.add('active', 'font-bold');
+                    // Update all language menus (handle multiple instances)
+                    const languageMenus = document.querySelectorAll('.language-menu');
+                    languageMenus.forEach((languageMenu, index) => {
+                        if (languageMenu) {
+                            languageMenu.innerHTML = ''; // Clear existing items
+                            let itemCount = 0;
+                            for (const [code, name] of Object.entries(languages)) {
+                                const li = document.createElement('li');
+                                const a = document.createElement('a');
+                                a.textContent = name;
+                                a.href = 'javascript:void(0)';
+                                a.setAttribute('data-lang', code);
+                                a.style.cursor = 'pointer';
+                                
+                                // Add click handler
+                                a.addEventListener('click', function(e) {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    const lang = this.getAttribute('data-lang');
+                                    console.log('Language clicked:', lang, '(' + name + ')');
+                                    changeLanguage(lang);
+                                    
+                                    // Close all dropdowns
+                                    document.querySelectorAll('.dropdown').forEach(dropdown => {
+                                        if (dropdown.querySelector('input[type="checkbox"]')) {
+                                            dropdown.querySelector('input[type="checkbox"]').checked = false;
+                                        }
+                                        dropdown.blur();
+                                    });
+                                });
+                                
+                                if (code === currentLanguage) {
+                                    a.classList.add('active', 'font-bold');
+                                }
+                                
+                                li.appendChild(a);
+                                languageMenu.appendChild(li);
+                                itemCount++;
                             }
-                            
-                            li.appendChild(a);
-                            languageMenu.appendChild(li);
-                            itemCount++;
+                            console.log(`Language menu ${index + 1} populated with`, itemCount, 'languages');
                         }
-                        console.log('Language menu populated with', itemCount, 'languages');
-                        
-                        // Test that menu is visible
-                        setTimeout(() => {
-                            const menuRect = languageMenu.getBoundingClientRect();
-                            console.log('Language menu position:', menuRect);
-                        }, 100);
-                    } else {
-                        console.error('Language menu element not found');
-                    }
+                    });
                     
-                    // Update current language label
-                    const currentLangLabel = document.getElementById('currentLangLabel');
-                    if (currentLangLabel && languages[currentLanguage]) {
-                        currentLangLabel.textContent = languages[currentLanguage];
-                        console.log('Current language label updated to:', languages[currentLanguage]);
-                    }
+                    // Update all current language labels
+                    const currentLangLabels = document.querySelectorAll('.current-lang-label');
+                    currentLangLabels.forEach((label, index) => {
+                        if (label && languages[currentLanguage]) {
+                            label.textContent = languages[currentLanguage];
+                            console.log(`Current language label ${index + 1} updated to:`, languages[currentLanguage]);
+                        }
+                    });
                 })
                 .catch(error => {
                     console.error('Error loading languages:', error);
+                    // Fallback: show default languages
+                    const defaultLanguages = {
+                        'en': 'English',
+                        'fr': 'Français', 
+                        'es': 'Español',
+                        'pt': 'Português',
+                        'sw': 'Swahili'
+                    };
+                    
+                    const languageMenus = document.querySelectorAll('.language-menu');
+                    languageMenus.forEach((languageMenu) => {
+                        if (languageMenu && languageMenu.children.length === 0) {
+                            for (const [code, name] of Object.entries(defaultLanguages)) {
+                                const li = document.createElement('li');
+                                const a = document.createElement('a');
+                                a.textContent = name;
+                                a.href = 'javascript:void(0)';
+                                a.setAttribute('data-lang', code);
+                                a.style.cursor = 'pointer';
+                                a.addEventListener('click', function(e) {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    const lang = this.getAttribute('data-lang');
+                                    changeLanguage(lang);
+                                });
+                                li.appendChild(a);
+                                languageMenu.appendChild(li);
+                            }
+                        }
+                    });
                 });
         } catch (error) {
             console.error('Error initializing language switcher:', error);
@@ -219,6 +320,13 @@
     // Change language function
     function changeLanguage(langCode) {
         console.log('Changing language to:', langCode);
+        
+        // Show loading state
+        const currentLangLabels = document.querySelectorAll('.current-lang-label');
+        currentLangLabels.forEach(label => {
+            label.textContent = 'Changing...';
+        });
+        
         try {
             fetch('/api/change-language', {
                 method: 'POST',
@@ -229,37 +337,153 @@
             })
             .then(response => {
                 console.log('Change language response status:', response.status);
-                if (response.ok) {
+                return response.json();
+            })
+            .then(result => {
+                if (result.success) {
                     console.log('Language changed successfully, updating page...');
-                    // Update the page using i18n system instead of full reload
+                    
+                    // Update labels immediately
+                    const languageNames = {
+                        'en': 'English',
+                        'fr': 'Français',
+                        'sw': 'Swahili', 
+                        'pt': 'Português',
+                        'es': 'Español',
+                        'tr': 'Türkçe',
+                        'hi': 'हिंदी',
+                        'zh': '中文',
+                        'ar': 'العربية',
+                        'vi': 'Tiếng Việt'
+                    };
+                    
+                    currentLangLabels.forEach(label => {
+                        label.textContent = languageNames[langCode] || langCode.toUpperCase();
+                    });
+                    
+                    // Update active states
+                    document.querySelectorAll('.language-menu a').forEach(link => {
+                        link.classList.remove('active', 'font-bold');
+                        if (link.getAttribute('data-lang') === langCode) {
+                            link.classList.add('active', 'font-bold');
+                        }
+                    });
+                    
+                    // Update the page using i18n system or reload
                     if (window.i18n && typeof window.i18n.setLanguage === 'function') {
                         console.log('Using i18n.setLanguage to update page');
                         window.i18n.setLanguage(langCode);
                     } else {
-                        console.log('i18n system not available, reloading page');
-                        window.location.reload();
+                        console.log('i18n system not available, reloading page after delay');
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 500);
                     }
                 } else {
-                    console.error('Error response from change-language endpoint');
-                    alert('Error changing language');
+                    console.error('Error response from change-language endpoint:', result);
+                    currentLangLabels.forEach(label => {
+                        label.textContent = 'Error';
+                    });
+                    setTimeout(() => {
+                        initLanguageSwitcher(); // Reset
+                    }, 2000);
                 }
             })
             .catch(error => {
                 console.error('Error changing language:', error);
-                alert('Error changing language');
+                currentLangLabels.forEach(label => {
+                    label.textContent = 'Error';
+                });
+                setTimeout(() => {
+                    initLanguageSwitcher(); // Reset
+                }, 2000);
             });
         } catch (error) {
             console.error('Error in changeLanguage function:', error);
-            alert('Error changing language');
+            currentLangLabels.forEach(label => {
+                label.textContent = 'Error';
+            });
         }
     }    // Make changeLanguage globally available
     window.changeLanguage = changeLanguage;
     
+    // Add dropdown behavior handlers
+    function setupDropdownBehavior() {
+        // Handle dropdown toggle behavior
+        document.querySelectorAll('.language-toggle').forEach(toggle => {
+            toggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const dropdown = this.closest('.dropdown');
+                const menu = dropdown.querySelector('.language-menu');
+                
+                // Close other dropdowns first
+                document.querySelectorAll('.dropdown').forEach(otherDropdown => {
+                    if (otherDropdown !== dropdown) {
+                        const otherMenu = otherDropdown.querySelector('.language-menu');
+                        if (otherMenu) {
+                            otherMenu.style.display = 'none';
+                        }
+                    }
+                });
+                
+                // Toggle current dropdown
+                if (menu) {
+                    const isVisible = menu.style.display === 'block';
+                    menu.style.display = isVisible ? 'none' : 'block';
+                    
+                    if (!isVisible) {
+                        // Position the menu properly
+                        const rect = toggle.getBoundingClientRect();
+                        const menuRect = menu.getBoundingClientRect();
+                        
+                        // Adjust positioning if menu would go off-screen
+                        if (rect.bottom + menuRect.height > window.innerHeight) {
+                            menu.style.bottom = '100%';
+                            menu.style.top = 'auto';
+                        } else {
+                            menu.style.top = '100%';
+                            menu.style.bottom = 'auto';
+                        }
+                    }
+                }
+            });
+        });
+        
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.language-switcher-container')) {
+                document.querySelectorAll('.language-menu').forEach(menu => {
+                    menu.style.display = 'none';
+                });
+            }
+        });
+        
+        // Handle escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.language-menu').forEach(menu => {
+                    menu.style.display = 'none';
+                });
+            }
+        });
+    }
+    
+    // Initialize everything
+    function initLanguageSwitcherComplete() {
+        initLanguageSwitcher();
+        setupDropdownBehavior();
+    }
+    
     // Initialize on DOM ready
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initLanguageSwitcher);
+        document.addEventListener('DOMContentLoaded', initLanguageSwitcherComplete);
     } else {
         // DOM already loaded
-        initLanguageSwitcher();
+        initLanguageSwitcherComplete();
     }
+    
+    // Re-initialize when new language switchers are added dynamically
+    window.reinitLanguageSwitcher = initLanguageSwitcherComplete;
 </script>

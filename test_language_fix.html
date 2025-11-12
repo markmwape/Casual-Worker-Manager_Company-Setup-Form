@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Language Switcher Test</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { padding: 20px; font-family: system-ui; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .current-lang { font-weight: bold; color: #2563eb; }
+    </style>
+</head>
+<body>
+    <h1>Language Switcher Test</h1>
+    
+    <div class="test-section">
+        <h2>Desktop Language Switcher</h2>
+        <!-- Include the fixed language switcher -->
+        <!-- Language Switcher Component -->
+        <div class="language-switcher-container">
+            <div class="dropdown dropdown-end">
+                <label tabindex="0" class="btn btn-sm gap-2 language-switcher-btn language-toggle">
+                    <span class="text-xl">🌐</span>
+                    <span class="current-lang-label font-semibold text-sm">English</span>
+                    <svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </label>
+                <ul tabindex="0" class="dropdown-content z-[300] menu p-2 shadow-xl bg-white border border-gray-200 rounded-lg w-56 mt-2 language-menu">
+                    <!-- Will be populated by JavaScript -->
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Mobile Menu Language Switcher</h2>
+        <div class="mobile-menu-language-switcher">
+            <div class="language-switcher-container">
+                <div class="dropdown dropdown-end">
+                    <label tabindex="0" class="btn btn-sm gap-2 language-switcher-btn language-toggle">
+                        <span class="text-xl">🌐</span>
+                        <span class="current-lang-label font-semibold text-sm">English</span>
+                        <svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </label>
+                    <ul tabindex="0" class="dropdown-content z-[300] menu p-2 shadow-xl bg-white border border-gray-200 rounded-lg w-56 mt-2 language-menu">
+                        <!-- Will be populated by JavaScript -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Sidebar Language Switcher</h2>
+        <div class="sidebar-language-switcher">
+            <div class="language-switcher-container">
+                <div class="dropdown dropdown-end">
+                    <label tabindex="0" class="btn btn-sm gap-2 language-switcher-btn language-toggle">
+                        <span class="text-xl">🌐</span>
+                        <span class="current-lang-label font-semibold text-sm">English</span>
+                        <svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </label>
+                    <ul tabindex="0" class="dropdown-content z-[300] menu p-2 shadow-xl bg-white border border-gray-200 rounded-lg w-56 mt-2 language-menu">
+                        <!-- Will be populated by JavaScript -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test Log</h2>
+        <div id="testLog" style="max-height: 200px; overflow-y: auto; background: #f5f5f5; padding: 10px; font-family: monospace;"></div>
+    </div>
+
+    <script>
+        // Mock the API responses for testing
+        function mockFetch(url, options) {
+            if (url === '/api/languages') {
+                return Promise.resolve({
+                    ok: true,
+                    json: () => Promise.resolve({
+                        languages: {
+                            'en': 'English',
+                            'fr': 'Français',
+                            'sw': 'Swahili',
+                            'pt': 'Português',
+                            'es': 'Español',
+                            'tr': 'Türkçe',
+                            'hi': 'हिंदी',
+                            'zh': '中文',
+                            'ar': 'العربية',
+                            'vi': 'Tiếng Việt'
+                        },
+                        current_language: 'en'
+                    })
+                });
+            } else if (url === '/api/change-language' && options && options.method === 'POST') {
+                const body = JSON.parse(options.body);
+                return Promise.resolve({
+                    ok: true,
+                    json: () => Promise.resolve({
+                        success: true,
+                        language: body.language
+                    })
+                });
+            }
+            return Promise.reject(new Error('Unknown API endpoint'));
+        }
+        
+        // Override fetch for testing
+        window.fetch = mockFetch;
+        
+        // Test logging
+        function log(message) {
+            const logDiv = document.getElementById('testLog');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${timestamp}] ${message}<br>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        // Include the fixed language switcher JavaScript
+        // Initialize language switcher - handles multiple instances
+        function initLanguageSwitcher() {
+            try {
+                log('Initializing language switcher...');
+                
+                // Fetch available languages
+                fetch('/api/languages')
+                    .then(response => {
+                        log('Languages response status: ' + response.status);
+                        return response.json();
+                    })
+                    .then(data => {
+                        log('Languages data received: ' + JSON.stringify(data));
+                        const languages = data.languages || {};
+                        const currentLanguage = data.current_language || 'en';
+                        
+                        // Update all language menus (handle multiple instances)
+                        const languageMenus = document.querySelectorAll('.language-menu');
+                        languageMenus.forEach((languageMenu, index) => {
+                            if (languageMenu) {
+                                languageMenu.innerHTML = ''; // Clear existing items
+                                let itemCount = 0;
+                                for (const [code, name] of Object.entries(languages)) {
+                                    const li = document.createElement('li');
+                                    const a = document.createElement('a');
+                                    a.textContent = name;
+                                    a.href = 'javascript:void(0)';
+                                    a.setAttribute('data-lang', code);
+                                    a.style.cursor = 'pointer';
+                                    
+                                    // Add click handler
+                                    a.addEventListener('click', function(e) {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        const lang = this.getAttribute('data-lang');
+                                        log('Language clicked: ' + lang + ' (' + name + ')');
+                                        changeLanguage(lang);
+                                        
+                                        // Close all dropdowns
+                                        document.querySelectorAll('.language-menu').forEach(menu => {
+                                            menu.style.display = 'none';
+                                        });
+                                    });
+                                    
+                                    if (code === currentLanguage) {
+                                        a.classList.add('active', 'font-bold');
+                                        a.style.backgroundColor = '#3b82f6';
+                                        a.style.color = 'white';
+                                    }
+                                    
+                                    li.appendChild(a);
+                                    languageMenu.appendChild(li);
+                                    itemCount++;
+                                }
+                                log(`Language menu ${index + 1} populated with ${itemCount} languages`);
+                            }
+                        });
+                        
+                        // Update all current language labels
+                        const currentLangLabels = document.querySelectorAll('.current-lang-label');
+                        currentLangLabels.forEach((label, index) => {
+                            if (label && languages[currentLanguage]) {
+                                label.textContent = languages[currentLanguage];
+                                log(`Current language label ${index + 1} updated to: ${languages[currentLanguage]}`);
+                            }
+                        });
+                    })
+                    .catch(error => {
+                        log('Error loading languages: ' + error.message);
+                    });
+            } catch (error) {
+                log('Error initializing language switcher: ' + error.message);
+            }
+        }
+        
+        // Change language function
+        function changeLanguage(langCode) {
+            log('Changing language to: ' + langCode);
+            
+            // Show loading state
+            const currentLangLabels = document.querySelectorAll('.current-lang-label');
+            currentLangLabels.forEach(label => {
+                label.textContent = 'Changing...';
+            });
+            
+            try {
+                fetch('/api/change-language', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ language: langCode })
+                })
+                .then(response => {
+                    log('Change language response status: ' + response.status);
+                    return response.json();
+                })
+                .then(result => {
+                    if (result.success) {
+                        log('Language changed successfully, updating page...');
+                        
+                        // Update labels immediately
+                        const languageNames = {
+                            'en': 'English',
+                            'fr': 'Français',
+                            'sw': 'Swahili', 
+                            'pt': 'Português',
+                            'es': 'Español',
+                            'tr': 'Türkçe',
+                            'hi': 'हिंदी',
+                            'zh': '中文',
+                            'ar': 'العربية',
+                            'vi': 'Tiếng Việt'
+                        };
+                        
+                        currentLangLabels.forEach(label => {
+                            label.textContent = languageNames[langCode] || langCode.toUpperCase();
+                        });
+                        
+                        // Update active states
+                        document.querySelectorAll('.language-menu a').forEach(link => {
+                            link.classList.remove('active', 'font-bold');
+                            link.style.backgroundColor = '';
+                            link.style.color = '';
+                            if (link.getAttribute('data-lang') === langCode) {
+                                link.classList.add('active', 'font-bold');
+                                link.style.backgroundColor = '#3b82f6';
+                                link.style.color = 'white';
+                            }
+                        });
+                        
+                        log('Language switch completed successfully');
+                    } else {
+                        log('Error response from change-language endpoint: ' + JSON.stringify(result));
+                    }
+                });
+            } catch (error) {
+                log('Error in changeLanguage function: ' + error.message);
+            }
+        }
+        
+        // Add dropdown behavior handlers
+        function setupDropdownBehavior() {
+            log('Setting up dropdown behavior...');
+            
+            // Handle dropdown toggle behavior
+            document.querySelectorAll('.language-toggle').forEach(toggle => {
+                toggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const dropdown = this.closest('.dropdown');
+                    const menu = dropdown.querySelector('.language-menu');
+                    
+                    // Close other dropdowns first
+                    document.querySelectorAll('.dropdown').forEach(otherDropdown => {
+                        if (otherDropdown !== dropdown) {
+                            const otherMenu = otherDropdown.querySelector('.language-menu');
+                            if (otherMenu) {
+                                otherMenu.style.display = 'none';
+                            }
+                        }
+                    });
+                    
+                    // Toggle current dropdown
+                    if (menu) {
+                        const isVisible = menu.style.display === 'block';
+                        menu.style.display = isVisible ? 'none' : 'block';
+                        log(`Dropdown ${isVisible ? 'closed' : 'opened'}`);
+                    }
+                });
+            });
+            
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.language-switcher-container')) {
+                    document.querySelectorAll('.language-menu').forEach(menu => {
+                        menu.style.display = 'none';
+                    });
+                }
+            });
+            log('Dropdown behavior setup completed');
+        }
+        
+        // Initialize everything
+        function initLanguageSwitcherComplete() {
+            initLanguageSwitcher();
+            setupDropdownBehavior();
+        }
+        
+        // Initialize on DOM ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initLanguageSwitcherComplete);
+        } else {
+            // DOM already loaded
+            initLanguageSwitcherComplete();
+        }
+        
+        // Start test
+        log('Language switcher test page loaded');
+    </script>
+</body>
+</html>

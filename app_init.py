@@ -100,21 +100,36 @@ babel = Babel(app)
 @babel.localeselector
 def get_locale():
     """Select the best language for the user"""
+    # First check session language (most recent preference)
+    if 'language' in session:
+        lang = session['language']
+        if lang in app.config['LANGUAGES']:
+            logging.info(f"Using language from session: {lang}")
+            return lang
+    
+    # Then check user database preference
     if 'user' in session and 'user_email' in session['user']:
         try:
             user = User.query.filter_by(email=session['user']['user_email']).first()
-            if user and user.language_preference:
+            if user and user.language_preference and user.language_preference in app.config['LANGUAGES']:
+                # Update session to match user preference
+                session['language'] = user.language_preference
+                logging.info(f"Using language from user preference: {user.language_preference}")
                 return user.language_preference
         except Exception as e:
             logging.warning(f"Could not get user language preference: {e}")
     
     # Check URL argument for language override
     lang = request.args.get('lang')
-    if lang in app.config['LANGUAGES']:
+    if lang and lang in app.config['LANGUAGES']:
+        session['language'] = lang
         return lang
     
     # Use browser language preference
-    return request.accept_languages.best_match(app.config['LANGUAGES'].keys()) or 'en'
+    browser_lang = request.accept_languages.best_match(app.config['LANGUAGES'].keys()) or 'en'
+    if browser_lang not in session:
+        session['language'] = browser_lang
+    return browser_lang
 
 # Initialize database tables with better error handling
 def init_database_safely():

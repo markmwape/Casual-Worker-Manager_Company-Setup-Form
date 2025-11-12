@@ -36,44 +36,37 @@
 }
 
 /* Global ensures for language switcher menus */
+/* Base menu - HIDDEN by default */
 .language-menu {
-    position: absolute !important;
-    z-index: 1000 !important;
-    background: white !important;
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 0.5rem !important;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
-    padding: 0.5rem 0 !important;
-    min-width: 200px !important;
-    top: calc(100% + 0.5rem) !important;
-    right: 0 !important;
-    transition: opacity 0.2s ease-out, visibility 0.2s ease-out;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    min-width: 200px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    z-index: 9999;
+    margin-top: 0.5rem;
+    max-height: 400px;
+    overflow-y: auto;
+    transition: opacity 0.2s, visibility 0.2s;
+    
+    /* Hidden by default */
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    display: block !important;
 }
 
-/* Simple visibility control */
-.language-menu.opacity-0.invisible {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-}
-
-.language-menu.opacity-100.visible {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-}
-
-/* Also support when only one class is present */
-.language-menu.visible:not(.invisible) {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-}
-
-.language-menu.invisible:not(.visible) {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
+/* VISIBLE state - override everything */
+.language-menu.opacity-100.visible,
+.language-menu.opacity-100,
+.language-menu.visible {
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    display: block !important;
 }
 
 /* Menu items styling */

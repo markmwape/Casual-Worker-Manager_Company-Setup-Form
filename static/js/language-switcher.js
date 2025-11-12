@@ -205,13 +205,26 @@ function setupDropdownBehavior() {
             
             // Toggle current
             if (isExpanded) {
+                console.log('Closing menu...');
                 this.setAttribute('aria-expanded', 'false');
                 menu.classList.remove('opacity-100', 'visible');
                 menu.classList.add('opacity-0', 'invisible');
             } else {
+                console.log('Opening menu...');
                 this.setAttribute('aria-expanded', 'true');
                 menu.classList.remove('opacity-0', 'invisible');
                 menu.classList.add('opacity-100', 'visible');
+                
+                // Force display with inline styles as backup
+                menu.style.display = 'block';
+                menu.style.opacity = '1';
+                menu.style.visibility = 'visible';
+                menu.style.pointerEvents = 'auto';
+                
+                console.log('Menu classes:', menu.className);
+                console.log('Menu computed display:', window.getComputedStyle(menu).display);
+                console.log('Menu computed visibility:', window.getComputedStyle(menu).visibility);
+                console.log('Menu computed opacity:', window.getComputedStyle(menu).opacity);
             }
         };
     });

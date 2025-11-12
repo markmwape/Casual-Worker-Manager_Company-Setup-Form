@@ -139,5 +139,60 @@
   "Worker Management": "Gestion des Travailleurs",
   "Workers": "Travailleurs",
   "Would Recommend": "Recommanderaient",
-  "Your Data, Your Control": "Vos Données, Votre Contrôle"
+  "Your Data, Your Control": "Vos Données, Votre Contrôle",
+  "sidebar": {
+    "myWorkspace": "Mon Espace de Travail",
+    "dashboard": "Tableau de Bord",
+    "workers": "Travailleurs",
+    "tasks": "Tâches",
+    "reports": "Rapports",
+    "payments": "Paiements/Facturation",
+    "signout": "Déconnexion",
+    "role": {
+      "admin": "Administrateur",
+      "administrator": "Administrateur",
+      "accountant": "Comptable",
+      "member": "Membre"
+    }
+  },
+  "signin": {
+    "title": "Embee Comptabilité",
+    "subtitle": "Accédez à votre espace de travail",
+    "signIn": "Se Connecter",
+    "welcomeMessage": "Bon retour! Veuillez vous connecter pour continuer",
+    "emailLabel": "Adresse E-mail",
+    "emailPlaceholder": "vous@exemple.com",
+    "sendSigninLink": "Envoyer le Lien de Connexion",
+    "or": "ou",
+    "signInWithGoogle": "Se connecter avec Google",
+    "noWorkspace": "Vous n'avez pas encore d'espace de travail?",
+    "createNewWorkspace": "Créer un Nouvel Espace de Travail",
+    "backToHome": "Retour à l'accueil",
+    "agreement": "En vous connectant, vous acceptez nos",
+    "terms": "Conditions",
+    "and": "et",
+    "privacyPolicy": "Politique de Confidentialité"
+  },
+  "createWorkspace": {
+    "title": "Créer un Nouvel Espace de Travail",
+    "subtitle": "Configurez un nouvel espace de travail pour votre organisation en quelques minutes",
+    "workspaceDetails": "Détails de l'Espace de Travail",
+    "fillInformation": "Remplissez les informations ci-dessous pour créer votre espace de travail",
+    "companyName": "Nom de l'Entreprise",
+    "required": "Requis",
+    "companyNamePlaceholder": "par ex., ABC Construction Ltd",
+    "minimumChars": "Minimum 2 caractères",
+    "country": "Pays",
+    "selectCountry": "Sélectionner le pays",
+    "industryType": "Type d'Industrie",
+    "selectIndustry": "Sélectionner l'industrie",
+    "companyPhone": "Téléphone de l'Entreprise",
+    "phonePlaceholder": "+33 1 23 45 67 89",
+    "includeCountryCode": "Inclure l'indicatif pays si international",
+    "companyEmail": "Email de l'Entreprise",
+    "emailPlaceholder": "entreprise@exemple.com",
+    "officialEmail": "Adresse email officielle de l'entreprise",
+    "createWorkspace": "Créer l'Espace de Travail",
+    "creatingWorkspace": "Création de l'espace de travail..."
+  }
 }

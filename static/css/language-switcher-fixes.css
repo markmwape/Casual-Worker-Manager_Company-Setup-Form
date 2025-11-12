@@ -1,258 +1,240 @@
-/* Language Switcher Visibility Fix - Enhanced Cross-Page Compatibility */
+/* Enhanced Language Switcher Styles - Cross-Page Compatibility */
 
-/* Container positioning - Enhanced for all page contexts */
-.language-switcher-container {
-    position: relative;
-    z-index: 50;
-}
-
-.language-switcher-container .dropdown {
-    position: relative;
-    overflow: visible !important;
-}
-
-/* Context-specific z-index management */
-.sidebar-language-switcher {
-    z-index: 1100 !important;
-}
-
-.landing-language-switcher {
-    z-index: 200 !important;
-}
-
-.mobile-menu-language-switcher {
-    z-index: 1050 !important;
-}
-
-/* Button styling - Enhanced for all contexts */
-.language-switcher-btn {
-    cursor: pointer;
-    user-select: none;
-    position: relative;
-    z-index: 1;
-}
-
-.language-switcher-btn:hover {
-    transform: translateY(-1px);
-}
-
-.language-switcher-btn:active {
-    transform: translateY(0);
-}
-
-/* Arrow animation */
-.dropdown-arrow {
-    transition: transform 0.2s ease;
-}
-
-.language-switcher-btn[aria-expanded="true"] .dropdown-arrow {
-    transform: rotate(180deg);
-}
-
-/* Enhanced Menu Styling - Works for both .language-menu and .dropdown-menu */
-.language-menu,
-.dropdown-menu {
-    position: absolute !important;
-    top: 100%;
-    right: 0;
-    min-width: 200px;
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 0.5rem;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    z-index: 9999 !important;
-    margin-top: 0.5rem;
-    max-height: 400px;
-    overflow-y: auto;
-    transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
-    
-    /* Hidden by default */
-    opacity: 0 !important;
-    visibility: hidden !important;
-    pointer-events: none !important;
-    display: none !important;
-    transform: translateY(-10px);
-}
-
-/* VISIBLE state - Multiple selectors for maximum compatibility */
-.language-menu.opacity-100.visible,
-.language-menu.visible,
-.dropdown-menu.opacity-100.visible,
-.dropdown-menu.visible {
-    opacity: 1 !important;
-    visibility: visible !important;
-    pointer-events: auto !important;
-    display: block !important;
-    transform: translateY(0) !important;
-}
-
-/* Enhanced state selectors for button-triggered visibility */
-.language-switcher-btn[aria-expanded="true"] ~ .language-menu,
-.language-switcher-btn[aria-expanded="true"] + ul.language-menu,
-.language-switcher-btn[aria-expanded="true"] ~ .dropdown-menu,
-.language-switcher-btn[aria-expanded="true"] + ul.dropdown-menu {
-    opacity: 1 !important;
-    visibility: visible !important;
-    pointer-events: auto !important;
-    display: block !important;
-    transform: translateY(0) !important;
-}
-
-/* Fallback for older browser compatibility - no :has() */
-.dropdown.show .language-menu,
-.dropdown.show .dropdown-menu {
-    opacity: 1 !important;
-    visibility: visible !important;
-    pointer-events: auto !important;
-    display: block !important;
-    transform: translateY(0) !important;
-}
-
-/* Menu items styling */
-.language-menu li {
-    display: block !important;
-    list-style: none !important;
-}
-
-.language-menu li a {
+/* Better button styling for all contexts */
+.language-switcher .language-switcher-btn,
+.language-switcher-container .dropdown-toggle {
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
+    border-radius: 12px !important;
+    padding: 8px 16px !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    transition: all 0.3s ease !important;
+    color: #374151 !important;
+    min-width: 120px !important;
     display: flex !important;
     align-items: center !important;
-    padding: 0.75rem 1rem !important;
-    color: #475569 !important;
-    text-decoration: none !important;
-    cursor: pointer !important;
-    transition: all 0.15s ease !important;
-    border-radius: 0.5rem !important;
-    margin: 0.25rem 0.5rem !important;
-    white-space: nowrap;
+    justify-content: space-between !important;
+    gap: 8px !important;
 }
 
-.language-menu li a:hover {
-    background: #3b82f6 !important;
-    color: white !important;
+.language-switcher .language-switcher-btn:hover,
+.language-switcher-container .dropdown-toggle:hover {
+    background: rgba(255, 255, 255, 1) !important;
+    border-color: rgba(59, 130, 246, 0.3) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Enhanced dropdown menu styling */
+.language-switcher .language-menu,
+.language-switcher-container .dropdown-menu {
+    background: rgba(255, 255, 255, 0.98) !important;
+    backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15) !important;
+    padding: 8px !important;
+    margin-top: 8px !important;
+    min-width: 160px !important;
+    animation: slideIn 0.2s ease-out !important;
+    position: absolute !important;
+    top: 100% !important;
+    right: 0 !important;
+    z-index: 9999 !important;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Enhanced dropdown items */
+.language-switcher .language-menu li a,
+.language-switcher-container .dropdown-menu li a {
+    padding: 10px 16px !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: #374151 !important;
+    transition: all 0.2s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    text-decoration: none !important;
+    margin: 2px 0 !important;
+}
+
+.language-switcher .language-menu li a:hover,
+.language-switcher-container .dropdown-menu li a:hover {
+    background: rgba(59, 130, 246, 0.1) !important;
+    color: #1d4ed8 !important;
     transform: translateX(4px) !important;
 }
 
-.language-menu li a.active {
-    background: #1e40af !important;
+/* Context-specific styling */
+
+/* Fixed position for landing pages */
+.landing-language-switcher .language-switcher,
+.landing-language-switcher .language-switcher-container {
+    position: fixed !important;
+    top: 16px !important;
+    right: 16px !important;
+    z-index: 200 !important;
+}
+
+/* Sidebar context styling */
+.sidebar-language-switcher .language-switcher .language-switcher-btn,
+.sidebar-language-switcher .language-switcher-container .dropdown-toggle {
+    background: rgba(255, 255, 255, 0.15) !important;
     color: white !important;
-    font-weight: 700 !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
 }
 
-/* Desktop dropdown - default behavior */
-.language-switcher-container .language-menu {
-    top: calc(100% + 0.5rem) !important;
-    left: 0 !important;
-    right: auto !important;
+.sidebar-language-switcher .language-switcher .language-switcher-btn svg,
+.sidebar-language-switcher .language-switcher-container .dropdown-toggle svg {
+    color: rgba(255, 255, 255, 0.8) !important;
 }
 
-/* Sidebar dropdown - open upward */
-.sidebar-language-switcher .language-menu {
-    bottom: calc(100% + 0.5rem) !important;
-    top: auto !important;
-    right: 0 !important;
-    left: auto !important;
-    z-index: 2000 !important;
+.sidebar-language-switcher .language-switcher .language-switcher-btn:hover,
+.sidebar-language-switcher .language-switcher-container .dropdown-toggle:hover {
+    background: rgba(255, 255, 255, 0.25) !important;
+    color: white !important;
+    transform: translateY(-2px) !important;
 }
 
-/* Mobile menu dropdown - open upward */
-.mobile-menu-language-switcher .language-menu {
-    bottom: calc(100% + 0.5rem) !important;
-    top: auto !important;
-    right: 0 !important;
-    left: auto !important;
-    z-index: 1500 !important;
+.sidebar-language-switcher .language-switcher,
+.sidebar-language-switcher .language-switcher-container {
+    z-index: 1100 !important;
 }
 
-/* Ensure containers don't hide dropdowns */
-.language-switcher-container,
-.language-switcher-container .dropdown,
-.sidebar-language-switcher,
-.sidebar-language-switcher .dropdown,
-.mobile-menu-language-switcher,
-.mobile-menu-language-switcher .dropdown {
-    position: relative;
-    overflow: visible !important;
-    z-index: auto;
+/* Mobile menu context */
+.mobile-menu-language-switcher .language-switcher,
+.mobile-menu-language-switcher .language-switcher-container {
+    z-index: 1050 !important;
 }
 
-/* Mobile responsiveness */
+/* Header context */
+.header-language-switcher .language-switcher,
+.header-language-switcher .language-switcher-container {
+    z-index: 100 !important;
+}
+
+/* Visibility and state management */
+.language-switcher .language-menu.visible,
+.language-switcher-container .dropdown-menu.visible {
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: block !important;
+    pointer-events: auto !important;
+}
+
+.language-switcher .language-menu:not(.visible),
+.language-switcher-container .dropdown-menu:not(.visible) {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    display: none !important;
+    pointer-events: none !important;
+}
+
+/* Enhanced arrow animation */
+.language-switcher .dropdown-arrow {
+    transition: transform 0.2s ease !important;
+}
+
+.language-switcher .dropdown-toggle[aria-expanded="true"] .dropdown-arrow {
+    transform: rotate(180deg) !important;
+}
+
+/* Globe icon styling */
+.language-switcher .language-switcher-btn svg:first-child {
+    color: #6B7280 !important;
+    flex-shrink: 0 !important;
+}
+
+.sidebar-language-switcher .language-switcher .language-switcher-btn svg:first-child {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Current language display */
+.language-switcher .current-lang-display {
+    font-weight: 600 !important;
+    color: inherit !important;
+}
+
+/* Responsive design */
 @media (max-width: 768px) {
-    .language-menu {
-        position: fixed !important;
-        width: calc(100vw - 2rem) !important;
-        max-width: 280px;
-        right: 1rem !important;
+    .language-switcher .language-switcher-btn,
+    .language-switcher-container .dropdown-toggle {
+        min-width: 100px !important;
+        padding: 6px 12px !important;
+        font-size: 13px !important;
+    }
+    
+    .language-switcher .language-menu,
+    .language-switcher-container .dropdown-menu {
+        min-width: 140px !important;
+        right: 0 !important;
         left: auto !important;
-        z-index: 1000 !important;
     }
 }
 
-/* Animation for dropdown open */
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .language-switcher .language-switcher-btn,
+    .language-switcher-container .dropdown-toggle {
+        border-width: 2px !important;
+        border-color: #000 !important;
     }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
+    
+    .language-switcher .language-menu,
+    .language-switcher-container .dropdown-menu {
+        border-width: 2px !important;
+        border-color: #000 !important;
     }
 }
 
-.language-menu[style*="display: block"] {
-    animation: slideDown 0.2s ease-out;
+/* Smooth focus indicators for accessibility */
+.language-switcher .language-switcher-btn:focus,
+.language-switcher-container .dropdown-toggle:focus {
+    outline: 2px solid #3B82F6 !important;
+    outline-offset: 2px !important;
 }
 
-.sidebar-language-switcher .language-menu[style*="display: block"],
-.mobile-menu-language-switcher .language-menu[style*="display: block"] {
-    animation: slideUp 0.2s ease-out;
+.language-switcher .language-menu li a:focus,
+.language-switcher-container .dropdown-menu li a:focus {
+    outline: 2px solid #3B82F6 !important;
+    outline-offset: -2px !important;
 }
 
-/* Loading States */
-.language-switcher-btn.loading {
-    opacity: 0.7;
-    pointer-events: none;
+/* Loading, Success, and Error States */
+.language-switcher .language-switcher-btn.loading,
+.language-switcher-container .dropdown-toggle.loading {
+    opacity: 0.7 !important;
+    pointer-events: none !important;
+    cursor: wait !important;
 }
 
-.language-switcher-btn.loading .current-lang-display::after {
-    content: '';
-    display: inline-block;
-    width: 12px;
-    height: 12px;
-    border: 2px solid #e5e7eb;
-    border-radius: 50%;
-    border-top-color: #3b82f6;
-    animation: spin 1s linear infinite;
-    margin-left: 8px;
+.language-switcher .language-switcher-btn.success,
+.language-switcher-container .dropdown-toggle.success {
+    background: rgba(34, 197, 94, 0.1) !important;
+    border-color: rgba(34, 197, 94, 0.3) !important;
+    animation: successPulse 0.5s ease-out !important;
 }
 
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-/* Success and Error States */
-.language-switcher-btn.success {
-    animation: successPulse 1s ease-out;
-    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.5) !important;
-}
-
-.language-switcher-btn.error {
-    animation: errorShake 0.5s ease-out;
-    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.5) !important;
+.language-switcher .language-switcher-btn.error,
+.language-switcher-container .dropdown-toggle.error {
+    background: rgba(239, 68, 68, 0.1) !important;
+    border-color: rgba(239, 68, 68, 0.3) !important;
+    animation: errorShake 0.5s ease-out !important;
 }
 
 @keyframes successPulse {
@@ -263,158 +245,6 @@
 
 @keyframes errorShake {
     0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-2px); }
-    75% { transform: translateX(2px); }
-}
-
-/* Enhanced Menu Animations */
-@keyframes slideUpFade {
-    from {
-        opacity: 0;
-        transform: translateY(8px) scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-/* Improved Focus Management */
-.language-menu a:focus {
-    outline: none;
-    background: #dbeafe !important;
-    color: #1e40af !important;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5) !important;
-}
-
-/* Better Mobile Experience */
-@media (max-width: 768px) {
-    .language-switcher-btn {
-        min-height: 44px; /* iOS touch target minimum */
-        padding: 12px 16px !important;
-    }
-    
-    .language-menu {
-        position: fixed !important;
-        right: 16px !important;
-        left: auto !important;
-        width: calc(100vw - 32px) !important;
-        max-width: 320px !important;
-        z-index: 1000 !important;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
-    }
-    
-    .language-menu li a {
-        padding: 14px 16px !important;
-        font-size: 16px !important; /* Prevent zoom on iOS */
-    }
-}
-
-/* High contrast mode improvements */
-@media (prefers-contrast: high) {
-    .language-switcher-btn {
-        border: 2px solid currentColor !important;
-        background: white !important;
-    }
-    
-    .language-menu {
-        border: 2px solid currentColor !important;
-        background: white !important;
-    }
-    
-    .language-menu li a:hover {
-        background: #000 !important;
-        color: white !important;
-    }
-    
-    .language-menu li a.active {
-        background: #000 !important;
-        color: white !important;
-    }
-}
-
-/* Reduced motion support */
-@media (prefers-reduced-motion: reduce) {
-    .language-switcher-btn,
-    .language-menu,
-    .language-menu li a,
-    .dropdown-arrow {
-        animation: none !important;
-        transition: none !important;
-    }
-}
-
-/* Print styles */
-@media print {
-    .language-switcher-container {
-        display: none !important;
-    }
-}
-
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-    .language-switcher-btn {
-        background: rgba(31, 41, 55, 0.9) !important;
-        border-color: rgba(75, 85, 99, 0.5) !important;
-        color: #e5e7eb !important;
-    }
-    
-    .language-switcher-btn:hover {
-        background: rgba(55, 65, 81, 0.9) !important;
-        border-color: rgba(107, 114, 128, 0.5) !important;
-    }
-    
-    .language-menu {
-        background: #1f2937 !important;
-        border-color: #374151 !important;
-    }
-    
-    .language-menu li a {
-        color: #e5e7eb !important;
-    }
-    
-    .language-menu li a:hover {
-        background: #374151 !important;
-        color: #f9fafb !important;
-    }
-    
-    .language-menu li a.active {
-        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
-        color: white !important;
-    }
-}
-
-/* Context-Specific Styling */
-
-/* Sidebar Context - dark theme */
-.sidebar-language-switcher .language-switcher-btn {
-    background: rgba(255, 255, 255, 0.1) !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    color: white !important;
-}
-
-.sidebar-language-switcher .language-switcher-btn:hover {
-    background: rgba(255, 255, 255, 0.2) !important;
-}
-
-.sidebar-language-switcher svg {
-    color: rgba(255, 255, 255, 0.8) !important;
-}
-
-.sidebar-language-switcher .current-lang-display {
-    color: white !important;
-}
-
-/* Landing Page Context - semi-transparent */
-.landing-language-switcher .language-switcher-btn {
-    background: rgba(255, 255, 255, 0.95) !important;
-    border: 1px solid rgba(255, 255, 255, 0.8) !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
-    backdrop-filter: blur(12px);
-}
-
-/* Mobile Menu Context - full width */
-.mobile-menu-language-switcher .language-switcher-btn {
-    width: 100% !important;
-    justify-content: center !important;
+    25% { transform: translateX(-3px); }
+    75% { transform: translateX(3px); }
 }

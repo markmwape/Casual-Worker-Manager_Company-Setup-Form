@@ -139,5 +139,60 @@
   "Worker Management": "Gestión de Trabajadores",
   "Workers": "Trabajadores",
   "Would Recommend": "Recomendarían",
-  "Your Data, Your Control": "Sus Datos, Su Control"
+  "Your Data, Your Control": "Sus Datos, Su Control",
+  "sidebar": {
+    "myWorkspace": "Mi Espacio de Trabajo",
+    "dashboard": "Panel",
+    "workers": "Trabajadores",
+    "tasks": "Tareas",
+    "reports": "Informes",
+    "payments": "Pagos/Facturación",
+    "signout": "Cerrar Sesión",
+    "role": {
+      "admin": "Administrador",
+      "administrator": "Administrador",
+      "accountant": "Contador",
+      "member": "Miembro"
+    }
+  },
+  "signin": {
+    "title": "Embee Contabilidad",
+    "subtitle": "Accede a tu espacio de trabajo",
+    "signIn": "Iniciar Sesión",
+    "welcomeMessage": "¡Bienvenido de vuelta! Inicia sesión para continuar",
+    "emailLabel": "Dirección de Correo Electrónico",
+    "emailPlaceholder": "tu@ejemplo.com",
+    "sendSigninLink": "Enviar Enlace de Inicio de Sesión",
+    "or": "o",
+    "signInWithGoogle": "Iniciar sesión con Google",
+    "noWorkspace": "¿Aún no tienes un espacio de trabajo?",
+    "createNewWorkspace": "Crear Nuevo Espacio de Trabajo",
+    "backToHome": "Volver al inicio",
+    "agreement": "Al iniciar sesión, aceptas nuestros",
+    "terms": "Términos",
+    "and": "y",
+    "privacyPolicy": "Política de Privacidad"
+  },
+  "createWorkspace": {
+    "title": "Crear un Nuevo Espacio de Trabajo",
+    "subtitle": "Configura un nuevo espacio de trabajo para tu organización en minutos",
+    "workspaceDetails": "Detalles del Espacio de Trabajo",
+    "fillInformation": "Completa la información a continuación para crear tu espacio de trabajo",
+    "companyName": "Nombre de la Empresa",
+    "required": "Requerido",
+    "companyNamePlaceholder": "ej., ABC Construction Ltd",
+    "minimumChars": "Mínimo 2 caracteres",
+    "country": "País",
+    "selectCountry": "Seleccionar país",
+    "industryType": "Tipo de Industria",
+    "selectIndustry": "Seleccionar industria",
+    "companyPhone": "Teléfono de la Empresa",
+    "phonePlaceholder": "+34 123 456 789",
+    "includeCountryCode": "Incluir código de país si es internacional",
+    "companyEmail": "Email de la Empresa",
+    "emailPlaceholder": "empresa@ejemplo.com",
+    "officialEmail": "Dirección de email oficial de la empresa",
+    "createWorkspace": "Crear Espacio de Trabajo",
+    "creatingWorkspace": "Creando espacio de trabajo..."
+  }
 }

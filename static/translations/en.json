@@ -139,5 +139,60 @@
   "Worker Management": "Worker Management",
   "Workers": "Workers",
   "Would Recommend": "Would Recommend",
-  "Your Data, Your Control": "Your Data, Your Control"
+  "Your Data, Your Control": "Your Data, Your Control",
+  "sidebar": {
+    "myWorkspace": "My Workspace",
+    "dashboard": "Dashboard",
+    "workers": "Workers",
+    "tasks": "Tasks",
+    "reports": "Reports",
+    "payments": "Payments/Billing",
+    "signout": "Sign Out",
+    "role": {
+      "admin": "Administrator",
+      "administrator": "Administrator",
+      "accountant": "Accountant",
+      "member": "Member"
+    }
+  },
+  "signin": {
+    "title": "Embee Accounting",
+    "subtitle": "Access your workspace",
+    "signIn": "Sign In",
+    "welcomeMessage": "Welcome back! Please sign in to continue",
+    "emailLabel": "Email Address",
+    "emailPlaceholder": "you@example.com",
+    "sendSigninLink": "Send Sign-in Link",
+    "or": "or",
+    "signInWithGoogle": "Sign in with Google",
+    "noWorkspace": "Don't have a workspace yet?",
+    "createNewWorkspace": "Create New Workspace",
+    "backToHome": "Back to home",
+    "agreement": "By signing in, you agree to our",
+    "terms": "Terms",
+    "and": "and",
+    "privacyPolicy": "Privacy Policy"
+  },
+  "createWorkspace": {
+    "title": "Create a New Workspace",
+    "subtitle": "Set up a new workspace for your organization in minutes",
+    "workspaceDetails": "Workspace Details",
+    "fillInformation": "Fill in the information below to create your workspace",
+    "companyName": "Company Name",
+    "required": "Required",
+    "companyNamePlaceholder": "e.g., ABC Construction Ltd",
+    "minimumChars": "Minimum 2 characters",
+    "country": "Country",
+    "selectCountry": "Select country",
+    "industryType": "Industry Type",
+    "selectIndustry": "Select industry",
+    "companyPhone": "Company Phone",
+    "phonePlaceholder": "+1 (555) 123-4567",
+    "includeCountryCode": "Include country code if international",
+    "companyEmail": "Company Email",
+    "emailPlaceholder": "company@example.com",
+    "officialEmail": "Official company email address",
+    "createWorkspace": "Create Workspace",
+    "creatingWorkspace": "Creating workspace..."
+  }
 }

@@ -139,5 +139,60 @@
   "Worker Management": "Gestão de Trabalhadores",
   "Workers": "Trabalhadores",
   "Would Recommend": "Recomendariam",
-  "Your Data, Your Control": "Seus Dados, Seu Controle"
+  "Your Data, Your Control": "Seus Dados, Seu Controle",
+  "sidebar": {
+    "myWorkspace": "Meu Espaço de Trabalho",
+    "dashboard": "Painel",
+    "workers": "Trabalhadores",
+    "tasks": "Tarefas",
+    "reports": "Relatórios",
+    "payments": "Pagamentos/Faturamento",
+    "signout": "Sair",
+    "role": {
+      "admin": "Administrador",
+      "administrator": "Administrador",
+      "accountant": "Contador",
+      "member": "Membro"
+    }
+  },
+  "signin": {
+    "title": "Embee Contabilidade",
+    "subtitle": "Acesse seu espaço de trabalho",
+    "signIn": "Entrar",
+    "welcomeMessage": "Bem-vindo de volta! Faça login para continuar",
+    "emailLabel": "Endereço de E-mail",
+    "emailPlaceholder": "voce@exemplo.com",
+    "sendSigninLink": "Enviar Link de Login",
+    "or": "ou",
+    "signInWithGoogle": "Entrar com Google",
+    "noWorkspace": "Ainda não tem um espaço de trabalho?",
+    "createNewWorkspace": "Criar Novo Espaço de Trabalho",
+    "backToHome": "Voltar ao início",
+    "agreement": "Ao entrar, você concorda com nossos",
+    "terms": "Termos",
+    "and": "e",
+    "privacyPolicy": "Política de Privacidade"
+  },
+  "createWorkspace": {
+    "title": "Criar um Novo Espaço de Trabalho",
+    "subtitle": "Configure um novo espaço de trabalho para sua organização em minutos",
+    "workspaceDetails": "Detalhes do Espaço de Trabalho",
+    "fillInformation": "Preencha as informações abaixo para criar seu espaço de trabalho",
+    "companyName": "Nome da Empresa",
+    "required": "Obrigatório",
+    "companyNamePlaceholder": "ex., ABC Construction Ltd",
+    "minimumChars": "Mínimo 2 caracteres",
+    "country": "País",
+    "selectCountry": "Selecionar país",
+    "industryType": "Tipo de Indústria",
+    "selectIndustry": "Selecionar indústria",
+    "companyPhone": "Telefone da Empresa",
+    "phonePlaceholder": "+55 11 12345-6789",
+    "includeCountryCode": "Incluir código do país se internacional",
+    "companyEmail": "Email da Empresa",
+    "emailPlaceholder": "empresa@exemplo.com",
+    "officialEmail": "Endereço de email oficial da empresa",
+    "createWorkspace": "Criar Espaço de Trabalho",
+    "creatingWorkspace": "Criando espaço de trabalho..."
+  }
 }

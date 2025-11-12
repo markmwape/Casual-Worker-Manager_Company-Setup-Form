@@ -85,31 +85,86 @@ function toggleDropdown(dropdownElement) {
 /**
  * Set language function (API endpoint compatible)
  */
-async function setLanguage(language) {
-    console.log('Setting language to:', language);
+async function setLanguage(languageCode) {
+    console.log('🌍 setLanguage called with:', languageCode);
+    
+    const dropdown = document.querySelector('.language-switcher .language-switcher-btn, .language-switcher-container .dropdown-toggle');
+    const originalText = dropdown ? dropdown.innerHTML : '';
     
     try {
+        // Add loading state
+        if (dropdown) {
+            dropdown.classList.add('loading');
+            dropdown.innerHTML = '⏳ Loading...';
+            dropdown.disabled = true;
+        }
+        
+        console.log('🌍 Making API call to /api/language/set with:', languageCode);
         const response = await fetch('/api/language/set', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ language: language })
+            body: JSON.stringify({ language: languageCode }),
+            credentials: 'same-origin' // Ensure cookies/session are included
         });
         
+        console.log('🌍 API response status:', response.status);
         const data = await response.json();
+        console.log('🌍 API response data:', data);
         
-        if (data.success) {
-            console.log('Language set successfully');
-            // Reload page to apply new language
-            window.location.reload();
+        if (response.ok && data.success) {
+            console.log('✅ Language change successful');
+            
+            // Show success feedback briefly
+            if (dropdown) {
+                dropdown.classList.remove('loading');
+                dropdown.classList.add('success');
+                dropdown.innerHTML = '✓ Success!';
+            }
+            
+            // Store in localStorage as backup
+            localStorage.setItem('preferredLanguage', languageCode);
+            console.log('💾 Stored in localStorage:', languageCode);
+            
+            // Update translations in place instead of reloading
+            if (window.i18n && window.i18n.setLanguage) {
+                console.log('🔄 Updating page translations to:', languageCode);
+                await window.i18n.setLanguage(languageCode);
+            } else {
+                // Fallback: reload page if i18n not available
+                console.log('⚠️ i18n not available, falling back to page reload');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 500);
+            }
+            
         } else {
-            console.error('Failed to set language:', data.message);
-            alert('Failed to change language: ' + (data.message || 'Unknown error'));
+            console.error('❌ Language change failed:', data);
+            throw new Error(data.error || 'Failed to change language');
         }
+        
     } catch (error) {
-        console.error('Error setting language:', error);
-        alert('Error changing language. Please try again.');
+        console.error('🚨 Error in setLanguage:', error);
+        
+        // Show error state
+        if (dropdown) {
+            dropdown.classList.remove('loading');
+            dropdown.classList.add('error');
+            dropdown.innerHTML = '❌ Error';
+            dropdown.disabled = false;
+            
+            // Reset to original state after delay
+            setTimeout(() => {
+                dropdown.classList.remove('error');
+                dropdown.innerHTML = originalText;
+            }, 2000);
+        }
+        
+        // Optional: Show user-friendly error message
+        if (window.showNotification) {
+            window.showNotification('Failed to change language. Please try again.', 'error');
+        }
     }
 }
 
@@ -259,29 +314,37 @@ function populateLanguageMenus(data) {
  * Change language with proper feedback
  */
 function changeLanguage(langCode) {
-    console.log('Changing to:', langCode);
+    console.log('🔄 changeLanguage called with:', langCode);
     
-    const buttons = document.querySelectorAll('.language-switcher-btn');
-    const labels = document.querySelectorAll('.current-lang-label');
+    const buttons = document.querySelectorAll('.language-switcher-btn, .dropdown-toggle');
+    const labels = document.querySelectorAll('.current-lang-label, .current-lang-display');
     
     // Show loading
     buttons.forEach(btn => btn.classList.add('loading'));
     labels.forEach(label => label.textContent = '⏳');
     
     // Close dropdowns
-    document.querySelectorAll('.language-menu').forEach(menu => {
+    document.querySelectorAll('.language-menu, .dropdown-menu').forEach(menu => {
         menu.classList.remove('opacity-100', 'visible');
         menu.classList.add('opacity-0', 'invisible');
+        menu.style.display = 'none';
     });
     
-    fetch('/api/change-language', {
+    console.log('🔄 Making API call to /api/language/set with:', langCode);
+    fetch('/api/language/set', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ language: langCode })
+        body: JSON.stringify({ language: langCode }),
+        credentials: 'same-origin'
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('🔄 API response status:', response.status);
+        return response.json();
+    })
     .then(result => {
+        console.log('🔄 API response data:', result);
         if (result.success) {
+            console.log('✅ changeLanguage successful');
             // Success feedback
             buttons.forEach(btn => {
                 btn.classList.remove('loading');
@@ -291,21 +354,34 @@ function changeLanguage(langCode) {
             const langNames = {
                 'en': 'English', 'fr': 'Français', 'sw': 'Swahili',
                 'pt': 'Português', 'es': 'Español', 'tr': 'Türkçe',
-                'hi': 'हिंदी', 'zh': '中文', 'ar': 'العربية', 'vi': 'Tiếng Việt'
+                'hi': 'हिंदी', 'zh': '中文', 'ar': 'العربية', 'vi': 'Tiếng Việt',
+                'de': 'Deutsch', 'it': 'Italiano'
             };
             
             labels.forEach(label => {
                 label.textContent = langNames[langCode] || langCode.toUpperCase();
             });
             
-            // Reload after short delay
-            setTimeout(() => window.location.reload(), 500);
+            // Store in localStorage as backup
+            localStorage.setItem('preferredLanguage', langCode);
+            console.log('💾 Stored in localStorage:', langCode);
+            
+            // Update translations in place instead of reloading
+            if (window.i18n && window.i18n.setLanguage) {
+                console.log('🔄 Updating page translations to:', langCode);
+                window.i18n.setLanguage(langCode);
+            } else {
+                // Fallback: reload page if i18n not available
+                console.log('⚠️ i18n not available, falling back to page reload');
+                setTimeout(() => window.location.reload(), 500);
+            }
         } else {
-            throw new Error(result.message || 'Failed to change language');
+            console.error('❌ changeLanguage failed:', result);
+            throw new Error(result.error || 'Failed to change language');
         }
     })
     .catch(error => {
-        console.error('Error:', error);
+        console.error('🚨 Error in changeLanguage:', error);
         
         // Error feedback
         buttons.forEach(btn => {

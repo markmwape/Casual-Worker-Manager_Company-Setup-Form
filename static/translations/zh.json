@@ -139,5 +139,60 @@
   "Worker Management": "工人管理",
   "Workers": "工人",
   "Would Recommend": "会推荐",
-  "Your Data, Your Control": "您的数据，您的控制"
+  "Your Data, Your Control": "您的数据，您的控制",
+  "sidebar": {
+    "myWorkspace": "我的工作空间",
+    "dashboard": "仪表板",
+    "workers": "工人",
+    "tasks": "任务",
+    "reports": "报告",
+    "payments": "付款/账单",
+    "signout": "登出",
+    "role": {
+      "admin": "管理员",
+      "administrator": "管理员",
+      "accountant": "会计师",
+      "member": "成员"
+    }
+  },
+  "signin": {
+    "title": "Embee 会计",
+    "subtitle": "访问您的工作空间",
+    "signIn": "登录",
+    "welcomeMessage": "欢迎回来！请登录以继续",
+    "emailLabel": "电子邮件地址",
+    "emailPlaceholder": "您@示例.com",
+    "sendSigninLink": "发送登录链接",
+    "or": "或",
+    "signInWithGoogle": "使用Google登录",
+    "noWorkspace": "还没有工作空间？",
+    "createNewWorkspace": "创建新工作空间",
+    "backToHome": "返回首页",
+    "agreement": "通过登录，您同意我们的",
+    "terms": "条款",
+    "and": "和",
+    "privacyPolicy": "隐私政策"
+  },
+  "createWorkspace": {
+    "title": "创建新工作空间",
+    "subtitle": "在几分钟内为您的组织设置新的工作空间",
+    "workspaceDetails": "工作空间详情",
+    "fillInformation": "请填写以下信息以创建您的工作空间",
+    "companyName": "公司名称",
+    "required": "必填",
+    "companyNamePlaceholder": "例如，ABC建筑有限公司",
+    "minimumChars": "最少2个字符",
+    "country": "国家",
+    "selectCountry": "选择国家",
+    "industryType": "行业类型",
+    "selectIndustry": "选择行业",
+    "companyPhone": "公司电话",
+    "phonePlaceholder": "+86 138 0013 8000",
+    "includeCountryCode": "如果是国际号码请包含国家代码",
+    "companyEmail": "公司邮箱",
+    "emailPlaceholder": "公司@示例.com",
+    "officialEmail": "公司官方邮箱地址",
+    "createWorkspace": "创建工作空间",
+    "creatingWorkspace": "正在创建工作空间..."
+  }
 }

@@ -139,5 +139,60 @@
   "Worker Management": "Usimamizi wa Wafanyikazi",
   "Workers": "Wafanyakazi",
   "Would Recommend": "Wangependekeza",
-  "Your Data, Your Control": "Data Yako, Udhibiti Wako"
+  "Your Data, Your Control": "Data Yako, Udhibiti Wako",
+  "sidebar": {
+    "myWorkspace": "Nafasi Yangu ya Kazi",
+    "dashboard": "Dashibodi",
+    "workers": "Wafanyakazi",
+    "tasks": "Kazi",
+    "reports": "Ripoti",
+    "payments": "Malipo/Bili",
+    "signout": "Ondoka",
+    "role": {
+      "admin": "Msimamizi",
+      "administrator": "Msimamizi",
+      "accountant": "Mhasibu",
+      "member": "Mwanachama"
+    }
+  },
+  "signin": {
+    "title": "Embee Uhasibu",
+    "subtitle": "Pata ufikivu wa mazingira yako ya kazi",
+    "signIn": "Ingia",
+    "welcomeMessage": "Karibu tena! Tafadhali ingia ili kuendelea",
+    "emailLabel": "Anuani ya Barua Pepe",
+    "emailPlaceholder": "wewe@mfano.com",
+    "sendSigninLink": "Tuma Kiungo cha Kuingia",
+    "or": "au",
+    "signInWithGoogle": "Ingia na Google",
+    "noWorkspace": "Bado huna mazingira ya kazi?",
+    "createNewWorkspace": "Unda Mazingira Mapya ya Kazi",
+    "backToHome": "Rudi nyumbani",
+    "agreement": "Kwa kuingia, unakubali",
+    "terms": "Masharti",
+    "and": "na",
+    "privacyPolicy": "Sera ya Faragha"
+  },
+  "createWorkspace": {
+    "title": "Unda Mazingira Mapya ya Kazi",
+    "subtitle": "Sanidi mazingira mapya ya kazi kwa shirika lako kwa dakika chache",
+    "workspaceDetails": "Maelezo ya Mazingira ya Kazi",
+    "fillInformation": "Jaza habari hapa chini ili kuunda mazingira yako ya kazi",
+    "companyName": "Jina la Kampuni",
+    "required": "Inahitajika",
+    "companyNamePlaceholder": "mfano, ABC Construction Ltd",
+    "minimumChars": "Angalau herufi 2",
+    "country": "Nchi",
+    "selectCountry": "Chagua nchi",
+    "industryType": "Aina ya Sekta",
+    "selectIndustry": "Chagua sekta",
+    "companyPhone": "Simu ya Kampuni",
+    "phonePlaceholder": "+255 123 456 789",
+    "includeCountryCode": "Jumuisha msimbo wa nchi ikiwa ni kimataifa",
+    "companyEmail": "Barua Pepe ya Kampuni",
+    "emailPlaceholder": "kampuni@mfano.com",
+    "officialEmail": "Anuani rasmi ya barua pepe ya kampuni",
+    "createWorkspace": "Unda Mazingira ya Kazi",
+    "creatingWorkspace": "Kuunda mazingira ya kazi..."
+  }
 }

@@ -54,6 +54,8 @@
         }
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/language-switcher.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/language-switcher-fixes.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         .floating-animation {
@@ -399,8 +401,8 @@
                     <div class="absolute inset-0 bg-blue-400 rounded-full blur-xl opacity-40 animate-pulse"></div>
                 </div>
             </div>
-            <h1 class="text-4xl md:text-5xl font-bold text-white mb-4 drop-shadow-lg">Create a New Workspace</h1>
-            <p class="text-xl text-blue-100 max-w-2xl mx-auto">Set up a new workspace for your organization in minutes</p>
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-4 drop-shadow-lg" data-i18n="createWorkspace.title">Create a New Workspace</h1>
+            <p class="text-xl text-blue-100 max-w-2xl mx-auto" data-i18n="createWorkspace.subtitle">Set up a new workspace for your organization in minutes</p>
             <div class="flex flex-wrap items-center justify-center gap-3 mt-6">
                 <div class="flex items-center gap-2 px-4 py-2 bg-blue-500/20 backdrop-blur-sm border border-blue-400/30 text-blue-100 rounded-full text-sm font-medium shadow-lg">
                     <i class="fas fa-clock"></i>
@@ -418,9 +420,9 @@
             <div class="gradient-header p-6">
                 <h2 class="text-2xl font-bold text-white flex items-center gap-3 relative z-10">
                     <i class="fas fa-building icon-pulse"></i>
-                    Workspace Details
+                    <span data-i18n="createWorkspace.workspaceDetails">Workspace Details</span>
                 </h2>
-                <p class="text-blue-100 mt-2 text-sm relative z-10">Fill in the information below to create your workspace</p>
+                <p class="text-blue-100 mt-2 text-sm relative z-10" data-i18n="createWorkspace.fillInformation">Fill in the information below to create your workspace</p>
             </div>
             <div class="card-body p-8 md:p-10">
                 <form id="create-workspace-form" class="w-full space-y-6">
@@ -428,15 +430,15 @@
                         <label class="label">
                             <span class="label-text font-semibold text-gray-700 text-base flex items-center gap-2">
                                 <i class="fas fa-building text-blue-600"></i>
-                                Company Name
+                                <span data-i18n="createWorkspace.companyName">Company Name</span>
                             </span>
-                            <span class="label-text-alt text-gray-500">Required</span>
+                            <span class="label-text-alt text-gray-500" data-i18n="createWorkspace.required">Required</span>
                         </label>
-                        <input type="text" id="company-name" name="company_name" placeholder="e.g., ABC Construction Ltd" required 
+                        <input type="text" id="company-name" name="company_name" data-i18n-placeholder="createWorkspace.companyNamePlaceholder" placeholder="e.g., ABC Construction Ltd" required 
                                class="input input-bordered w-full text-base bg-white border-2 border-gray-300 input-focus rounded-lg"
                                minlength="2" maxlength="100">
                         <label class="label">
-                            <span class="label-text-alt text-gray-500">Minimum 2 characters</span>
+                            <span class="label-text-alt text-gray-500" data-i18n="createWorkspace.minimumChars">Minimum 2 characters</span>
                         </label>
                     </div>
 
@@ -444,12 +446,12 @@
                         <label class="label">
                             <span class="label-text font-semibold text-gray-700 text-base flex items-center gap-2">
                                 <i class="fas fa-globe text-blue-600"></i>
-                                Country
+                                <span data-i18n="createWorkspace.country">Country</span>
                             </span>
-                            <span class="label-text-alt text-gray-500">Required</span>
+                            <span class="label-text-alt text-gray-500" data-i18n="createWorkspace.required">Required</span>
                         </label>
                         <select id="country" name="country" required class="select select-bordered w-full text-base bg-white border-2 border-gray-300 input-focus rounded-lg">
-                            <option value="">Select country</option>
+                            <option value="" data-i18n="createWorkspace.selectCountry">Select country</option>
                             <option value="Afghanistan">Afghanistan</option>
                             <option value="Albania">Albania</option>
                             <option value="Algeria">Algeria</option>
@@ -651,12 +653,12 @@
                         <label class="label">
                             <span class="label-text font-semibold text-gray-700 text-base flex items-center gap-2">
                                 <i class="fas fa-industry text-blue-600"></i>
-                                Industry Type
+                                <span data-i18n="createWorkspace.industryType">Industry Type</span>
                             </span>
-                            <span class="label-text-alt text-gray-500">Required</span>
+                            <span class="label-text-alt text-gray-500" data-i18n="createWorkspace.required">Required</span>
                         </label>
                         <select id="industry-type" name="industry_type" required class="select select-bordered w-full text-base bg-white border-2 border-gray-300 input-focus rounded-lg">
-                            <option value="">Select industry</option>
+                            <option value="" data-i18n="createWorkspace.selectIndustry">Select industry</option>
                             <option value="Construction">Construction</option>
                             <option value="Manufacturing">Manufacturing</option>
                             <option value="Agriculture">Agriculture</option>
@@ -683,14 +685,14 @@
                         <label class="label">
                             <span class="label-text font-semibold text-gray-700 text-base flex items-center gap-2">
                                 <i class="fas fa-phone text-blue-600"></i>
-                                Company Phone
+                                <span data-i18n="createWorkspace.companyPhone">Company Phone</span>
                             </span>
-                            <span class="label-text-alt text-gray-500">Required</span>
+                            <span class="label-text-alt text-gray-500" data-i18n="createWorkspace.required">Required</span>
                         </label>
-                        <input type="tel" id="company-phone" name="company_phone" placeholder="+1 (555) 123-4567" required 
+                        <input type="tel" id="company-phone" name="company_phone" data-i18n-placeholder="createWorkspace.phonePlaceholder" placeholder="+1 (555) 123-4567" required 
                                class="input input-bordered w-full text-base bg-white border-2 border-gray-300 input-focus rounded-lg">
                         <label class="label">
-                            <span class="label-text-alt text-gray-500">Include country code if international</span>
+                            <span class="label-text-alt text-gray-500" data-i18n="createWorkspace.includeCountryCode">Include country code if international</span>
                         </label>
                     </div>
 
@@ -698,25 +700,25 @@
                         <label class="label">
                             <span class="label-text font-semibold text-gray-700 text-base flex items-center gap-2">
                                 <i class="fas fa-envelope text-blue-600"></i>
-                                Company Email
+                                <span data-i18n="createWorkspace.companyEmail">Company Email</span>
                             </span>
-                            <span class="label-text-alt text-gray-500">Required</span>
+                            <span class="label-text-alt text-gray-500" data-i18n="createWorkspace.required">Required</span>
                         </label>
-                        <input type="email" id="company-email" name="company_email" placeholder="company@example.com" required 
+                        <input type="email" id="company-email" name="company_email" data-i18n-placeholder="createWorkspace.emailPlaceholder" placeholder="company@example.com" required 
                                class="input input-bordered w-full text-base bg-white text-black border-2 border-gray-300 input-focus rounded-lg">
                         <label class="label">
-                            <span class="label-text-alt text-gray-500">Official company email address</span>
+                            <span class="label-text-alt text-gray-500" data-i18n="createWorkspace.officialEmail">Official company email address</span>
                         </label>
                     </div>
 
                     <button type="submit" id="create-btn" class="btn w-full text-lg font-semibold btn-gradient text-white border-0 py-3 rounded-lg mt-4 h-14 shadow-lg">
                         <span id="create-btn-text" class="flex items-center justify-center gap-2">
                             <i class="fas fa-plus"></i>
-                            <span>Create Workspace</span>
+                            <span data-i18n="createWorkspace.createWorkspace">Create Workspace</span>
                         </span>
                         <span id="create-btn-loading" class="hidden items-center justify-center gap-3">
                             <div class="loading-spinner"></div>
-                            <span>Creating workspace...</span>
+                            <span data-i18n="createWorkspace.creatingWorkspace">Creating workspace...</span>
                         </span>
                     </button>
 
@@ -999,6 +1001,7 @@
             }
         });
     </script>
+    <script src="{{ url_for('static', filename='js/language-switcher.js') }}"></script>
     <script src="{{ url_for('static', filename='js/i18n.js') }}"></script>
 </body>
 </html>

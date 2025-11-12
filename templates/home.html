@@ -198,15 +198,15 @@
                         </div>
                         <div>
                             <h1 class="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-700 via-blue-800 to-blue-900 bg-clip-text text-transparent mb-2">
-                                <span data-i18n="home.welcomeBack">Welcome back</span>, {{ session.get('user', {}).get('display_name', 'User').split()[0] }}
+                                Welcome back, {{ session.get('user', {}).get('display_name', 'User').split()[0] }}
                             </h1>
-                            <p class="text-base text-blue-600 font-medium" data-i18n="home.workforceToday">
+                            <p class="text-base text-blue-600 font-medium">
                                 Here's what's happening with your workforce today
                             </p>
                         </div>
                     </div>
                     <div class="text-center lg:text-right">
-                        <div class="text-sm text-blue-600 mb-2 font-medium" data-i18n="home.todaysDate">Today's Date</div>
+                        <div class="text-sm text-blue-600 mb-2 font-medium">Today's Date</div>
                         <div class="text-xl font-bold bg-gradient-to-r from-blue-700 to-blue-900 bg-clip-text text-transparent" id="currentDate"></div>
                     </div>
                 </div>
@@ -295,9 +295,9 @@
             <a href="{{ url_for('workers_route') }}" class="stat-card p-8 group cursor-pointer">
                 <div class="flex justify-between items-center">
                     <div>
-                        <h3 class="text-sm font-semibold text-blue-700 mb-2 uppercase tracking-wide" data-i18n="home.totalWorkers">Total Workers</h3>
+                        <h3 class="text-sm font-semibold text-blue-700 mb-2 uppercase tracking-wide">Total Workers</h3>
                         <p class="text-4xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent mb-2">{{ total_workers }}</p>
-                        <p class="text-sm text-blue-600" data-i18n="home.activeWorkforce">Active workforce</p>
+                        <p class="text-sm text-blue-600">Active workforce</p>
                     </div>
                     <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
                         <i data-feather="users" class="text-white w-8 h-8"></i>
@@ -305,16 +305,16 @@
                 </div>
                 <div class="mt-4 flex items-center text-sm text-blue-600 font-medium">
                     <i class="fas fa-arrow-right mr-2"></i>
-                    <span data-i18n="home.manageYourTeam">Manage your team</span>
+                    <span>Manage your team</span>
                 </div>
             </a>
 
             <a href="{{ url_for('tasks_route') }}" class="stat-card p-8 group cursor-pointer">
                 <div class="flex justify-between items-center">
                     <div>
-                        <h3 class="text-sm font-semibold text-emerald-700 mb-2 uppercase tracking-wide" data-i18n="home.activeTasks">Active Tasks</h3>
+                        <h3 class="text-sm font-semibold text-emerald-700 mb-2 uppercase tracking-wide">Active Tasks</h3>
                         <p class="text-4xl font-bold bg-gradient-to-r from-emerald-600 to-green-700 bg-clip-text text-transparent mb-2">{{ total_tasks }}</p>
-                        <p class="text-sm text-emerald-600" data-i18n="home.currentProjects">Current projects</p>
+                        <p class="text-sm text-emerald-600">Current projects</p>
                     </div>
                     <div class="w-16 h-16 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
                         <i data-feather="clipboard" class="text-white w-8 h-8"></i>
@@ -322,16 +322,16 @@
                 </div>
                 <div class="mt-4 flex items-center text-sm text-emerald-600 font-medium">
                     <i class="fas fa-plus mr-2"></i>
-                    <span data-i18n="home.createNewTask">Create new task</span>
+                    <span>Create new task</span>
                 </div>
             </a>
 
             <a href="{{ url_for('reports_route') }}" class="stat-card p-8 group cursor-pointer">
                 <div class="flex justify-between items-center">
                     <div>
-                        <h3 class="text-sm font-semibold text-purple-700 mb-2 uppercase tracking-wide" data-i18n="home.reports">Reports</h3>
-                        <p class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent mb-2" data-i18n="home.generate">Generate</p>
-                        <p class="text-sm text-purple-600" data-i18n="home.workforceAnalytics">Workforce analytics</p>
+                        <h3 class="text-sm font-semibold text-purple-700 mb-2 uppercase tracking-wide">Reports</h3>
+                        <p class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent mb-2">Generate</p>
+                        <p class="text-sm text-purple-600">Workforce analytics</p>
                     </div>
                     <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-700 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
                         <i class="fas fa-chart-bar text-white text-2xl"></i>
@@ -339,7 +339,7 @@
                 </div>
                 <div class="mt-4 flex items-center text-sm text-purple-600 font-medium">
                     <i class="fas fa-download mr-2"></i>
-                    <span data-i18n="home.downloadReports">Download reports</span>
+                    <span>Download reports</span>
                 </div>
             </a>
         </div>
@@ -351,8 +351,8 @@
                         <i data-feather="users" class="text-white w-8 h-8"></i>
                     </div>
                     <div>
-                        <h3 class="text-2xl font-bold bg-gradient-to-r from-blue-700 to-blue-900 bg-clip-text text-transparent mb-1" data-i18n="home.teamMembers">Team Members</h3>
-                        <p class="text-blue-600" data-i18n="home.manageTeamAccess">Manage your team access and permissions</p>
+                        <h3 class="text-2xl font-bold bg-gradient-to-r from-blue-700 to-blue-900 bg-clip-text text-transparent mb-1">Team Members</h3>
+                        <p class="text-blue-600">Manage your team access and permissions</p>
                     </div>
                 </div>
                 {% if session.get('current_workspace', {}).get('role') != 'Supervisor' %}

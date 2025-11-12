@@ -93,45 +93,28 @@ function closeDeleteWorkerModal() {
 function deleteWorker() {
     const workerId = document.getElementById('delete-worker-id').value;
     
-    if (!workerId) {
-        showCustomModal('Error', 'No worker selected', 'error');
-        closeDeleteWorkerModal();
-        return;
-    }
-    
     fetch(`/api/worker/${workerId}`, {
         method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json'
-        }
     })
-    .then(response => {
-        if (!response.ok) {
-            // Handle non-200 responses
-            return response.json().then(data => {
-                throw new Error(data.error || `HTTP error ${response.status}`);
-            }).catch(err => {
-                throw new Error(`HTTP error ${response.status}`);
-            });
-        }
-        return response.json();
-    })
+    .then(response => response.json())
     .then(result => {
-        closeDeleteWorkerModal();
-        
         if (result.error) {
             showCustomModal('Error', result.error, 'error');
         } else {
-            showCustomModal('Success', 'Worker deleted successfully!', 'success').then(() => {
-                // Reload page to refresh the worker list
-                window.location.reload();
-            });
+            // Remove the deleted worker's row from the table
+            const checkbox = document.querySelector(`.worker-checkbox[data-worker-id="${workerId}"]`);
+            if (checkbox) {
+                const row = checkbox.closest('tr');
+                if (row) row.remove();
+            }
+            showCustomModal('Success', 'Worker deleted successfully!', 'success');
         }
     })
     .catch(error => {
-        closeDeleteWorkerModal();
-        console.error('Delete error:', error);
         showCustomModal('Error', 'Error deleting worker: ' + error.message, 'error');
+    })
+    .finally(() => {
+        closeDeleteWorkerModal();
     });
 }
 
@@ -141,38 +124,21 @@ function openDeleteAllWorkersModal() {
 
 function deleteAllWorkers() {
     fetch('/api/worker/delete-all', {
-        method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json'
-        }
+        method: 'DELETE'
     })
-    .then(response => {
-        if (!response.ok) {
-            // Handle non-200 responses
-            return response.json().then(data => {
-                throw new Error(data.error || data.message || `HTTP error ${response.status}`);
-            }).catch(err => {
-                if (err.message) throw err;
-                throw new Error(`HTTP error ${response.status}`);
-            });
-        }
-        return response.json();
-    })
+    .then(response => response.json())
     .then(result => {
-        document.getElementById('delete-all-workers-modal').close();
-        
         if (result.error) {
             showCustomModal('Error', result.error, 'error');
         } else {
-            showCustomModal('Success', result.message || 'All workers deleted successfully', 'success').then(() => {
-                window.location.reload();
-            });
+            window.location.reload();
         }
     })
     .catch(error => {
-        document.getElementById('delete-all-workers-modal').close();
-        console.error('Delete all error:', error);
         showCustomModal('Error', 'Error deleting all workers: ' + error.message, 'error');
+    })
+    .finally(() => {
+        document.getElementById('delete-all-workers-modal').close();
     });
 }
 
@@ -197,29 +163,15 @@ async function deleteSelectedWorkers() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ worker_ids: selectedIds })
     })
-    .then(response => {
-        if (!response.ok) {
-            // Handle non-200 responses
-            return response.json().then(data => {
-                throw new Error(data.error || data.message || `HTTP error ${response.status}`);
-            }).catch(err => {
-                if (err.message) throw err;
-                throw new Error(`HTTP error ${response.status}`);
-            });
-        }
-        return response.json();
-    })
+    .then(response => response.json())
     .then(result => {
         if (result.error) {
             showCustomModal('Error', result.error, 'error');
         } else {
-            showCustomModal('Success', result.message || `${selectedIds.length} workers deleted successfully`, 'success').then(() => {
-                window.location.reload();
-            });
+            window.location.reload();
         }
     })
     .catch(error => {
-        console.error('Bulk delete error:', error);
         showCustomModal('Error', 'Error deleting selected workers: ' + error.message, 'error');
     });
 }
@@ -261,7 +213,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 .map(cb => cb.getAttribute('data-worker-id'));
             if (selectedIds.length === 0) return;
             
-            const confirmed = await showCustomConfirm('Confirm Delete', `Are you sure you want to delete ${selectedIds.length} selected worker(s)?`);
+            const confirmed = await showCustomConfirm('Confirm Delete', 'Are you sure you want to delete the selected workers?');
             if (!confirmed) return;
             
             fetch('/api/worker/bulk-delete', {
@@ -269,29 +221,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ worker_ids: selectedIds })
             })
-            .then(response => {
-                if (!response.ok) {
-                    // Handle non-200 responses
-                    return response.json().then(data => {
-                        throw new Error(data.error || data.message || `HTTP error ${response.status}`);
-                    }).catch(err => {
-                        if (err.message) throw err;
-                        throw new Error(`HTTP error ${response.status}`);
-                    });
-                }
-                return response.json();
-            })
+            .then(res => res.json())
             .then(result => {
                 if (result.error) {
                     showCustomModal('Error', result.error, 'error');
                 } else {
-                    showCustomModal('Success', result.message || `${selectedIds.length} workers deleted successfully`, 'success').then(() => {
-                        window.location.reload();
-                    });
+                    window.location.reload();
                 }
             })
             .catch(error => {
-                console.error('Bulk delete error:', error);
                 showCustomModal('Error', 'Error deleting selected workers: ' + error.message, 'error');
             });
         });

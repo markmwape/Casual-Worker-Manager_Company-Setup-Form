@@ -2,8 +2,8 @@
     <div class="modal-box max-w-3xl bg-brand-navy-50 w-11/12 max-h-[90vh] overflow-y-auto overflow-x-hidden">
         <div class="flex items-center justify-between mb-6">
             <div class="min-w-0 flex-1">
-                <h3 class="font-bold text-2xl text-gray-800 truncate" data-i18n="modals.importWorkers.title">Import Workers from Excel</h3>
-                <p class="text-sm text-gray-600 mt-1" data-i18n="modals.importWorkers.subtitle">Upload your Excel file and map the columns to worker fields</p>
+                <h3 class="font-bold text-2xl text-gray-800 truncate">Import Workers from Excel</h3>
+                <p class="text-sm text-gray-600 mt-1">Upload your Excel file and map the columns to worker fields</p>
             </div>
             <button onclick="closeImportWorkersModal()" class="btn btn-ghost btn-sm hover:bg-brand-navy-100 flex-shrink-0">
                 <i class="material-icons">close</i>
@@ -15,7 +15,7 @@
                 <!-- File Upload Section -->
                 <div class="card bg-white shadow-sm border border-brand-navy-100 mb-6">
                     <div class="card-body">
-                        <h4 class="font-semibold text-gray-700 mb-3" data-i18n="modals.importWorkers.chooseFile">1. Choose Excel File</h4>
+                        <h4 class="font-semibold text-gray-700 mb-3">1. Choose Excel File</h4>
                         <div class="form-control w-full">
                             <div class="flex flex-wrap items-center gap-2">
                                 <div class="flex-1 min-w-[200px]">
@@ -32,12 +32,12 @@
                 <!-- Fields Management Section -->
                 <div class="card bg-white shadow-sm border border-brand-navy-100 mb-6">
                     <div class="card-body">
-                        <h4 class="font-semibold text-gray-700 mb-3" data-i18n="modals.importWorkers.manageFields">2. Manage Import Fields</h4>
+                        <h4 class="font-semibold text-gray-700 mb-3">2. Manage Import Fields</h4>
                         
                         <!-- Current Fields -->
                         <div class="mb-4">
                             <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
-                                <h5 class="text-sm font-medium text-gray-600" data-i18n="modals.importWorkers.currentFields">Current Fields</h5>
+                                <h5 class="text-sm font-medium text-gray-600">Current Fields</h5>
                                 <div class="tooltip" data-tip="These fields will be mapped to your Excel columns">
                                     <i class="material-icons text-brand-navy-600">info_outline</i>
                                 </div>
@@ -53,12 +53,12 @@
 
                         <!-- Add New Field -->
                         <div class="border-t border-gray-100 pt-4">
-                            <h5 class="text-sm font-medium text-gray-600 mb-3" data-i18n="modals.importWorkers.addCustomField">Add Custom Field</h5>
+                            <h5 class="text-sm font-medium text-gray-600 mb-3">Add Custom Field</h5>
                             <div class="flex flex-wrap items-center gap-2">
                                 <div class="flex-1 min-w-[200px]">
-                                    <input type="text" id="importNewFieldName" class="input input-bordered bg-white w-full" placeholder="Enter field name..." data-i18n-attr="modals.importWorkers.fieldNamePlaceholder">
+                                    <input type="text" id="importNewFieldName" class="input input-bordered bg-white w-full" placeholder="Enter field name...">
                                 </div>
-                                <button type="button" class="btn btn-primary whitespace-nowrap" onclick="saveNewFieldImport()" data-i18n="modals.importWorkers.addField">
+                                <button type="button" class="btn btn-primary whitespace-nowrap" onclick="saveNewFieldImport()">
                                     <i class="material-icons mr-1">add</i>Add Field
                                 </button>
                             </div>
@@ -67,8 +67,8 @@
                 </div>
 
                 <div class="modal-action flex-wrap gap-2">
-                    <button type="button" class="btn btn-ghost hover:bg-brand-navy-100" onclick="closeImportWorkersModal()" data-i18n="common.cancel">Cancel</button>
-                    <button type="submit" class="btn btn-primary text-white" data-i18n="modals.importWorkers.uploadAndMap">
+                    <button type="button" class="btn btn-ghost hover:bg-brand-navy-100" onclick="closeImportWorkersModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary text-white">
                         <i class="material-icons mr-1">upload_file</i>Upload & Map Fields
                     </button>
                 </div>
@@ -79,14 +79,14 @@
         <div id="columnMapping" class="hidden">
             <div class="card bg-white shadow-sm border border-brand-navy-100 mb-6">
                 <div class="card-body">
-                    <h4 class="font-semibold text-gray-700 mb-4" data-i18n="modals.importWorkers.mapColumns">3. Map Excel Columns</h4>
+                    <h4 class="font-semibold text-gray-700 mb-4">3. Map Excel Columns</h4>
                     <div class="overflow-x-auto">
                         <div class="w-full overflow-x-auto">
                             <table class="table w-full">
                                 <thead>
                                     <tr>
-                                        <th class="bg-brand-navy-50 w-1/2" data-i18n="modals.importWorkers.fieldNameCol">Field Name</th>
-                                        <th class="bg-brand-navy-50 w-1/2" data-i18n="modals.importWorkers.excelColumn">Excel Column</th>
+                                        <th class="bg-brand-navy-50 w-1/2">Field Name</th>
+                                        <th class="bg-brand-navy-50 w-1/2">Excel Column</th>
                                     </tr>
                                 </thead>
                                 <tbody id="mappingTableBody" class="bg-white">
@@ -98,10 +98,10 @@
                 </div>
             </div>
             <div class="modal-action flex-wrap gap-2">
-                <button type="button" class="btn btn-ghost hover:bg-brand-navy-100" onclick="resetImportForm()" data-i18n="common.back">
+                <button type="button" class="btn btn-ghost hover:bg-brand-navy-100" onclick="resetImportForm()">
                     <i class="material-icons mr-1">arrow_back</i>Back
                 </button>
-                <button type="button" class="btn btn-primary text-white" onclick="importWithMapping()" data-i18n="modals.importWorkers.importWorkers">
+                <button type="button" class="btn btn-primary text-white" onclick="importWithMapping()">
                     <i class="material-icons mr-1">check</i>Import Workers
                 </button>
             </div>
@@ -112,12 +112,12 @@
             <div class="card bg-white shadow-sm border border-brand-navy-100 mb-6">
                 <div class="card-body text-center">
                     <i class="material-icons text-green-500 text-4xl mb-2">check_circle</i>
-                    <h4 class="font-semibold text-gray-700 mb-2" data-i18n="modals.importWorkers.importComplete">Import Complete</h4>
-                    <p class="text-gray-600" data-i18n="modals.importWorkers.importSuccess">Workers have been successfully imported</p>
+                    <h4 class="font-semibold text-gray-700 mb-2">Import Complete</h4>
+                    <p class="text-gray-600">Workers have been successfully imported</p>
                 </div>
             </div>
             <div class="modal-action">
-                <button type="button" class="btn btn-primary text-white w-full sm:w-auto" onclick="closeImportWorkersModal(); window.location.reload();" data-i18n="common.done">
+                <button type="button" class="btn btn-primary text-white w-full sm:w-auto" onclick="closeImportWorkersModal(); window.location.reload();">
                     <i class="material-icons mr-1">done</i>Done
                 </button>
             </div>

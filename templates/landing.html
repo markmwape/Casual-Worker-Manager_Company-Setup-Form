@@ -63,15 +63,9 @@
     </script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/landing-page.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/language-switcher-fixes.css') }}">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body class="font-inter bg-gradient-to-br from-gray-50 to-brand-navy-50 text-gray-900">
-    <!-- Language Switcher (Top-Right) - Desktop Only -->
-    <div class="hidden md:block fixed top-4 right-4 z-[200] landing-language-switcher" style="pointer-events: auto;">
-        {% include 'components/language_switcher.html' %}
-    </div>
-    
     <!-- Professional Header -->
     <header class="bg-white/80 backdrop-blur-md shadow-lg border-b border-brand-navy-100 sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -85,10 +79,10 @@
                 
                 <!-- Desktop Navigation -->
                 <nav class="hidden md:flex items-center space-x-8">
-                    <a href="#features" class="text-brand-navy-500 font-semibold hover:text-brand-navy-700 transition duration-200" data-i18n="Features">Features</a>
-                    <a href="#pricing" class="text-brand-navy-500 font-semibold hover:text-brand-navy-700 transition duration-200" data-i18n="Pricing">Pricing</a>
-                    <a href="#testimonials" class="text-brand-navy-500 font-semibold hover:text-brand-navy-700 transition duration-200" data-i18n="Testimonials">Testimonials</a>
-                    <a href="{{ url_for('signin_route') }}" class="bg-brand-navy-500 text-white font-bold px-6 py-2 rounded-lg shadow-md hover:bg-brand-navy-600 hover:shadow-lg transition duration-200" data-i18n="Login / Sign Up">
+                    <a href="#features" class="text-brand-navy-500 font-semibold hover:text-brand-navy-700 transition duration-200">Features</a>
+                    <a href="#pricing" class="text-brand-navy-500 font-semibold hover:text-brand-navy-700 transition duration-200">Pricing</a>
+                    <a href="#testimonials" class="text-brand-navy-500 font-semibold hover:text-brand-navy-700 transition duration-200">Testimonials</a>
+                    <a href="{{ url_for('signin_route') }}" class="bg-brand-navy-500 text-white font-bold px-6 py-2 rounded-lg shadow-md hover:bg-brand-navy-600 hover:shadow-lg transition duration-200">
                         Login / Sign Up
                     </a>
                 </nav>
@@ -106,16 +100,12 @@
             <!-- Mobile Navigation Menu -->
             <div id="mobile-menu" class="md:hidden hidden">
                 <div class="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200">
-                    <a href="#features" class="block px-3 py-2 text-brand-navy-500 font-semibold hover:text-brand-navy-700 hover:bg-gray-50 rounded-md transition duration-200" data-i18n="Features">Features</a>
-                    <a href="#pricing" class="block px-3 py-2 text-brand-navy-500 font-semibold hover:text-brand-navy-700 hover:bg-gray-50 rounded-md transition duration-200" data-i18n="Pricing">Pricing</a>
-                    <a href="#testimonials" class="block px-3 py-2 text-brand-navy-500 font-semibold hover:text-brand-navy-700 hover:bg-gray-50 rounded-md transition duration-200" data-i18n="Testimonials">Testimonials</a>
-                    <a href="{{ url_for('signin_route') }}" class="block mx-3 mt-4 bg-brand-navy-500 text-white text-center font-bold px-4 py-2 rounded-lg shadow-md hover:bg-brand-navy-600 transition duration-200" data-i18n="Login / Sign Up">
+                    <a href="#features" class="block px-3 py-2 text-brand-navy-500 font-semibold hover:text-brand-navy-700 hover:bg-gray-50 rounded-md transition duration-200">Features</a>
+                    <a href="#pricing" class="block px-3 py-2 text-brand-navy-500 font-semibold hover:text-brand-navy-700 hover:bg-gray-50 rounded-md transition duration-200">Pricing</a>
+                    <a href="#testimonials" class="block px-3 py-2 text-brand-navy-500 font-semibold hover:text-brand-navy-700 hover:bg-gray-50 rounded-md transition duration-200">Testimonials</a>
+                    <a href="{{ url_for('signin_route') }}" class="block mx-3 mt-4 bg-brand-navy-500 text-white text-center font-bold px-4 py-2 rounded-lg shadow-md hover:bg-brand-navy-600 transition duration-200">
                         Login / Sign Up
                     </a>
-                    <!-- Language Switcher in Mobile Menu Footer -->
-                    <div class="px-3 py-2 pt-4 border-t border-gray-200 mt-4 mobile-menu-language-switcher">
-                        {% include 'components/language_switcher.html' %}
-                    </div>
                 </div>
             </div>
         </div>
@@ -127,33 +117,33 @@
         
         <div class="hero-content flex-col lg:flex-row justify-between items-center max-w-7xl mx-auto px-4 relative z-10">
             <div class="text-center lg:text-left w-full lg:w-1/2">
-                <div class="badge badge-primary mb-4 text-sm font-semibold" data-i18n="75% Time Savings for Firms">
+                <div class="badge badge-primary mb-4 text-sm font-semibold">
                     <i class="fas fa-chart-line mr-1"></i>75% Time Savings for Firms
                 </div>
                 <h1 class="text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-                    <span data-i18n="Professional Workforce Management">Professional 
+                    Professional 
                     <span class="text-brand-navy-200">Workforce</span> 
-                    Management</span>
+                    Management
                 </h1>
-                <p class="text-xl text-brand-navy-100 mb-8 leading-relaxed" data-i18n="Transform your casual workforce operations with smart attendance tracking, automated payroll, and powerful analytics that save time and reduce costs.">
+                <p class="text-xl text-brand-navy-100 mb-8 leading-relaxed">
                     Transform your casual workforce operations with smart attendance tracking, automated payroll, and powerful analytics that save time and reduce costs.
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                     <a href="{{ url_for('signin_route') }}" class="btn btn-primary btn-lg font-semibold text-lg px-8 bg-brand-navy-500 text-white hover:bg-brand-navy-600">
-                        <i class="fas fa-rocket mr-2"></i><span data-i18n="Login / Sign Up">Login / Sign Up</span>
+                        <i class="fas fa-rocket mr-2"></i>Login / Sign Up
                     </a>
                     <a href="#demo" class="btn btn-outline btn-lg font-semibold text-lg px-8 border-white text-white hover:bg-white hover:text-brand-navy-500">
-                        <i class="fas fa-eye mr-2"></i><span data-i18n="Watch Demo">Watch Demo</span>
+                        <i class="fas fa-eye mr-2"></i>Watch Demo
                     </a>
                 </div>
                 <div class="flex items-center justify-center lg:justify-start mt-8 space-x-6 text-brand-navy-200">
                     <div class="flex items-center">
                         <i class="fas fa-check-circle mr-2 text-green-400"></i>
-                        <span class="text-sm" data-i18n="No Credit Card Required">No Credit Card Required</span>
+                        <span class="text-sm">No Credit Card Required</span>
                     </div>
                     <div class="flex items-center">
                         <i class="fas fa-check-circle mr-2 text-green-400"></i>
-                        <span class="text-sm" data-i18n="30-Day Free Trial">30-Day Free Trial</span>
+                        <span class="text-sm">30-Day Free Trial</span>
                     </div>
                 </div>
             </div>
@@ -172,19 +162,19 @@
             <div class="flex flex-wrap justify-center items-center space-x-8 lg:space-x-16 opacity-60">
                 <div class="flex items-center">
                     <i class="fas fa-shield-alt text-2xl text-brand-navy-500 mr-3"></i>
-                    <span class="font-semibold text-gray-700" data-i18n="Bank-Level Security">Bank-Level Security</span>
+                    <span class="font-semibold text-gray-700">Bank-Level Security</span>
                 </div>
                 <div class="flex items-center">
                     <i class="fas fa-clock text-2xl text-brand-navy-500 mr-3"></i>
-                    <span class="font-semibold text-gray-700" data-i18n="99.9% Uptime">99.9% Uptime</span>
+                    <span class="font-semibold text-gray-700">99.9% Uptime</span>
                 </div>
                 <div class="flex items-center">
                     <i class="fas fa-headset text-2xl text-brand-navy-500 mr-3"></i>
-                    <span class="font-semibold text-gray-700" data-i18n="24/7 Support">24/7 Support</span>
+                    <span class="font-semibold text-gray-700">24/7 Support</span>
                 </div>
                 <div class="flex items-center">
                     <i class="fas fa-certificate text-2xl text-brand-navy-500 mr-3"></i>
-                    <span class="font-semibold text-gray-700" data-i18n="GDPR Compliant">GDPR Compliant</span>
+                    <span class="font-semibold text-gray-700">GDPR Compliant</span>
                 </div>
             </div>
         </div>
@@ -194,8 +184,8 @@
     <section id="features" class="py-20 bg-gradient-to-br from-white via-gray-50 to-brand-navy-50 relative">
         <div class="container mx-auto px-4 max-w-6xl relative z-10">
             <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold mb-4 text-gray-900" data-i18n="Everything You Need to Manage Your Workforce">Everything You Need to Manage Your Workforce</h2>
-                <p class="text-xl text-gray-600 max-w-3xl mx-auto" data-i18n="From attendance tracking to payroll processing, we've got you covered with enterprise-grade features.">From attendance tracking to payroll processing, we've got you covered with enterprise-grade features.</p>
+                <h2 class="text-4xl font-bold mb-4 text-gray-900">Everything You Need to Manage Your Workforce</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">From attendance tracking to payroll processing, we've got you covered with enterprise-grade features.</p>
             </div>
             
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -204,8 +194,8 @@
                         <div class="w-16 h-16 bg-brand-navy-500 rounded-full flex items-center justify-center mx-auto mb-4">
                             <i class="fas fa-users text-2xl text-white"></i>
                         </div>
-                        <h3 class="card-title text-xl text-gray-900 justify-center" data-i18n="Worker Management">Worker Management</h3>
-                        <p class="text-gray-600" data-i18n="Organize and track your casual workforce with detailed worker profiles and employment records.">Organize and track your casual workforce with detailed worker profiles and employment records.</p>
+                        <h3 class="card-title text-xl text-gray-900 justify-center">Worker Management</h3>
+                        <p class="text-gray-600">Organize and track your casual workforce with detailed worker profiles and employment records.</p>
                     </div>
                 </div>
                 
@@ -214,8 +204,8 @@
                         <div class="w-16 h-16 bg-brand-navy-500 rounded-full flex items-center justify-center mx-auto mb-4">
                             <i class="fas fa-tasks text-2xl text-white"></i>
                         </div>
-                        <h3 class="card-title text-xl text-gray-900 justify-center" data-i18n="Task Assignment">Task Assignment</h3>
-                        <p class="text-gray-600" data-i18n="Create, assign, and track tasks with deadlines, ensuring your workforce stays organized and productive.">Create, assign, and track tasks with deadlines, ensuring your workforce stays organized and productive.</p>
+                        <h3 class="card-title text-xl text-gray-900 justify-center">Task Assignment</h3>
+                        <p class="text-gray-600">Create, assign, and track tasks with deadlines, ensuring your workforce stays organized and productive.</p>
                     </div>
                 </div>
                 
@@ -224,8 +214,8 @@
                         <div class="w-16 h-16 bg-brand-navy-500 rounded-full flex items-center justify-center mx-auto mb-4">
                             <i class="fas fa-calendar-check text-2xl text-white"></i>
                         </div>
-                        <h3 class="card-title text-xl text-gray-900 justify-center" data-i18n="Attendance Tracking">Attendance Tracking</h3>
-                        <p class="text-gray-600" data-i18n="Monitor attendance and work hours for accurate payroll and performance management.">Monitor attendance and work hours for accurate payroll and performance management.</p>
+                        <h3 class="card-title text-xl text-gray-900 justify-center">Attendance Tracking</h3>
+                        <p class="text-gray-600">Monitor attendance and work hours for accurate payroll and performance management.</p>
                     </div>
                 </div>
                 
@@ -234,8 +224,8 @@
                         <div class="w-16 h-16 bg-brand-navy-500 rounded-full flex items-center justify-center mx-auto mb-4">
                             <i class="fas fa-file-alt text-2xl text-white"></i>
                         </div>
-                        <h3 class="card-title text-xl text-gray-900 justify-center" data-i18n="Comprehensive Reports">Comprehensive Reports</h3>
-                        <p class="text-gray-600" data-i18n="Generate detailed workforce reports for clients, including attendance, task completion, and performance metrics.">Generate detailed workforce reports for clients, including attendance, task completion, and performance metrics.</p>
+                        <h3 class="card-title text-xl text-gray-900 justify-center">Comprehensive Reports</h3>
+                        <p class="text-gray-600">Generate detailed workforce reports for clients, including attendance, task completion, and performance metrics.</p>
                     </div>
                 </div>
                 
@@ -244,8 +234,8 @@
                         <div class="w-16 h-16 bg-brand-navy-500 rounded-full flex items-center justify-center mx-auto mb-4">
                             <i class="fas fa-users text-2xl text-white"></i>
                         </div>
-                        <h3 class="card-title text-xl text-gray-900 justify-center" data-i18n="Multi-Company">Multi-Company</h3>
-                        <p class="text-gray-600" data-i18n="Manage multiple companies with separate workspaces and role-based access.">Manage multiple companies with separate workspaces and role-based access.</p>
+                        <h3 class="card-title text-xl text-gray-900 justify-center">Multi-Company</h3>
+                        <p class="text-gray-600">Manage multiple companies with separate workspaces and role-based access.</p>
                     </div>
                 </div>
                 
@@ -254,8 +244,8 @@
                         <div class="w-16 h-16 bg-brand-navy-500 rounded-full flex items-center justify-center mx-auto mb-4">
                             <i class="fas fa-file-export text-2xl text-white"></i>
                         </div>
-                        <h3 class="card-title text-xl text-gray-900 justify-center" data-i18n="Export & Integrate">Export & Integrate</h3>
-                        <p class="text-gray-600" data-i18n="Export data to Excel, PDF, or integrate with your existing systems via API.">Export data to Excel, PDF, or integrate with your existing systems via API.</p>
+                        <h3 class="card-title text-xl text-gray-900 justify-center">Export & Integrate</h3>
+                        <p class="text-gray-600">Export data to Excel, PDF, or integrate with your existing systems via API.</p>
                     </div>
                 </div>
             </div>
@@ -266,8 +256,8 @@
     <section id="pricing" class="py-20 bg-gradient-to-br from-gray-50 to-brand-navy-50">
         <div class="mx-auto px-4" style="max-width: 1400px;">
             <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold mb-4 text-gray-900" data-i18n="Simple, Transparent Pricing">Simple, Transparent Pricing</h2>
-                <p class="text-xl text-gray-600" data-i18n="Choose the plan that fits your business needs. All plans include our core features.">Choose the plan that fits your business needs. All plans include our core features.</p>
+                <h2 class="text-4xl font-bold mb-4 text-gray-900">Simple, Transparent Pricing</h2>
+                <p class="text-xl text-gray-600">Choose the plan that fits your business needs. All plans include our core features.</p>
             </div>
             
             <!-- Stripe Pricing Table -->
@@ -284,30 +274,30 @@
     <section id="testimonials" class="py-20 bg-white">
         <div class="container mx-auto px-4 max-w-6xl">
             <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold mb-4 text-gray-900" data-i18n="Loved by Accounting Professionals">Loved by Accounting Professionals</h2>
-                <p class="text-xl text-gray-600" data-i18n="Join dozens of accountants who've transformed their workforce management workflow">Join dozens of accountants who've transformed their workforce management workflow</p>
+                <h2 class="text-4xl font-bold mb-4 text-gray-900">Loved by Accounting Professionals</h2>
+                <p class="text-xl text-gray-600">Join dozens of accountants who've transformed their workforce management workflow</p>
             </div>
             
             <div class="grid md:grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                 <!-- Stats Section -->
                 <div class="bg-gradient-to-br from-brand-navy-50 to-brand-navy-100 rounded-2xl p-8">
-                    <h3 class="text-2xl font-bold text-gray-900 mb-6 text-center" data-i18n="Real Results from Real Users">Real Results from Real Users</h3>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-6 text-center">Real Results from Real Users</h3>
                     <div class="grid grid-cols-2 gap-6">
                         <div class="text-center">
                             <div class="text-4xl font-bold text-brand-navy-600 mb-2">12+</div>
-                            <div class="text-gray-600 text-sm" data-i18n="Accounting Firms">Accounting Firms</div>
+                            <div class="text-gray-600 text-sm">Accounting Firms</div>
                         </div>
                         <div class="text-center">
                             <div class="text-4xl font-bold text-green-600 mb-2">75%</div>
-                            <div class="text-gray-600 text-sm" data-i18n="Time Savings">Time Savings</div>
+                            <div class="text-gray-600 text-sm">Time Savings</div>
                         </div>
                         <div class="text-center">
                             <div class="text-4xl font-bold text-purple-600 mb-2">10hrs</div>
-                            <div class="text-gray-600 text-sm" data-i18n="Saved Per Week">Saved Per Week</div>
+                            <div class="text-gray-600 text-sm">Saved Per Week</div>
                         </div>
                         <div class="text-center">
                             <div class="text-4xl font-bold text-brand-navy-600 mb-2">99%</div>
-                            <div class="text-gray-600 text-sm" data-i18n="Would Recommend">Would Recommend</div>
+                            <div class="text-gray-600 text-sm">Would Recommend</div>
                         </div>
                     </div>
                 </div>
@@ -319,8 +309,8 @@
                             <i class="fas fa-clock text-brand-navy-600 text-xl"></i>
                         </div>
                         <div>
-                            <h4 class="font-semibold text-gray-900 mb-2" data-i18n="85% Faster Data Entry">85% Faster Data Entry</h4>
-                            <p class="text-gray-600" data-i18n="Automated time tracking and payroll calculations eliminate manual data entry, letting accountants focus on strategic work instead of repetitive tasks.">Automated time tracking and payroll calculations eliminate manual data entry, letting accountants focus on strategic work instead of repetitive tasks.</p>
+                            <h4 class="font-semibold text-gray-900 mb-2">85% Faster Data Entry</h4>
+                            <p class="text-gray-600">Automated time tracking and payroll calculations eliminate manual data entry, letting accountants focus on strategic work instead of repetitive tasks.</p>
                         </div>
                     </div>
                     
@@ -329,8 +319,8 @@
                             <i class="fas fa-chart-line text-green-600 text-xl"></i>
                         </div>
                         <div>
-                            <h4 class="font-semibold text-gray-900 mb-2" data-i18n="Seamless Client Reporting">Seamless Client Reporting</h4>
-                            <p class="text-gray-600" data-i18n="Generate comprehensive workforce reports in seconds. Our platform transforms complex attendance data into clear, professional reports that clients love.">Generate comprehensive workforce reports in seconds. Our platform transforms complex attendance data into clear, professional reports that clients love.</p>
+                            <h4 class="font-semibold text-gray-900 mb-2">Seamless Client Reporting</h4>
+                            <p class="text-gray-600">Generate comprehensive workforce reports in seconds. Our platform transforms complex attendance data into clear, professional reports that clients love.</p>
                         </div>
                     </div>
                     
@@ -339,8 +329,8 @@
                             <i class="fas fa-shield-alt text-purple-600 text-xl"></i>
                         </div>
                         <div>
-                            <h4 class="font-semibold text-gray-900 mb-2" data-i18n="Error-Free Calculations">Error-Free Calculations</h4>
-                            <p class="text-gray-600" data-i18n="Eliminate calculation errors with automated payroll processing. Built-in compliance checks ensure accuracy and reduce liability for accounting firms.">Eliminate calculation errors with automated payroll processing. Built-in compliance checks ensure accuracy and reduce liability for accounting firms.</p>
+                            <h4 class="font-semibold text-gray-900 mb-2">Error-Free Calculations</h4>
+                            <p class="text-gray-600">Eliminate calculation errors with automated payroll processing. Built-in compliance checks ensure accuracy and reduce liability for accounting firms.</p>
                         </div>
                     </div>
                     
@@ -368,15 +358,15 @@
     <!-- Privacy & Legal Section -->
     <section class="py-20 bg-gray-50">
         <div class="container mx-auto px-4 max-w-4xl text-center">
-            <h2 class="text-3xl font-bold mb-4 text-gray-900" data-i18n="Your Data, Your Control">Your Data, Your Control</h2>
-            <p class="text-xl text-gray-600 mb-8" data-i18n="We're committed to protecting your privacy and maintaining transparency in how we handle your data.">We're committed to protecting your privacy and maintaining transparency in how we handle your data.</p>
+            <h2 class="text-3xl font-bold mb-4 text-gray-900">Your Data, Your Control</h2>
+            <p class="text-xl text-gray-600 mb-8">We're committed to protecting your privacy and maintaining transparency in how we handle your data.</p>
             
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
                 <a href="{{ url_for('privacy_policy_route') }}" class="btn btn-outline border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-3">
-                    <i class="fas fa-file-alt mr-2"></i><span data-i18n="Privacy Policy">Privacy Policy</span>
+                    <i class="fas fa-file-alt mr-2"></i>Privacy Policy
                 </a>
                 <a href="{{ url_for('terms_of_use_route') }}" class="btn btn-outline border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-3">
-                    <i class="fas fa-file-contract mr-2"></i><span data-i18n="Terms of Use">Terms of Use</span>
+                    <i class="fas fa-file-contract mr-2"></i>Terms of Use
                 </a>
             </div>
         </div>
@@ -385,14 +375,14 @@
     <!-- CTA Section -->
     <section class="py-20 bg-gradient-to-r from-brand-navy-600 to-brand-navy-700 text-white">
         <div class="container mx-auto px-4 max-w-4xl text-center">
-            <h2 class="text-4xl font-bold mb-4" data-i18n="Ready to Transform Your Workforce Management?">Ready to Transform Your Workforce Management?</h2>
-            <p class="text-xl mb-8 text-brand-navy-100" data-i18n="Join thousands of companies that trust us with their workforce management needs.">Join thousands of companies that trust us with their workforce management needs.</p>
+            <h2 class="text-4xl font-bold mb-4">Ready to Transform Your Workforce Management?</h2>
+            <p class="text-xl mb-8 text-brand-navy-100">Join thousands of companies that trust us with their workforce management needs.</p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
                 <a href="{{ url_for('signin_route') }}" class="btn btn-primary btn-lg font-semibold text-lg px-8 bg-brand-navy-600 text-white hover:bg-brand-navy-700">
-                    <i class="fas fa-rocket mr-2"></i><span data-i18n="Login / Sign Up">Login / Sign Up</span>
+                    <i class="fas fa-rocket mr-2"></i>Login / Sign Up
                 </a>
                 <a href="#contact" class="btn btn-outline btn-lg font-semibold text-lg px-8 border-white text-white hover:bg-white hover:text-brand-navy-600">
-                    <i class="fas fa-phone mr-2"></i><span data-i18n="Contact Sales">Contact Sales</span>
+                    <i class="fas fa-phone mr-2"></i>Contact Sales
                 </a>
             </div>
         </div>
@@ -404,7 +394,7 @@
             <div class="grid md:grid-cols-4 gap-8">
                 <div>
                     <h3 class="text-xl font-bold mb-4">Embee accounting</h3>
-                    <p class="text-gray-400 mb-4" data-i18n="Professional workforce management for modern businesses.">Professional workforce management for modern businesses.</p>
+                    <p class="text-gray-400 mb-4">Professional workforce management for modern businesses.</p>
                     <div class="flex space-x-4">
                         <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-twitter"></i></a>
                         <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-linkedin"></i></a>
@@ -412,62 +402,60 @@
                     </div>
                 </div>
                 <div>
-                    <h4 class="font-semibold mb-4" data-i18n="Product">Product</h4>
+                    <h4 class="font-semibold mb-4">Product</h4>
                     <ul class="space-y-2 text-gray-400">
-                        <li><a href="#features" class="hover:text-white" data-i18n="Features">Features</a></li>
-                        <li><a href="#pricing" class="hover:text-white" data-i18n="Pricing">Pricing</a></li>
-                        <li><a href="#" class="hover:text-white" data-i18n="API">API</a></li>
-                        <li><a href="#" class="hover:text-white" data-i18n="Integrations">Integrations</a></li>
+                        <li><a href="#features" class="hover:text-white">Features</a></li>
+                        <li><a href="#pricing" class="hover:text-white">Pricing</a></li>
+                        <li><a href="#" class="hover:text-white">API</a></li>
+                        <li><a href="#" class="hover:text-white">Integrations</a></li>
                     </ul>
                 </div>
                 <div>
-                    <h4 class="font-semibold mb-4" data-i18n="Support">Support</h4>
+                    <h4 class="font-semibold mb-4">Support</h4>
                     <ul class="space-y-2 text-gray-400">
-                        <li><a href="#" class="hover:text-white" data-i18n="Help Center">Help Center</a></li>
-                        <li><a href="#" class="hover:text-white" data-i18n="Contact Us">Contact Us</a></li>
-                        <li><a href="#" class="hover:text-white" data-i18n="Status">Status</a></li>
-                        <li><a href="#" class="hover:text-white" data-i18n="Documentation">Documentation</a></li>
+                        <li><a href="#" class="hover:text-white">Help Center</a></li>
+                        <li><a href="#" class="hover:text-white">Contact Us</a></li>
+                        <li><a href="#" class="hover:text-white">Status</a></li>
+                        <li><a href="#" class="hover:text-white">Documentation</a></li>
                     </ul>
                 </div>
                 <div>
-                    <h4 class="font-semibold mb-4" data-i18n="Legal">Legal</h4>
+                    <h4 class="font-semibold mb-4">Legal</h4>
                     <ul class="space-y-2 text-gray-400">
-                        <li><a href="{{ url_for('terms_of_use_route') }}" class="hover:text-white" data-i18n="Terms of Use">Terms of Use</a></li>
-                        <li><a href="{{ url_for('privacy_policy_route') }}" class="hover:text-white" data-i18n="Privacy Policy">Privacy Policy</a></li>
-                        <li><a href="{{ url_for('legal_compliance_route') }}" class="hover:text-white" data-i18n="Compliance">Compliance</a></li>
-                        <li><a href="#" class="hover:text-white" data-i18n="Security">Security</a></li>
+                        <li><a href="{{ url_for('terms_of_use_route') }}" class="hover:text-white">Terms of Use</a></li>
+                        <li><a href="{{ url_for('privacy_policy_route') }}" class="hover:text-white">Privacy Policy</a></li>
+                        <li><a href="{{ url_for('legal_compliance_route') }}" class="hover:text-white">Compliance</a></li>
+                        <li><a href="#" class="hover:text-white">Security</a></li>
                     </ul>
                 </div>
             </div>
             
             <div class="mt-8">
                 <div>
-                    <h4 class="font-semibold mb-4" data-i18n="Company">Company</h4>
+                    <h4 class="font-semibold mb-4">Company</h4>
                     <ul class="space-y-2 text-gray-400">
-                        <li><a href="#" class="hover:text-white" data-i18n="About">About</a></li>
-                        <li><a href="#" class="hover:text-white" data-i18n="Blog">Blog</a></li>
-                        <li><a href="#" class="hover:text-white" data-i18n="Careers">Careers</a></li>
-                        <li><a href="#" class="hover:text-white" data-i18n="Press">Press</a></li>
+                        <li><a href="#" class="hover:text-white">About</a></li>
+                        <li><a href="#" class="hover:text-white">Blog</a></li>
+                        <li><a href="#" class="hover:text-white">Careers</a></li>
+                        <li><a href="#" class="hover:text-white">Press</a></li>
                     </ul>
                 </div>
             </div>
             
             <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-                <p>&copy; 2024 Embee accounting. <span data-i18n="All rights reserved.">All rights reserved.</span></p>
+                <p>&copy; 2024 Embee accounting. All rights reserved.</p>
                 <div class="mt-2 space-x-4">
-                    <a href="{{ url_for('terms_of_use_route') }}" class="hover:text-white text-sm" data-i18n="Terms of Use">Terms of Use</a>
+                    <a href="{{ url_for('terms_of_use_route') }}" class="hover:text-white text-sm">Terms of Use</a>
                     <span>•</span>
-                    <a href="{{ url_for('privacy_policy_route') }}" class="hover:text-white text-sm" data-i18n="Privacy Policy">Privacy Policy</a>
+                    <a href="{{ url_for('privacy_policy_route') }}" class="hover:text-white text-sm">Privacy Policy</a>
                     <span>•</span>
-                    <a href="{{ url_for('legal_compliance_route') }}" class="hover:text-white text-sm" data-i18n="Legal Compliance">Legal Compliance</a>
+                    <a href="{{ url_for('legal_compliance_route') }}" class="hover:text-white text-sm">Legal Compliance</a>
                 </div>
             </div>
         </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/daisyui@4.4.24/dist/full.min.js"></script>
-    <script src="{{ url_for('static', filename='js/language-switcher.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/i18n.js') }}"></script>
     
     <script>
         // Simple mobile menu toggle

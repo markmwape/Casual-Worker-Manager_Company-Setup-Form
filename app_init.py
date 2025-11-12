@@ -125,14 +125,11 @@ def get_locale():
         session['language'] = lang
         return lang
     
-    # Use browser language preference as fallback only (don't override session)
+    # Use browser language preference
     browser_lang = request.accept_languages.best_match(app.config['LANGUAGES'].keys()) or 'en'
-    if 'language' not in session:
+    if browser_lang not in session:
         session['language'] = browser_lang
-        logging.info(f"Setting initial language from browser: {browser_lang}")
-    
-    # Return the session language (which may have just been set)
-    return session.get('language', 'en')
+    return browser_lang
 
 # Initialize database tables with better error handling
 def init_database_safely():

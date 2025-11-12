@@ -19,13 +19,6 @@ from app_init import master_admin_required
 from sqlalchemy import func, desc
 from subscription_middleware import subscription_required, check_subscription_status, admin_required, feature_required, worker_limit_check
 from tier_config import get_tier_spec, get_price_by_product_and_amount, STRIPE_PRICE_MAPPING
-
-# Import language routes
-try:
-    import language_routes
-    logging.info("Language routes imported successfully")
-except Exception as e:
-    logging.warning(f"Could not import language routes: {e}")
 import stripe
 import hmac
 import hashlib
@@ -1537,7 +1530,7 @@ def generate_per_day_report(company, start_date, end_date):
             per_day_tasks = {}
             for att in attendance_records:
                 if att.task and getattr(att.task, 'payment_type', None) == 'per_day':
-                    # Only count if task started before or during the end date of the report
+                    # Only count if task started before or during the report end date
                     if att.task.start_date.date() <= end_date:
                         task_id = att.task.id
                         if task_id not in per_day_tasks:
@@ -1621,7 +1614,7 @@ def generate_per_part_report(company, start_date, end_date):
             per_part_tasks = {}
             for att in attendance_records:
                 if att.task and getattr(att.task, 'payment_type', None) == 'per_part':
-                    # Only count if task started before or during the end date of the report
+                    # Only count if task started before or during the report end date
                     if att.task.start_date.date() <= end_date:
                         task_id = att.task.id
                         if task_id not in per_part_tasks:
@@ -2069,7 +2062,7 @@ def import_workers():
 
         # Save file using existing helpers – returns a storage identifier we can reuse later
         file_id = upload_file_to_storage(file)
-        file_path = file_id  # The file_id we stored is the actual path on disk
+        file_path = file_id  # upload_file_to_storage already returns the full path
 
         # Analyse the Excel contents – get column names and a small preview (first 5 rows)
         df = pd.read_excel(file_path, na_filter=False).dropna(how='all')
@@ -2433,7 +2426,7 @@ def add_team_member():
             # Create new user if they don't exist
             existing_user = User(email=email)
             db.session.add(existing_user)
-            db.session.commit()  # Commit to generate user ID
+            db.session.flush()  # Get the user ID without committing
 
         # Add user to workspace
         user_workspace = UserWorkspace(
@@ -2505,6 +2498,41 @@ def update_team_member_role(user_id):
         db.session.rollback()
         return jsonify({'error': f'Failed to update role: {str(e)}'}), 500
 
+@app.route("/api/trial-info", methods=['GET'])
+def get_trial_info():
+    """Get trial information for current workspace"""
+    try:
+        if 'current_workspace' not in session:
+            return jsonify({'success': False, 'error': 'No active workspace'}), 400
+        
+        workspace_id = session['current_workspace']['id']
+        workspace = Workspace.query.get(workspace_id)
+        
+        if not workspace:
+            return jsonify({'success': False, 'error': 'Workspace not found'}), 404
+        
+        # Calculate trial days remaining
+        from datetime import date
+        today = date.today()
+        
+        if workspace.trial_end_date:
+            days_remaining = (workspace.trial_end_date - today).days
+            if days_remaining < 0:
+                days_remaining = 0
+        else:
+            days_remaining = 0
+        
+        return jsonify({
+            'success': True,
+            'days_remaining': days_remaining,
+            'trial_end_date': workspace.trial_end_date.isoformat() if workspace.trial_end_date else None,
+            'is_trial': workspace.subscription_status == 'trial' or workspace.subscription_tier == 'trial'
+        })
+        
+    except Exception as e:
+        logging.error(f"Error getting trial info: {str(e)}")
+        return jsonify({'success': False, 'error': 'Failed to get trial info'}), 500
+
 @app.route("/api/team-members", methods=['GET', 'POST'])
 def handle_team_members():
     """Handle team member operations"""
@@ -2561,7 +2589,7 @@ def handle_team_members():
                 # Create new user if they don't exist
                 existing_user = User(email=email)
                 db.session.add(existing_user)
-                db.session.commit()  # Commit to generate user ID
+                db.session.flush()  # Get the user ID without committing
 
             # Add user to workspace
             user_workspace = UserWorkspace(
@@ -2587,7 +2615,7 @@ def handle_team_members():
     except Exception as e:
         logging.error(f"Error handling team members: {str(e)}")
         db.session.rollback()
-        return jsonify({'error': 'Failed to handle team members'}), 500
+        return jsonify({'success': False, 'error': 'Failed to handle team members'}), 500
 
 @app.route("/api/team-members/<int:user_id>/role", methods=['PUT'])
 def update_team_member_role_api(user_id):
@@ -5249,13 +5277,3 @@ def get_firebase_config():
             "appId": "1:328324461979:web:0cc9ddad6aa3f157359d3e",
             "measurementId": "G-F1XTE0TP63"
         })
-
-@app.route('/test-language-switcher')
-def test_language_switcher():
-    """Test page for language switcher functionality"""
-    return render_template('test_language_switcher.html')
-
-@app.route('/dropdown-test')
-def dropdown_test():
-    """Test page for dropdown functionality across all page contexts"""
-    return render_template('dropdown_test.html')

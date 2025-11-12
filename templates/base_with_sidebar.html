@@ -18,7 +18,6 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-layout.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-touch.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/date-picker.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/language-switcher.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/language-switcher-fixes.css') }}">
     
     <!-- Tailwind Configuration -->
@@ -237,7 +236,7 @@
                         <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center mr-3 shadow-lg">
                             <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Embee Bee Logo" class="w-8 h-8 object-contain" />
                         </div>
-                        <h2 class="text-lg font-bold text-white whitespace-nowrap" data-i18n="sidebar.myWorkspace">My Workspace</h2>
+                        <h2 class="text-lg font-bold text-white whitespace-nowrap">My Workspace</h2>
                     </div>
                     
                     <!-- User Profile Card -->
@@ -280,9 +279,9 @@
                             </h3>
                             <p class="text-xs text-white/70 truncate">
                                 {% if session.get('current_workspace', {}).get('role') %}
-                                    <span data-i18n="sidebar.role.{{ session.get('current_workspace', {}).get('role').lower() }}">{{ session.get('current_workspace', {}).get('role') }}</span>
+                                    {{ session.get('current_workspace', {}).get('role') }}
                                 {% else %}
-                                    <span data-i18n="sidebar.role.administrator">Administrator</span>
+                                    Administrator
                                 {% endif %}
                             </p>
                         </div>
@@ -296,7 +295,7 @@
                             <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center mr-3 shadow-lg">
                                 <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Embee Bee Logo" class="w-6 h-6 object-contain" />
                             </div>
-                            <h2 class="text-lg font-bold text-white" data-i18n="sidebar.myWorkspace">My Workspace</h2>
+                            <h2 class="text-lg font-bold text-white">My Workspace</h2>
                         </div>
                         <label for="my-drawer" class="btn btn-ghost btn-circle text-white">
                             <i class="material-icons">close</i>
@@ -308,10 +307,10 @@
                 <nav class="flex-1 overflow-y-auto sidebar-scroll">
                     <div class="space-y-2 p-4">
                         {% set menu_items = [
-                            {'endpoint': 'home_route', 'icon': 'home', 'label': 'Dashboard', 'data_i18n': 'sidebar.dashboard', 'related': []},
-                            {'endpoint': 'workers_route', 'icon': 'group', 'label': 'Workers', 'data_i18n': 'sidebar.workers', 'related': []},
-                            {'endpoint': 'tasks_route', 'icon': 'assignment', 'label': 'Tasks', 'data_i18n': 'sidebar.tasks', 'related': ['task_attendance_route', 'task_units_completed_route']},
-                            {'endpoint': 'reports_route', 'icon': 'bar_chart', 'label': 'Reports', 'data_i18n': 'sidebar.reports', 'related': []}
+                            {'endpoint': 'home_route', 'icon': 'home', 'label': 'Dashboard', 'related': []},
+                            {'endpoint': 'workers_route', 'icon': 'group', 'label': 'Workers', 'related': []},
+                            {'endpoint': 'tasks_route', 'icon': 'assignment', 'label': 'Tasks', 'related': ['task_attendance_route', 'task_units_completed_route']},
+                            {'endpoint': 'reports_route', 'icon': 'bar_chart', 'label': 'Reports', 'related': []}
                         ] %}
                         
                         {% for item in menu_items %}
@@ -320,7 +319,7 @@
                                 <a href="{{ url_for(item.endpoint) }}" 
                                    class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg min-h-[48px] no-underline {% if is_active %}active{% else %}text-white/90{% endif %}">
                                     <span class="material-icons mr-3 flex-shrink-0">{{ item.icon }}</span> 
-                                    <span class="font-medium flex-shrink-0" data-i18n="{{ item.data_i18n }}">{{ item.label }}</span>
+                                    <span class="font-medium flex-shrink-0">{{ item.label }}</span>
                                 </a>
                             </div>
                         {% endfor %}
@@ -331,7 +330,7 @@
                                    target="_blank" 
                                    class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg text-white/90 min-h-[48px] no-underline">
                                     <span class="material-icons mr-3 flex-shrink-0">credit_card</span> 
-                                    <span class="font-medium flex-shrink-0" data-i18n="sidebar.payments">Payments/Billing</span>
+                                    <span class="font-medium flex-shrink-0">Payments/Billing</span>
                                 </a>
                             </div>
                         {% endif %}
@@ -347,7 +346,7 @@
                     <a href="{{ url_for('signout') }}" 
                        class="sidebar-menu-item whitespace-nowrap w-full flex items-center py-4 px-4 rounded-lg text-white/90 min-h-[48px] no-underline">
                         <span class="material-icons mr-3 flex-shrink-0">logout</span> 
-                        <span class="font-medium flex-shrink-0" data-i18n="sidebar.signout">Sign Out</span>
+                        <span class="font-medium flex-shrink-0">Sign Out</span>
                     </a>
                 </div>
             </div>

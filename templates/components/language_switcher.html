@@ -1,26 +1,42 @@
-<!-- Language Switcher Component -->
+<!-- Enhanced Language Switcher Component -->
 <div class="language-switcher-container">
     <div class="dropdown dropdown-end">
-        <button type="button" class="btn btn-sm gap-2 language-switcher-btn language-toggle">
-            <span class="text-xl">🌐</span>
-            <span class="current-lang-label font-semibold text-sm">English</span>
-            <svg class="w-4 h-4 transition-transform dropdown-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <button type="button" 
+                tabindex="0" 
+                class="language-switcher-btn btn btn-sm gap-2 px-3 py-2 bg-white/90 hover:bg-white border border-gray-200 hover:border-gray-300 text-gray-700 hover:text-gray-900 shadow-sm hover:shadow-md transition-all duration-200 rounded-lg backdrop-blur-sm"
+                aria-label="Select Language"
+                role="button">
+            <!-- Globe Icon -->
+            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9m0 9c-1.657 0-3-1.343-3-3s1.343-3 3-3m0 6c1.657 0 3-1.343 3-3s-1.343-3 3-3"></path>
+            </svg>
+            
+            <!-- Current Language Display -->
+            <span class="current-lang-display font-medium text-sm min-w-[60px] text-center">
+                <span class="current-lang-label">English</span>
+            </span>
+            
+            <!-- Dropdown Arrow with Animation -->
+            <svg class="w-3 h-3 transition-transform duration-200 dropdown-arrow text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
             </svg>
         </button>
-        <ul class="dropdown-content z-[1000] menu p-2 shadow-2xl bg-white border border-gray-200 rounded-lg w-56 mt-2 language-menu" style="display: none; position: absolute;">
-            <!-- Populated by JavaScript -->
+        
+        <!-- Enhanced Dropdown Menu -->
+        <ul tabindex="0" 
+            class="dropdown-content menu p-1 shadow-xl bg-white border border-gray-200 rounded-lg w-48 mt-1 language-menu opacity-0 invisible transition-all duration-200"
+            role="menu"
+            aria-label="Language options">
+            <!-- Menu items populated by JavaScript -->
         </ul>
     </div>
 </div>
 
 <style>
+    /* Enhanced Language Switcher Styles */
     .language-switcher-container {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
         position: relative;
-        z-index: 100;
+        z-index: 50;
     }
     
     .language-switcher-container .dropdown {
@@ -28,244 +44,280 @@
         overflow: visible !important;
     }
     
-    /* Modern button styling */
+    /* Button Enhancements */
     .language-switcher-btn {
-        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-        border: 2px solid #e2e8f0;
-        color: #1e293b;
-        padding: 0.5rem 1rem;
-        border-radius: 0.75rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.05);
-        transition: all 0.2s ease;
-        font-weight: 600;
+        position: relative;
+        min-height: 36px;
+        font-weight: 500;
         cursor: pointer;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
     }
     
     .language-switcher-btn:hover {
-        background: linear-gradient(135deg, #f8f9fa 0%, #f1f5f9 100%);
-        border-color: #cbd5e1;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.08);
         transform: translateY(-1px);
     }
     
     .language-switcher-btn:active {
         transform: translateY(0);
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     }
     
-    /* Dropdown arrow animation */
-    .dropdown-arrow {
-        transition: transform 0.2s ease;
+    /* Focus States */
+    .language-switcher-btn:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5), 0 2px 4px rgba(0, 0, 0, 0.1);
     }
     
+    /* Arrow Animation */
     .dropdown.dropdown-open .dropdown-arrow {
         transform: rotate(180deg);
     }
     
-    /* Button focus state */
-    .language-switcher-btn:focus {
-        outline: none;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
-    }
-    
-    /* Dropdown menu styling */
-    .language-switcher-container .dropdown-content {
-        max-height: 400px;
-        overflow-y: auto;
-        animation: slideDown 0.2s ease-out;
-        position: absolute !important;
-        z-index: 1000 !important;
-    }
-    
-    /* Ensure menu is visible */
+    /* Enhanced Dropdown Menu */
     .language-menu {
         position: absolute !important;
         z-index: 1000 !important;
         background: white !important;
-        border: 1px solid #e2e8f0 !important;
-        border-radius: 0.5rem !important;
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
-        padding: 0.5rem 0 !important;
-        min-width: 200px !important;
+        border: 1px solid #e5e7eb !important;
+        border-radius: 8px !important;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+        padding: 4px 0 !important;
+        min-width: 180px !important;
+        max-width: 240px !important;
+        backdrop-filter: blur(8px);
+        animation: slideDownFade 0.15s ease-out forwards;
     }
     
-    /* Show menu when it has display block */
-    .language-menu[style*="display: block"] {
-        display: block !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-        pointer-events: auto !important;
-    }
-    
-    /* Menu items must be visible */
+    /* Menu Item Styling */
     .language-menu li {
         display: block !important;
         list-style: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
     
     .language-menu li a {
         display: flex !important;
         align-items: center !important;
-        padding: 0.75rem 1rem !important;
-        color: #475569 !important;
+        justify-content: space-between !important;
+        padding: 10px 16px !important;
+        color: #374151 !important;
         text-decoration: none !important;
         cursor: pointer !important;
         transition: all 0.15s ease !important;
-        border-radius: 0.5rem !important;
-        margin: 0 0.5rem !important;
+        border-radius: 6px !important;
+        margin: 2px 4px !important;
+        font-size: 14px !important;
+        font-weight: 500 !important;
+        position: relative;
     }
     
     .language-menu li a:hover {
-        background: #3b82f6 !important;
-        color: white !important;
-        transform: translateX(4px) !important;
+        background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%) !important;
+        color: #111827 !important;
+        transform: translateX(2px) !important;
     }
     
+    .language-menu li a:active {
+        background: #e5e7eb !important;
+        transform: translateX(0) !important;
+    }
+    
+    /* Active Language Indicator */
     .language-menu li a.active {
-        background: #1e40af !important;
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
         color: white !important;
-        font-weight: 700 !important;
+        font-weight: 600 !important;
+        box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2) !important;
     }
     
-    /* Sidebar language switcher - ensure dropdown is visible */
-    .sidebar-language-switcher {
-        position: relative;
-        z-index: 200;
-        overflow: visible !important;
+    .language-menu li a.active::after {
+        content: '✓';
+        position: absolute;
+        right: 12px;
+        color: white;
+        font-weight: bold;
+        font-size: 12px;
     }
     
-    .sidebar-language-switcher .dropdown {
-        position: relative;
-        overflow: visible !important;
+    /* Loading State */
+    .language-switcher-btn.loading {
+        opacity: 0.7;
+        pointer-events: none;
     }
     
-    .sidebar-language-switcher .language-menu {
-        bottom: calc(100% + 0.5rem) !important;
-        top: auto !important;
-        right: 0;
-        left: auto;
-        margin-bottom: 0;
-        margin-top: 0;
-        animation: slideUp 0.2s ease-out;
-        z-index: 2000 !important;
-        position: absolute !important;
-        overflow: visible !important;
+    .language-switcher-btn.loading .current-lang-display::after {
+        content: '';
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border: 2px solid #e5e7eb;
+        border-radius: 50%;
+        border-top-color: #3b82f6;
+        animation: spin 1s linear infinite;
+        margin-left: 8px;
     }
     
-    @keyframes slideUp {
+    /* Animations */
+    @keyframes slideDownFade {
         from {
             opacity: 0;
-            transform: translateY(10px);
+            transform: translateY(-8px) scale(0.95);
         }
         to {
             opacity: 1;
-            transform: translateY(0);
+            transform: translateY(0) scale(1);
         }
     }
     
-    /* Make dropdown open upward in mobile menu footer */
-    .mobile-menu-language-switcher .dropdown {
-        position: relative;
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+    
+    /* Context-Specific Adjustments */
+    
+    /* Sidebar Context */
+    .sidebar-language-switcher .language-switcher-btn {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        color: white !important;
+        backdrop-filter: blur(4px);
+    }
+    
+    .sidebar-language-switcher .language-switcher-btn:hover {
+        background: rgba(255, 255, 255, 0.2) !important;
+        border-color: rgba(255, 255, 255, 0.3) !important;
+    }
+    
+    .sidebar-language-switcher .language-menu {
+        bottom: calc(100% + 8px) !important;
+        top: auto !important;
+        right: 0 !important;
+        left: auto !important;
+        animation: slideUpFade 0.15s ease-out forwards;
+    }
+    
+    .sidebar-language-switcher svg {
+        color: rgba(255, 255, 255, 0.8) !important;
+    }
+    
+    .sidebar-language-switcher .current-lang-display {
+        color: white !important;
+    }
+    
+    /* Mobile Menu Context */
+    .mobile-menu-language-switcher .language-switcher-btn {
+        width: 100% !important;
+        justify-content: center !important;
+        padding: 12px 16px !important;
+        background: #f9fafb !important;
+        border: 1px solid #e5e7eb !important;
+        color: #374151 !important;
     }
     
     .mobile-menu-language-switcher .language-menu {
-        bottom: 100% !important;
+        bottom: calc(100% + 8px) !important;
         top: auto !important;
-        margin-bottom: 0.5rem;
-        margin-top: 0;
-        animation: slideUp 0.2s ease-out;
-        z-index: 1000 !important;
-        position: absolute !important;
+        right: 0 !important;
+        left: auto !important;
+        width: 100% !important;
+        max-width: 280px !important;
+        animation: slideUpFade 0.15s ease-out forwards;
     }
     
-    /* Fix mobile menu dropdown positioning */
-    .mobile-menu-language-switcher {
-        position: relative;
-        z-index: 100;
+    /* Landing Page Context */
+    .landing-language-switcher .language-switcher-btn {
+        background: rgba(255, 255, 255, 0.95) !important;
+        border: 1px solid rgba(255, 255, 255, 0.8) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+        backdrop-filter: blur(12px);
     }
     
-    /* Ensure dropdowns are visible above everything */
-    .language-menu {
-        position: absolute !important;
-        z-index: 1000 !important;
+    /* DaisyUI Integration */
+    .dropdown:focus-within .dropdown-content,
+    .dropdown-content:focus-within {
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
     }
     
-    /* Fix dropdown on mobile screens */
+    /* Accessibility Improvements */
+    .language-switcher-btn[aria-expanded="true"] .dropdown-arrow {
+        transform: rotate(180deg);
+    }
+    
+    /* High Contrast Mode Support */
+    @media (prefers-contrast: high) {
+        .language-switcher-btn {
+            border: 2px solid currentColor !important;
+        }
+        
+        .language-menu {
+            border: 2px solid currentColor !important;
+        }
+    }
+    
+    /* Reduced Motion Support */
+    @media (prefers-reduced-motion: reduce) {
+        .language-switcher-btn,
+        .language-menu li a,
+        .dropdown-arrow {
+            transition: none !important;
+        }
+        
+        .language-menu {
+            animation: none !important;
+        }
+    }
+    
+    /* Mobile Optimizations */
     @media (max-width: 768px) {
         .language-menu {
             position: fixed !important;
-            right: 1rem;
-            left: auto;
-            width: calc(100vw - 2rem);
-            max-width: 280px;
+            right: 16px !important;
+            left: auto !important;
+            width: calc(100vw - 32px) !important;
+            max-width: 280px !important;
             z-index: 1000 !important;
-        }
-        
-        .mobile-menu-language-switcher .language-menu {
-            position: absolute !important;
-            bottom: 100%;
-            right: 0;
-            left: auto;
-            width: 200px;
-            z-index: 1000 !important;
-        }
-    }
-    
-    @media (max-width: 768px) {
-        .language-switcher-container {
-            margin: 0.5rem 0;
-            width: 100%;
         }
         
         .language-switcher-btn {
-            width: 100%;
-            justify-content: space-between;
-            padding: 0.75rem 1rem;
+            min-height: 44px; /* iOS touch target */
+        }
+    }
+    
+    /* Dark Mode Support (if needed) */
+    @media (prefers-color-scheme: dark) {
+        .language-menu {
+            background: #1f2937 !important;
+            border-color: #374151 !important;
         }
         
-        /* Ensure mobile dropdowns work properly */
-        .dropdown:focus-within .dropdown-content,
-        .dropdown:hover .dropdown-content,
-        .dropdown.dropdown-open .dropdown-content {
-            display: block !important;
-            opacity: 1 !important;
-            visibility: visible !important;
+        .language-menu li a {
+            color: #e5e7eb !important;
         }
-    }
-    
-    /* Fix for DaisyUI dropdown behavior */
-    .dropdown:focus-within .dropdown-content,
-    .dropdown-content:focus-within {
-        display: block;
-        opacity: 1;
-        visibility: visible;
-    }
-    
-    /* Improve dropdown accessibility */
-    .language-toggle:focus + .language-menu,
-    .language-menu:focus-within {
-        display: block !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-    }
-    
-    /* Better click handling */
-    .language-switcher-btn:active,
-    .language-switcher-btn:focus {
-        outline: none;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+        
+        .language-menu li a:hover {
+            background: #374151 !important;
+            color: #f9fafb !important;
+        }
     }
 </style>
 
 <script>
-    // Initialize language switcher - handles multiple instances
+    // Enhanced Language Switcher with Better UX
     function initLanguageSwitcher() {
         try {
-            console.log('Initializing language switcher...');
+            console.log('Initializing enhanced language switcher...');
             
-            // Fetch available languages
+            // Fetch available languages with error handling
             fetch('/api/languages')
                 .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
                     console.log('Languages response status:', response.status);
                     return response.json();
                 })
@@ -274,66 +326,117 @@
                     const languages = data.languages || {};
                     const currentLanguage = data.current_language || 'en';
                     
-                    // Update all language menus (handle multiple instances)
+                    // Update all language menus with enhanced UI
                     const languageMenus = document.querySelectorAll('.language-menu');
                     languageMenus.forEach((languageMenu, index) => {
                         if (languageMenu) {
                             languageMenu.innerHTML = ''; // Clear existing items
                             let itemCount = 0;
-                            for (const [code, name] of Object.entries(languages)) {
+                            
+                            // Sort languages alphabetically for better UX
+                            const sortedLanguages = Object.entries(languages).sort((a, b) => a[1].localeCompare(b[1]));
+                            
+                            for (const [code, name] of sortedLanguages) {
                                 const li = document.createElement('li');
                                 li.style.display = 'block';
                                 li.style.listStyle = 'none';
+                                li.style.margin = '0';
+                                li.style.padding = '0';
                                 
                                 const a = document.createElement('a');
                                 a.textContent = name;
                                 a.href = 'javascript:void(0)';
                                 a.setAttribute('data-lang', code);
+                                a.setAttribute('role', 'menuitem');
+                                a.setAttribute('tabindex', '-1');
+                                
+                                // Enhanced styling
                                 a.style.display = 'flex';
                                 a.style.alignItems = 'center';
-                                a.style.padding = '0.75rem 1rem';
-                                a.style.color = '#475569';
+                                a.style.justifyContent = 'space-between';
+                                a.style.padding = '10px 16px';
+                                a.style.color = '#374151';
                                 a.style.cursor = 'pointer';
-                                a.style.borderRadius = '0.5rem';
+                                a.style.borderRadius = '6px';
                                 a.style.transition = 'all 0.15s ease';
                                 a.style.textDecoration = 'none';
-                                a.style.margin = '0.25rem 0.5rem';
+                                a.style.margin = '2px 4px';
+                                a.style.fontSize = '14px';
+                                a.style.fontWeight = '500';
+                                a.style.position = 'relative';
                                 
-                                // Add click handler
+                                // Add language code for additional context
+                                const langCode = document.createElement('span');
+                                langCode.textContent = code.toUpperCase();
+                                langCode.style.fontSize = '11px';
+                                langCode.style.fontWeight = '600';
+                                langCode.style.color = 'rgba(107, 114, 128, 0.8)';
+                                langCode.style.marginLeft = '8px';
+                                a.appendChild(langCode);
+                                
+                                // Enhanced click handler with better feedback
                                 a.addEventListener('click', function(e) {
                                     e.preventDefault();
                                     e.stopPropagation();
                                     const lang = this.getAttribute('data-lang');
                                     console.log('Language clicked:', lang, '(' + name + ')');
-                                    changeLanguage(lang);
                                     
-                                    // Close all dropdowns
+                                    // Provide immediate visual feedback
+                                    this.style.background = '#dbeafe';
+                                    this.style.color = '#1e40af';
+                                    
+                                    // Close all dropdowns immediately
                                     document.querySelectorAll('.language-menu').forEach(menu => {
-                                        menu.style.display = 'none';
+                                        menu.classList.remove('opacity-100', 'visible');
+                                        menu.classList.add('opacity-0', 'invisible');
                                     });
                                     document.querySelectorAll('.dropdown').forEach(dropdown => {
                                         dropdown.classList.remove('dropdown-open');
                                     });
+                                    
+                                    // Update button state
+                                    document.querySelectorAll('.language-switcher-btn').forEach(btn => {
+                                        btn.classList.add('loading');
+                                        btn.setAttribute('aria-expanded', 'false');
+                                    });
+                                    
+                                    changeLanguage(lang);
                                 });
                                 
-                                // Hover effects
+                                // Enhanced hover effects
                                 a.addEventListener('mouseenter', function() {
-                                    this.style.background = '#3b82f6';
-                                    this.style.color = 'white';
+                                    if (!this.classList.contains('active')) {
+                                        this.style.background = 'linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)';
+                                        this.style.color = '#111827';
+                                        this.style.transform = 'translateX(2px)';
+                                    }
                                 });
                                 
                                 a.addEventListener('mouseleave', function() {
                                     if (!this.classList.contains('active')) {
                                         this.style.background = 'transparent';
-                                        this.style.color = '#475569';
+                                        this.style.color = '#374151';
+                                        this.style.transform = 'translateX(0)';
                                     }
                                 });
                                 
+                                // Active state styling
                                 if (code === currentLanguage) {
                                     a.classList.add('active');
-                                    a.style.background = '#1e40af';
+                                    a.style.background = 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)';
                                     a.style.color = 'white';
-                                    a.style.fontWeight = '700';
+                                    a.style.fontWeight = '600';
+                                    a.style.boxShadow = '0 2px 4px rgba(59, 130, 246, 0.2)';
+                                    
+                                    // Add checkmark
+                                    const checkmark = document.createElement('span');
+                                    checkmark.textContent = '✓';
+                                    checkmark.style.position = 'absolute';
+                                    checkmark.style.right = '12px';
+                                    checkmark.style.color = 'white';
+                                    checkmark.style.fontWeight = 'bold';
+                                    checkmark.style.fontSize = '12px';
+                                    a.appendChild(checkmark);
                                 }
                                 
                                 li.appendChild(a);
@@ -355,29 +458,64 @@
                 })
                 .catch(error => {
                     console.error('Error loading languages:', error);
-                    // Fallback: show default languages
-                    const defaultLanguages = {
+                    
+                    // Enhanced fallback with better error handling
+                    const fallbackLanguages = {
                         'en': 'English',
                         'fr': 'Français', 
-                        'es': 'Español',
+                        'sw': 'Swahili',
                         'pt': 'Português',
-                        'sw': 'Swahili'
+                        'es': 'Español',
+                        'tr': 'Türkçe',
+                        'hi': 'हिंदी',
+                        'zh': '中文',
+                        'ar': 'العربية',
+                        'vi': 'Tiếng Việt'
                     };
                     
                     const languageMenus = document.querySelectorAll('.language-menu');
                     languageMenus.forEach((languageMenu) => {
                         if (languageMenu && languageMenu.children.length === 0) {
-                            for (const [code, name] of Object.entries(defaultLanguages)) {
+                            const sortedLanguages = Object.entries(fallbackLanguages).sort((a, b) => a[1].localeCompare(b[1]));
+                            
+                            for (const [code, name] of sortedLanguages) {
                                 const li = document.createElement('li');
                                 const a = document.createElement('a');
                                 a.textContent = name;
                                 a.href = 'javascript:void(0)';
                                 a.setAttribute('data-lang', code);
+                                a.setAttribute('role', 'menuitem');
+                                a.setAttribute('tabindex', '-1');
+                                
+                                // Add language code
+                                const langCode = document.createElement('span');
+                                langCode.textContent = code.toUpperCase();
+                                langCode.style.fontSize = '11px';
+                                langCode.style.fontWeight = '600';
+                                langCode.style.color = 'rgba(107, 114, 128, 0.8)';
+                                langCode.style.marginLeft = '8px';
+                                a.appendChild(langCode);
+                                
                                 a.style.cursor = 'pointer';
                                 a.addEventListener('click', function(e) {
                                     e.preventDefault();
                                     e.stopPropagation();
                                     const lang = this.getAttribute('data-lang');
+                                    
+                                    // Visual feedback
+                                    this.style.background = '#dbeafe';
+                                    
+                                    // Close dropdowns
+                                    document.querySelectorAll('.language-menu').forEach(menu => {
+                                        menu.classList.remove('opacity-100', 'visible');
+                                        menu.classList.add('opacity-0', 'invisible');
+                                    });
+                                    
+                                    // Update button state
+                                    document.querySelectorAll('.language-switcher-btn').forEach(btn => {
+                                        btn.classList.add('loading');
+                                    });
+                                    
                                     changeLanguage(lang);
                                 });
                                 li.appendChild(a);
@@ -385,20 +523,37 @@
                             }
                         }
                     });
+                    
+                    // Show error state briefly
+                    const currentLangLabels = document.querySelectorAll('.current-lang-label');
+                    currentLangLabels.forEach(label => {
+                        label.textContent = '⚠️ Error';
+                        setTimeout(() => {
+                            label.textContent = 'English';
+                        }, 2000);
+                    });
                 });
         } catch (error) {
             console.error('Error initializing language switcher:', error);
         }
     }
     
-    // Change language function
+    // Enhanced changeLanguage function with better UX
     function changeLanguage(langCode) {
         console.log('Changing language to:', langCode);
         
-        // Show loading state
-        const currentLangLabels = document.querySelectorAll('.current-lang-label');
-        currentLangLabels.forEach(label => {
-            label.textContent = 'Changing...';
+        // Enhanced loading state
+        const buttons = document.querySelectorAll('.language-switcher-btn');
+        const currentLabels = document.querySelectorAll('.current-lang-label');
+        
+        buttons.forEach(btn => {
+            btn.classList.add('loading');
+            btn.setAttribute('disabled', 'true');
+            btn.setAttribute('aria-expanded', 'false');
+        });
+        
+        currentLabels.forEach(label => {
+            label.textContent = '⏳';
         });
         
         try {
@@ -411,13 +566,16 @@
             })
             .then(response => {
                 console.log('Change language response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
                 return response.json();
             })
             .then(result => {
                 if (result.success) {
                     console.log('Language changed successfully, updating page...');
                     
-                    // Update labels immediately
+                    // Enhanced success feedback
                     const languageNames = {
                         'en': 'English',
                         'fr': 'Français',
@@ -431,169 +589,192 @@
                         'vi': 'Tiếng Việt'
                     };
                     
-                    currentLangLabels.forEach(label => {
+                    // Success animation
+                    buttons.forEach(btn => {
+                        btn.classList.remove('loading');
+                        btn.classList.add('success');
+                        btn.removeAttribute('disabled');
+                        
+                        setTimeout(() => {
+                            btn.classList.remove('success');
+                        }, 1000);
+                    });
+                    
+                    currentLabels.forEach(label => {
                         label.textContent = languageNames[langCode] || langCode.toUpperCase();
                     });
                     
-                    // Update active states
+                    // Update active states with animation
                     document.querySelectorAll('.language-menu a').forEach(link => {
-                        link.classList.remove('active', 'font-bold');
+                        link.classList.remove('active');
+                        link.style.background = 'transparent';
+                        link.style.color = '#374151';
+                        link.style.fontWeight = '500';
+                        
                         if (link.getAttribute('data-lang') === langCode) {
-                            link.classList.add('active', 'font-bold');
+                            link.classList.add('active');
+                            link.style.background = 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)';
+                            link.style.color = 'white';
+                            link.style.fontWeight = '600';
                         }
                     });
                     
-                    // Update the page using i18n system or reload
+                    // Page update with better handling
                     if (window.i18n && typeof window.i18n.setLanguage === 'function') {
                         console.log('Using i18n.setLanguage to update page');
                         window.i18n.setLanguage(langCode);
                     } else {
                         console.log('i18n system not available, reloading page after delay');
+                        // Show success message before reload
+                        currentLabels.forEach(label => {
+                            label.textContent = '✅ ' + (languageNames[langCode] || langCode.toUpperCase());
+                        });
+                        
                         setTimeout(() => {
                             window.location.reload();
-                        }, 500);
+                        }, 800);
                     }
                 } else {
                     console.error('Error response from change-language endpoint:', result);
-                    currentLangLabels.forEach(label => {
-                        label.textContent = 'Error';
-                    });
-                    setTimeout(() => {
-                        initLanguageSwitcher(); // Reset
-                    }, 2000);
+                    throw new Error(result.message || 'Unknown error');
                 }
             })
             .catch(error => {
                 console.error('Error changing language:', error);
-                currentLangLabels.forEach(label => {
-                    label.textContent = 'Error';
+                
+                // Enhanced error handling
+                buttons.forEach(btn => {
+                    btn.classList.remove('loading');
+                    btn.classList.add('error');
+                    btn.removeAttribute('disabled');
+                    
+                    setTimeout(() => {
+                        btn.classList.remove('error');
+                    }, 2000);
                 });
-                setTimeout(() => {
-                    initLanguageSwitcher(); // Reset
-                }, 2000);
+                
+                currentLabels.forEach(label => {
+                    label.textContent = '❌ Error';
+                    
+                    setTimeout(() => {
+                        initLanguageSwitcher(); // Reset
+                    }, 2000);
+                });
             });
         } catch (error) {
             console.error('Error in changeLanguage function:', error);
-            currentLangLabels.forEach(label => {
-                label.textContent = 'Error';
+            
+            // Fallback error state
+            buttons.forEach(btn => {
+                btn.classList.remove('loading');
+                btn.removeAttribute('disabled');
+            });
+            
+            currentLabels.forEach(label => {
+                label.textContent = '❌ Error';
             });
         }
-    }    // Make changeLanguage globally available
-    window.changeLanguage = changeLanguage;
+    }
     
-    // Add dropdown behavior handlers
+    // Enhanced dropdown behavior with better accessibility
     function setupDropdownBehavior() {
-        console.log('Setting up dropdown behavior...');
+        console.log('Setting up enhanced dropdown behavior...');
         
-        // Handle dropdown toggle behavior with improved button handling
-        document.querySelectorAll('.language-toggle').forEach((toggle, index) => {
-            console.log(`Setting up click handler for toggle ${index + 1}`);
+        // Enhanced button handling
+        document.querySelectorAll('.language-switcher-btn').forEach((button, index) => {
+            console.log(`Setting up enhanced button ${index + 1}`);
             
-            // Ensure button is clickable
-            toggle.style.pointerEvents = 'auto';
-            toggle.style.cursor = 'pointer';
+            // Ensure button is accessible
+            button.setAttribute('aria-haspopup', 'true');
+            button.setAttribute('aria-expanded', 'false');
             
-            // Remove any existing event listeners by cloning the element
-            const newToggle = toggle.cloneNode(true);
-            toggle.parentNode.replaceChild(newToggle, toggle);
-            
-            newToggle.addEventListener('click', function(e) {
-                console.log(`Language switcher button ${index + 1} clicked!`);
+            // Enhanced click handler
+            button.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
                 
                 const dropdown = this.closest('.dropdown');
                 const menu = dropdown.querySelector('.language-menu');
+                const isExpanded = this.getAttribute('aria-expanded') === 'true';
                 
-                if (!dropdown || !menu) {
-                    console.error('Error: Could not find dropdown or menu elements');
-                    return;
-                }
+                console.log(`Button ${index + 1} clicked, expanded:`, isExpanded);
                 
-                // Close other dropdowns first
+                // Close other dropdowns
                 document.querySelectorAll('.dropdown').forEach(otherDropdown => {
                     if (otherDropdown !== dropdown) {
+                        const otherButton = otherDropdown.querySelector('.language-switcher-btn');
                         const otherMenu = otherDropdown.querySelector('.language-menu');
+                        
+                        if (otherButton) otherButton.setAttribute('aria-expanded', 'false');
                         if (otherMenu) {
-                            otherMenu.style.display = 'none';
-                            otherDropdown.classList.remove('dropdown-open');
+                            otherMenu.classList.remove('opacity-100', 'visible');
+                            otherMenu.classList.add('opacity-0', 'invisible');
                         }
+                        otherDropdown.classList.remove('dropdown-open');
                     }
                 });
                 
                 // Toggle current dropdown
-                const isVisible = menu.style.display === 'block';
-                if (isVisible) {
-                    menu.style.display = 'none';
+                if (isExpanded) {
+                    // Close
+                    this.setAttribute('aria-expanded', 'false');
+                    if (menu) {
+                        menu.classList.remove('opacity-100', 'visible');
+                        menu.classList.add('opacity-0', 'invisible');
+                    }
                     dropdown.classList.remove('dropdown-open');
                     console.log(`Dropdown ${index + 1} closed`);
                 } else {
-                    menu.style.display = 'block';
-                    menu.style.visibility = 'visible';
-                    menu.style.opacity = '1';
-                    dropdown.classList.add('dropdown-open');
-                    console.log(`Dropdown ${index + 1} opened with ${menu.children.length} items`);
-                    
-                    // Log menu visibility for debugging
-                    console.log('Menu is visible:', menu.offsetParent !== null);
-                    console.log('Menu children:', menu.children.length);
-                    
-                    // Position the menu properly
-                    const rect = this.getBoundingClientRect();
-                    const menuRect = menu.getBoundingClientRect();
-                    
-                    console.log('Button rect:', rect);
-                    console.log('Menu will be at:', rect.bottom + 'px from top');
-                    
-                    // Adjust positioning if menu would go off-screen
-                    if (rect.bottom + 300 > window.innerHeight) {
-                        menu.style.bottom = 'calc(100% + 0.5rem)';
-                        menu.style.top = 'auto';
-                        menu.style.marginBottom = '0';
-                        menu.style.marginTop = '0';
-                        console.log('Opening menu UPWARD');
-                    } else {
-                        menu.style.top = 'calc(100% + 0.5rem)';
-                        menu.style.bottom = 'auto';
-                        menu.style.marginTop = '0';
-                        menu.style.marginBottom = '0';
-                        console.log('Opening menu DOWNWARD');
+                    // Open
+                    this.setAttribute('aria-expanded', 'true');
+                    if (menu) {
+                        menu.classList.remove('opacity-0', 'invisible');
+                        menu.classList.add('opacity-100', 'visible');
                     }
+                    dropdown.classList.add('dropdown-open');
+                    console.log(`Dropdown ${index + 1} opened`);
                     
-                    // Ensure menu is not hidden by overflow
-                    menu.style.position = 'absolute';
-                    menu.style.zIndex = '1000';
-                    menu.style.overflow = 'visible';
+                    // Focus management
+                    setTimeout(() => {
+                        const firstItem = menu.querySelector('a');
+                        if (firstItem) firstItem.focus();
+                    }, 100);
                 }
             });
             
-            // Add keyboard support
-            newToggle.addEventListener('keydown', function(e) {
+            // Keyboard support
+            button.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
-                    console.log(`Language switcher keyboard activated: ${e.key}`);
                     this.click();
+                } else if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    if (this.getAttribute('aria-expanded') !== 'true') {
+                        this.click();
+                    }
+                } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    this.setAttribute('aria-expanded', 'false');
+                    const menu = this.closest('.dropdown').querySelector('.language-menu');
+                    if (menu) {
+                        menu.classList.remove('opacity-100', 'visible');
+                        menu.classList.add('opacity-0', 'invisible');
+                    }
+                    this.closest('.dropdown').classList.remove('dropdown-open');
                 }
             });
         });
         
-        // Close dropdowns when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('.language-switcher-container')) {
-                document.querySelectorAll('.language-menu').forEach(menu => {
-                    menu.style.display = 'none';
-                });
-                document.querySelectorAll('.dropdown').forEach(dropdown => {
-                    dropdown.classList.remove('dropdown-open');
-                });
-            }
-        });
-        
-        // Handle escape key
+        // Enhanced menu item keyboard navigation
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
+                // Close all dropdowns
+                document.querySelectorAll('.language-switcher-btn').forEach(btn => {
+                    btn.setAttribute('aria-expanded', 'false');
+                });
                 document.querySelectorAll('.language-menu').forEach(menu => {
-                    menu.style.display = 'none';
+                    menu.classList.remove('opacity-100', 'visible');
+                    menu.classList.add('opacity-0', 'invisible');
                 });
                 document.querySelectorAll('.dropdown').forEach(dropdown => {
                     dropdown.classList.remove('dropdown-open');
@@ -601,14 +782,39 @@
             }
         });
         
-        console.log('Dropdown behavior setup completed');
+        // Click outside to close
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.language-switcher-container')) {
+                document.querySelectorAll('.language-switcher-btn').forEach(btn => {
+                    btn.setAttribute('aria-expanded', 'false');
+                });
+                document.querySelectorAll('.language-menu').forEach(menu => {
+                    menu.classList.remove('opacity-100', 'visible');
+                    menu.classList.add('opacity-0', 'invisible');
+                });
+                document.querySelectorAll('.dropdown').forEach(dropdown => {
+                    dropdown.classList.remove('dropdown-open');
+                });
+            }
+        });
+        
+        console.log('Enhanced dropdown behavior setup completed');
     }
     
-    // Initialize everything
+    // Initialize everything with better error handling
     function initLanguageSwitcherComplete() {
-        initLanguageSwitcher();
-        setupDropdownBehavior();
+        try {
+            initLanguageSwitcher();
+            setupDropdownBehavior();
+            console.log('Language switcher initialization completed successfully');
+        } catch (error) {
+            console.error('Error during language switcher initialization:', error);
+        }
     }
+    
+    // Make functions globally available
+    window.changeLanguage = changeLanguage;
+    window.initLanguageSwitcher = initLanguageSwitcherComplete;
     
     // Initialize on DOM ready
     if (document.readyState === 'loading') {

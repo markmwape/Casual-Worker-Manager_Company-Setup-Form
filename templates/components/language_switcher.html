@@ -8,7 +8,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
             </svg>
         </button>
-        <ul class="dropdown-content z-[300] menu p-2 shadow-xl bg-white border border-gray-200 rounded-lg w-56 mt-2 language-menu" style="display: none;">
+        <ul class="dropdown-content z-[1000] menu p-2 shadow-2xl bg-white border border-gray-200 rounded-lg w-56 mt-2 language-menu" style="display: none; position: absolute;">
             <!-- Populated by JavaScript -->
         </ul>
     </div>
@@ -19,10 +19,13 @@
         display: flex;
         align-items: center;
         gap: 0.5rem;
+        position: relative;
+        z-index: 100;
     }
     
     .language-switcher-container .dropdown {
         position: relative;
+        overflow: visible !important;
     }
     
     /* Modern button styling */
@@ -70,55 +73,83 @@
         max-height: 400px;
         overflow-y: auto;
         animation: slideDown 0.2s ease-out;
+        position: absolute !important;
+        z-index: 1000 !important;
     }
     
-    @keyframes slideDown {
-        from {
-            opacity: 0;
-            transform: translateY(-10px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    /* Ensure menu is visible */
+    .language-menu {
+        position: absolute !important;
+        z-index: 1000 !important;
+        background: white !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 0.5rem !important;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+        padding: 0.5rem 0 !important;
+        min-width: 200px !important;
     }
     
-    /* Menu item styling */
-    .language-switcher-container .dropdown-content li a {
-        padding: 0.75rem 1rem;
-        border-radius: 0.5rem;
-        transition: all 0.15s ease;
-        font-weight: 500;
-        color: #475569;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
+    /* Show menu when it has display block */
+    .language-menu[style*="display: block"] {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
     }
     
-    .language-switcher-container .dropdown-content li a:hover {
-        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-        color: white;
-        transform: translateX(4px);
+    /* Menu items must be visible */
+    .language-menu li {
+        display: block !important;
+        list-style: none !important;
     }
     
-    .language-switcher-container .dropdown-content li a.active {
-        background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
-        color: white;
-        font-weight: 700;
+    .language-menu li a {
+        display: flex !important;
+        align-items: center !important;
+        padding: 0.75rem 1rem !important;
+        color: #475569 !important;
+        text-decoration: none !important;
+        cursor: pointer !important;
+        transition: all 0.15s ease !important;
+        border-radius: 0.5rem !important;
+        margin: 0 0.5rem !important;
     }
     
-    /* Make dropdown open upward only in sidebar */
+    .language-menu li a:hover {
+        background: #3b82f6 !important;
+        color: white !important;
+        transform: translateX(4px) !important;
+    }
+    
+    .language-menu li a.active {
+        background: #1e40af !important;
+        color: white !important;
+        font-weight: 700 !important;
+    }
+    
+    /* Sidebar language switcher - ensure dropdown is visible */
+    .sidebar-language-switcher {
+        position: relative;
+        z-index: 200;
+        overflow: visible !important;
+    }
+    
     .sidebar-language-switcher .dropdown {
         position: relative;
+        overflow: visible !important;
     }
     
     .sidebar-language-switcher .language-menu {
-        bottom: 100%;
+        bottom: calc(100% + 0.5rem) !important;
         top: auto !important;
-        margin-bottom: 0.5rem;
+        right: 0;
+        left: auto;
+        margin-bottom: 0;
         margin-top: 0;
         animation: slideUp 0.2s ease-out;
-        z-index: 400;
+        z-index: 2000 !important;
+        position: absolute !important;
+        overflow: visible !important;
     }
     
     @keyframes slideUp {
@@ -138,12 +169,13 @@
     }
     
     .mobile-menu-language-switcher .language-menu {
-        bottom: 100%;
+        bottom: 100% !important;
         top: auto !important;
         margin-bottom: 0.5rem;
         margin-top: 0;
         animation: slideUp 0.2s ease-out;
-        z-index: 500;
+        z-index: 1000 !important;
+        position: absolute !important;
     }
     
     /* Fix mobile menu dropdown positioning */
@@ -154,8 +186,8 @@
     
     /* Ensure dropdowns are visible above everything */
     .language-menu {
-        position: absolute;
-        z-index: 300;
+        position: absolute !important;
+        z-index: 1000 !important;
     }
     
     /* Fix dropdown on mobile screens */
@@ -166,7 +198,7 @@
             left: auto;
             width: calc(100vw - 2rem);
             max-width: 280px;
-            z-index: 1000;
+            z-index: 1000 !important;
         }
         
         .mobile-menu-language-switcher .language-menu {
@@ -175,7 +207,7 @@
             right: 0;
             left: auto;
             width: 200px;
-            z-index: 1000;
+            z-index: 1000 !important;
         }
     }
     
@@ -250,11 +282,22 @@
                             let itemCount = 0;
                             for (const [code, name] of Object.entries(languages)) {
                                 const li = document.createElement('li');
+                                li.style.display = 'block';
+                                li.style.listStyle = 'none';
+                                
                                 const a = document.createElement('a');
                                 a.textContent = name;
                                 a.href = 'javascript:void(0)';
                                 a.setAttribute('data-lang', code);
+                                a.style.display = 'flex';
+                                a.style.alignItems = 'center';
+                                a.style.padding = '0.75rem 1rem';
+                                a.style.color = '#475569';
                                 a.style.cursor = 'pointer';
+                                a.style.borderRadius = '0.5rem';
+                                a.style.transition = 'all 0.15s ease';
+                                a.style.textDecoration = 'none';
+                                a.style.margin = '0.25rem 0.5rem';
                                 
                                 // Add click handler
                                 a.addEventListener('click', function(e) {
@@ -265,16 +308,32 @@
                                     changeLanguage(lang);
                                     
                                     // Close all dropdowns
+                                    document.querySelectorAll('.language-menu').forEach(menu => {
+                                        menu.style.display = 'none';
+                                    });
                                     document.querySelectorAll('.dropdown').forEach(dropdown => {
-                                        if (dropdown.querySelector('input[type="checkbox"]')) {
-                                            dropdown.querySelector('input[type="checkbox"]').checked = false;
-                                        }
-                                        dropdown.blur();
+                                        dropdown.classList.remove('dropdown-open');
                                     });
                                 });
                                 
+                                // Hover effects
+                                a.addEventListener('mouseenter', function() {
+                                    this.style.background = '#3b82f6';
+                                    this.style.color = 'white';
+                                });
+                                
+                                a.addEventListener('mouseleave', function() {
+                                    if (!this.classList.contains('active')) {
+                                        this.style.background = 'transparent';
+                                        this.style.color = '#475569';
+                                    }
+                                });
+                                
                                 if (code === currentLanguage) {
-                                    a.classList.add('active', 'font-bold');
+                                    a.classList.add('active');
+                                    a.style.background = '#1e40af';
+                                    a.style.color = 'white';
+                                    a.style.fontWeight = '700';
                                 }
                                 
                                 li.appendChild(a);
@@ -470,25 +529,41 @@
                     console.log(`Dropdown ${index + 1} closed`);
                 } else {
                     menu.style.display = 'block';
+                    menu.style.visibility = 'visible';
+                    menu.style.opacity = '1';
                     dropdown.classList.add('dropdown-open');
-                    console.log(`Dropdown ${index + 1} opened`);
+                    console.log(`Dropdown ${index + 1} opened with ${menu.children.length} items`);
+                    
+                    // Log menu visibility for debugging
+                    console.log('Menu is visible:', menu.offsetParent !== null);
+                    console.log('Menu children:', menu.children.length);
                     
                     // Position the menu properly
                     const rect = this.getBoundingClientRect();
                     const menuRect = menu.getBoundingClientRect();
                     
+                    console.log('Button rect:', rect);
+                    console.log('Menu will be at:', rect.bottom + 'px from top');
+                    
                     // Adjust positioning if menu would go off-screen
-                    if (rect.bottom + menuRect.height > window.innerHeight) {
-                        menu.style.bottom = '100%';
+                    if (rect.bottom + 300 > window.innerHeight) {
+                        menu.style.bottom = 'calc(100% + 0.5rem)';
                         menu.style.top = 'auto';
-                        menu.style.marginBottom = '0.5rem';
-                        menu.style.marginTop = '0';
-                    } else {
-                        menu.style.top = '100%';
-                        menu.style.bottom = 'auto';
-                        menu.style.marginTop = '0.5rem';
                         menu.style.marginBottom = '0';
+                        menu.style.marginTop = '0';
+                        console.log('Opening menu UPWARD');
+                    } else {
+                        menu.style.top = 'calc(100% + 0.5rem)';
+                        menu.style.bottom = 'auto';
+                        menu.style.marginTop = '0';
+                        menu.style.marginBottom = '0';
+                        console.log('Opening menu DOWNWARD');
                     }
+                    
+                    // Ensure menu is not hidden by overflow
+                    menu.style.position = 'absolute';
+                    menu.style.zIndex = '1000';
+                    menu.style.overflow = 'visible';
                 }
             });
             

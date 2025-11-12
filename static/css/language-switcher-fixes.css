@@ -1,0 +1,137 @@
+/* Language Switcher Visibility Fix - Standalone CSS */
+
+/* Global ensures for language switcher menus */
+.language-menu {
+    position: absolute !important;
+    z-index: 1000 !important;
+    background: white !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 0.5rem !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+    padding: 0.5rem 0 !important;
+    min-width: 200px !important;
+    display: none;
+    visibility: hidden;
+    opacity: 0;
+    transition: all 0.2s ease-out;
+}
+
+/* When menu should be visible */
+.language-menu[style*="display: block"] {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+
+/* Menu items styling */
+.language-menu li {
+    display: block !important;
+    list-style: none !important;
+}
+
+.language-menu li a {
+    display: flex !important;
+    align-items: center !important;
+    padding: 0.75rem 1rem !important;
+    color: #475569 !important;
+    text-decoration: none !important;
+    cursor: pointer !important;
+    transition: all 0.15s ease !important;
+    border-radius: 0.5rem !important;
+    margin: 0.25rem 0.5rem !important;
+    white-space: nowrap;
+}
+
+.language-menu li a:hover {
+    background: #3b82f6 !important;
+    color: white !important;
+    transform: translateX(4px) !important;
+}
+
+.language-menu li a.active {
+    background: #1e40af !important;
+    color: white !important;
+    font-weight: 700 !important;
+}
+
+/* Desktop dropdown - default behavior */
+.language-switcher-container .language-menu {
+    top: calc(100% + 0.5rem) !important;
+    left: 0 !important;
+    right: auto !important;
+}
+
+/* Sidebar dropdown - open upward */
+.sidebar-language-switcher .language-menu {
+    bottom: calc(100% + 0.5rem) !important;
+    top: auto !important;
+    right: 0 !important;
+    left: auto !important;
+    z-index: 2000 !important;
+}
+
+/* Mobile menu dropdown - open upward */
+.mobile-menu-language-switcher .language-menu {
+    bottom: calc(100% + 0.5rem) !important;
+    top: auto !important;
+    right: 0 !important;
+    left: auto !important;
+    z-index: 1500 !important;
+}
+
+/* Ensure containers don't hide dropdowns */
+.language-switcher-container,
+.language-switcher-container .dropdown,
+.sidebar-language-switcher,
+.sidebar-language-switcher .dropdown,
+.mobile-menu-language-switcher,
+.mobile-menu-language-switcher .dropdown {
+    position: relative;
+    overflow: visible !important;
+    z-index: auto;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .language-menu {
+        position: fixed !important;
+        width: calc(100vw - 2rem) !important;
+        max-width: 280px;
+        right: 1rem !important;
+        left: auto !important;
+        z-index: 1000 !important;
+    }
+}
+
+/* Animation for dropdown open */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.language-menu[style*="display: block"] {
+    animation: slideDown 0.2s ease-out;
+}
+
+.sidebar-language-switcher .language-menu[style*="display: block"],
+.mobile-menu-language-switcher .language-menu[style*="display: block"] {
+    animation: slideUp 0.2s ease-out;
+}

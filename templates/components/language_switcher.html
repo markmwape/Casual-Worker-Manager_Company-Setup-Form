@@ -1,14 +1,14 @@
 <!-- Language Switcher Component -->
 <div class="language-switcher-container">
     <div class="dropdown dropdown-end">
-        <label tabindex="0" class="btn btn-sm gap-2 language-switcher-btn language-toggle">
+        <button type="button" class="btn btn-sm gap-2 language-switcher-btn language-toggle">
             <span class="text-xl">🌐</span>
             <span class="current-lang-label font-semibold text-sm">English</span>
-            <svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-4 h-4 transition-transform dropdown-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
             </svg>
-        </label>
-        <ul tabindex="0" class="dropdown-content z-[300] menu p-2 shadow-xl bg-white border border-gray-200 rounded-lg w-56 mt-2 language-menu">
+        </button>
+        <ul class="dropdown-content z-[300] menu p-2 shadow-xl bg-white border border-gray-200 rounded-lg w-56 mt-2 language-menu" style="display: none;">
             <!-- Populated by JavaScript -->
         </ul>
     </div>
@@ -48,6 +48,21 @@
     .language-switcher-btn:active {
         transform: translateY(0);
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Dropdown arrow animation */
+    .dropdown-arrow {
+        transition: transform 0.2s ease;
+    }
+    
+    .dropdown.dropdown-open .dropdown-arrow {
+        transform: rotate(180deg);
+    }
+    
+    /* Button focus state */
+    .language-switcher-btn:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
     }
     
     /* Dropdown menu styling */
@@ -409,14 +424,32 @@
     
     // Add dropdown behavior handlers
     function setupDropdownBehavior() {
-        // Handle dropdown toggle behavior
-        document.querySelectorAll('.language-toggle').forEach(toggle => {
-            toggle.addEventListener('click', function(e) {
+        console.log('Setting up dropdown behavior...');
+        
+        // Handle dropdown toggle behavior with improved button handling
+        document.querySelectorAll('.language-toggle').forEach((toggle, index) => {
+            console.log(`Setting up click handler for toggle ${index + 1}`);
+            
+            // Ensure button is clickable
+            toggle.style.pointerEvents = 'auto';
+            toggle.style.cursor = 'pointer';
+            
+            // Remove any existing event listeners by cloning the element
+            const newToggle = toggle.cloneNode(true);
+            toggle.parentNode.replaceChild(newToggle, toggle);
+            
+            newToggle.addEventListener('click', function(e) {
+                console.log(`Language switcher button ${index + 1} clicked!`);
                 e.preventDefault();
                 e.stopPropagation();
                 
                 const dropdown = this.closest('.dropdown');
                 const menu = dropdown.querySelector('.language-menu');
+                
+                if (!dropdown || !menu) {
+                    console.error('Error: Could not find dropdown or menu elements');
+                    return;
+                }
                 
                 // Close other dropdowns first
                 document.querySelectorAll('.dropdown').forEach(otherDropdown => {
@@ -424,29 +457,47 @@
                         const otherMenu = otherDropdown.querySelector('.language-menu');
                         if (otherMenu) {
                             otherMenu.style.display = 'none';
+                            otherDropdown.classList.remove('dropdown-open');
                         }
                     }
                 });
                 
                 // Toggle current dropdown
-                if (menu) {
-                    const isVisible = menu.style.display === 'block';
-                    menu.style.display = isVisible ? 'none' : 'block';
+                const isVisible = menu.style.display === 'block';
+                if (isVisible) {
+                    menu.style.display = 'none';
+                    dropdown.classList.remove('dropdown-open');
+                    console.log(`Dropdown ${index + 1} closed`);
+                } else {
+                    menu.style.display = 'block';
+                    dropdown.classList.add('dropdown-open');
+                    console.log(`Dropdown ${index + 1} opened`);
                     
-                    if (!isVisible) {
-                        // Position the menu properly
-                        const rect = toggle.getBoundingClientRect();
-                        const menuRect = menu.getBoundingClientRect();
-                        
-                        // Adjust positioning if menu would go off-screen
-                        if (rect.bottom + menuRect.height > window.innerHeight) {
-                            menu.style.bottom = '100%';
-                            menu.style.top = 'auto';
-                        } else {
-                            menu.style.top = '100%';
-                            menu.style.bottom = 'auto';
-                        }
+                    // Position the menu properly
+                    const rect = this.getBoundingClientRect();
+                    const menuRect = menu.getBoundingClientRect();
+                    
+                    // Adjust positioning if menu would go off-screen
+                    if (rect.bottom + menuRect.height > window.innerHeight) {
+                        menu.style.bottom = '100%';
+                        menu.style.top = 'auto';
+                        menu.style.marginBottom = '0.5rem';
+                        menu.style.marginTop = '0';
+                    } else {
+                        menu.style.top = '100%';
+                        menu.style.bottom = 'auto';
+                        menu.style.marginTop = '0.5rem';
+                        menu.style.marginBottom = '0';
                     }
+                }
+            });
+            
+            // Add keyboard support
+            newToggle.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    console.log(`Language switcher keyboard activated: ${e.key}`);
+                    this.click();
                 }
             });
         });
@@ -457,6 +508,9 @@
                 document.querySelectorAll('.language-menu').forEach(menu => {
                     menu.style.display = 'none';
                 });
+                document.querySelectorAll('.dropdown').forEach(dropdown => {
+                    dropdown.classList.remove('dropdown-open');
+                });
             }
         });
         
@@ -466,8 +520,13 @@
                 document.querySelectorAll('.language-menu').forEach(menu => {
                     menu.style.display = 'none';
                 });
+                document.querySelectorAll('.dropdown').forEach(dropdown => {
+                    dropdown.classList.remove('dropdown-open');
+                });
             }
         });
+        
+        console.log('Dropdown behavior setup completed');
     }
     
     // Initialize everything

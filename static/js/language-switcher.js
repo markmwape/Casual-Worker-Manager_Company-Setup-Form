@@ -220,11 +220,19 @@ function setupDropdownBehavior() {
                 menu.style.opacity = '1';
                 menu.style.visibility = 'visible';
                 menu.style.pointerEvents = 'auto';
+                menu.style.backgroundColor = '#ffff00'; // Bright yellow
+                menu.style.border = '5px solid #ff0000'; // Thick red border
+                menu.style.position = 'fixed';
+                menu.style.top = '60px';
+                menu.style.right = '20px';
+                menu.style.zIndex = '99999';
                 
                 console.log('Menu classes:', menu.className);
                 console.log('Menu computed display:', window.getComputedStyle(menu).display);
                 console.log('Menu computed visibility:', window.getComputedStyle(menu).visibility);
                 console.log('Menu computed opacity:', window.getComputedStyle(menu).opacity);
+                console.log('Menu position:', menu.getBoundingClientRect());
+                console.log('Menu HTML:', menu.outerHTML);
             }
         };
     });

@@ -171,7 +171,10 @@
     "agreement": "Ao entrar, você concorda com nossos",
     "terms": "Termos",
     "and": "e",
-    "privacyPolicy": "Política de Privacidade"
+    "privacyPolicy": "Política de Privacidade",
+    "selectYourWorkspace": "Selecione Seu Espaço de Trabalho",
+    "chooseWorkspaceToContinue": "Escolha um espaço de trabalho para continuar",
+    "cancel": "Cancelar"
   },
   "createWorkspace": {
     "title": "Criar um Novo Espaço de Trabalho",
@@ -194,5 +197,15 @@
     "officialEmail": "Endereço de email oficial da empresa",
     "createWorkspace": "Criar Espaço de Trabalho",
     "creatingWorkspace": "Criando espaço de trabalho..."
+  },
+  "pages": {
+    "reportsDashboard": "Painel de Relatórios",
+    "reportsSubtitle": "Gere e baixe análises abrangentes da força de trabalho",
+    "workersDashboard": "Gerenciamento de Trabalhadores",
+    "workersSubtitle": "Gerencie sua força de trabalho casual",
+    "tasksDashboard": "Gerenciamento de Tarefas",
+    "tasksSubtitle": "Crie e rastreie tarefas de trabalhadores",
+    "dashboard": "Painel de Controle",
+    "dashboardSubtitle": "Bem-vindo! Aqui está sua visão geral da força de trabalho"
   }
 }

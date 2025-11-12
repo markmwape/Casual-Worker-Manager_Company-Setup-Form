@@ -139,5 +139,20 @@
   "Worker Management": "कार्यकर्ता प्रबंधन",
   "Workers": "कर्मचारी",
   "Would Recommend": "अनुशंसा करेंगे",
-  "Your Data, Your Control": "आपका डेटा, आपका नियंत्रण"
+  "Your Data, Your Control": "आपका डेटा, आपका नियंत्रण",
+  "signin": {
+    "selectYourWorkspace": "अपना कार्यक्षेत्र चुनें",
+    "chooseWorkspaceToContinue": "जारी रखने के लिए एक कार्यक्षेत्र चुनें",
+    "cancel": "रद्द करें"
+  },
+  "pages": {
+    "reportsDashboard": "रिपोर्ट डैशबोर्ड",
+    "reportsSubtitle": "व्यापक कार्यबल विश्लेषण प्रबंधित और डाउनलोड करें",
+    "workersDashboard": "कार्यकर्ता प्रबंधन",
+    "workersSubtitle": "अपने आकस्मिक कार्यबल का प्रबंधन करें",
+    "tasksDashboard": "कार्य प्रबंधन",
+    "tasksSubtitle": "कार्यकर्ता कार्य बनाएं और ट्रैक करें",
+    "dashboard": "डैशबोर्ड",
+    "dashboardSubtitle": "स्वागत है! यहाँ आपके कार्यबल का अवलोकन है"
+  }
 }

@@ -171,7 +171,10 @@
     "agreement": "En vous connectant, vous acceptez nos",
     "terms": "Conditions",
     "and": "et",
-    "privacyPolicy": "Politique de Confidentialité"
+    "privacyPolicy": "Politique de Confidentialité",
+    "selectYourWorkspace": "Sélectionnez Votre Espace de Travail",
+    "chooseWorkspaceToContinue": "Choisissez un espace de travail pour continuer",
+    "cancel": "Annuler"
   },
   "createWorkspace": {
     "title": "Créer un Nouvel Espace de Travail",
@@ -194,5 +197,15 @@
     "officialEmail": "Adresse email officielle de l'entreprise",
     "createWorkspace": "Créer l'Espace de Travail",
     "creatingWorkspace": "Création de l'espace de travail..."
+  },
+  "pages": {
+    "reportsDashboard": "Tableau de Bord des Rapports",
+    "reportsSubtitle": "Générez et téléchargez des analyses complètes de la main-d'œuvre",
+    "workersDashboard": "Gestion des Travailleurs",
+    "workersSubtitle": "Gérez votre main-d'œuvre temporaire",
+    "tasksDashboard": "Gestion des Tâches",
+    "tasksSubtitle": "Créez et suivez les tâches des travailleurs",
+    "dashboard": "Tableau de Bord",
+    "dashboardSubtitle": "Bienvenue! Voici votre aperçu de la main-d'œuvre"
   }
 }

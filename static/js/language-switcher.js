@@ -354,8 +354,7 @@ function changeLanguage(langCode) {
             const langNames = {
                 'en': 'English', 'fr': 'Français', 'sw': 'Swahili',
                 'pt': 'Português', 'es': 'Español', 'tr': 'Türkçe',
-                'hi': 'हिंदी', 'zh': '中文', 'ar': 'العربية', 'vi': 'Tiếng Việt',
-                'de': 'Deutsch', 'it': 'Italiano'
+                'hi': 'हिंदी', 'zh': '中文', 'ar': 'العربية', 'vi': 'Tiếng Việt'
             };
             
             labels.forEach(label => {

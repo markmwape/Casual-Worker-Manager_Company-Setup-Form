@@ -248,3 +248,37 @@
     25% { transform: translateX(-3px); }
     75% { transform: translateX(3px); }
 }
+
+/* Sidebar-specific language switcher styles */
+.sidebar-language-switcher .language-switcher-container .dropdown-menu {
+    bottom: 100% !important;
+    top: auto !important;
+    margin-bottom: 8px !important;
+    margin-top: 0 !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.sidebar-language-switcher .language-switcher-container .dropdown-menu::before {
+    content: '' !important;
+    position: absolute !important;
+    bottom: -8px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    border: 4px solid transparent !important;
+    border-top-color: white !important;
+}
+
+.sidebar-language-switcher .language-switcher-container .dropdown-menu li {
+    border-radius: 0 !important;
+}
+
+.sidebar-language-switcher .language-switcher-container .dropdown-menu li:first-child {
+    border-radius: 8px 8px 0 0 !important;
+}
+
+.sidebar-language-switcher .language-switcher-container .dropdown-menu li:last-child {
+    border-radius: 0 0 8px 8px !important;
+}

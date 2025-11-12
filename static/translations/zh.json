@@ -171,7 +171,10 @@
     "agreement": "通过登录，您同意我们的",
     "terms": "条款",
     "and": "和",
-    "privacyPolicy": "隐私政策"
+    "privacyPolicy": "隐私政策",
+    "selectYourWorkspace": "选择您的工作空间",
+    "chooseWorkspaceToContinue": "选择工作空间以继续",
+    "cancel": "取消"
   },
   "createWorkspace": {
     "title": "创建新工作空间",
@@ -194,5 +197,15 @@
     "officialEmail": "公司官方邮箱地址",
     "createWorkspace": "创建工作空间",
     "creatingWorkspace": "正在创建工作空间..."
+  },
+  "pages": {
+    "reportsDashboard": "报告仪表板",
+    "reportsSubtitle": "管理和下载全面的劳动力分析",
+    "workersDashboard": "员工管理",
+    "workersSubtitle": "管理临时劳动力",
+    "tasksDashboard": "任务管理",
+    "tasksSubtitle": "创建和追踪员工任务",
+    "dashboard": "仪表板",
+    "dashboardSubtitle": "欢迎!这是您的劳动力概览"
   }
 }

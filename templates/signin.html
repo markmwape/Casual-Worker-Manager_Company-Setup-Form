@@ -428,9 +428,9 @@
                         <div class="gradient-primary p-6">
                             <h2 class="text-2xl font-bold text-white flex items-center gap-2">
                                 <i class="fas fa-briefcase"></i>
-                                Select Your Workspace
+                                <span data-i18n="signin.selectYourWorkspace">Select Your Workspace</span>
                             </h2>
-                            <p class="text-blue-100 mt-2">Choose a workspace to continue</p>
+                            <p class="text-blue-100 mt-2" data-i18n="signin.chooseWorkspaceToContinue">Choose a workspace to continue</p>
                         </div>
                         <div class="p-6 overflow-y-auto max-h-[calc(90vh-180px)]">
                             <div class="grid gap-4">
@@ -469,7 +469,7 @@
                             </div>
                         </div>
                         <div class="p-6 border-t border-gray-200 bg-gray-50">
-                            <button id="cancel-workspace-selection" class="w-full py-3 px-4 border-2 border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-100 transition">
+                            <button id="cancel-workspace-selection" class="w-full py-3 px-4 border-2 border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-100 transition" data-i18n="signin.cancel">
                                 Cancel
                             </button>
                         </div>
@@ -477,6 +477,11 @@
                 `;
                 
                 document.body.appendChild(modal);
+                
+                // Translate the modal elements
+                if (window.i18n && window.i18n.translatePage) {
+                    window.i18n.translatePage();
+                }
                 
                 // Add click handlers for workspace cards
                 modal.querySelectorAll('.workspace-card').forEach(card => {

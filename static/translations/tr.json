@@ -139,5 +139,20 @@
   "Worker Management": "İşçi Yönetimi",
   "Workers": "İşçiler",
   "Would Recommend": "Tavsiye Eder",
-  "Your Data, Your Control": "Verileriniz, Kontrolünüz"
+  "Your Data, Your Control": "Verileriniz, Kontrolünüz",
+  "signin": {
+    "selectYourWorkspace": "Çalışma Alanınızı Seçin",
+    "chooseWorkspaceToContinue": "Devam etmek için bir çalışma alanı seçin",
+    "cancel": "İptal"
+  },
+  "pages": {
+    "reportsDashboard": "Raporlar Panosu",
+    "reportsSubtitle": "Kapsamlı işgücü analitiğini yönetin ve indirin",
+    "workersDashboard": "İşçi Yönetimi",
+    "workersSubtitle": "Geçici işgücünüzü yönetin",
+    "tasksDashboard": "Görev Yönetimi",
+    "tasksSubtitle": "İşçi görevlerini oluşturun ve takip edin",
+    "dashboard": "Kontrol Paneli",
+    "dashboardSubtitle": "Hoş geldiniz! İşgücünüzün genel görünümü burada"
+  }
 }

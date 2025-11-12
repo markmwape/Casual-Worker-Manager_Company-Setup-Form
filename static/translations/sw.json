@@ -171,7 +171,10 @@
     "agreement": "Kwa kuingia, unakubali",
     "terms": "Masharti",
     "and": "na",
-    "privacyPolicy": "Sera ya Faragha"
+    "privacyPolicy": "Sera ya Faragha",
+    "selectYourWorkspace": "Chagua Mazingira Yako ya Kazi",
+    "chooseWorkspaceToContinue": "Chagua mazingira ya kazi kuendelea",
+    "cancel": "Ghairi"
   },
   "createWorkspace": {
     "title": "Unda Mazingira Mapya ya Kazi",
@@ -194,5 +197,15 @@
     "officialEmail": "Anuani rasmi ya barua pepe ya kampuni",
     "createWorkspace": "Unda Mazingira ya Kazi",
     "creatingWorkspace": "Kuunda mazingira ya kazi..."
+  },
+  "pages": {
+    "reportsDashboard": "Kina cha Ripoti",
+    "reportsSubtitle": "Dhibiti na pakua uchambuzi kamili wa wafanyakazi",
+    "workersDashboard": "Usimamizi wa Wafanyakazi",
+    "workersSubtitle": "Simamia wafanyakazi wa kawaida",
+    "tasksDashboard": "Usimamizi wa Kazi",
+    "tasksSubtitle": "Tengeneza na fuatilia kazi za wafanyakazi",
+    "dashboard": "Kina cha Kupima",
+    "dashboardSubtitle": "Karibu! Hii ni muhtasari wako wa wafanyakazi"
   }
 }

@@ -171,7 +171,10 @@
     "agreement": "By signing in, you agree to our",
     "terms": "Terms",
     "and": "and",
-    "privacyPolicy": "Privacy Policy"
+    "privacyPolicy": "Privacy Policy",
+    "selectYourWorkspace": "Select Your Workspace",
+    "chooseWorkspaceToContinue": "Choose a workspace to continue",
+    "cancel": "Cancel"
   },
   "createWorkspace": {
     "title": "Create a New Workspace",
@@ -194,5 +197,15 @@
     "officialEmail": "Official company email address",
     "createWorkspace": "Create Workspace",
     "creatingWorkspace": "Creating workspace..."
+  },
+  "pages": {
+    "reportsDashboard": "Reports Dashboard",
+    "reportsSubtitle": "Generate and download comprehensive workforce analytics",
+    "workersDashboard": "Workers Management",
+    "workersSubtitle": "Manage your casual workforce",
+    "tasksDashboard": "Tasks Management",
+    "tasksSubtitle": "Create and track workforce tasks",
+    "dashboard": "Dashboard",
+    "dashboardSubtitle": "Welcome back! Here's your workforce overview"
   }
 }

@@ -171,7 +171,10 @@
     "agreement": "Al iniciar sesión, aceptas nuestros",
     "terms": "Términos",
     "and": "y",
-    "privacyPolicy": "Política de Privacidad"
+    "privacyPolicy": "Política de Privacidad",
+    "selectYourWorkspace": "Selecciona Tu Espacio de Trabajo",
+    "chooseWorkspaceToContinue": "Elige un espacio de trabajo para continuar",
+    "cancel": "Cancelar"
   },
   "createWorkspace": {
     "title": "Crear un Nuevo Espacio de Trabajo",
@@ -194,5 +197,15 @@
     "officialEmail": "Dirección de email oficial de la empresa",
     "createWorkspace": "Crear Espacio de Trabajo",
     "creatingWorkspace": "Creando espacio de trabajo..."
+  },
+  "pages": {
+    "reportsDashboard": "Panel de Informes",
+    "reportsSubtitle": "Genera y descarga análisis integrales de la fuerza laboral",
+    "workersDashboard": "Gestión de Trabajadores",
+    "workersSubtitle": "Administra tu fuerza laboral casual",
+    "tasksDashboard": "Gestión de Tareas",
+    "tasksSubtitle": "Crea y rastraza tareas de trabajadores",
+    "dashboard": "Panel de Control",
+    "dashboardSubtitle": "¡Bienvenido! Aquí está tu descripción general de la fuerza laboral"
   }
 }

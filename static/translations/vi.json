@@ -139,5 +139,20 @@
   "Worker Management": "Quản lý Công nhân",
   "Workers": "Công Nhân",
   "Would Recommend": "Sẽ Giới thiệu",
-  "Your Data, Your Control": "Dữ liệu của Bạn, Quyền Kiểm soát của Bạn"
+  "Your Data, Your Control": "Dữ liệu của Bạn, Quyền Kiểm soát của Bạn",
+  "signin": {
+    "selectYourWorkspace": "Chọn Không Gian Làm Việc Của Bạn",
+    "chooseWorkspaceToContinue": "Chọn một không gian làm việc để tiếp tục",
+    "cancel": "Hủy"
+  },
+  "pages": {
+    "reportsDashboard": "Bảng Điều Khiển Báo Cáo",
+    "reportsSubtitle": "Quản lý và tải xuống phân tích lực lượng lao động toàn diện",
+    "workersDashboard": "Quản lý Công Nhân",
+    "workersSubtitle": "Quản lý lực lượng lao động tạm thời của bạn",
+    "tasksDashboard": "Quản lý Nhiệm Vụ",
+    "tasksSubtitle": "Tạo và theo dõi nhiệm vụ công nhân",
+    "dashboard": "Bảng Điều Khiển",
+    "dashboardSubtitle": "Chào mừng! Đây là tổng quan lực lượng lao động của bạn"
+  }
 }

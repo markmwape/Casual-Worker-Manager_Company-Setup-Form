@@ -139,5 +139,20 @@
   "Worker Management": "إدارة العمال",
   "Workers": "العمال",
   "Would Recommend": "سيوصي",
-  "Your Data, Your Control": "بياناتك، تحكمك"
+  "Your Data, Your Control": "بياناتك، تحكمك",
+  "signin": {
+    "selectYourWorkspace": "اختر مساحة عملك",
+    "chooseWorkspaceToContinue": "اختر مساحة عمل للمتابعة",
+    "cancel": "إلغاء"
+  },
+  "pages": {
+    "reportsDashboard": "لوحة تحكم التقارير",
+    "reportsSubtitle": "إدارة وتحميل تحليلات القوى العاملة الشاملة",
+    "workersDashboard": "إدارة العمال",
+    "workersSubtitle": "إدارة قوتك العاملة العرضية",
+    "tasksDashboard": "إدارة المهام",
+    "tasksSubtitle": "إنشاء وتتبع مهام العمال",
+    "dashboard": "لوحة التحكم",
+    "dashboardSubtitle": "مرحبا! إليك نظرة عامة على قوتك العاملة"
+  }
 }

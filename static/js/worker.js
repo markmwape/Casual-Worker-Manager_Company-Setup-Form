@@ -360,8 +360,8 @@ function reloadCustomFields() {
                 div.innerHTML = `
                     <label class="label">
                         <span class="label-text text-black">${field.name}</span>
-                        <button type="button" class="btn btn-ghost btn-xs text-red-500 hover:text-red-700" onclick="deleteCustomField(${field.id}, '${field.name}')" title="Delete this field">
-                            <i data-feather="trash-2" class="h-4 w-4"></i>
+                        <button type="button" class="btn btn-ghost btn-sm text-red-500 hover:text-red-700 px-2 py-1" onclick="deleteCustomField(${field.id}, '${field.name}')" title="Delete this field">
+                            <i data-feather="trash-2" class="h-5 w-5"></i>
                         </button>
                     </label>
                     <input type="text" name="custom_field_${field.id}" class="input input-bordered w-full h-10" placeholder="Enter ${field.name}">
@@ -630,6 +630,9 @@ function closeAddWorkerModal() {
     }
     
     modal.close();
+    
+    // Reload the page to reflect any changes
+    window.location.reload();
 }
 
 // Import Workers Modal functions
@@ -681,6 +684,9 @@ function closeImportWorkersModal() {
     const modal = document.getElementById('import-workers-modal');
     if (modal) {
         modal.close();
+        
+        // Reload the page to reflect any changes
+        window.location.reload();
     }
 }
 
@@ -752,12 +758,12 @@ function loadImportFields() {
             fieldNameSpan.textContent = field.name;
             
             const deleteBtn = document.createElement('button');
-            deleteBtn.className = 'btn btn-ghost btn-xs text-red-500 hover:text-red-700 ml-2';
+            deleteBtn.className = 'btn btn-ghost btn-sm text-red-500 hover:text-red-700 ml-2 px-2 py-1';
             deleteBtn.title = 'Delete this field';
             deleteBtn.onclick = function() {
                 deleteCustomField(field.id, field.name);
             };
-            deleteBtn.innerHTML = '<i class="material-icons text-xs">delete</i>';
+            deleteBtn.innerHTML = '<i class="material-icons text-sm">delete</i>';
             
             fieldDiv.appendChild(fieldNameSpan);
             fieldDiv.appendChild(deleteBtn);

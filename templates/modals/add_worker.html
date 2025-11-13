@@ -34,8 +34,8 @@
                             <div class="form-control w-full custom-field-item" data-field-id="{{ field.id }}">
                                 <label class="label">
                                     <span class="label-text text-black">{{ field.name }}</span>
-                                    <button type="button" class="btn btn-ghost btn-xs text-red-500 hover:text-red-700" onclick="deleteCustomField({{ field.id }}, '{{ field.name }}')" title="Delete this field">
-                                        <i data-feather="trash-2" class="h-4 w-4"></i>
+                                    <button type="button" class="btn btn-ghost btn-sm text-red-500 hover:text-red-700 px-2 py-1" onclick="deleteCustomField({{ field.id }}, '{{ field.name }}')" title="Delete this field">
+                                        <i data-feather="trash-2" class="h-5 w-5"></i>
                                     </button>
                                 </label>
                                 <input type="text" name="custom_field_{{ field.id }}" class="input input-bordered w-full h-10" placeholder="Enter {{ field.name }}">

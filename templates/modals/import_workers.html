@@ -1,5 +1,5 @@
 <dialog id="import-workers-modal" class="modal">
-    <div class="modal-box max-w-3xl bg-brand-navy-50 w-11/12 max-h-[90vh] overflow-y-auto overflow-x-hidden relative">
+    <div class="modal-box max-w-3xl bg-brand-navy-50 w-11/12 max-h-[90vh] overflow-y-auto overflow-x-hidden relative" style="overflow: visible !important;">
         <!-- Custom tooltip styles -->
         <style>
             /* Custom tooltip implementation */
@@ -8,6 +8,9 @@
                 display: inline-flex;
                 align-items: center;
                 cursor: help;
+                width: auto;
+                height: 24px;
+                min-width: 24px;
             }
             
             .custom-tooltip .tooltip-text {
@@ -19,8 +22,8 @@
                 text-align: center;
                 border-radius: 8px;
                 padding: 10px 14px;
-                position: fixed;
-                z-index: 999999;
+                position: fixed !important;
+                z-index: 999999 !important;
                 opacity: 0;
                 transition: opacity 0.3s ease, visibility 0.3s ease;
                 font-size: 13px;
@@ -28,6 +31,7 @@
                 box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
                 white-space: normal;
                 pointer-events: none;
+                display: block !important;
             }
             
             .custom-tooltip .tooltip-text::after {
@@ -44,6 +48,16 @@
             .custom-tooltip:hover .tooltip-text {
                 visibility: visible !important;
                 opacity: 1 !important;
+            }
+            
+            .custom-tooltip i {
+                font-size: 18px;
+                cursor: help;
+                transition: color 0.2s ease;
+            }
+            
+            .custom-tooltip:hover i {
+                color: #0066cc !important;
             }
         </style>
         <div class="flex items-center justify-between mb-6">
@@ -104,9 +118,9 @@
                             <h5 class="text-sm font-medium text-gray-600 mb-3">Add Custom Field</h5>
                             <div class="flex flex-wrap items-center gap-2">
                                 <div class="flex-1 min-w-[200px]">
-                                    <input type="text" id="importNewFieldName" class="input input-bordered bg-white w-full" placeholder="Enter field name...">
+                                    <input type="text" id="newFieldName" class="input input-bordered bg-white w-full" placeholder="Enter field name...">
                                 </div>
-                                <button type="button" class="btn btn-primary whitespace-nowrap" onclick="saveNewFieldImport()">
+                                <button type="button" id="addCustomFieldBtnImport" class="btn btn-primary whitespace-nowrap">
                                     <i class="material-icons mr-1">add</i>Add Field
                                 </button>
                             </div>
@@ -179,14 +193,16 @@
         const tooltips = document.querySelectorAll('.custom-tooltip');
         
         tooltips.forEach(tooltip => {
-            const icon = tooltip;
             const tooltipText = tooltip.querySelector('.tooltip-text');
             
-            if (!tooltipText) return;
+            if (!tooltipText) {
+                console.warn('No tooltip text found for tooltip:', tooltip);
+                return;
+            }
             
-            icon.addEventListener('mouseenter', function(e) {
+            tooltip.addEventListener('mouseenter', function(e) {
                 // Get icon position relative to viewport
-                const iconRect = icon.getBoundingClientRect();
+                const iconRect = tooltip.getBoundingClientRect();
                 
                 // Position tooltip above the icon, centered
                 const tooltipTop = iconRect.top - 10;
@@ -197,7 +213,7 @@
                 tooltipText.style.transform = 'translate(-50%, -100%)';
                 
                 // Ensure tooltip stays within viewport after positioning
-                requestAnimationFrame(() => {
+                setTimeout(() => {
                     const tooltipRect = tooltipText.getBoundingClientRect();
                     const viewportWidth = window.innerWidth;
                     
@@ -211,8 +227,48 @@
                         const adjustment = 10 - tooltipRect.left;
                         tooltipText.style.left = (tooltipLeft + adjustment) + 'px';
                     }
-                });
+                }, 0);
             });
         });
+
+        // Setup Add Custom Field button for import modal
+        setupImportCustomFieldButton();
+        
+        // Add Enter key support for custom field input in import modal
+        const newFieldInput = document.getElementById('newFieldName');
+        if (newFieldInput) {
+            console.log('[Import Modal] Adding Enter key listener to newFieldName input');
+            newFieldInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    console.log('[Import Modal] Enter key pressed, triggering addCustomField');
+                    addCustomField();
+                }
+            });
+        }
     });
+
+    // Function to setup Add Custom Field button for import modal
+    function setupImportCustomFieldButton() {
+        const addFieldBtn = document.getElementById('addCustomFieldBtnImport');
+        if (addFieldBtn) {
+            console.log('[setupImportCustomFieldButton] Found Add Custom Field button');
+            
+            // Remove any existing click handlers by cloning the button
+            const newBtn = addFieldBtn.cloneNode(true);
+            addFieldBtn.parentNode.replaceChild(newBtn, addFieldBtn);
+            
+            // Add fresh click handler
+            newBtn.addEventListener('click', function(e) {
+                console.log('[Import Add Field Button] Button clicked');
+                e.preventDefault();
+                e.stopPropagation();
+                addCustomField();
+            });
+            
+            console.log('[setupImportCustomFieldButton] Event listener attached');
+        } else {
+            console.warn('[setupImportCustomFieldButton] Add Custom Field button not found');
+        }
+    }
 </script>

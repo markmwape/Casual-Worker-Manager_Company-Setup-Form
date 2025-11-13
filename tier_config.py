@@ -236,12 +236,36 @@ def get_price_id_for_tier(tier_name, billing='monthly'):
     price_info = STRIPE_PRICE_MAPPING.get(search_key)
     return price_info['price_id'] if price_info else None
 
-def validate_tier_access(workspace, worker_count=None):
+def validate_tier_access(workspace, worker_count=None, feature_name=None):
     """
     Simplified tier validation - primarily focused on worker limits
+    All tiers have access to all basic features (reporting, tasks, etc.)
     Returns: (is_allowed, reason)
     """
     tier = workspace.subscription_tier or 'trial'
+    
+    # Check feature access (all tiers have all basic features in this simplified system)
+    if feature_name is not None:
+        # In the simplified tier system, all tiers have access to all features
+        # The primary differentiator is worker limits
+        # Advanced reporting, task management, etc. are available to all
+        tier_spec = get_tier_spec(tier)
+        has_access = tier_spec['features'].get(feature_name, True)
+        
+        # Map feature names that might not match exactly
+        feature_mappings = {
+            'advanced_reporting': 'reporting',
+            'basic_reporting': 'reporting',
+            'worker_import': 'worker_management',
+            'task_tracking': 'task_management',
+        }
+        
+        # If feature not found directly, try mapped name
+        if feature_name in feature_mappings:
+            has_access = tier_spec['features'].get(feature_mappings[feature_name], True)
+        
+        if not has_access:
+            return False, f"This feature is not available in your current plan. Please upgrade."
     
     # Primary validation: Check worker limit
     if worker_count is not None:

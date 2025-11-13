@@ -242,7 +242,7 @@
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     console.log('[Import Modal] Enter key pressed, triggering addCustomField');
-                    addCustomField();
+                    addCustomField('import');
                 }
             });
         }
@@ -263,7 +263,7 @@
                 console.log('[Import Add Field Button] Button clicked');
                 e.preventDefault();
                 e.stopPropagation();
-                addCustomField();
+                addCustomField('import');
             });
             
             console.log('[setupImportCustomFieldButton] Event listener attached');

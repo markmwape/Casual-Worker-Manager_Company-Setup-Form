@@ -1,5 +1,42 @@
 <dialog id="import-workers-modal" class="modal">
-    <div class="modal-box max-w-3xl bg-brand-navy-50 w-11/12 max-h-[90vh] overflow-y-auto overflow-x-hidden">
+    <div class="modal-box max-w-3xl bg-brand-navy-50 w-11/12 max-h-[90vh] overflow-y-auto overflow-x-hidden relative">
+        <!-- Custom tooltip styles -->
+        <style>
+            .tooltip-high-z {
+                position: relative;
+                z-index: 9999 !important;
+            }
+            
+            .tooltip-high-z:before, 
+            .tooltip-high-z:after {
+                z-index: 9999 !important;
+                position: fixed !important;
+            }
+            
+            .tooltip-high-z:hover:before,
+            .tooltip-high-z:hover:after {
+                z-index: 9999 !important;
+            }
+
+            /* Ensure tooltip appears above modal content */
+            .modal-box .tooltip:before,
+            .modal-box .tooltip:after {
+                z-index: 9999 !important;
+            }
+
+            /* Force tooltip positioning above */
+            .tooltip-force-top:before {
+                bottom: 100% !important;
+                top: auto !important;
+                margin-bottom: 8px !important;
+            }
+
+            .tooltip-force-top:after {
+                bottom: 100% !important;
+                top: auto !important;
+                margin-bottom: 2px !important;
+            }
+        </style>
         <div class="flex items-center justify-between mb-6">
             <div class="min-w-0 flex-1">
                 <h3 class="font-bold text-2xl text-gray-800 truncate">Import Workers from Excel</h3>
@@ -21,7 +58,7 @@
                                 <div class="flex-1 min-w-[200px]">
                                     <input type="file" name="file" accept=".xlsx,.xls" class="file-input file-input-bordered w-full bg-white" required>
                                 </div>
-                                <div class="tooltip" data-tip="Supported formats: .xlsx, .xls">
+                                <div class="tooltip tooltip-top tooltip-primary tooltip-high-z tooltip-force-top" data-tip="Supported formats: .xlsx, .xls">
                                     <i class="material-icons text-brand-navy-600">help_outline</i>
                                 </div>
                             </div>
@@ -38,7 +75,7 @@
                         <div class="mb-4">
                             <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
                                 <h5 class="text-sm font-medium text-gray-600">Current Fields</h5>
-                                <div class="tooltip" data-tip="These fields will be mapped to your Excel columns">
+                                <div class="tooltip tooltip-top tooltip-primary tooltip-high-z tooltip-force-top" data-tip="These fields will be mapped to your Excel columns">
                                     <i class="material-icons text-brand-navy-600">info_outline</i>
                                 </div>
                             </div>

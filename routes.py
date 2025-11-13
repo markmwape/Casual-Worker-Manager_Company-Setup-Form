@@ -579,7 +579,8 @@ def request_trial_extension():
     """Allow users to request a one-time 3-day trial extension"""
     from datetime import timedelta
     
-    if 'user_id' not in session:
+    # Check if user is authenticated
+    if 'user' not in session or 'user_email' not in session['user']:
         return jsonify({'error': 'Not authenticated'}), 401
     
     try:

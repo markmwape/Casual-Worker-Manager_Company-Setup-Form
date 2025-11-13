@@ -392,9 +392,6 @@ function addCustomField(sourceModal = null) {
     console.log('[addCustomField] ========== FUNCTION CALLED ==========');
     console.log('[addCustomField] Called from:', sourceModal || 'unknown');
     
-    // Add a visual alert to confirm function is being called
-    alert(`addCustomField called with sourceModal: ${sourceModal}`);
-    
     // Determine which input field to use based on the modal
     let fieldNameInput;
     let modalId;

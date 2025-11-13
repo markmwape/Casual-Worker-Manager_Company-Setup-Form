@@ -574,61 +574,6 @@ def get_workspace_payments():
 
 # Removed: /subscription/success - Stripe handles success pages, webhooks handle subscription updates
 
-@app.route('/api/request-trial-extension', methods=['POST'])
-def request_trial_extension():
-    """Allow users to request a one-time 3-day trial extension"""
-    from datetime import timedelta
-    
-    # Check if user is authenticated
-    if 'user' not in session or 'user_email' not in session['user']:
-        return jsonify({'error': 'Not authenticated'}), 401
-    
-    try:
-        # Get current workspace
-        workspace_id = session.get('current_workspace', {}).get('id')
-        if not workspace_id:
-            return jsonify({'error': 'No active workspace'}), 400
-        
-        workspace = Workspace.query.get(workspace_id)
-        if not workspace:
-            return jsonify({'error': 'Workspace not found'}), 404
-        
-        # Check if extension has already been used
-        if workspace.extension_used:
-            return jsonify({'error': 'Trial extension has already been used for this workspace'}), 400
-        
-        # Check if workspace is on trial (allow trial or None/empty status, but not paid accounts)
-        if workspace.subscription_status and workspace.subscription_status not in ['trial', None]:
-            # If they have an active paid subscription, they don't need extension
-            if workspace.subscription_status == 'active' and workspace.stripe_subscription_id:
-                return jsonify({'error': 'Extension is only available for trial accounts'}), 400
-        
-        # Grant 3-day extension
-        if workspace.trial_end_date:
-            workspace.trial_end_date = workspace.trial_end_date + timedelta(days=3)
-        else:
-            workspace.trial_end_date = datetime.utcnow() + timedelta(days=3)
-        
-        workspace.extension_used = True
-        db.session.commit()
-        
-        # Verify the update
-        db.session.refresh(workspace)
-        logging.info(f"Trial extension granted for workspace {workspace.id}: {workspace.name}")
-        logging.info(f"Updated trial_end_date: {workspace.trial_end_date}")
-        logging.info(f"Extension used flag: {workspace.extension_used}")
-        
-        return jsonify({
-            'success': True,
-            'message': 'Trial extended by 3 days',
-            'trial_end_date': workspace.trial_end_date.isoformat() if workspace.trial_end_date else None
-        }), 200
-        
-    except Exception as e:
-        db.session.rollback()
-        logging.error(f"Error granting trial extension: {str(e)}")
-        return jsonify({'error': 'Failed to grant trial extension'}), 500
-
 @app.route('/stripe/webhook', methods=['POST'])
 def stripe_webhook():
     """Handle Stripe webhooks"""

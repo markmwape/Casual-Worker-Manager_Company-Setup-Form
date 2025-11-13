@@ -158,25 +158,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Temporary Access -->
-            {% if not workspace.extension_used %}
-            <div class="mt-6 text-center">
-                <p class="text-sm text-gray-600 mb-3">
-                    Need more time to decide? 
-                </p>
-                <button onclick="requestExtension()" 
-                        class="text-brand-navy-600 hover:text-brand-navy-700 text-sm font-medium underline">
-                    Request 3-day extension (one-time only)
-                </button>
-            </div>
-            {% else %}
-            <div class="mt-6 text-center">
-                <p class="text-sm text-gray-500 italic">
-                    Trial extension has already been used for this workspace.
-                </p>
-            </div>
-            {% endif %}
         </div>
     </div>
 
@@ -258,34 +239,6 @@
                 
                 modal.showModal();
             });
-        }
-
-        // Simple redirect function for trial extension (if needed)
-        async function requestExtension() {
-            const confirmed = await showCustomConfirm('Request Extension', 'Are you sure you want to request a 3-day extension? This can only be used once.');
-            if (!confirmed) {
-                return;
-            }
-
-            try {
-                const response = await fetch('/api/request-trial-extension', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
-                });
-
-                const result = await response.json();
-                
-                if (response.ok) {
-                    await showCustomModal('Extension Granted', 'Your trial has been extended by 3 days! Redirecting to home...', 'success');
-                    window.location.href = '/home';
-                } else {
-                    throw new Error(result.error || 'Failed to request extension');
-                }
-            } catch (error) {
-                await showCustomModal('Extension Error', error.message, 'error');
-            }
         }
     </script>
 </body>

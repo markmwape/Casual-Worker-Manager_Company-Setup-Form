@@ -2235,6 +2235,10 @@ def task_attendance_route(task_id):
         if not task:
             return render_template('500.html'), 500
 
+        # Redirect per_hour tasks to hours worked page
+        if task.payment_type == 'per_hour':
+            return redirect(url_for('task_hours_worked_route', task_id=task_id))
+
         # Get all available workers for the company for the dropdown
         available_workers = Worker.query.filter_by(company_id=company.id).all()
 

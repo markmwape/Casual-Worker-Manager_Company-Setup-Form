@@ -1642,16 +1642,41 @@ window.importWithMapping = async function() {
             showCustomModal('Import Failed', `Import failed: ${result.error}`, 'error');
         } else {
             // Build success message
-            let successMsg = `Total records: ${result.total_records}\nSuccessfully imported: ${result.successful_imports}\nDuplicates skipped: ${result.duplicate_records}\nErrors: ${result.error_records}`;
+            let successMsg = '';
             
-            // Add limit warning if applicable
-            if (result.limit_warning) {
-                successMsg += `\n\n⚠️ SUBSCRIPTION LIMIT REACHED\n\nYour plan allows up to ${result.current_limit} workers. You currently have ${result.current_count} workers.\n\n${result.limit_warning}`;
+            // Add limit warning if applicable - show this first as it's most important
+            if (result.limit_exceeded) {
+                const workersNotImported = result.total_records - result.successful_imports - result.duplicate_records;
+                successMsg += `⚠️ SUBSCRIPTION LIMIT REACHED\n\n`;
+                successMsg += `Your ${result.current_limit}-worker plan limit has been reached.\n\n`;
+                successMsg += `📊 Import Summary:\n`;
+                successMsg += `• File contained: ${result.total_records} workers\n`;
+                successMsg += `• Successfully imported: ${result.successful_imports} workers\n`;
+                if (result.duplicate_records > 0) {
+                    successMsg += `• Duplicates skipped: ${result.duplicate_records}\n`;
+                }
+                if (result.error_records > 0) {
+                    successMsg += `• Errors: ${result.error_records}\n`;
+                }
+                successMsg += `• Not imported (limit reached): ${workersNotImported} workers\n\n`;
+                successMsg += `💡 Only the first ${result.successful_imports} workers from your file were imported. To import the remaining workers, please upgrade your subscription plan.`;
+            } else {
+                // Normal success message without limit issues
+                successMsg = `Import completed successfully!\n\n`;
+                successMsg += `📊 Summary:\n`;
+                successMsg += `• Total records in file: ${result.total_records}\n`;
+                successMsg += `• Successfully imported: ${result.successful_imports}\n`;
+                if (result.duplicate_records > 0) {
+                    successMsg += `• Duplicates skipped: ${result.duplicate_records}\n`;
+                }
+                if (result.error_records > 0) {
+                    successMsg += `• Errors: ${result.error_records}`;
+                }
             }
             
             // Determine modal type based on errors and limits
             const modalType = (result.error_records > 0 || result.limit_exceeded) ? 'warning' : 'success';
-            const modalTitle = result.limit_exceeded ? 'Import Partially Completed' : 'Import Success';
+            const modalTitle = result.limit_exceeded ? 'Import Limit Reached' : 'Import Success';
             
             if (result.error_records > 0) {
                 const showDetails = await showCustomConfirm(modalTitle, successMsg + '\n\nWould you like to see the error details?');

@@ -12,32 +12,30 @@
             .custom-tooltip .tooltip-text {
                 visibility: hidden;
                 width: max-content;
-                max-width: 250px;
+                max-width: 280px;
                 background-color: #1e293b;
                 color: #fff;
                 text-align: center;
-                border-radius: 6px;
-                padding: 8px 12px;
-                position: absolute;
-                z-index: 10000;
-                bottom: 125%;
-                left: 50%;
-                transform: translateX(-50%);
+                border-radius: 8px;
+                padding: 10px 14px;
+                position: fixed;
+                z-index: 99999;
                 opacity: 0;
                 transition: opacity 0.3s;
                 font-size: 13px;
-                line-height: 1.4;
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                line-height: 1.5;
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
                 white-space: normal;
+                pointer-events: none;
             }
             
             .custom-tooltip .tooltip-text::after {
                 content: "";
                 position: absolute;
-                top: 100%;
+                bottom: -8px;
                 left: 50%;
                 transform: translateX(-50%);
-                border-width: 5px;
+                border-width: 8px 8px 0 8px;
                 border-style: solid;
                 border-color: #1e293b transparent transparent transparent;
             }
@@ -48,8 +46,13 @@
             }
             
             /* Ensure tooltips work in modal */
-            .modal-box {
-                overflow: visible !important;
+            #import-workers-modal .modal-box {
+                overflow-y: auto;
+                overflow-x: visible;
+            }
+            
+            #import-workers-modal .card-body {
+                overflow: visible;
             }
         </style>
         <div class="flex items-center justify-between mb-6">
@@ -178,3 +181,27 @@
         </div>
     </div>
 </dialog>
+
+<script>
+    // Dynamic tooltip positioning to prevent cutoff
+    document.addEventListener('DOMContentLoaded', function() {
+        const tooltips = document.querySelectorAll('.custom-tooltip');
+        
+        tooltips.forEach(tooltip => {
+            const icon = tooltip;
+            const tooltipText = tooltip.querySelector('.tooltip-text');
+            
+            if (!tooltipText) return;
+            
+            icon.addEventListener('mouseenter', function() {
+                // Get icon position
+                const iconRect = icon.getBoundingClientRect();
+                
+                // Position tooltip above the icon
+                tooltipText.style.left = (iconRect.left + iconRect.width / 2) + 'px';
+                tooltipText.style.top = (iconRect.top - 10) + 'px';
+                tooltipText.style.transform = 'translate(-50%, -100%)';
+            });
+        });
+    });
+</script>

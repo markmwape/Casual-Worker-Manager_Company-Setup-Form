@@ -571,9 +571,55 @@ def get_workspace_payments():
 
 # Removed: /api/create-checkout-session - Replaced with simpler /api/create-checkout
 
-# Removed: /api/request-trial-extension - Not needed, users upgrade through Stripe
-
 # Removed: /subscription/success - Stripe handles success pages, webhooks handle subscription updates
+
+@app.route('/api/request-trial-extension', methods=['POST'])
+def request_trial_extension():
+    """Allow users to request a one-time 3-day trial extension"""
+    from datetime import timedelta
+    
+    if 'user_id' not in session:
+        return jsonify({'error': 'Not authenticated'}), 401
+    
+    try:
+        # Get current workspace
+        workspace_id = session.get('current_workspace', {}).get('id')
+        if not workspace_id:
+            return jsonify({'error': 'No active workspace'}), 400
+        
+        workspace = Workspace.query.get(workspace_id)
+        if not workspace:
+            return jsonify({'error': 'Workspace not found'}), 404
+        
+        # Check if extension has already been used
+        if workspace.extension_used:
+            return jsonify({'error': 'Trial extension has already been used for this workspace'}), 400
+        
+        # Check if workspace is on trial
+        if workspace.subscription_status != 'trial':
+            return jsonify({'error': 'Extension is only available for trial accounts'}), 400
+        
+        # Grant 3-day extension
+        if workspace.trial_end_date:
+            workspace.trial_end_date = workspace.trial_end_date + timedelta(days=3)
+        else:
+            workspace.trial_end_date = datetime.utcnow() + timedelta(days=3)
+        
+        workspace.extension_used = True
+        db.session.commit()
+        
+        logging.info(f"Trial extension granted for workspace {workspace.id}: {workspace.name}")
+        
+        return jsonify({
+            'success': True,
+            'message': 'Trial extended by 3 days',
+            'trial_end_date': workspace.trial_end_date.isoformat() if workspace.trial_end_date else None
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        logging.error(f"Error granting trial extension: {str(e)}")
+        return jsonify({'error': 'Failed to grant trial extension'}), 500
 
 @app.route('/stripe/webhook', methods=['POST'])
 def stripe_webhook():

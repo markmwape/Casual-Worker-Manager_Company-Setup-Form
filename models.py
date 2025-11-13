@@ -30,6 +30,7 @@ class Workspace(db.Model):
     subscription_tier = db.Column(db.String(50), default='trial')
     trial_end_date = db.Column(db.DateTime, nullable=True)
     subscription_end_date = db.Column(db.DateTime, nullable=True)
+    extension_used = db.Column(db.Boolean, default=False)
     
     # Relationships
     users = db.relationship('UserWorkspace', back_populates='workspace', cascade='all, delete-orphan')

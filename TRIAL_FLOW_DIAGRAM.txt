@@ -1,0 +1,152 @@
+```
+TRIAL EXPIRATION - VISUAL FLOW DIAGRAM
+═══════════════════════════════════════════════════════════════════════════════
+
+                            USER TRIES TO ACCESS APP
+                                      │
+                                      ▼
+                        ┌─────────────────────────────┐
+                        │   Is user authenticated?    │
+                        └─────────────┬───────────────┘
+                                      │
+                      ┌───────────────┴────────────────┐
+                      │                                │
+                     NO                              YES
+                      │                                │
+                      ▼                                ▼
+            ┌──────────────────┐          ┌──────────────────────────┐
+            │ Redirect to      │          │  Get current workspace   │
+            │ /signin          │          └──────────┬───────────────┘
+            └──────────────────┘                     │
+                                                     ▼
+                                        ┌────────────────────────────┐
+                                        │ Check Subscription Status  │
+                                        │ check_subscription_status()│
+                                        └─────────────┬──────────────┘
+                                                      │
+                ┌─────────────────────────────────────┼──────────────────────┐
+                │                                     │                      │
+                │                                     │                      │
+        Has Paid Subscription?              Is Trial Active?        Trial Expired?
+         (stripe_subscription_id)         (trial_end_date > now)   (trial_end_date < now)
+                │                                     │                      │
+                ▼                                     ▼                      ▼
+    ┌───────────────────────┐          ┌──────────────────────┐   ┌────────────────────┐
+    │ subscription_status   │          │  Days remaining?     │   │  Status: EXPIRED   │
+    │ = 'active'?           │          │                      │   └─────────┬──────────┘
+    └───────┬───────────────┘          └──────┬───────────────┘             │
+            │                                  │                             │
+        ┌───┴────┐                    ┌────────┴─────────┐                  │
+       YES       NO                   │                  │                  │
+        │        │                    │                  │                  │
+        │        ▼              > 1 day left      0-1 days left            │
+        │   ┌────────────┐           │                  │                  │
+        │   │ Check if   │           │                  │                  │
+        │   │ past_due   │           │                  │                  │
+        │   └────┬───────┘           │                  │                  │
+        │        │                    │                  │                  │
+        │    ┌───┴────┐              │                  │                  │
+        │   YES       NO              │                  │                  │
+        │    │        │               │                  │                  │
+        │    │        ▼               ▼                  ▼                  │
+        │    │   ┌─────────┐   ┌───────────┐   ┌────────────────┐         │
+        │    │   │ BLOCKED │   │   ALLOW   │   │ ALLOW + WARN   │         │
+        │    │   │ EXPIRED │   │  ACTIVE   │   │   (expiring)   │         │
+        │    │   └─────────┘   └───────────┘   └────────────────┘         │
+        │    │                                                              │
+        │    ▼                                                              │
+        │ ┌──────────────────┐                                             │
+        │ │ Grace period?    │                                             │
+        │ │ (< 3 days)       │                                             │
+        │ └────┬─────────────┘                                             │
+        │      │                                                            │
+        │  ┌───┴────┐                                                      │
+        │ YES       NO                                                     │
+        │  │        │                                                      │
+        │  ▼        ▼                                                      │
+        │ ALLOW   BLOCKED ────────────────────────────────────────────────┘
+        │  +WARN                                                           │
+        │                                                                  │
+        ▼                                                                  │
+   ┌────────────┐                                                         │
+   │   ALLOW    │                                                         │
+   │ Full Access│                                                         │
+   └────────────┘                                                         │
+                                                                          │
+                                                                          ▼
+                                              ┌───────────────────────────────────┐
+                                              │                                   │
+                                              │    SUBSCRIPTION REQUIRED PAGE     │
+                                              │   (subscription_required.html)    │
+                                              │                                   │
+                                              └─────────────┬─────────────────────┘
+                                                            │
+                                                            │
+                        ┌───────────────────────────────────┼────────────────────────┐
+                        │                                   │                        │
+                        ▼                                   ▼                        ▼
+            ┌────────────────────────┐        ┌──────────────────────┐   ┌──────────────────┐
+            │  SUBSCRIBE TO A PLAN   │        │ REQUEST 3-DAY        │   │  MANAGE EXISTING │
+            │  (Stripe Pricing)      │        │ EXTENSION            │   │  BILLING         │
+            └───────────┬────────────┘        │ (if not used)        │   │  (Stripe Portal) │
+                        │                     └──────────┬───────────┘   └──────────────────┘
+                        │                                │
+                        │                                │
+                        ▼                                ▼
+            ┌────────────────────────┐        ┌──────────────────────┐
+            │ 1. Choose Plan:        │        │ Check:               │
+            │    - Starter ($20)     │        │ extension_used?      │
+            │    - Growth ($50)      │        └──────────┬───────────┘
+            │    - Enterprise ($150) │                   │
+            │    - Corporate ($350)  │         ┌─────────┴──────────┐
+            └───────────┬────────────┘        YES                  NO
+                        │                      │                    │
+                        ▼                      ▼                    ▼
+            ┌────────────────────────┐   ┌─────────────┐   ┌──────────────────┐
+            │ 2. Stripe Checkout     │   │   ERROR     │   │ Add 3 days to    │
+            │    - Enter payment     │   │ "Already    │   │ trial_end_date   │
+            │    - Process payment   │   │  used"      │   │                  │
+            └───────────┬────────────┘   └─────────────┘   │ Set              │
+                        │                                   │ extension_used   │
+                        ▼                                   │ = TRUE           │
+            ┌────────────────────────┐                     └────────┬─────────┘
+            │ 3. Stripe Webhook      │                              │
+            │    → Server notified   │                              │
+            └───────────┬────────────┘                              │
+                        │                                           │
+                        ▼                                           │
+            ┌────────────────────────┐                              │
+            │ 4. Update Workspace:   │                              │
+            │    - subscription_     │                              │
+            │      status = 'active' │                              │
+            │    - stripe_           │                              │
+            │      subscription_id   │                              │
+            │    - subscription_tier │                              │
+            │    - trial_end_date    │                              │
+            │      = NULL            │                              │
+            │    - subscription_     │                              │
+            │      end_date = +30d   │                              │
+            └───────────┬────────────┘                              │
+                        │                                           │
+                        └───────────────┬───────────────────────────┘
+                                        │
+                                        ▼
+                            ┌───────────────────────┐
+                            │   REDIRECT TO /home   │
+                            │   ✅ FULL ACCESS      │
+                            │   RESTORED            │
+                            └───────────────────────┘
+
+
+═══════════════════════════════════════════════════════════════════════════════
+
+KEY STATUSES:
+═════════════
+✅ ACTIVE          - Has valid paid subscription
+✅ TRIAL_ACTIVE    - Trial not expired (> 1 day left)
+⚠️  TRIAL_EXPIRING - Trial expires within 1 day
+⚠️  PAST_DUE       - Payment failed, in grace period (≤ 3 days)
+❌ EXPIRED         - Trial ended OR subscription canceled OR grace period ended
+
+═══════════════════════════════════════════════════════════════════════════════
+```

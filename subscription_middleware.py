@@ -38,6 +38,8 @@ def subscription_required(f):
             # Check subscription status
             subscription_status = check_subscription_status(workspace)
             
+            logging.debug(f"Subscription status for workspace {workspace_id}: {subscription_status}")
+            
             if subscription_status == 'expired':
                 # Trial has expired and no active subscription OR subscription canceled/failed
                 if request.is_json:
@@ -83,6 +85,11 @@ def check_subscription_status(workspace):
     """Check the subscription status of a workspace"""
     now = datetime.utcnow()
     
+    logging.debug(f"Checking subscription for workspace {workspace.id}: "
+                 f"subscription_status={workspace.subscription_status}, "
+                 f"trial_end_date={workspace.trial_end_date}, "
+                 f"subscription_end_date={workspace.subscription_end_date}")
+    
     # Check subscription status from Stripe webhooks
     if workspace.stripe_subscription_id:
         if workspace.subscription_status == 'active':
@@ -100,7 +107,11 @@ def check_subscription_status(workspace):
     
     # Check trial status (for users without paid subscriptions)
     if workspace.trial_end_date:
-        days_left = (workspace.trial_end_date - now).days
+        # Use total_seconds to get more accurate comparison
+        time_diff = (workspace.trial_end_date - now).total_seconds()
+        
+        # Convert to days (more accurate than .days which truncates)
+        days_left = time_diff / 86400  # 86400 seconds in a day
         
         if days_left > 1:
             return 'trial_active'

@@ -597,9 +597,11 @@ def request_trial_extension():
         if workspace.extension_used:
             return jsonify({'error': 'Trial extension has already been used for this workspace'}), 400
         
-        # Check if workspace is on trial
-        if workspace.subscription_status != 'trial':
-            return jsonify({'error': 'Extension is only available for trial accounts'}), 400
+        # Check if workspace is on trial (allow trial or None/empty status, but not paid accounts)
+        if workspace.subscription_status and workspace.subscription_status not in ['trial', None]:
+            # If they have an active paid subscription, they don't need extension
+            if workspace.subscription_status == 'active' and workspace.stripe_subscription_id:
+                return jsonify({'error': 'Extension is only available for trial accounts'}), 400
         
         # Grant 3-day extension
         if workspace.trial_end_date:
@@ -610,7 +612,11 @@ def request_trial_extension():
         workspace.extension_used = True
         db.session.commit()
         
+        # Verify the update
+        db.session.refresh(workspace)
         logging.info(f"Trial extension granted for workspace {workspace.id}: {workspace.name}")
+        logging.info(f"Updated trial_end_date: {workspace.trial_end_date}")
+        logging.info(f"Extension used flag: {workspace.extension_used}")
         
         return jsonify({
             'success': True,

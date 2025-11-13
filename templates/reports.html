@@ -285,11 +285,13 @@
                         </div>
                         {% else %}
                         <!-- Add info when data is present -->
-                        <div class="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
-                            <div class="flex items-center gap-2 text-green-800 text-sm">
-                                <i class="fas fa-check-circle"></i>
-                                <span class="font-medium">{{ per_day_records|length }} attendance record(s) found</span>
-                                <span class="text-green-600">• Data automatically synced from task attendance</span>
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                            <div class="flex flex-col items-center justify-center text-center gap-2 text-green-800 text-sm">
+                                <div class="flex items-center justify-center gap-2">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span class="font-medium">{{ per_day_records|length }} attendance record(s) found</span>
+                                </div>
+                                <span class="text-green-600 text-xs">• Data automatically synced from task attendance</span>
                             </div>
                         </div>
                         {% endif %}
@@ -468,11 +470,13 @@
                         </div>
                         {% else %}
                         <!-- Add info when data is present -->
-                        <div class="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
-                            <div class="flex items-center gap-2 text-green-800 text-sm">
-                                <i class="fas fa-check-circle"></i>
-                                <span class="font-medium">{{ per_part_records|length }} unit completion record(s) found</span>
-                                <span class="text-green-600">• Data automatically synced from task units</span>
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                            <div class="flex flex-col items-center justify-center text-center gap-2 text-blue-800 text-sm">
+                                <div class="flex items-center justify-center gap-2">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span class="font-medium">{{ per_part_records|length }} unit completion record(s) found</span>
+                                </div>
+                                <span class="text-blue-600 text-xs">• Data automatically synced from task units</span>
                             </div>
                         </div>
                         {% endif %}
@@ -640,10 +644,12 @@
                         </div>
                         {% else %}
                         <div class="bg-gradient-to-r from-purple-50 to-purple-100 p-4 border-t border-purple-200">
-                            <div class="flex items-center text-purple-700 justify-center">
-                                <i class="fas fa-check-circle"></i>
-                                <span class="font-medium">{{ per_hour_records|length }} hourly work record(s) found</span>
-                                <span class="text-purple-600">• Data automatically synced from task hours tracking</span>
+                            <div class="flex flex-col items-center justify-center text-center gap-2 text-purple-700">
+                                <div class="flex items-center justify-center gap-2">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span class="font-medium">{{ per_hour_records|length }} hourly work record(s) found</span>
+                                </div>
+                                <span class="text-purple-600 text-xs">• Data automatically synced from task hours tracking</span>
                             </div>
                         </div>
                         {% endif %}
@@ -1207,35 +1213,19 @@
     // Toggle custom fields visibility
     window.toggleCustomFields = function(type) {
         const windowId = `customFieldsWindow${type}`;
-        const window = document.getElementById(windowId);
+        const fieldWindow = document.getElementById(windowId);
         
-        if (window) {
-            if (window.style.display === 'none') {
-                window.style.display = 'block';
+        if (fieldWindow) {
+            if (fieldWindow.style.display === 'none') {
+                fieldWindow.style.display = 'block';
             } else {
-                window.style.display = 'none';
+                fieldWindow.style.display = 'none';
             }
         }
     };
     
     // Open add report field modals for different payment types
-    window.openAddReportFieldModalPerDayV2 = function() {
-        // Open modal for adding per day report fields
-        // This would typically show a modal for adding custom fields specific to per_day reports
-        console.log('Opening add report field modal for per day reports');
-    };
-    
-    window.openAddReportFieldModalPerUnitV2 = function() {
-        // Open modal for adding per unit report fields
-        console.log('Opening add report field modal for per unit reports');
-    };
-    
-    window.openAddReportFieldModalPerHourV2 = function() {
-        // Delegated to modal script - this function is now defined in add_report_field.html
-        if (typeof openAddReportFieldModalPerHourV2 === 'function' && window.openAddReportFieldModalPerHourV2 !== arguments.callee) {
-            openAddReportFieldModalPerHourV2();
-        }
-    };
+    // Functions are defined in modals/add_report_field.html - no need to redefine them here
     
     window.openDatePicker = openDatePicker;
     window.closeDatePicker = closeDatePicker;

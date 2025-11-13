@@ -44,7 +44,7 @@ def get_database_connection():
         return None
 
 def add_missing_columns():
-    """Add the missing per_day_payout and per_day_currency columns"""
+    """Add the missing per_day_payout, per_day_currency, and extension_used columns"""
     conn = get_database_connection()
     if not conn:
         print("❌ Could not connect to database")
@@ -53,28 +53,44 @@ def add_missing_columns():
     try:
         cursor = conn.cursor()
         
-        # Check if columns already exist
+        # Check if task columns already exist
         cursor.execute("""
             SELECT column_name 
             FROM information_schema.columns 
             WHERE table_name = 'task' 
             AND column_name IN ('per_day_payout', 'per_day_currency')
         """)
-        existing_columns = [row[0] for row in cursor.fetchall()]
+        existing_task_columns = [row[0] for row in cursor.fetchall()]
         
-        if 'per_day_payout' not in existing_columns:
+        if 'per_day_payout' not in existing_task_columns:
             print("Adding per_day_payout column...")
             cursor.execute("ALTER TABLE task ADD COLUMN per_day_payout FLOAT")
             print("✅ Added per_day_payout column")
         else:
             print("✅ per_day_payout column already exists")
         
-        if 'per_day_currency' not in existing_columns:
+        if 'per_day_currency' not in existing_task_columns:
             print("Adding per_day_currency column...")
             cursor.execute("ALTER TABLE task ADD COLUMN per_day_currency VARCHAR(10)")
             print("✅ Added per_day_currency column")
         else:
             print("✅ per_day_currency column already exists")
+        
+        # Check if workspace extension_used column exists
+        cursor.execute("""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'workspace' 
+            AND column_name = 'extension_used'
+        """)
+        existing_workspace_columns = [row[0] for row in cursor.fetchall()]
+        
+        if 'extension_used' not in existing_workspace_columns:
+            print("Adding extension_used column to workspace...")
+            cursor.execute("ALTER TABLE workspace ADD COLUMN extension_used BOOLEAN DEFAULT FALSE")
+            print("✅ Added extension_used column")
+        else:
+            print("✅ extension_used column already exists")
         
         # Commit the changes
         conn.commit()
@@ -93,7 +109,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     
     print("🚀 Emergency Database Migration")
-    print("Adding missing per_day_payout and per_day_currency columns...")
+    print("Adding missing per_day_payout, per_day_currency, and extension_used columns...")
     
     if add_missing_columns():
         print("✅ Migration completed successfully!")

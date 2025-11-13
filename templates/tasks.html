@@ -22,6 +22,24 @@
         position: relative;
         /* Remove z-index to avoid stacking context conflicts with sidebar */
     }
+    
+    /* Disabled date picker styling */
+    button[onclick="openEditDatePickerModal()"]:disabled {
+        background-color: #f9fafb !important;
+        border-color: #d1d5db !important;
+        cursor: not-allowed !important;
+        opacity: 0.6 !important;
+    }
+    
+    button[onclick="openEditDatePickerModal()"]:disabled:hover {
+        border-color: #d1d5db !important;
+        background-color: #f9fafb !important;
+        transform: none !important;
+    }
+    
+    button[onclick="openEditDatePickerModal()"]:disabled svg {
+        color: #9ca3af !important;
+    }
     .status-dropdown-menu {
         position: absolute;
         top: 100%;
@@ -569,6 +587,10 @@
 
 {% block scripts %}
 <script>
+        // Global variables for edit task date picker
+        let editCurrentDate = new Date();
+        let editSelectedDateValue = null;
+        
         // Modal functions for add task
         function openAddTaskModal() {
             console.log('Opening add task modal...');
@@ -733,6 +755,50 @@
             document.getElementById('edit-selected-date-display').classList.remove('text-gray-500');
             document.getElementById('edit-selected-date-display').classList.add('text-gray-900');
             editSelectedDateValue = startDate;
+            
+            // Check if start date has passed and disable date editing if it has
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const taskStartDate = new Date(startDate + 'T00:00:00');
+            taskStartDate.setHours(0, 0, 0, 0);
+            
+            const datePickerButton = document.querySelector('button[onclick="openEditDatePickerModal()"]');
+            if (datePickerButton) {
+                if (taskStartDate < today) {
+                    // Start date has passed - disable editing
+                    datePickerButton.disabled = true;
+                    datePickerButton.classList.add('cursor-not-allowed', 'opacity-50');
+                    datePickerButton.title = 'Cannot edit start date after it has passed';
+                    
+                    // Update the display to show it's locked
+                    const displaySpan = document.getElementById('edit-selected-date-display');
+                    if (displaySpan) {
+                        displaySpan.innerHTML = `${displayDate} <span class="text-xs text-red-500 ml-2 font-semibold">🔒 Locked</span>`;
+                    }
+                    
+                    // Add a helper message below the date picker
+                    const datePickerContainer = datePickerButton.parentElement;
+                    let helperMessage = datePickerContainer.querySelector('.date-locked-message');
+                    if (!helperMessage) {
+                        helperMessage = document.createElement('div');
+                        helperMessage.className = 'date-locked-message text-xs text-red-600 mt-1 p-2 bg-red-50 rounded border border-red-200';
+                        helperMessage.innerHTML = '<i class="fas fa-info-circle mr-1"></i>The start date cannot be changed because it has already passed.';
+                        datePickerContainer.appendChild(helperMessage);
+                    }
+                } else {
+                    // Start date is today or in future - enable editing
+                    datePickerButton.disabled = false;
+                    datePickerButton.classList.remove('cursor-not-allowed', 'opacity-50');
+                    datePickerButton.title = 'Click to select start date';
+                    
+                    // Remove any existing helper message
+                    const datePickerContainer = datePickerButton.parentElement;
+                    const helperMessage = datePickerContainer.querySelector('.date-locked-message');
+                    if (helperMessage) {
+                        helperMessage.remove();
+                    }
+                }
+            }
             
             // Reset card styling
             const fixedCard = document.getElementById('edit-fixed-card');
@@ -916,6 +982,33 @@
             const taskId = document.getElementById('edit-task-id').value;
             const form = event.target;
             const formData = new FormData(form);
+            
+            // Disable submit button to prevent multiple submissions
+            const submitButton = document.getElementById('edit-submit-task-btn');
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<span class="loading loading-spinner loading-sm"></span> Saving...';
+            }
+            
+            // Validate start date hasn't been changed to a past date
+            const newStartDate = formData.get('start_date');
+            if (newStartDate) {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const selectedDate = new Date(newStartDate + 'T00:00:00');
+                selectedDate.setHours(0, 0, 0, 0);
+                
+                if (selectedDate < today) {
+                    showCustomModal('Validation Error', 'Start date cannot be set to a date in the past.', 'warning');
+                    // Re-enable submit button
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>Save Changes';
+                    }
+                    return;
+                }
+            }
+            
             const paymentType = formData.get('edit_payment_type') || 'per_day';
             let perPartPayout = null;
             let perPartCurrency = null;
@@ -930,11 +1023,21 @@
                 if (!perPartPayout || isNaN(perPartPayout) || Number(perPartPayout) <= 0) {
                     showCustomModal('Validation Error', 'Please enter a valid payout per part.', 'warning');
                     document.getElementById('edit-per-part-payout').focus();
+                    // Re-enable submit button
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>Save Changes';
+                    }
                     return;
                 }
                 if (!perPartCurrency || perPartCurrency.trim() === '') {
                     showCustomModal('Validation Error', 'Please select a currency for payout per part.', 'warning');
                     document.getElementById('edit-per-part-currency').focus();
+                    // Re-enable submit button
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>Save Changes';
+                    }
                     return;
                 }
             } else if (paymentType === 'per_hour') {
@@ -943,11 +1046,21 @@
                 if (!perHourPayout || isNaN(perHourPayout) || Number(perHourPayout) <= 0) {
                     showCustomModal('Validation Error', 'Please enter a valid hourly rate.', 'warning');
                     document.getElementById('edit-per-hour-payout').focus();
+                    // Re-enable submit button
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>Save Changes';
+                    }
                     return;
                 }
                 if (!perHourCurrency || perHourCurrency.trim() === '') {
                     showCustomModal('Validation Error', 'Please select a currency for hourly rate.', 'warning');
                     document.getElementById('edit-per-hour-currency').focus();
+                    // Re-enable submit button
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>Save Changes';
+                    }
                     return;
                 }
             } else {
@@ -956,34 +1069,54 @@
                 if (!perDayPayout || isNaN(perDayPayout) || Number(perDayPayout) <= 0) {
                     showCustomModal('Validation Error', 'Please enter a valid daily payout per worker.', 'warning');
                     document.getElementById('edit-per-day-payout').focus();
+                    // Re-enable submit button
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>Save Changes';
+                    }
                     return;
                 }
                 if (!perDayCurrency || perDayCurrency.trim() === '') {
                     showCustomModal('Validation Error', 'Please select a currency for daily payout.', 'warning');
                     document.getElementById('edit-per-day-currency').focus();
+                    // Re-enable submit button
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>Save Changes';
+                    }
                     return;
                 }
             }
+            
+            const requestBody = {
+                name: formData.get('name'),
+                description: formData.get('description'),
+                start_date: formData.get('start_date'),
+                payment_type: paymentType,
+                per_part_payout: perPartPayout,
+                per_part_currency: perPartCurrency,
+                per_hour_payout: perHourPayout,
+                per_hour_currency: perHourCurrency,
+                per_day_payout: perDayPayout,
+                per_day_currency: perDayCurrency
+            };
+            
+            // Add timeout to prevent hanging
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
             
             fetch(`/api/task/${taskId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    name: formData.get('name'),
-                    description: formData.get('description'),
-                    start_date: formData.get('start_date'),
-                    payment_type: paymentType,
-                    per_part_payout: perPartPayout,
-                    per_part_currency: perPartCurrency,
-                    per_hour_payout: perHourPayout,
-                    per_hour_currency: perHourCurrency,
-                    per_day_payout: perDayPayout,
-                    per_day_currency: perDayCurrency
-                })
+                body: JSON.stringify(requestBody),
+                signal: controller.signal
             })
-            .then(response => response.json())
+            .then(response => {
+                clearTimeout(timeoutId);
+                return response.json();
+            })
             .then(result => {
                 if (result.error) {
                     showCustomModal('Error', result.error, 'error');
@@ -993,8 +1126,20 @@
                 }
             })
             .catch(error => {
+                clearTimeout(timeoutId);
                 console.error('Error updating task:', error);
-                showCustomModal('Error', 'Failed to update task', 'error');
+                let errorMessage = 'Failed to update task';
+                if (error.name === 'AbortError') {
+                    errorMessage = 'Request timed out. Please check your connection and try again.';
+                }
+                showCustomModal('Error', errorMessage, 'error');
+            })
+            .finally(() => {
+                // Re-enable submit button
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>Save Changes';
+                }
             });
         }
 
@@ -1201,6 +1346,23 @@
             // Initialize feather icons
             feather.replace();
             
+            // Initialize edit date picker variables
+            if (typeof editCurrentDate === 'undefined') {
+                window.editCurrentDate = new Date();
+            }
+            if (typeof editSelectedDateValue === 'undefined') {
+                window.editSelectedDateValue = null;
+            }
+            
+            // Setup edit task form event listener
+            const editTaskForm = document.getElementById('editTaskForm');
+            if (editTaskForm) {
+                editTaskForm.addEventListener('submit', updateTask);
+            }
+            
+            // Setup edit payment type toggle
+            setupEditPaymentTypeToggle();
+            
             // Task-specific functionality only
             const statusMenuItems = document.querySelectorAll('.status-menu-item');
             const currentDate = new Date().toISOString().split('T')[0];
@@ -1254,14 +1416,88 @@
         }
 
         // Edit Task Date Picker Functions
-        let editCurrentDate = new Date();
-        let editSelectedDateValue = null;
+        // Variables declared at the top of the script
 
         function openEditDatePickerModal() {
-            const modal = document.getElementById('edit-date-picker-modal');
-            if (modal) {
+            console.log('=== OPENING EDIT DATE PICKER MODAL ===');
+            
+            try {
+                // First check if date editing is allowed
+                const datePickerButton = document.querySelector('button[onclick="openEditDatePickerModal()"]');
+                if (datePickerButton && datePickerButton.disabled) {
+                    console.log('Date picker button is disabled - start date has passed');
+                    if (typeof showCustomModal === 'function') {
+                        showCustomModal('Cannot Edit Date', 'The start date cannot be modified after it has passed. This task has already started or was in the past.', 'warning');
+                    } else {
+                        alert('Cannot edit start date - the date has already passed.');
+                    }
+                    return;
+                }
+                
+                console.log('Step 1: Looking for modal element...');
+                const modal = document.getElementById('edit-date-picker-modal');
+                console.log('Modal found:', modal);
+                
+                if (!modal) {
+                    console.error('❌ Edit date picker modal not found');
+                    alert('Date picker is not available. The modal element is missing from the page.');
+                    return;
+                }
+                
+                console.log('Step 2: Checking calendar elements...');
+                const calendarGrid = document.getElementById('edit-calendar-grid');
+                const calendarMonthYear = document.getElementById('edit-calendar-month-year');
+                
+                console.log('Calendar grid found:', calendarGrid);
+                console.log('Calendar month/year found:', calendarMonthYear);
+                
+                if (!calendarGrid) {
+                    console.error('❌ Calendar grid not found');
+                    alert('Calendar grid element is missing. Please refresh the page.');
+                    return;
+                }
+                
+                if (!calendarMonthYear) {
+                    console.error('❌ Calendar month/year not found');  
+                    alert('Calendar month/year element is missing. Please refresh the page.');
+                    return;
+                }
+                
+                console.log('Step 3: Initializing date variables...');
+                if (!window.editCurrentDate) {
+                    console.log('Initializing editCurrentDate...');
+                    window.editCurrentDate = new Date();
+                }
+                console.log('editCurrentDate:', window.editCurrentDate);
+                console.log('editSelectedDateValue:', window.editSelectedDateValue);
+                
+                console.log('Step 4: Showing modal...');
                 modal.showModal();
-                renderEditCalendar();
+                console.log('Modal shown successfully');
+                
+                console.log('Step 5: Rendering calendar...');
+                // Use setTimeout to ensure modal is fully rendered
+                setTimeout(() => {
+                    console.log('About to call renderEditCalendar...');
+                    renderEditCalendar();
+                    console.log('renderEditCalendar completed');
+                }, 200);
+                
+                console.log('=== EDIT DATE PICKER MODAL OPENED SUCCESSFULLY ===');
+                
+            } catch (error) {
+                console.error('❌ FATAL ERROR in openEditDatePickerModal:', error);
+                console.error('Error stack:', error.stack);
+                alert(`Fatal error opening date picker: ${error.message}. Please refresh the page and try again.`);
+                
+                // Fallback to regular date input
+                const dateInput = document.getElementById('edit-task-start-date');
+                if (dateInput) {
+                    console.log('Falling back to regular date input');
+                    dateInput.type = 'date';
+                    dateInput.style.display = 'block';
+                    dateInput.focus();
+                }
             }
         }
 
@@ -1273,69 +1509,136 @@
         }
 
         function renderEditCalendar() {
-            const year = editCurrentDate.getFullYear();
-            const month = editCurrentDate.getMonth();
-            
-            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
-                               'July', 'August', 'September', 'October', 'November', 'December'];
-            document.getElementById('edit-calendar-month-year').textContent = `${monthNames[month]} ${year}`;
-            
-            const firstDay = new Date(year, month, 1).getDay();
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            
-            const grid = document.getElementById('edit-calendar-grid');
-            grid.innerHTML = '';
-            
-            for (let i = 0; i < firstDay; i++) {
-                const emptyCell = document.createElement('div');
-                emptyCell.className = 'p-2';
-                grid.appendChild(emptyCell);
-            }
-            
-            for (let day = 1; day <= daysInMonth; day++) {
-                const dateCell = document.createElement('button');
-                dateCell.type = 'button';
-                dateCell.textContent = day;
-                dateCell.className = 'p-2 rounded hover:bg-blue-100 text-center transition';
+            try {
+                console.log('Starting renderEditCalendar...');
                 
-                const cellDate = new Date(year, month, day);
-                cellDate.setHours(0, 0, 0, 0);
-                
-                if (cellDate < today) {
-                    dateCell.className += ' text-gray-300 cursor-not-allowed';
-                    dateCell.disabled = true;
-                } else {
-                    dateCell.className += ' hover:bg-blue-100 cursor-pointer';
-                    dateCell.onclick = () => selectEditDate(cellDate);
-                    
-                    if (cellDate.getTime() === today.getTime()) {
-                        dateCell.className += ' font-bold border-2 border-blue-500';
-                    }
-                    
-                    if (editSelectedDateValue && cellDate.getTime() === new Date(editSelectedDateValue).getTime()) {
-                        dateCell.className += ' bg-blue-500 text-white font-bold';
-                    }
+                if (!editCurrentDate) {
+                    console.error('editCurrentDate is not defined');
+                    editCurrentDate = new Date();
                 }
                 
-                grid.appendChild(dateCell);
+                const year = editCurrentDate.getFullYear();
+                const month = editCurrentDate.getMonth();
+                
+                console.log('Rendering calendar for:', year, month);
+                
+                const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                                   'July', 'August', 'September', 'October', 'November', 'December'];
+                const monthYearElement = document.getElementById('edit-calendar-month-year');
+                if (monthYearElement) {
+                    monthYearElement.textContent = `${monthNames[month]} ${year}`;
+                } else {
+                    console.error('Month year element not found');
+                    return;
+                }
+                
+                const firstDay = new Date(year, month, 1).getDay();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                console.log('Calendar data:', { firstDay, daysInMonth });
+                
+                const grid = document.getElementById('edit-calendar-grid');
+                if (!grid) {
+                    console.error('Edit calendar grid not found');
+                    return;
+                }
+                
+                grid.innerHTML = '';
+                
+                // Add empty cells for days before the first day of the month
+                for (let i = 0; i < firstDay; i++) {
+                    const emptyCell = document.createElement('div');
+                    emptyCell.className = 'p-2';
+                    grid.appendChild(emptyCell);
+                }
+                
+                // Add day cells
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const dateCell = document.createElement('button');
+                    dateCell.type = 'button';
+                    dateCell.textContent = day;
+                    dateCell.className = 'p-2 rounded hover:bg-blue-100 text-center transition';
+                    
+                    const cellDate = new Date(year, month, day);
+                    cellDate.setHours(0, 0, 0, 0);
+                    
+                    if (cellDate < today) {
+                        dateCell.className += ' text-gray-300 cursor-not-allowed';
+                        dateCell.disabled = true;
+                    } else {
+                        dateCell.className += ' hover:bg-blue-100 cursor-pointer';
+                        dateCell.onclick = () => selectEditDate(cellDate);
+                        
+                        if (cellDate.getTime() === today.getTime()) {
+                            dateCell.className += ' font-bold border-2 border-blue-500';
+                        }
+                        
+                        if (editSelectedDateValue && cellDate.getTime() === new Date(editSelectedDateValue).getTime()) {
+                            dateCell.className += ' bg-blue-500 text-white font-bold';
+                        }
+                    }
+                    
+                    grid.appendChild(dateCell);
+                }
+                
+                console.log('Calendar rendered successfully');
+                
+            } catch (error) {
+                console.error('Error rendering edit calendar:', error);
+                // Close the modal and show error message
+                closeEditDatePickerModal();
+                if (typeof showCustomModal === 'function') {
+                    showCustomModal('Error', 'Failed to render calendar. Please try again.', 'error');
+                } else {
+                    alert('Failed to render calendar. Please try again.');
+                }
             }
         }
 
         function selectEditDate(date) {
-            editSelectedDateValue = date.toISOString().split('T')[0];
-            renderEditCalendar();
+            try {
+                console.log('Date selected:', date);
+                editSelectedDateValue = date.toISOString().split('T')[0];
+                console.log('Selected date value:', editSelectedDateValue);
+                renderEditCalendar();
+            } catch (error) {
+                console.error('Error selecting edit date:', error);
+                // Set the date value without re-rendering to prevent infinite loop
+                if (date) {
+                    editSelectedDateValue = date.toISOString().split('T')[0];
+                    console.log('Fallback date value set:', editSelectedDateValue);
+                }
+            }
         }
 
         function editPreviousMonth() {
-            editCurrentDate.setMonth(editCurrentDate.getMonth() - 1);
-            renderEditCalendar();
+            try {
+                console.log('Edit previous month clicked');
+                if (!editCurrentDate) {
+                    editCurrentDate = new Date();
+                }
+                editCurrentDate.setMonth(editCurrentDate.getMonth() - 1);
+                console.log('New date:', editCurrentDate);
+                renderEditCalendar();
+            } catch (error) {
+                console.error('Error in editPreviousMonth:', error);
+            }
         }
 
         function editNextMonth() {
-            editCurrentDate.setMonth(editCurrentDate.getMonth() + 1);
-            renderEditCalendar();
+            try {
+                console.log('Edit next month clicked');
+                if (!editCurrentDate) {
+                    editCurrentDate = new Date();
+                }
+                editCurrentDate.setMonth(editCurrentDate.getMonth() + 1);
+                console.log('New date:', editCurrentDate);
+                renderEditCalendar();
+            } catch (error) {
+                console.error('Error in editNextMonth:', error);
+            }
         }
 
         function confirmEditDateSelection() {

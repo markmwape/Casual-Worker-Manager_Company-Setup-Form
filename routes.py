@@ -4004,6 +4004,23 @@ def manage_task(task_id):
                 logging.error(f"Invalid date format: {data['start_date']}")
                 return jsonify({'error': 'Invalid date format. Use YYYY-MM-DD'}), 400
             
+            # Check if the original start date has already passed
+            today = datetime.now().date()
+            original_start_date = task.start_date.date() if task.start_date else None
+            
+            if original_start_date and original_start_date < today:
+                # Original start date has passed - don't allow any date changes
+                if start_date.date() != original_start_date:
+                    return jsonify({
+                        'error': 'Cannot modify start date for tasks that have already started or are in the past. The original start date was ' + original_start_date.strftime('%Y-%m-%d') + '.'
+                    }), 400
+            else:
+                # Original start date is today or in future - validate new date isn't in the past
+                if start_date.date() < today:
+                    return jsonify({
+                        'error': 'Start date cannot be set to a date in the past.'
+                    }), 400
+            
             # Update task fields
             task.name = data['name']
             task.description = data.get('description', '')

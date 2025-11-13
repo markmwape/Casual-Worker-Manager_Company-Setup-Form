@@ -1211,8 +1211,10 @@
     };
     
     window.openAddReportFieldModalPerHourV2 = function() {
-        // Open modal for adding per hour report fields
-        console.log('Opening add report field modal for per hour reports');
+        // Delegated to modal script - this function is now defined in add_report_field.html
+        if (typeof openAddReportFieldModalPerHourV2 === 'function' && window.openAddReportFieldModalPerHourV2 !== arguments.callee) {
+            openAddReportFieldModalPerHourV2();
+        }
     };
     
     window.openDatePicker = openDatePicker;

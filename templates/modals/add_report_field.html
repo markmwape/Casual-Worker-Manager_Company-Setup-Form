@@ -186,6 +186,100 @@
     </div>
 </dialog>
 
+<dialog id="add-report-field-modal-per-hour" class="modal">
+    <div class="modal-box">
+        <h3 class="font-bold text-lg">Add Custom Report Field (Per Hour)</h3>
+        <form id="reportFieldFormPerHour" onsubmit="return false;">
+            <input type="hidden" name="payout_type" id="payoutTypeInputPerHour" value="per_hour">
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text">Field Name</span>
+                </label>
+                <input type="text" name="name" class="input input-bordered w-full" required pattern="[A-Za-z_]+" title="Only letters and underscores allowed" oninput="this.value = this.value.replace(/\s+/g, '_').replace(/[^A-Za-z_]/g, ''); document.getElementById('nameErrorPerHour').classList.add('hidden');">
+                <div class="text-xs text-orange-500 mt-1">Only text input is allowed for the custom field name (letters and underscores only).</div>
+                <div id="nameErrorPerHour" class="text-error text-sm mt-1 hidden">Field name must be unique and only letters/underscores are allowed.</div>
+            </div>
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text">Formula Builder</span>
+                    <div class="tooltip tooltip-left" data-tip="You can use arithmetic formulas with +, −, ×, ÷, and parentheses (). Example: (Field1 * Field2) / Field3">
+                        <i class="fas fa-question-circle text-info"></i>
+                    </div>
+                </label>
+                <div class="flex flex-wrap gap-2 mb-2">
+                    <select id="fieldPickerPerHour" class="select select-bordered min-w-[200px] max-w-xs whitespace-normal">
+                        <option value="">Select Field</option>
+                        <optgroup label="System Fields">
+                            <option value="hours_worked">Hours Worked</option>
+                            <option value="per_hour_rate">Hourly Rate</option>
+                            <option value="age">Age</option>
+                        </optgroup>
+                        {% if custom_fields %}
+                        <optgroup label="Custom Fields">
+                            {% for field in custom_fields if field.payout_type == 'per_hour' or field.payout_type == 'both' %}
+                            <option value="{{ field.name }}">{{ field.name }}</option>
+                            {% endfor %}
+                        </optgroup>
+                        {% endif %}
+                    </select>
+                    <button type="button" class="btn btn-square" onclick="insertOperator('(', 'PerHour')">(</button>
+                    <button type="button" class="btn btn-square" onclick="insertOperator(')', 'PerHour')">)</button>
+                    <button type="button" class="btn btn-square" onclick="insertOperator('+', 'PerHour')">+</button>
+                    <button type="button" class="btn btn-square" onclick="insertOperator('-', 'PerHour')">−</button>
+                    <button type="button" class="btn btn-square" onclick="insertOperator('*', 'PerHour')">×</button>
+                    <button type="button" class="btn btn-square" onclick="insertOperator('/', 'PerHour')">/</button>
+                    <button type="button" class="btn btn-square" onclick="insertNumber('PerHour')">123</button>
+                </div>
+                <textarea id="formulaBuilderPerHour" name="formula" class="textarea textarea-bordered w-full font-mono" required></textarea>
+                <div id="formulaErrorPerHour" class="text-error text-sm mt-1 hidden">Invalid formula</div>
+            </div>
+            <div class="form-control w-full mt-4">
+                <div class="flex items-center gap-3">
+                    <label class="cursor-pointer flex items-center gap-2 mb-0">
+                        <input type="checkbox" id="enableMaxLimitPerHour" class="checkbox checkbox-primary">
+                        <span class="label-text font-semibold">Maximum Limit</span>
+                    </label>
+                    <div id="maxLimitInputWrapperPerHour" class="flex-1 flex items-center gap-2 hidden">
+                        <input type="number" step="any" min="0" id="maxLimitValuePerHour" name="max_limit" class="input input-bordered w-full max-w-xs" placeholder="Enter max value...">
+                    </div>
+                </div>
+                <div id="maxLimitHelperPerHour" class="text-xs text-gray-500 mt-2 ml-7">Set the max value this formula can reach. Excess values will be capped.</div>
+            </div>
+            <div class="form-control w-full mt-4">
+                <div class="flex items-center gap-3">
+                    <label class="cursor-pointer flex items-center gap-2 mb-0">
+                        <input type="checkbox" id="enableAgeConditionPerHour" class="checkbox checkbox-primary">
+                        <span class="label-text font-semibold">Add Age Condition</span>
+                    </label>
+                </div>
+                <div id="ageConditionWrapperPerHour" class="mt-2 hidden">
+                    <div class="flex flex-wrap gap-2 items-center">
+                        <span class="label-text">When age&nbsp;</span>
+                        <select id="ageOperatorPerHour" class="select select-bordered">
+                            <option value=">">&gt;</option>
+                            <option value=">=">&ge;</option>
+                            <option value="<">&lt;</option>
+                            <option value="<=">&le;</option>
+                            <option value="=">=</option>
+                        </select>
+                        <input type="number" id="ageValuePerHour" class="input input-bordered w-20" placeholder="Age" min="0">
+                        <span class="label-text">set value to</span>
+                        <input type="number" step="any" id="ageConditionValuePerHour" class="input input-bordered w-28" placeholder="Value">
+                    </div>
+                    <div class="text-xs text-gray-500 mt-2 ml-1">Example: When age ≥ 55, set value to 0</div>
+                </div>
+            </div>
+            <input type="hidden" name="field_id">
+            <div class="modal-action">
+                <button type="button" class="btn btn-ghost" onclick="closeAddReportFieldModalPerHour()">Cancel</button>
+                <button type="button" class="btn btn-secondary" onclick="addCustomFieldPerHour()">
+                    <i data-feather="plus" class="mr-2"></i>Add Custom Field
+                </button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
 <script>
 // Helper to insert text at cursor position in a textarea
 function insertAtCursor(textarea, text) {
@@ -200,7 +294,7 @@ function insertAtCursor(textarea, text) {
 
 function registerFormulaBuilderEvents() {
     // Remove and re-add field pickers to clear old listeners
-    ['PerDay', 'PerUnit'].forEach(type => {
+    ['PerDay', 'PerUnit', 'PerHour'].forEach(type => {
         const pickerId = `fieldPicker${type}`;
         const picker = document.getElementById(pickerId);
         if (picker) {
@@ -231,10 +325,22 @@ function registerFormulaBuilderEvents() {
             }
         });
     }
+    const fieldPickerPerHour = document.getElementById('fieldPickerPerHour');
+    if (fieldPickerPerHour) {
+        fieldPickerPerHour.addEventListener('change', function() {
+            const field = this.value;
+            if (field) {
+                const textarea = document.getElementById('formulaBuilderPerHour');
+                insertAtCursor(textarea, ` ${field} `);
+                this.selectedIndex = 0;
+            }
+        });
+    }
     // Operator buttons
     [
         {id: 'PerDay', ops: ['(', ')', '+', '-', '*', '/']},
-        {id: 'PerUnit', ops: ['(', ')', '+', '-', '*', '/']}
+        {id: 'PerUnit', ops: ['(', ')', '+', '-', '*', '/']},
+        {id: 'PerHour', ops: ['(', ')', '+', '-', '*', '/']}
     ].forEach(group => {
         group.ops.forEach(op => {
             const btns = document.querySelectorAll(`button[onclick="insertOperator('${op}', '${group.id}')"]`);
@@ -247,7 +353,7 @@ function registerFormulaBuilderEvents() {
         });
     });
     // Number buttons
-    ['PerDay', 'PerUnit'].forEach(type => {
+    ['PerDay', 'PerUnit', 'PerHour'].forEach(type => {
         const btns = document.querySelectorAll(`button[onclick="insertNumber('${type}')"]`);
         btns.forEach(btn => {
             btn.onclick = function() {
@@ -312,6 +418,32 @@ window.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+    // Max limit toggle for Per Hour
+    const maxLimitCheckboxPerHour = document.getElementById('enableMaxLimitPerHour');
+    const maxLimitInputWrapperPerHour = document.getElementById('maxLimitInputWrapperPerHour');
+    const maxLimitValuePerHour = document.getElementById('maxLimitValuePerHour');
+    if (maxLimitCheckboxPerHour && maxLimitInputWrapperPerHour && maxLimitValuePerHour) {
+        maxLimitCheckboxPerHour.addEventListener('change', function() {
+            if (this.checked) {
+                maxLimitInputWrapperPerHour.classList.remove('hidden');
+            } else {
+                maxLimitInputWrapperPerHour.classList.add('hidden');
+                maxLimitValuePerHour.value = '';
+            }
+        });
+    }
+    // Age condition toggle for Per Hour
+    const ageCheckboxPerHour = document.getElementById('enableAgeConditionPerHour');
+    const ageWrapperPerHour = document.getElementById('ageConditionWrapperPerHour');
+    if (ageCheckboxPerHour && ageWrapperPerHour) {
+        ageCheckboxPerHour.addEventListener('change', function() {
+            if (this.checked) {
+                ageWrapperPerHour.classList.remove('hidden');
+            } else {
+                ageWrapperPerHour.classList.add('hidden');
+            }
+        });
+    }
 });
 // Also call when modals are opened
 window.openAddReportFieldModalPerDayV2 = function() {
@@ -338,6 +470,19 @@ window.openAddReportFieldModalPerUnitV2 = function() {
     document.getElementById('enableAgeConditionPerUnit').checked = false;
     document.getElementById('ageValuePerUnit').value = '';
     document.getElementById('ageConditionValuePerUnit').value = '';
+    registerFormulaBuilderEvents();
+};
+window.openAddReportFieldModalPerHourV2 = function() {
+    document.getElementById('reportFieldFormPerHour').reset();
+    document.getElementById('add-report-field-modal-per-hour').showModal();
+    document.getElementById('maxLimitInputWrapperPerHour').classList.add('hidden');
+    document.getElementById('enableMaxLimitPerHour').checked = false;
+    document.getElementById('payoutTypeInputPerHour').value = 'per_hour';
+    // Reset age condition controls
+    document.getElementById('ageConditionWrapperPerHour').classList.add('hidden');
+    document.getElementById('enableAgeConditionPerHour').checked = false;
+    document.getElementById('ageValuePerHour').value = '';
+    document.getElementById('ageConditionValuePerHour').value = '';
     registerFormulaBuilderEvents();
 };
 // Per Day modal logic
@@ -442,6 +587,57 @@ function addCustomFieldPerUnit() {
 function closeAddReportFieldModalPerUnit() {
     document.getElementById('add-report-field-modal-per-unit').close();
 }
+// Per Hour modal logic
+function addCustomFieldPerHour() {
+    const fieldName = document.querySelector('#reportFieldFormPerHour input[name="name"]').value;
+    const fieldId = document.querySelector('#reportFieldFormPerHour input[name="field_id"]').value;
+    const formula = document.getElementById('formulaBuilderPerHour').value;
+    const enableMaxLimit = document.getElementById('enableMaxLimitPerHour').checked;
+    const maxLimit = enableMaxLimit ? parseFloat(document.getElementById('maxLimitValuePerHour').value) : null;
+    const payoutType = document.getElementById('payoutTypeInputPerHour').value || 'per_hour';
+    if (!/^[A-Za-z_]+$/.test(fieldName)) {
+        document.getElementById('nameErrorPerHour').classList.remove('hidden');
+        return;
+    } else {
+        document.getElementById('nameErrorPerHour').classList.add('hidden');
+    }
+    const enableAgeConditionHour = document.getElementById('enableAgeConditionPerHour').checked;
+    let finalFormulaHour = formula;
+    if (enableAgeConditionHour) {
+        const op = document.getElementById('ageOperatorPerHour').value;
+        const ageVal = document.getElementById('ageValuePerHour').value;
+        const condVal = document.getElementById('ageConditionValuePerHour').value || 0;
+        finalFormulaHour = `${condVal} if age ${op} ${ageVal} else (${formula})`;
+    }
+    const method = fieldId ? 'PUT' : 'POST';
+    const url = fieldId ? `/api/report-field?id=${fieldId}` : '/api/report-field';
+    fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            name: fieldName,
+            formula: finalFormulaHour,
+            field_type: 'numeric',
+            max_limit: enableMaxLimit ? maxLimit : null,
+            payout_type: payoutType
+        })
+    })
+    .then(async response => {
+        let result = {};
+        try { result = await response.json(); } catch (e) { showCustomModal('Server Error', 'Server error.', 'error'); return; }
+        if (response.status === 201 || response.status === 200) {
+            showCustomModal('Success', 'Custom field saved successfully!', 'success');
+            closeAddReportFieldModalPerHour();
+            window.location.reload();
+        } else {
+            showCustomModal('Save Error', result.error || 'Failed to save custom field', 'error');
+        }
+    })
+    .catch(error => { showCustomModal('Save Error', 'Failed to save custom field: ' + error, 'error'); });
+}
+function closeAddReportFieldModalPerHour() {
+    document.getElementById('add-report-field-modal-per-hour').close();
+}
 // Operator/number insert helpers for each modal
 function insertOperator(op, type) {
     if (type === 'PerDay') {
@@ -449,6 +645,9 @@ function insertOperator(op, type) {
         insertAtCursor(textarea, op);
     } else if (type === 'PerUnit') {
         const textarea = document.getElementById('formulaBuilderPerUnit');
+        insertAtCursor(textarea, op);
+    } else if (type === 'PerHour') {
+        const textarea = document.getElementById('formulaBuilderPerHour');
         insertAtCursor(textarea, op);
     }
 }
@@ -458,6 +657,9 @@ function insertNumber(type) {
         insertAtCursor(textarea, '1');
     } else if (type === 'PerUnit') {
         const textarea = document.getElementById('formulaBuilderPerUnit');
+        insertAtCursor(textarea, '1');
+    } else if (type === 'PerHour') {
+        const textarea = document.getElementById('formulaBuilderPerHour');
         insertAtCursor(textarea, '1');
     }
 }

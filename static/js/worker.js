@@ -1,19 +1,4 @@
-// Import showToast from global scope if available, or provide fallback
-const showToast = window.showToast || function(message, type = 'success') {
-    console.log(`[Toast ${type}]:`, message);
-    
-    // Create a simple toast notification if no toast system is available
-    const toast = document.createElement('div');
-    const bgColor = type === 'error' ? 'bg-red-500' : type === 'warning' ? 'bg-yellow-500' : 'bg-green-500';
-    toast.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
-    toast.textContent = message;
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.remove();
-    }, 3000);
-};
-
+// Use showToast from global scope (defined in script.js)
 console.log('[worker.js] Script loading...');
 console.log('[worker.js] window.addCustomField before definition:', typeof window.addCustomField);
 

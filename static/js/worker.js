@@ -1,7 +1,17 @@
 // Import showToast from global scope if available, or provide fallback
 const showToast = window.showToast || function(message, type = 'success') {
     console.log(`[Toast ${type}]:`, message);
-    alert(message);
+    
+    // Create a simple toast notification if no toast system is available
+    const toast = document.createElement('div');
+    const bgColor = type === 'error' ? 'bg-red-500' : type === 'warning' ? 'bg-yellow-500' : 'bg-green-500';
+    toast.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
 };
 
 // Custom Modal Functions
@@ -272,29 +282,35 @@ window.openEditWorkerModal = function(workerId) {
             return response.json();
         })
         .then(worker => {
-            // Reset form first
-            form.reset();
+            // Load custom fields first, then populate the form
+            reloadCustomFields();
             
-            // Set standard fields
-            if (form.querySelector('input[name="first_name"]')) {
-                form.querySelector('input[name="first_name"]').value = worker.first_name || '';
-            }
-            if (form.querySelector('input[name="last_name"]')) {
-                form.querySelector('input[name="last_name"]').value = worker.last_name || '';
-            }
-            if (form.querySelector('input[name="date_of_birth"]')) {
-                form.querySelector('input[name="date_of_birth"]').value = worker.date_of_birth || '';
-            }
-            
-            // Set custom fields
-            if (worker.custom_fields) {
-                Object.keys(worker.custom_fields).forEach(fieldName => {
-                    const input = form.querySelector(`input[name="${fieldName}"]`);
-                    if (input) {
-                        input.value = worker.custom_fields[fieldName] || '';
-                    }
-                });
-            }
+            // Wait a brief moment for custom fields to load, then populate the form
+            setTimeout(() => {
+                // Reset form first
+                form.reset();
+                
+                // Set standard fields
+                if (form.querySelector('input[name="first_name"]')) {
+                    form.querySelector('input[name="first_name"]').value = worker.first_name || '';
+                }
+                if (form.querySelector('input[name="last_name"]')) {
+                    form.querySelector('input[name="last_name"]').value = worker.last_name || '';
+                }
+                if (form.querySelector('input[name="date_of_birth"]')) {
+                    form.querySelector('input[name="date_of_birth"]').value = worker.date_of_birth || '';
+                }
+                
+                // Set custom fields
+                if (worker.custom_fields) {
+                    Object.keys(worker.custom_fields).forEach(fieldName => {
+                        const input = form.querySelector(`input[name="${fieldName}"]`);
+                        if (input) {
+                            input.value = worker.custom_fields[fieldName] || '';
+                        }
+                    });
+                }
+            }, 200); // Small delay to allow custom fields to load
             
             // Change modal title and button text
             const modalTitle = modal.querySelector('h3');
@@ -320,19 +336,37 @@ window.openEditWorkerModal = function(workerId) {
 
 // --- Add Worker Modal Custom Field Functions ---
 function reloadCustomFields() {
+    console.log('Reloading custom fields...');
+    
     fetch('/api/import-field')
-        .then(res => res.json())
+        .then(res => {
+            if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
+            }
+            return res.json();
+        })
         .then(fields => {
+            console.log('Loaded custom fields:', fields);
             const container = document.getElementById('customFieldsContainer');
-            if (!container) return;
-            container.innerHTML = '';
+            if (!container) {
+                console.warn('customFieldsContainer not found');
+                return;
+            }
+            
+            // Clear existing custom field items (but keep the static ones from template)
+            const existingCustomFields = container.querySelectorAll('.custom-field-item[data-field-id]');
+            existingCustomFields.forEach(item => item.remove());
+            
+            // Add new custom fields
             fields.forEach(field => {
+                console.log('Adding custom field:', field);
                 const div = document.createElement('div');
                 div.className = 'form-control w-full custom-field-item';
+                div.setAttribute('data-field-id', field.id);
                 div.innerHTML = `
                     <label class="label">
                         <span class="label-text text-black">${field.name}</span>
-                        <button type="button" class="btn btn-ghost btn-xs text-red-500 hover:text-red-700" onclick="deleteCustomField(${field.id}, '${field.name}')">
+                        <button type="button" class="btn btn-ghost btn-xs text-red-500 hover:text-red-700" onclick="deleteCustomField(${field.id}, '${field.name}')" title="Delete this field">
                             <i data-feather="trash-2" class="h-4 w-4"></i>
                         </button>
                     </label>
@@ -340,7 +374,14 @@ function reloadCustomFields() {
                 `;
                 container.appendChild(div);
             });
+            
+            console.log('Custom fields reloaded successfully');
+            
+            // Refresh feather icons
             if (window.feather) feather.replace();
+        })
+        .catch(error => {
+            console.error('Error reloading custom fields:', error);
         });
 }
 
@@ -350,8 +391,17 @@ function addCustomField() {
         showToast('Please enter a field name', 'warning');
         return;
     }
+    
+    // Check if field name already exists
+    const existingFields = Array.from(document.querySelectorAll('#customFieldsContainer .label-text')).map(el => el.textContent.trim());
+    if (existingFields.includes(fieldName)) {
+        showToast('A field with this name already exists', 'error');
+        return;
+    }
+    
     fetch('/api/import-field', {
-        method: 'POST', headers: {'Content-Type':'application/json'},
+        method: 'POST', 
+        headers: {'Content-Type':'application/json'},
         body: JSON.stringify({ name: fieldName, type: 'text' })
     })
     .then(res => res.json())
@@ -363,6 +413,10 @@ function addCustomField() {
             showToast(`Custom field "${fieldName}" added successfully!`, 'success');
             reloadCustomFields();
         }
+    })
+    .catch(error => {
+        console.error('Error adding custom field:', error);
+        showToast('Failed to add custom field. Please try again.', 'error');
     });
 }
 
@@ -378,15 +432,21 @@ function confirmDeleteCustomField() {
     document.getElementById('deleteFieldModal')?.close();
     const data = window._pendingDelete;
     if (!data) return;
+    
     fetch(`/api/import-field/${data.fieldId}`, { method:'DELETE' })
         .then(res => res.json())
         .then(result => {
             if (result.error) {
                 showToast(result.error,'error');
             } else {
-                showToast(`Custom field "${data.fieldName}" deleted!`,'success');
+                showToast(`Custom field "${data.fieldName}" deleted successfully!`,'success');
                 reloadCustomFields();
             }
+            window._pendingDelete = null;
+        })
+        .catch(error => {
+            console.error('Error deleting custom field:', error);
+            showToast('Failed to delete custom field. Please try again.', 'error');
             window._pendingDelete = null;
         });
 }
@@ -415,6 +475,9 @@ function openAddWorkerModal() {
         const submitBtn = form.querySelector('button[type="submit"]');
         if (submitBtn) submitBtn.textContent = 'Add Worker';
     }
+    
+    // Load current custom fields to ensure they're displayed
+    reloadCustomFields();
     
     modal.showModal();
     

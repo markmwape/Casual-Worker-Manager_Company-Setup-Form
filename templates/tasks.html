@@ -144,13 +144,13 @@
     }
     
     /* Modal fixes */
-    .modal {
+    .modal:not(dialog) {
         pointer-events: none;
         opacity: 0;
         transition: opacity 0.3s ease-in-out;
         display: none;
     }
-    .modal.modal-open {
+    .modal.modal-open:not(dialog) {
         pointer-events: auto;
         opacity: 1;
         display: flex;
@@ -163,6 +163,58 @@
         bottom: 0;
         z-index: 9999;
         background-color: rgba(0, 0, 0, 0.6);
+    }
+    
+    /* Native dialog modal styling */
+    dialog.modal {
+        pointer-events: auto !important;
+        opacity: 1 !important;
+        display: block !important;
+        position: fixed;
+        z-index: 9999;
+        background: transparent;
+        border: none;
+        padding: 0;
+        margin: 0;
+        width: 100vw;
+        height: 100vh;
+        max-width: none;
+        max-height: none;
+    }
+    
+    dialog.modal::backdrop {
+        background: rgba(0, 0, 0, 0.6);
+    }
+    
+    dialog.modal .modal-box {
+        pointer-events: auto !important;
+        position: relative;
+        z-index: 10;
+        background: white !important;
+        border-radius: 1rem;
+        padding: 2rem;
+        margin: auto;
+        margin-top: 10vh;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        max-height: 80vh;
+        overflow-y: auto;
+        width: 100%;
+        max-width: 42rem;
+    }
+    
+    /* Ensure all interactive elements in dialogs work */
+    dialog * {
+        pointer-events: auto !important;
+    }
+    
+    /* Calendar specific fixes */
+    #edit-calendar-container,
+    #edit-calendar-container *,
+    #edit-calendar-grid,
+    #edit-calendar-grid * {
+        pointer-events: auto !important;
+        position: relative;
+        z-index: 1;
     }
     .modal-backdrop {
         position: absolute;
@@ -1354,6 +1406,28 @@
                 window.editSelectedDateValue = null;
             }
             
+            // Initialize year selector for edit date picker
+            const editYearSelect = document.getElementById('edit-year-select');
+            if (editYearSelect && editYearSelect.options.length === 0) {
+                const currentYear = new Date().getFullYear();
+                for (let y = currentYear - 1; y <= currentYear + 5; y++) {
+                    const option = document.createElement('option');
+                    option.value = y;
+                    option.textContent = y;
+                    editYearSelect.appendChild(option);
+                }
+            }
+            
+            // Add click handler to edit date picker overlay to close modal
+            const editDatePickerContainer = document.getElementById('edit-date-picker-container');
+            if (editDatePickerContainer) {
+                editDatePickerContainer.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        closeEditDatePickerModal();
+                    }
+                });
+            }
+            
             // Setup edit task form event listener
             const editTaskForm = document.getElementById('editTaskForm');
             if (editTaskForm) {
@@ -1419,226 +1493,199 @@
         // Variables declared at the top of the script
 
         function openEditDatePickerModal() {
-            console.log('=== OPENING EDIT DATE PICKER MODAL ===');
+            console.log('Opening edit date picker modal...');
             
-            try {
-                // First check if date editing is allowed
-                const datePickerButton = document.querySelector('button[onclick="openEditDatePickerModal()"]');
-                if (datePickerButton && datePickerButton.disabled) {
-                    console.log('Date picker button is disabled - start date has passed');
-                    if (typeof showCustomModal === 'function') {
-                        showCustomModal('Cannot Edit Date', 'The start date cannot be modified after it has passed. This task has already started or was in the past.', 'warning');
-                    } else {
-                        alert('Cannot edit start date - the date has already passed.');
-                    }
-                    return;
+            // First check if date editing is allowed
+            const datePickerButton = document.querySelector('button[onclick="openEditDatePickerModal()"]');
+            if (datePickerButton && datePickerButton.disabled) {
+                console.log('Date picker button is disabled - start date has passed');
+                if (typeof showCustomModal === 'function') {
+                    showCustomModal('Cannot Edit Date', 'The start date cannot be modified after it has passed.', 'warning');
+                } else {
+                    alert('Cannot edit start date - the date has already passed.');
                 }
-                
-                console.log('Step 1: Looking for modal element...');
-                const modal = document.getElementById('edit-date-picker-modal');
-                console.log('Modal found:', modal);
-                
-                if (!modal) {
-                    console.error('❌ Edit date picker modal not found');
-                    alert('Date picker is not available. The modal element is missing from the page.');
-                    return;
-                }
-                
-                console.log('Step 2: Checking calendar elements...');
-                const calendarGrid = document.getElementById('edit-calendar-grid');
-                const calendarMonthYear = document.getElementById('edit-calendar-month-year');
-                
-                console.log('Calendar grid found:', calendarGrid);
-                console.log('Calendar month/year found:', calendarMonthYear);
-                
-                if (!calendarGrid) {
-                    console.error('❌ Calendar grid not found');
-                    alert('Calendar grid element is missing. Please refresh the page.');
-                    return;
-                }
-                
-                if (!calendarMonthYear) {
-                    console.error('❌ Calendar month/year not found');  
-                    alert('Calendar month/year element is missing. Please refresh the page.');
-                    return;
-                }
-                
-                console.log('Step 3: Initializing date variables...');
-                if (!window.editCurrentDate) {
-                    console.log('Initializing editCurrentDate...');
-                    window.editCurrentDate = new Date();
-                }
-                console.log('editCurrentDate:', window.editCurrentDate);
-                console.log('editSelectedDateValue:', window.editSelectedDateValue);
-                
-                console.log('Step 4: Showing modal...');
-                modal.showModal();
-                console.log('Modal shown successfully');
-                
-                console.log('Step 5: Rendering calendar...');
-                // Use setTimeout to ensure modal is fully rendered
-                setTimeout(() => {
-                    console.log('About to call renderEditCalendar...');
-                    renderEditCalendar();
-                    console.log('renderEditCalendar completed');
-                }, 200);
-                
-                console.log('=== EDIT DATE PICKER MODAL OPENED SUCCESSFULLY ===');
-                
-            } catch (error) {
-                console.error('❌ FATAL ERROR in openEditDatePickerModal:', error);
-                console.error('Error stack:', error.stack);
-                alert(`Fatal error opening date picker: ${error.message}. Please refresh the page and try again.`);
-                
-                // Fallback to regular date input
-                const dateInput = document.getElementById('edit-task-start-date');
-                if (dateInput) {
-                    console.log('Falling back to regular date input');
-                    dateInput.type = 'date';
-                    dateInput.style.display = 'block';
-                    dateInput.focus();
-                }
+                return;
             }
+            
+            const container = document.getElementById('edit-date-picker-container');
+            if (!container) {
+                console.error('Edit date picker container not found');
+                alert('Date picker is not available. Please refresh the page.');
+                return;
+            }
+            
+            // Initialize date variables
+            if (!window.editCurrentDate) {
+                window.editCurrentDate = new Date();
+            }
+            
+            console.log('Showing modal...');
+            container.style.display = 'flex';
+            
+            // Render calendar after a short delay to ensure modal is shown
+            setTimeout(() => {
+                try {
+                    renderEditCalendar();
+                } catch (error) {
+                    console.error('Error rendering calendar:', error);
+                    closeEditDatePickerModal();
+                    alert('Failed to render calendar. Please try again.');
+                }
+            }, 100);
         }
 
         function closeEditDatePickerModal() {
-            const modal = document.getElementById('edit-date-picker-modal');
-            if (modal) {
-                modal.close();
+            const container = document.getElementById('edit-date-picker-container');
+            if (container) {
+                container.style.display = 'none';
             }
         }
 
         function renderEditCalendar() {
-            try {
-                console.log('Starting renderEditCalendar...');
-                
-                if (!editCurrentDate) {
-                    console.error('editCurrentDate is not defined');
-                    editCurrentDate = new Date();
-                }
-                
-                const year = editCurrentDate.getFullYear();
-                const month = editCurrentDate.getMonth();
-                
-                console.log('Rendering calendar for:', year, month);
-                
-                const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
-                                   'July', 'August', 'September', 'October', 'November', 'December'];
-                const monthYearElement = document.getElementById('edit-calendar-month-year');
-                if (monthYearElement) {
-                    monthYearElement.textContent = `${monthNames[month]} ${year}`;
-                } else {
-                    console.error('Month year element not found');
-                    return;
-                }
-                
-                const firstDay = new Date(year, month, 1).getDay();
-                const daysInMonth = new Date(year, month + 1, 0).getDate();
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                
-                console.log('Calendar data:', { firstDay, daysInMonth });
-                
-                const grid = document.getElementById('edit-calendar-grid');
-                if (!grid) {
-                    console.error('Edit calendar grid not found');
-                    return;
-                }
-                
-                grid.innerHTML = '';
-                
-                // Add empty cells for days before the first day of the month
-                for (let i = 0; i < firstDay; i++) {
-                    const emptyCell = document.createElement('div');
-                    emptyCell.className = 'p-2';
-                    grid.appendChild(emptyCell);
-                }
-                
-                // Add day cells
-                for (let day = 1; day <= daysInMonth; day++) {
-                    const dateCell = document.createElement('button');
-                    dateCell.type = 'button';
-                    dateCell.textContent = day;
-                    dateCell.className = 'p-2 rounded hover:bg-blue-100 text-center transition';
-                    
-                    const cellDate = new Date(year, month, day);
-                    cellDate.setHours(0, 0, 0, 0);
-                    
-                    if (cellDate < today) {
-                        dateCell.className += ' text-gray-300 cursor-not-allowed';
-                        dateCell.disabled = true;
-                    } else {
-                        dateCell.className += ' hover:bg-blue-100 cursor-pointer';
-                        dateCell.onclick = () => selectEditDate(cellDate);
-                        
-                        if (cellDate.getTime() === today.getTime()) {
-                            dateCell.className += ' font-bold border-2 border-blue-500';
-                        }
-                        
-                        if (editSelectedDateValue && cellDate.getTime() === new Date(editSelectedDateValue).getTime()) {
-                            dateCell.className += ' bg-blue-500 text-white font-bold';
-                        }
-                    }
-                    
-                    grid.appendChild(dateCell);
-                }
-                
-                console.log('Calendar rendered successfully');
-                
-            } catch (error) {
-                console.error('Error rendering edit calendar:', error);
-                // Close the modal and show error message
-                closeEditDatePickerModal();
-                if (typeof showCustomModal === 'function') {
-                    showCustomModal('Error', 'Failed to render calendar. Please try again.', 'error');
-                } else {
-                    alert('Failed to render calendar. Please try again.');
-                }
+            console.log('Rendering edit calendar...');
+            
+            if (!editCurrentDate) {
+                editCurrentDate = new Date();
             }
+            
+            const year = editCurrentDate.getFullYear();
+            const month = editCurrentDate.getMonth();
+            
+            // Update month/year selectors
+            const monthSelect = document.getElementById('edit-month-select');
+            const yearSelect = document.getElementById('edit-year-select');
+            
+            if (monthSelect) {
+                monthSelect.value = month;
+            }
+            
+            if (yearSelect) {
+                // Populate year select if empty
+                if (yearSelect.options.length === 0) {
+                    const currentYear = new Date().getFullYear();
+                    for (let y = currentYear - 1; y <= currentYear + 5; y++) {
+                        const option = document.createElement('option');
+                        option.value = y;
+                        option.textContent = y;
+                        yearSelect.appendChild(option);
+                    }
+                }
+                yearSelect.value = year;
+            }
+            
+            // Get first day of month and number of days
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            const grid = document.getElementById('edit-calendar-grid');
+            if (!grid) {
+                throw new Error('Edit calendar grid not found');
+            }
+            
+            grid.innerHTML = '';
+            
+            // Add empty cells for days before the first day of the month
+            for (let i = 0; i < firstDay; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = 'p-2';
+                grid.appendChild(emptyCell);
+            }
+            
+            // Add day cells
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateCell = document.createElement('button');
+                dateCell.type = 'button';
+                dateCell.textContent = day;
+                dateCell.className = 'py-3 px-2 rounded-lg text-center transition-all duration-200 text-sm font-semibold';
+                
+                const cellDate = new Date(year, month, day);
+                cellDate.setHours(0, 0, 0, 0);
+                
+                if (cellDate < today) {
+                    dateCell.className += ' text-gray-300 cursor-not-allowed bg-gray-100 opacity-50';
+                    dateCell.disabled = true;
+                } else {
+                    // Base styling for available dates
+                    dateCell.className += ' text-gray-800 cursor-pointer border-2 border-transparent transition-all duration-200';
+                    
+                    dateCell.onclick = (e) => {
+                        e.preventDefault();
+                        selectEditDate(cellDate);
+                    };
+                    
+                    // Highlight today
+                    if (cellDate.getTime() === today.getTime()) {
+                        dateCell.className = 'py-3 px-2 rounded-lg text-center transition-all duration-200 text-sm font-bold bg-blue-50 text-blue-700 border-2 border-blue-500 shadow-sm hover:shadow-md';
+                    }
+                    // Highlight selected date
+                    else if (editSelectedDateValue) {
+                        const selectedDate = new Date(editSelectedDateValue + 'T00:00:00');
+                        selectedDate.setHours(0, 0, 0, 0);
+                        if (cellDate.getTime() === selectedDate.getTime()) {
+                            dateCell.className = 'py-3 px-2 rounded-lg text-center transition-all duration-200 text-sm font-bold bg-gradient-to-br from-blue-600 to-blue-700 text-white border-2 border-blue-800 shadow-lg ring-2 ring-blue-300 hover:shadow-xl';
+                        } else {
+                            // Regular available dates
+                            dateCell.className += ' hover:bg-blue-100 hover:border-blue-400 hover:shadow-md';
+                        }
+                    } else {
+                        // Regular available dates
+                        dateCell.className += ' hover:bg-blue-100 hover:border-blue-400 hover:shadow-md';
+                    }
+                }
+                
+                grid.appendChild(dateCell);
+            }
+            
+            console.log('Calendar rendered successfully');
         }
 
         function selectEditDate(date) {
-            try {
-                console.log('Date selected:', date);
-                editSelectedDateValue = date.toISOString().split('T')[0];
-                console.log('Selected date value:', editSelectedDateValue);
+            console.log('Date selected:', date);
+            // Format date as YYYY-MM-DD to avoid timezone issues
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            editSelectedDateValue = `${year}-${month}-${day}`;
+            console.log('Selected date value:', editSelectedDateValue);
+            renderEditCalendar();
+        }
+
+        function editSelectMonthYear() {
+            const monthSelect = document.getElementById('edit-month-select');
+            const yearSelect = document.getElementById('edit-year-select');
+            
+            if (monthSelect && yearSelect) {
+                const newMonth = parseInt(monthSelect.value);
+                const newYear = parseInt(yearSelect.value);
+                
+                editCurrentDate.setFullYear(newYear);
+                editCurrentDate.setMonth(newMonth);
+                editCurrentDate.setDate(1);
+                
                 renderEditCalendar();
-            } catch (error) {
-                console.error('Error selecting edit date:', error);
-                // Set the date value without re-rendering to prevent infinite loop
-                if (date) {
-                    editSelectedDateValue = date.toISOString().split('T')[0];
-                    console.log('Fallback date value set:', editSelectedDateValue);
-                }
             }
         }
 
         function editPreviousMonth() {
-            try {
-                console.log('Edit previous month clicked');
-                if (!editCurrentDate) {
-                    editCurrentDate = new Date();
-                }
-                editCurrentDate.setMonth(editCurrentDate.getMonth() - 1);
-                console.log('New date:', editCurrentDate);
-                renderEditCalendar();
-            } catch (error) {
-                console.error('Error in editPreviousMonth:', error);
+            console.log('Edit previous month clicked');
+            if (!editCurrentDate) {
+                editCurrentDate = new Date();
             }
+            editCurrentDate.setMonth(editCurrentDate.getMonth() - 1);
+            console.log('New date:', editCurrentDate);
+            renderEditCalendar();
         }
 
         function editNextMonth() {
-            try {
-                console.log('Edit next month clicked');
-                if (!editCurrentDate) {
-                    editCurrentDate = new Date();
-                }
-                editCurrentDate.setMonth(editCurrentDate.getMonth() + 1);
-                console.log('New date:', editCurrentDate);
-                renderEditCalendar();
-            } catch (error) {
-                console.error('Error in editNextMonth:', error);
+            console.log('Edit next month clicked');
+            if (!editCurrentDate) {
+                editCurrentDate = new Date();
             }
+            editCurrentDate.setMonth(editCurrentDate.getMonth() + 1);
+            console.log('New date:', editCurrentDate);
+            renderEditCalendar();
         }
 
         function confirmEditDateSelection() {

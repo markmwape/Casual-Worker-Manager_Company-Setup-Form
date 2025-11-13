@@ -634,42 +634,74 @@
 </div>
 
 <!-- Edit Date Picker Modal -->
-<dialog id="edit-date-picker-modal" class="modal">
-    <div class="modal-box max-w-md">
-        <h3 class="font-bold text-lg mb-4">Select Start Date</h3>
-        <div id="edit-calendar-container" class="bg-white rounded-lg p-4">
-            <div class="flex items-center justify-between mb-4">
-                <button type="button" onclick="editPreviousMonth()" class="btn btn-sm btn-circle btn-ghost">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<div id="edit-date-picker-container" style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 overflow-hidden">
+        <!-- Header with Gradient -->
+        <div class="mb-6 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 -m-8 mb-6 p-6 text-white">
+            <h3 class="font-bold text-xl flex items-center gap-2">
+                <i class="fas fa-calendar-alt"></i>
+                Select Start Date
+            </h3>
+            <p class="text-blue-100 text-sm mt-1">Choose when this task begins</p>
+        </div>
+        
+        <!-- Calendar -->
+        <div id="edit-calendar-container" class="bg-white rounded-xl p-6 border-2 border-blue-100 shadow-md">
+            <!-- Calendar Header with Month/Year Navigation -->
+            <div class="flex items-center justify-between mb-6">
+                <button type="button" onclick="editPreviousMonth()" class="btn btn-sm btn-circle btn-ghost hover:bg-blue-100 transition-all duration-200 hover:scale-110">
+                    <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                     </svg>
                 </button>
-                <div class="text-center">
-                    <div class="font-bold text-lg" id="edit-calendar-month-year"></div>
+                <div class="flex items-center gap-2 justify-center">
+                    <select id="edit-month-select" onchange="editSelectMonthYear()" class="select select-sm select-bordered border-blue-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 w-32 text-gray-900 font-semibold">
+                        <option value="0">January</option>
+                        <option value="1">February</option>
+                        <option value="2">March</option>
+                        <option value="3">April</option>
+                        <option value="4">May</option>
+                        <option value="5">June</option>
+                        <option value="6">July</option>
+                        <option value="7">August</option>
+                        <option value="8">September</option>
+                        <option value="9">October</option>
+                        <option value="10">November</option>
+                        <option value="11">December</option>
+                    </select>
+                    <select id="edit-year-select" onchange="editSelectMonthYear()" class="select select-sm select-bordered border-blue-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 w-24 text-gray-900 font-semibold">
+                    </select>
                 </div>
-                <button type="button" onclick="editNextMonth()" class="btn btn-sm btn-circle btn-ghost">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <button type="button" onclick="editNextMonth()" class="btn btn-sm btn-circle btn-ghost hover:bg-blue-100 transition-all duration-200 hover:scale-110">
+                    <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                     </svg>
                 </button>
             </div>
-            <div class="grid grid-cols-7 gap-1 mb-2 text-center text-sm font-semibold text-gray-600">
-                <div>Sun</div>
-                <div>Mon</div>
-                <div>Tue</div>
-                <div>Wed</div>
-                <div>Thu</div>
-                <div>Fri</div>
-                <div>Sat</div>
+            
+            <!-- Day Headers -->
+            <div class="grid grid-cols-7 gap-2 mb-3 text-center">
+                <div class="text-xs font-bold text-blue-600 py-2">Sun</div>
+                <div class="text-xs font-bold text-blue-600 py-2">Mon</div>
+                <div class="text-xs font-bold text-blue-600 py-2">Tue</div>
+                <div class="text-xs font-bold text-blue-600 py-2">Wed</div>
+                <div class="text-xs font-bold text-blue-600 py-2">Thu</div>
+                <div class="text-xs font-bold text-blue-600 py-2">Fri</div>
+                <div class="text-xs font-bold text-blue-600 py-2">Sat</div>
             </div>
-            <div id="edit-calendar-grid" class="grid grid-cols-7 gap-1"></div>
+            
+            <!-- Calendar Grid -->
+            <div id="edit-calendar-grid" class="grid grid-cols-7 gap-2"></div>
         </div>
-        <div class="modal-action">
-            <button type="button" class="btn btn-ghost" onclick="closeEditDatePickerModal()">Cancel</button>
-            <button type="button" class="btn btn-primary" onclick="confirmEditDateSelection()">Confirm</button>
+        
+        <!-- Footer -->
+        <div class="flex justify-end gap-3 mt-6">
+            <button type="button" class="btn btn-outline btn-sm rounded-lg hover:bg-gray-100 transition-colors" onclick="closeEditDatePickerModal()">
+                <i class="fas fa-times mr-1"></i>Cancel
+            </button>
+            <button type="button" class="btn btn-primary btn-sm rounded-lg shadow-md hover:shadow-lg transition-all bg-blue-600 hover:bg-blue-700 border-blue-600 hover:border-blue-700" onclick="confirmEditDateSelection()">
+                <i class="fas fa-check mr-1"></i>Confirm
+            </button>
         </div>
     </div>
-    <form method="dialog" class="modal-backdrop">
-        <button onclick="closeEditDatePickerModal()">close</button>
-    </form>
-</dialog>
+</div>

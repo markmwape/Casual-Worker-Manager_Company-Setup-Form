@@ -1,5 +1,5 @@
 <dialog id="import-workers-modal" class="modal">
-    <div class="modal-box max-w-3xl bg-brand-navy-50 w-11/12 max-h-[90vh] overflow-y-auto overflow-x-hidden relative">
+    <div class="modal-box max-w-3xl bg-brand-navy-50 w-11/12 max-h-[90vh] overflow-y-auto relative">
         <!-- Custom tooltip styles -->
         <style>
             /* Custom tooltip implementation */
@@ -8,6 +8,7 @@
                 display: inline-flex;
                 align-items: center;
                 cursor: help;
+                z-index: 1;
             }
             
             .custom-tooltip .tooltip-text {
@@ -20,9 +21,9 @@
                 border-radius: 8px;
                 padding: 10px 14px;
                 position: absolute;
-                z-index: 99999;
+                z-index: 999999;
                 opacity: 0;
-                transition: opacity 0.3s, visibility 0.3s;
+                transition: opacity 0.3s ease, visibility 0.3s ease;
                 font-size: 13px;
                 line-height: 1.5;
                 box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
@@ -45,24 +46,36 @@
             }
             
             .custom-tooltip:hover .tooltip-text {
-                visibility: visible;
-                opacity: 1;
+                visibility: visible !important;
+                opacity: 1 !important;
             }
             
-            /* Ensure tooltips work in modal */
+            /* Ensure tooltips work in modal - prevent overflow clipping */
             #import-workers-modal .modal-box {
                 overflow-y: auto;
-                overflow-x: visible;
+                overflow-x: visible !important;
             }
             
             #import-workers-modal .card-body {
-                overflow: visible;
+                overflow: visible !important;
                 position: relative;
+            }
+            
+            #import-workers-modal .card {
+                overflow: visible !important;
+            }
+            
+            #import-workers-modal .form-control {
+                overflow: visible !important;
             }
             
             /* Ensure modal container doesn't clip tooltips */
             #import-workers-modal {
-                overflow: visible;
+                overflow: visible !important;
+            }
+            
+            dialog.modal {
+                overflow: visible !important;
             }
         </style>
         <div class="flex items-center justify-between mb-6">

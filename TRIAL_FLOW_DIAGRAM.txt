@@ -86,48 +86,48 @@ TRIAL EXPIRATION - VISUAL FLOW DIAGRAM
                         │                                   │                        │
                         ▼                                   ▼                        ▼
             ┌────────────────────────┐        ┌──────────────────────┐   ┌──────────────────┐
-            │  SUBSCRIBE TO A PLAN   │        │ REQUEST 3-DAY        │   │  MANAGE EXISTING │
-            │  (Stripe Pricing)      │        │ EXTENSION            │   │  BILLING         │
-            └───────────┬────────────┘        │ (if not used)        │   │  (Stripe Portal) │
-                        │                     └──────────┬───────────┘   └──────────────────┘
-                        │                                │
-                        │                                │
-                        ▼                                ▼
-            ┌────────────────────────┐        ┌──────────────────────┐
-            │ 1. Choose Plan:        │        │ Check:               │
-            │    - Starter ($20)     │        │ extension_used?      │
-            │    - Growth ($50)      │        └──────────┬───────────┘
-            │    - Enterprise ($150) │                   │
-            │    - Corporate ($350)  │         ┌─────────┴──────────┐
-            └───────────┬────────────┘        YES                  NO
-                        │                      │                    │
-                        ▼                      ▼                    ▼
-            ┌────────────────────────┐   ┌─────────────┐   ┌──────────────────┐
-            │ 2. Stripe Checkout     │   │   ERROR     │   │ Add 3 days to    │
-            │    - Enter payment     │   │ "Already    │   │ trial_end_date   │
-            │    - Process payment   │   │  used"      │   │                  │
-            └───────────┬────────────┘   └─────────────┘   │ Set              │
-                        │                                   │ extension_used   │
-                        ▼                                   │ = TRUE           │
-            ┌────────────────────────┐                     └────────┬─────────┘
-            │ 3. Stripe Webhook      │                              │
-            │    → Server notified   │                              │
-            └───────────┬────────────┘                              │
-                        │                                           │
-                        ▼                                           │
-            ┌────────────────────────┐                              │
-            │ 4. Update Workspace:   │                              │
-            │    - subscription_     │                              │
-            │      status = 'active' │                              │
-            │    - stripe_           │                              │
-            │      subscription_id   │                              │
-            │    - subscription_tier │                              │
-            │    - trial_end_date    │                              │
-            │      = NULL            │                              │
-            │    - subscription_     │                              │
-            │      end_date = +30d   │                              │
-            └───────────┬────────────┘                              │
-                        │                                           │
+            │  SUBSCRIBE TO A PLAN   │        │                      │   │  MANAGE EXISTING │
+            │  (Stripe Pricing)      │        │  (Option removed)    │   │  BILLING         │
+            └───────────┬────────────┘        │                      │   │  (Stripe Portal) │
+                        │                     └──────────────────────┘   └──────────────────┘
+                        │
+                        │
+                        ▼
+            ┌────────────────────────┐
+            │ 1. Choose Plan:        │
+            │    - Starter ($20)     │
+            │    - Growth ($50)      │
+            │    - Enterprise ($150) │
+            │    - Corporate ($350)  │
+            └───────────┬────────────┘
+                        │
+                        ▼
+            ┌────────────────────────┐
+            │ 2. Stripe Checkout     │
+            │    - Enter payment     │
+            │    - Process payment   │
+            └───────────┬────────────┘
+                        │
+                        ▼
+            ┌────────────────────────┐
+            │ 3. Stripe Webhook      │
+            │    → Server notified   │
+            └───────────┬────────────┘
+                        │
+                        ▼
+            ┌────────────────────────┐
+            │ 4. Update Workspace:   │
+            │    - subscription_     │
+            │      status = 'active' │
+            │    - stripe_           │
+            │      subscription_id   │
+            │    - subscription_tier │
+            │    - trial_end_date    │
+            │      = NULL            │
+            │    - subscription_     │
+            │      end_date = +30d   │
+            └───────────┬────────────┘
+                        │
                         └───────────────┬───────────────────────────┘
                                         │
                                         ▼

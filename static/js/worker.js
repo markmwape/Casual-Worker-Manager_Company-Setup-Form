@@ -386,7 +386,11 @@ function reloadCustomFields() {
 }
 
 function addCustomField(sourceModal = null) {
+    console.log('[addCustomField] ========== FUNCTION CALLED ==========');
     console.log('[addCustomField] Called from:', sourceModal || 'unknown');
+    
+    // Add a visual alert to confirm function is being called
+    alert(`addCustomField called with sourceModal: ${sourceModal}`);
     
     // Determine which input field to use based on the modal
     let fieldNameInput;
@@ -395,9 +399,11 @@ function addCustomField(sourceModal = null) {
     if (sourceModal === 'import') {
         modalId = '#import-workers-modal';
         fieldNameInput = document.querySelector('#import-workers-modal #newFieldNameImport');
+        console.log('[addCustomField] Using IMPORT modal input');
     } else if (sourceModal === 'add-worker') {
         modalId = '#add-worker-modal';
         fieldNameInput = document.querySelector('#add-worker-modal #newFieldNameAddWorker');
+        console.log('[addCustomField] Using ADD WORKER modal input');
     } else {
         // Fallback for when sourceModal is not provided
         const importModal = document.getElementById('import-workers-modal');
@@ -405,12 +411,16 @@ function addCustomField(sourceModal = null) {
             modalId = '#import-workers-modal';
             sourceModal = 'import';
             fieldNameInput = document.querySelector('#import-workers-modal #newFieldNameImport');
+            console.log('[addCustomField] Fallback to IMPORT modal');
         } else {
             modalId = '#add-worker-modal';
             sourceModal = 'add-worker';
             fieldNameInput = document.querySelector('#add-worker-modal #newFieldNameAddWorker');
+            console.log('[addCustomField] Fallback to ADD WORKER modal');
         }
     }
+    
+    console.log('[addCustomField] fieldNameInput element:', fieldNameInput);
     
     const fieldName = fieldNameInput?.value.trim();
     

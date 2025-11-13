@@ -328,6 +328,12 @@ function reloadCustomFields() {
     
     fetch('/api/import-field')
         .then(res => {
+            if (res.status === 401) {
+                throw new Error('Authentication required. Please refresh the page and log in again.');
+            }
+            if (res.status === 400) {
+                throw new Error('No workspace selected. Please select a workspace.');
+            }
             if (!res.ok) {
                 throw new Error(`HTTP error! status: ${res.status}`);
             }
@@ -437,11 +443,21 @@ function addCustomField(sourceModal = null) {
     
     fetch('/api/import-field', {
         method: 'POST', 
-        headers: {'Content-Type':'application/json'},
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'same-origin',
         body: JSON.stringify({ name: fieldName, type: 'text' })
     })
     .then(res => {
         console.log('[addCustomField] Response status:', res.status);
+        if (res.status === 401) {
+            throw new Error('Authentication required. Please refresh the page and log in again.');
+        }
+        if (res.status === 400) {
+            throw new Error('No workspace selected. Please select a workspace.');
+        }
         if (!res.ok) {
             throw new Error(`HTTP error! status: ${res.status}`);
         }
@@ -489,14 +505,34 @@ function confirmDeleteCustomField() {
     const data = window._pendingDelete;
     if (!data) return;
     
-    fetch(`/api/import-field/${data.fieldId}`, { method:'DELETE' })
-        .then(res => res.json())
+    fetch(`/api/import-field/${data.fieldId}`, { 
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'same-origin'
+    })
+        .then(res => {
+            if (res.status === 401) {
+                throw new Error('Authentication required. Please refresh the page and log in again.');
+            }
+            if (res.status === 404) {
+                throw new Error('Field not found or already deleted.');
+            }
+            if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
+            }
+            return res.json();
+        })
         .then(result => {
             if (result.error) {
                 showToast(result.error,'error');
             } else {
                 showToast(`Custom field "${data.fieldName}" deleted successfully!`,'success');
+                // Reload fields in both modals
                 reloadCustomFields();
+                loadImportFields();
             }
             window._pendingDelete = null;
         })
@@ -651,15 +687,22 @@ function closeImportWorkersModal() {
 function loadImportFields() {
     console.log('Loading import fields...');
     // Load existing import fields
-    fetch('/api/import-field')
+    fetch('/api/import-field', {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'same-origin'
+    })
     .then(response => {
         console.log('Load fields response status:', response.status);
         if (response.status === 401 || response.status === 403) {
             console.warn('User not authenticated, skipping import fields load');
+            showToast('Authentication required. Please refresh the page and log in again.', 'error');
             throw new Error('Authentication required. Please log in again.');
         }
         if (response.status === 400) {
             console.warn('No workspace selected, skipping import fields load');
+            showToast('No workspace selected. Please select a workspace.', 'error');
             throw new Error('No workspace selected');
         }
         if (!response.ok) {
@@ -702,9 +745,22 @@ function loadImportFields() {
         // Add custom fields
         fields.forEach(field => {
             const fieldDiv = document.createElement('div');
-            fieldDiv.className = 'bg-blue-100 p-2 rounded-lg text-blue-700 font-medium truncate';
+            fieldDiv.className = 'bg-blue-100 p-2 rounded-lg text-blue-700 font-medium truncate flex justify-between items-center';
             fieldDiv.setAttribute('data-field', field.name.replace(/ /g, '_'));
-            fieldDiv.textContent = field.name;
+            
+            const fieldNameSpan = document.createElement('span');
+            fieldNameSpan.textContent = field.name;
+            
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'btn btn-ghost btn-xs text-red-500 hover:text-red-700 ml-2';
+            deleteBtn.title = 'Delete this field';
+            deleteBtn.onclick = function() {
+                deleteCustomField(field.id, field.name);
+            };
+            deleteBtn.innerHTML = '<i class="material-icons text-xs">delete</i>';
+            
+            fieldDiv.appendChild(fieldNameSpan);
+            fieldDiv.appendChild(deleteBtn);
             currentFields.appendChild(fieldDiv);
         });
     })

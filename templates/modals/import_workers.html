@@ -5,7 +5,8 @@
             /* Custom tooltip implementation */
             .custom-tooltip {
                 position: relative;
-                display: inline-block;
+                display: inline-flex;
+                align-items: center;
                 cursor: help;
             }
             
@@ -18,21 +19,24 @@
                 text-align: center;
                 border-radius: 8px;
                 padding: 10px 14px;
-                position: fixed;
+                position: absolute;
                 z-index: 99999;
                 opacity: 0;
-                transition: opacity 0.3s;
+                transition: opacity 0.3s, visibility 0.3s;
                 font-size: 13px;
                 line-height: 1.5;
                 box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
                 white-space: normal;
                 pointer-events: none;
+                bottom: calc(100% + 10px);
+                left: 50%;
+                transform: translateX(-50%);
             }
             
             .custom-tooltip .tooltip-text::after {
                 content: "";
                 position: absolute;
-                bottom: -8px;
+                top: 100%;
                 left: 50%;
                 transform: translateX(-50%);
                 border-width: 8px 8px 0 8px;
@@ -52,6 +56,12 @@
             }
             
             #import-workers-modal .card-body {
+                overflow: visible;
+                position: relative;
+            }
+            
+            /* Ensure modal container doesn't clip tooltips */
+            #import-workers-modal {
                 overflow: visible;
             }
         </style>
@@ -193,14 +203,38 @@
             
             if (!tooltipText) return;
             
-            icon.addEventListener('mouseenter', function() {
-                // Get icon position
+            icon.addEventListener('mouseenter', function(e) {
+                // Force tooltip to be visible and properly positioned
                 const iconRect = icon.getBoundingClientRect();
+                const modalBox = document.querySelector('#import-workers-modal .modal-box');
                 
-                // Position tooltip above the icon
-                tooltipText.style.left = (iconRect.left + iconRect.width / 2) + 'px';
-                tooltipText.style.top = (iconRect.top - 10) + 'px';
-                tooltipText.style.transform = 'translate(-50%, -100%)';
+                if (!modalBox) return;
+                
+                // Ensure tooltip stays within viewport
+                requestAnimationFrame(() => {
+                    const tooltipRect = tooltipText.getBoundingClientRect();
+                    const viewportWidth = window.innerWidth;
+                    
+                    // Check if tooltip goes off-screen to the right
+                    if (tooltipRect.right > viewportWidth - 20) {
+                        tooltipText.style.left = 'auto';
+                        tooltipText.style.right = '0';
+                        tooltipText.style.transform = 'translateX(0)';
+                    }
+                    // Check if tooltip goes off-screen to the left
+                    else if (tooltipRect.left < 20) {
+                        tooltipText.style.left = '0';
+                        tooltipText.style.right = 'auto';
+                        tooltipText.style.transform = 'translateX(0)';
+                    }
+                });
+            });
+            
+            icon.addEventListener('mouseleave', function() {
+                // Reset positioning
+                tooltipText.style.left = '50%';
+                tooltipText.style.right = 'auto';
+                tooltipText.style.transform = 'translateX(-50%)';
             });
         });
     });

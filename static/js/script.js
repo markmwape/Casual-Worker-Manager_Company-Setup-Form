@@ -2,6 +2,7 @@
 function toggleCustomFields(type) {
     const perDayWindow = document.getElementById('customFieldsWindowPerDay');
     const perPartWindow = document.getElementById('customFieldsWindowPerPart');
+    const perHourWindow = document.getElementById('customFieldsWindowPerHour');
     
     if (type === 'perDay') {
         if (perDayWindow) {
@@ -17,6 +18,14 @@ function toggleCustomFields(type) {
                 perPartWindow.style.display = 'block';
             } else {
                 perPartWindow.style.display = 'none';
+            }
+        }
+    } else if (type === 'perHour') {
+        if (perHourWindow) {
+            if (perHourWindow.style.display === 'none' || perHourWindow.style.display === '') {
+                perHourWindow.style.display = 'block';
+            } else {
+                perHourWindow.style.display = 'none';
             }
         }
     }
@@ -173,6 +182,57 @@ function openAddReportFieldModalPerUnitV2() {
     }
 }
 
+function openAddReportFieldModalPerHourV2() {
+    const modal = document.getElementById('add-report-field-modal-per-hour');
+    if (modal) {
+        // Reset the modal for new field creation
+        modal.dataset.isEditing = 'false';
+        modal.dataset.editingFieldId = '';
+        
+        // Clear the form
+        const form = document.getElementById('reportFieldFormPerHour');
+        if (form) form.reset();
+        
+        const maxLimitWrapper = document.getElementById('maxLimitInputWrapperPerHour');
+        if (maxLimitWrapper) maxLimitWrapper.classList.add('hidden');
+        
+        const enableMaxLimit = document.getElementById('enableMaxLimitPerHour');
+        if (enableMaxLimit) enableMaxLimit.checked = false;
+        
+        const payoutTypeInput = document.getElementById('payoutTypeInputPerHour');
+        if (payoutTypeInput) payoutTypeInput.value = 'per_hour';
+        
+        // Reset age condition controls
+        const ageWrapper = document.getElementById('ageConditionWrapperPerHour');
+        if (ageWrapper) ageWrapper.classList.add('hidden');
+        
+        const enableAgeCondition = document.getElementById('enableAgeConditionPerHour');
+        if (enableAgeCondition) enableAgeCondition.checked = false;
+        
+        const ageValue = document.getElementById('ageValuePerHour');
+        if (ageValue) ageValue.value = '';
+        
+        const ageConditionValue = document.getElementById('ageConditionValuePerHour');
+        if (ageConditionValue) ageConditionValue.value = '';
+        
+        // Reset button text and heading
+        const submitButton = modal.querySelector('.btn-secondary');
+        if (submitButton) {
+            submitButton.innerHTML = '<i data-feather="plus" class="mr-2"></i>Add Custom Field';
+        }
+        
+        const heading = modal.querySelector('h3');
+        if (heading) {
+            heading.textContent = 'Add Custom Report Field (Per Hour)';
+        }
+        
+        modal.showModal();
+    } else {
+        console.error('Modal not found: add-report-field-modal-per-hour');
+        showToast('Error opening modal', 'error');
+    }
+}
+
 function editReportField(fieldId, fieldName, formula, payoutType) {
     // Fetch the full field data from the API to get max_limit
     fetch(`/api/report-field/${fieldId}`)
@@ -189,9 +249,21 @@ function editReportField(fieldId, fieldName, formula, payoutType) {
 
 function populateEditModal(fieldId, fieldName, formula, payoutType, maxLimit) {
     // Determine which modal to use based on payout type
-    const isPerDay = payoutType === 'per_day' || payoutType !== 'per_part';
-    const modalId = isPerDay ? 'add-report-field-modal-per-day' : 'add-report-field-modal-per-unit';
-    const suffix = isPerDay ? 'PerDay' : 'PerUnit';
+    let modalId, suffix;
+    
+    if (payoutType === 'per_day') {
+        modalId = 'add-report-field-modal-per-day';
+        suffix = 'PerDay';
+    } else if (payoutType === 'per_part') {
+        modalId = 'add-report-field-modal-per-unit';
+        suffix = 'PerUnit';
+    } else if (payoutType === 'per_hour') {
+        modalId = 'add-report-field-modal-per-hour';
+        suffix = 'PerHour';
+    } else {
+        modalId = 'add-report-field-modal-per-day';
+        suffix = 'PerDay';
+    }
     
     const modal = document.getElementById(modalId);
     if (!modal) {
@@ -267,7 +339,11 @@ function populateEditModal(fieldId, fieldName, formula, payoutType, maxLimit) {
     // Update modal heading
     const heading = modal.querySelector('h3');
     if (heading) {
-        heading.textContent = `Edit Custom Report Field (${isPerDay ? 'Per Day' : 'Per Unit'})`;
+        let fieldTypeLabel = 'Per Day';
+        if (payoutType === 'per_part') fieldTypeLabel = 'Per Unit';
+        else if (payoutType === 'per_hour') fieldTypeLabel = 'Per Hour';
+        
+        heading.textContent = `Edit Custom Report Field (${fieldTypeLabel})`;
     }
     
     // Update button text

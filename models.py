@@ -206,6 +206,9 @@ class Task(db.Model):
     # Per-day payment fields
     per_day_payout = db.Column(db.Float, nullable=True)  # Individual daily payout for this task
     per_day_currency = db.Column(db.String(10), nullable=True)  # Currency for daily payout
+    # Per-hour payment fields
+    per_hour_payout = db.Column(db.Float, nullable=True)  # Hourly rate for this task
+    per_hour_currency = db.Column(db.String(10), nullable=True)  # Currency for hourly payout
     # Relationships
     attendance_records = db.relationship('Attendance', backref='task', lazy=True, cascade='all, delete-orphan')
 
@@ -256,5 +259,6 @@ class Attendance(db.Model):
     status = db.Column(db.String(50), default='Absent')
     company_id = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
     task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=False)
-    # Added field
+    # Added fields
     units_completed = db.Column(db.Integer, nullable=True)
+    hours_worked = db.Column(db.Float, nullable=True)  # Hours worked for per_hour tasks

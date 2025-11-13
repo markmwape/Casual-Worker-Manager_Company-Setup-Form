@@ -1529,7 +1529,7 @@ def generate_per_day_report(company, start_date, end_date):
             per_day_tasks = {}
             for att in attendance_records:
                 if att.task and getattr(att.task, 'payment_type', None) == 'per_day':
-                    # Only count if task started before or during the report end date
+                    # Only count if task started before or during the end date of the report
                     if att.task.start_date.date() <= end_date:
                         task_id = att.task.id
                         if task_id not in per_day_tasks:
@@ -1559,7 +1559,7 @@ def generate_per_day_report(company, start_date, end_date):
                         worker_id=worker.id,
                         custom_field_id=field.id
                     ).first()
-                    record[field.name] = custom_value.value if custom_value else ''
+                    record[field.name] = custom_value.value if custom_value else 'N/A'
                 
                 # Add custom report fields
                 for field in custom_fields:
@@ -1613,7 +1613,7 @@ def generate_per_part_report(company, start_date, end_date):
             per_part_tasks = {}
             for att in attendance_records:
                 if att.task and getattr(att.task, 'payment_type', None) == 'per_part':
-                    # Only count if task started before or during the report end date
+                    # Only count if task started before or during the end date of the report
                     if att.task.start_date.date() <= end_date:
                         task_id = att.task.id
                         if task_id not in per_part_tasks:
@@ -1774,6 +1774,8 @@ def create_task():
             payment_type=data.get('payment_type', 'per_day'),
             per_part_payout=data.get('per_part_payout'),
             per_part_currency=data.get('per_part_currency'),
+            per_hour_payout=data.get('per_hour_payout'),
+            per_hour_currency=data.get('per_hour_currency'),
             per_day_payout=data.get('per_day_payout'),
             per_day_currency=data.get('per_day_currency')
         )
@@ -3458,6 +3460,7 @@ def update_task_attendance(task_id):
             worker_id = record.get('worker_id')
             status = record.get('status')
             units_completed = record.get('units_completed')
+            hours_worked = record.get('hours_worked')
             
             if not worker_id:
                 continue
@@ -3482,8 +3485,10 @@ def update_task_attendance(task_id):
                     attendance.status = status
                 if units_completed is not None:
                     attendance.units_completed = units_completed
+                if hours_worked is not None:
+                    attendance.hours_worked = hours_worked
                 updated_count += 1
-                logging.info(f"Updated attendance for worker {worker_id}: status={status}, units={units_completed}")
+                logging.info(f"Updated attendance for worker {worker_id}: status={status}, units={units_completed}, hours={hours_worked}")
             else:
                 # Create new record
                 new_attendance = Attendance(
@@ -3492,11 +3497,12 @@ def update_task_attendance(task_id):
                     date=selected_date,
                     status=status if status is not None else 'Absent',
                     task_id=task.id,
-                    units_completed=units_completed
+                    units_completed=units_completed,
+                    hours_worked=hours_worked
                 )
                 db.session.add(new_attendance)
                 created_count += 1
-                logging.info(f"Created new attendance for worker {worker_id}: status={status}, units={units_completed}")
+                logging.info(f"Created new attendance for worker {worker_id}: status={status}, units={units_completed}, hours={hours_worked}")
         
         db.session.commit()
         
@@ -3788,6 +3794,8 @@ def manage_task(task_id):
             task.per_part_currency = data.get('per_part_currency')
             task.per_day_payout = data.get('per_day_payout')
             task.per_day_currency = data.get('per_day_currency')
+            task.per_hour_payout = data.get('per_hour_payout')
+            task.per_hour_currency = data.get('per_hour_currency')
             
             db.session.commit()
             
@@ -4277,6 +4285,82 @@ def task_units_completed_route(task_id):
         )
     except Exception as e:
         logging.error(f"Error fetching units completed: {str(e)}")
+        return render_template('500.html'), 500
+
+@app.route("/task/<int:task_id>/hours-worked", methods=['GET'])
+def task_hours_worked_route(task_id):
+    try:
+        # Get current company from workspace
+        company = get_current_company()
+
+        if not company:
+            return render_template('task_hours_worked.html', task=None, attendance_records=[], workers=[], selected_date=None)
+
+        # Get the specific task
+        task = Task.query.filter_by(id=task_id, company_id=company.id).first()
+        if not task or task.payment_type != 'per_hour':
+            return render_template('500.html'), 500
+
+        # Get all available workers for the company for the dropdown
+        available_workers = Worker.query.filter_by(company_id=company.id).all()
+
+        # Get selected date from query parameter, default to today
+        from datetime import date
+        today = date.today()
+        
+        # Auto-update task status if start date has passed
+        if task.start_date.date() <= today and task.status == 'Pending':
+            task.status = 'In Progress'
+            db.session.commit()
+        
+        selected_date_str = request.args.get('date')
+        if selected_date_str:
+            try:
+                selected_date = datetime.strptime(selected_date_str, '%Y-%m-%d').date()
+            except ValueError:
+                selected_date = today
+        else:
+            selected_date = today
+
+        # Get attendance records for the selected date
+        attendance_records = Attendance.query.filter(
+            Attendance.company_id == company.id,
+            Attendance.date == selected_date,
+            Attendance.task_id == task.id
+        ).all()
+
+        # Ensure all assigned workers have attendance records for this date
+        existing_worker_ids = {record.worker_id for record in attendance_records}
+        for worker in task.workers:
+            if worker.id not in existing_worker_ids:
+                new_attendance = Attendance(
+                    worker_id=worker.id,
+                    company_id=company.id,
+                    date=selected_date,
+                    status='Absent',
+                    task_id=task.id,
+                    hours_worked=0
+                )
+                db.session.add(new_attendance)
+        db.session.commit()
+
+        # Fetch attendance records again to ensure up-to-date list
+        attendance_records = Attendance.query.filter(
+            Attendance.company_id == company.id,
+            Attendance.date == selected_date,
+            Attendance.task_id == task.id
+        ).all()
+
+        return render_template('task_hours_worked.html', 
+            task=task, 
+            attendance_records=attendance_records,
+            workers=task.workers.all(),  # Only show assigned workers
+            available_workers=available_workers,  # Pass all available workers for dropdown
+            selected_date=selected_date,
+            attendance_date_error=None
+        )
+    except Exception as e:
+        logging.error(f"Error fetching hours worked: {str(e)}")
         return render_template('500.html'), 500
 
 @app.route('/admin/master-dashboard')

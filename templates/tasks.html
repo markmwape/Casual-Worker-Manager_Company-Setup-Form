@@ -368,6 +368,10 @@
                                                         <span class="per-unit-badge inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-200">
                                                             <i class="fas fa-cube mr-1.5 text-blue-600"></i>Per Unit
                                                         </span>
+                                                    {% elif task.payment_type == 'per_hour' %}
+                                                        <span class="per-hour-badge inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 border border-purple-200">
+                                                            <i class="fas fa-clock mr-1.5 text-purple-600"></i>Hourly
+                                                        </span>
                                                     {% else %}
                                                         <span class="per-day-badge inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-200">
                                                             <i class="fas fa-calendar-day mr-1.5 text-green-600"></i>Per Day
@@ -382,7 +386,7 @@
                                             </button>
                                             <ul class="task-options-menu menu p-2 shadow-xl bg-white rounded-xl w-52 text-sm border border-gray-200">
                                                 <li>
-                                                    <a href='javascript:void(0);' onclick='openEditTaskModal({{ task.id|tojson }}, {{ task.name|tojson }}, {{ (task.description or "")|tojson }}, {{ task.start_date.strftime("%Y-%m-%d")|tojson }}, {{ task.payment_type|tojson }}, {{ (task.per_part_payout or "")|tojson }}, {{ (task.per_part_currency or "")|tojson }}, {{ (task.per_day_payout or "")|tojson }}, {{ (task.per_day_currency or "")|tojson }})' class="hover:bg-gray-50 py-3">
+                                                    <a href='javascript:void(0);' onclick='openEditTaskModal({{ task.id|tojson }}, {{ task.name|tojson }}, {{ (task.description or "")|tojson }}, {{ task.start_date.strftime("%Y-%m-%d")|tojson }}, {{ task.payment_type|tojson }}, {{ (task.per_part_payout or "")|tojson }}, {{ (task.per_part_currency or "")|tojson }}, {{ (task.per_hour_payout or "")|tojson }}, {{ (task.per_hour_currency or "")|tojson }}, {{ (task.per_day_payout or "")|tojson }}, {{ (task.per_day_currency or "")|tojson }})' class="hover:bg-gray-50 py-3">
                                                         <i class="fas fa-edit w-4 h-4 text-blue-600"></i>Edit Task
                                                     </a>
                                                 </li>
@@ -410,6 +414,18 @@
                                             <div>
                                                 <div class="text-sm font-medium text-blue-900">Payout per unit</div>
                                                 <div class="text-lg font-bold text-blue-800">{{ task.per_part_payout }} {{ task.per_part_currency or '' }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% elif task.payment_type == 'per_hour' and task.per_hour_payout %}
+                                    <div class="mb-6 p-4 bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl border border-purple-200">
+                                        <div class="flex items-center text-purple-800 font-semibold">
+                                            <div class="flex-shrink-0 w-10 h-10 bg-purple-200 rounded-lg flex items-center justify-center mr-3">
+                                                <i class="fas fa-clock text-purple-600"></i>
+                                            </div>
+                                            <div>
+                                                <div class="text-sm font-medium text-purple-900">Hourly rate</div>
+                                                <div class="text-lg font-bold text-purple-800">{{ task.per_hour_payout }} {{ task.per_hour_currency or '' }}</div>
                                             </div>
                                         </div>
                                     </div>
@@ -616,6 +632,8 @@
                 const paymentType = card.getAttribute('data-payment-type');
                 if (paymentType === 'per_part') {
                     window.location.href = `/task/${taskId}/units-completed`;
+                } else if (paymentType === 'per_hour') {
+                    window.location.href = `/task/${taskId}/hours-worked`;
                 } else {
                     window.location.href = `/task/${taskId}/attendance`;
                 }
@@ -694,7 +712,7 @@
             });
         }
 
-        function openEditTaskModal(taskId, name, description, startDate, paymentType, perPartPayout, perPartCurrency, perDayPayout, perDayCurrency) {
+        function openEditTaskModal(taskId, name, description, startDate, paymentType, perPartPayout, perPartCurrency, perHourPayout, perHourCurrency, perDayPayout, perDayCurrency) {
             closeAllDropdowns();
             setDropdownsDisabled(true);
             const modal = document.getElementById('edit-task-modal');
@@ -718,27 +736,41 @@
             
             // Reset card styling
             const fixedCard = document.getElementById('edit-fixed-card');
+            const hourlyCard = document.getElementById('edit-hourly-card');
             const pieceCard = document.getElementById('edit-piece-card');
             fixedCard.classList.remove('border-blue-500', 'bg-blue-50', 'card-selected');
+            hourlyCard.classList.remove('border-blue-500', 'bg-blue-50', 'card-selected');
             pieceCard.classList.remove('border-blue-500', 'bg-blue-50', 'card-selected');
             fixedCard.classList.add('border-gray-200');
+            hourlyCard.classList.add('border-gray-200');
             pieceCard.classList.add('border-gray-200');
             
             // Hide all selected indicators
-            const selectedIndicators = document.querySelectorAll('#edit-fixed-card .selected-indicator, #edit-piece-card .selected-indicator');
+            const selectedIndicators = document.querySelectorAll('#edit-fixed-card .selected-indicator, #edit-hourly-card .selected-indicator, #edit-piece-card .selected-indicator');
             selectedIndicators.forEach(indicator => indicator.style.display = 'none');
             
             if (paymentType === 'per_part') {
                 document.getElementById('edit-payment-type-part').checked = true;
                 document.getElementById('edit-per-part-payout-group').style.display = 'block';
+                document.getElementById('edit-per-hour-payout-group').style.display = 'none';
                 document.getElementById('edit-per-day-payout-group').style.display = 'none';
                 pieceCard.classList.remove('border-gray-200');
                 pieceCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
                 const pieceIndicator = pieceCard.querySelector('.selected-indicator');
                 if (pieceIndicator) pieceIndicator.style.display = 'block';
+            } else if (paymentType === 'per_hour') {
+                document.getElementById('edit-payment-type-hour').checked = true;
+                document.getElementById('edit-per-part-payout-group').style.display = 'none';
+                document.getElementById('edit-per-hour-payout-group').style.display = 'block';
+                document.getElementById('edit-per-day-payout-group').style.display = 'none';
+                hourlyCard.classList.remove('border-gray-200');
+                hourlyCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
+                const hourlyIndicator = hourlyCard.querySelector('.selected-indicator');
+                if (hourlyIndicator) hourlyIndicator.style.display = 'block';
             } else {
                 document.getElementById('edit-payment-type-day').checked = true;
                 document.getElementById('edit-per-part-payout-group').style.display = 'none';
+                document.getElementById('edit-per-hour-payout-group').style.display = 'none';
                 document.getElementById('edit-per-day-payout-group').style.display = 'block';
                 fixedCard.classList.remove('border-gray-200');
                 fixedCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
@@ -747,6 +779,8 @@
             }
             document.getElementById('edit-per-part-payout').value = perPartPayout || '';
             document.getElementById('edit-per-part-currency').value = perPartCurrency || '';
+            document.getElementById('edit-per-hour-payout').value = perHourPayout || '';
+            document.getElementById('edit-per-hour-currency').value = perHourCurrency || '';
             document.getElementById('edit-per-day-payout').value = perDayPayout || '';
             document.getElementById('edit-per-day-currency').value = perDayCurrency || '';
             
@@ -769,32 +803,46 @@
 
         function setupEditPaymentTypeToggle() {
             const perPartGroup = document.getElementById('edit-per-part-payout-group');
+            const perHourGroup = document.getElementById('edit-per-hour-payout-group');
             const perDayGroup = document.getElementById('edit-per-day-payout-group');
             const radios = document.querySelectorAll('input[name="edit_payment_type"]');
             const fixedCard = document.getElementById('edit-fixed-card');
+            const hourlyCard = document.getElementById('edit-hourly-card');
             const pieceCard = document.getElementById('edit-piece-card');
             
             radios.forEach(radio => {
                 radio.addEventListener('change', function() {
                     // Update card styling
                     fixedCard.classList.remove('border-blue-500', 'bg-blue-50', 'card-selected');
+                    hourlyCard.classList.remove('border-blue-500', 'bg-blue-50', 'card-selected');
                     pieceCard.classList.remove('border-blue-500', 'bg-blue-50', 'card-selected');
                     fixedCard.classList.add('border-gray-200');
+                    hourlyCard.classList.add('border-gray-200');
                     pieceCard.classList.add('border-gray-200');
                     
                     // Hide all selected indicators
-                    const selectedIndicators = document.querySelectorAll('#edit-fixed-card .selected-indicator, #edit-piece-card .selected-indicator');
+                    const selectedIndicators = document.querySelectorAll('#edit-fixed-card .selected-indicator, #edit-hourly-card .selected-indicator, #edit-piece-card .selected-indicator');
                     selectedIndicators.forEach(indicator => indicator.style.display = 'none');
                     
                     if (this.value === 'per_part') {
                         perPartGroup.style.display = 'block';
+                        perHourGroup.style.display = 'none';
                         perDayGroup.style.display = 'none';
                         pieceCard.classList.remove('border-gray-200');
                         pieceCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
                         const pieceIndicator = pieceCard.querySelector('.selected-indicator');
                         if (pieceIndicator) pieceIndicator.style.display = 'block';
+                    } else if (this.value === 'per_hour') {
+                        perPartGroup.style.display = 'none';
+                        perHourGroup.style.display = 'block';
+                        perDayGroup.style.display = 'none';
+                        hourlyCard.classList.remove('border-gray-200');
+                        hourlyCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
+                        const hourlyIndicator = hourlyCard.querySelector('.selected-indicator');
+                        if (hourlyIndicator) hourlyIndicator.style.display = 'block';
                     } else {
                         perPartGroup.style.display = 'none';
+                        perHourGroup.style.display = 'none';
                         perDayGroup.style.display = 'block';
                         fixedCard.classList.remove('border-gray-200');
                         fixedCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
@@ -823,7 +871,14 @@
                 }
                 if (payoutInput) {
                     payoutInput.placeholder = 'Enter payout per part';
-                    }
+                }
+            } else if (paymentType === 'per_hour') {
+                if (payoutLabel) {
+                    payoutLabel.innerHTML = 'Hourly rate <span class="text-xs text-gray-400">(e.g., 15$/hr , 50 Kwacha/hr)</span>';
+                }
+                if (payoutInput) {
+                    payoutInput.placeholder = 'Enter hourly rate';
+                }
             }
         }
 
@@ -840,6 +895,8 @@
             const paymentType = formData.get('edit_payment_type') || 'per_day';
             let perPartPayout = null;
             let perPartCurrency = null;
+            let perHourPayout = null;
+            let perHourCurrency = null;
             let perDayPayout = null;
             let perDayCurrency = null;
             
@@ -854,6 +911,19 @@
                 if (!perPartCurrency || perPartCurrency.trim() === '') {
                     showCustomModal('Validation Error', 'Please select a currency for payout per part.', 'warning');
                     document.getElementById('edit-per-part-currency').focus();
+                    return;
+                }
+            } else if (paymentType === 'per_hour') {
+                perHourPayout = formData.get('edit_per_hour_payout');
+                perHourCurrency = formData.get('edit_per_hour_currency');
+                if (!perHourPayout || isNaN(perHourPayout) || Number(perHourPayout) <= 0) {
+                    showCustomModal('Validation Error', 'Please enter a valid hourly rate.', 'warning');
+                    document.getElementById('edit-per-hour-payout').focus();
+                    return;
+                }
+                if (!perHourCurrency || perHourCurrency.trim() === '') {
+                    showCustomModal('Validation Error', 'Please select a currency for hourly rate.', 'warning');
+                    document.getElementById('edit-per-hour-currency').focus();
                     return;
                 }
             } else {
@@ -883,6 +953,8 @@
                     payment_type: paymentType,
                     per_part_payout: perPartPayout,
                     per_part_currency: perPartCurrency,
+                    per_hour_payout: perHourPayout,
+                    per_hour_currency: perHourCurrency,
                     per_day_payout: perDayPayout,
                     per_day_currency: perDayCurrency
                 })

@@ -1019,13 +1019,22 @@ function updatePayoutDisplay() {
             pieceCard.classList.add('border-gray-200');
         }
         
-        // STEP 3: Hide ALL payout sections
+        // STEP 3: Hide ALL payout sections and disable their inputs
         payoutFields.classList.remove('visible');
         payoutFields.classList.add('hidden');
         perPartPayoutGroup.classList.remove('visible');
         perPartPayoutGroup.classList.add('hidden');
         perHourPayoutGroup.classList.remove('visible');
         perHourPayoutGroup.classList.add('hidden');
+        
+        // Disable all inputs to prevent validation issues
+        const perDayInputs = document.querySelectorAll('#per-day-payout, #per-day-currency');
+        const perPartInputs = document.querySelectorAll('#per-part-payout, #per-part-currency');
+        const perHourInputs = document.querySelectorAll('#per-hour-payout, #per-hour-currency');
+        
+        perDayInputs.forEach(input => input.disabled = true);
+        perPartInputs.forEach(input => input.disabled = true);
+        perHourInputs.forEach(input => input.disabled = true);
         
         console.log('Hidden all sections. Now showing the selected one...');
         
@@ -1036,6 +1045,9 @@ function updatePayoutDisplay() {
             // Show per-part section
             perPartPayoutGroup.classList.remove('hidden');
             perPartPayoutGroup.classList.add('visible');
+            
+            // Enable per-part inputs
+            perPartInputs.forEach(input => input.disabled = false);
             
             // Update piece card styling
             if (pieceCard) {
@@ -1054,6 +1066,9 @@ function updatePayoutDisplay() {
             perHourPayoutGroup.classList.remove('hidden');
             perHourPayoutGroup.classList.add('visible');
             
+            // Enable per-hour inputs
+            perHourInputs.forEach(input => input.disabled = false);
+            
             // Update hourly card styling
             if (hourlyCard) {
                 hourlyCard.classList.remove('border-gray-200');
@@ -1070,6 +1085,9 @@ function updatePayoutDisplay() {
             // Show daily section (default)
             payoutFields.classList.remove('hidden');
             payoutFields.classList.add('visible');
+            
+            // Enable per-day inputs
+            perDayInputs.forEach(input => input.disabled = false);
             
             // Update fixed card styling
             if (fixedCard) {

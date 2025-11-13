@@ -754,6 +754,10 @@
                 document.getElementById('edit-per-part-payout-group').style.display = 'block';
                 document.getElementById('edit-per-hour-payout-group').style.display = 'none';
                 document.getElementById('edit-per-day-payout-group').style.display = 'none';
+                // Enable per-part inputs, disable others
+                document.querySelectorAll('#edit-per-part-payout, #edit-per-part-currency').forEach(input => input.disabled = false);
+                document.querySelectorAll('#edit-per-hour-payout, #edit-per-hour-currency').forEach(input => input.disabled = true);
+                document.querySelectorAll('#edit-per-day-payout, #edit-per-day-currency').forEach(input => input.disabled = true);
                 pieceCard.classList.remove('border-gray-200');
                 pieceCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
                 const pieceIndicator = pieceCard.querySelector('.selected-indicator');
@@ -763,6 +767,10 @@
                 document.getElementById('edit-per-part-payout-group').style.display = 'none';
                 document.getElementById('edit-per-hour-payout-group').style.display = 'block';
                 document.getElementById('edit-per-day-payout-group').style.display = 'none';
+                // Enable per-hour inputs, disable others
+                document.querySelectorAll('#edit-per-hour-payout, #edit-per-hour-currency').forEach(input => input.disabled = false);
+                document.querySelectorAll('#edit-per-part-payout, #edit-per-part-currency').forEach(input => input.disabled = true);
+                document.querySelectorAll('#edit-per-day-payout, #edit-per-day-currency').forEach(input => input.disabled = true);
                 hourlyCard.classList.remove('border-gray-200');
                 hourlyCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
                 const hourlyIndicator = hourlyCard.querySelector('.selected-indicator');
@@ -772,6 +780,10 @@
                 document.getElementById('edit-per-part-payout-group').style.display = 'none';
                 document.getElementById('edit-per-hour-payout-group').style.display = 'none';
                 document.getElementById('edit-per-day-payout-group').style.display = 'block';
+                // Enable per-day inputs, disable others
+                document.querySelectorAll('#edit-per-day-payout, #edit-per-day-currency').forEach(input => input.disabled = false);
+                document.querySelectorAll('#edit-per-part-payout, #edit-per-part-currency').forEach(input => input.disabled = true);
+                document.querySelectorAll('#edit-per-hour-payout, #edit-per-hour-currency').forEach(input => input.disabled = true);
                 fixedCard.classList.remove('border-gray-200');
                 fixedCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
                 const dailyIndicator = fixedCard.querySelector('.selected-indicator');
@@ -812,6 +824,15 @@
             
             radios.forEach(radio => {
                 radio.addEventListener('change', function() {
+                    // Disable all inputs first
+                    const editPerDayInputs = document.querySelectorAll('#edit-per-day-payout, #edit-per-day-currency');
+                    const editPerPartInputs = document.querySelectorAll('#edit-per-part-payout, #edit-per-part-currency');
+                    const editPerHourInputs = document.querySelectorAll('#edit-per-hour-payout, #edit-per-hour-currency');
+                    
+                    editPerDayInputs.forEach(input => input.disabled = true);
+                    editPerPartInputs.forEach(input => input.disabled = true);
+                    editPerHourInputs.forEach(input => input.disabled = true);
+                    
                     // Update card styling
                     fixedCard.classList.remove('border-blue-500', 'bg-blue-50', 'card-selected');
                     hourlyCard.classList.remove('border-blue-500', 'bg-blue-50', 'card-selected');
@@ -828,6 +849,7 @@
                         perPartGroup.style.display = 'block';
                         perHourGroup.style.display = 'none';
                         perDayGroup.style.display = 'none';
+                        editPerPartInputs.forEach(input => input.disabled = false);
                         pieceCard.classList.remove('border-gray-200');
                         pieceCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
                         const pieceIndicator = pieceCard.querySelector('.selected-indicator');
@@ -836,6 +858,7 @@
                         perPartGroup.style.display = 'none';
                         perHourGroup.style.display = 'block';
                         perDayGroup.style.display = 'none';
+                        editPerHourInputs.forEach(input => input.disabled = false);
                         hourlyCard.classList.remove('border-gray-200');
                         hourlyCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
                         const hourlyIndicator = hourlyCard.querySelector('.selected-indicator');
@@ -844,6 +867,7 @@
                         perPartGroup.style.display = 'none';
                         perHourGroup.style.display = 'none';
                         perDayGroup.style.display = 'block';
+                        editPerDayInputs.forEach(input => input.disabled = false);
                         fixedCard.classList.remove('border-gray-200');
                         fixedCard.classList.add('border-blue-500', 'bg-blue-50', 'card-selected');
                         const dailyIndicator = fixedCard.querySelector('.selected-indicator');

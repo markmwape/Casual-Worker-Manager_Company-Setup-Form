@@ -266,48 +266,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize the button state on page load
     updateDeleteSelectedBtn();
-    
-    // Setup Add Custom Field button with proper event handling
-    console.log('[DOMContentLoaded] Setting up Add Custom Field button');
-    setupAddCustomFieldButton();
-    
-    // Add Enter key support for custom field input
-    const newFieldInput = document.getElementById('newFieldName');
-    if (newFieldInput) {
-        console.log('[DOMContentLoaded] Adding Enter key listener to newFieldName input');
-        newFieldInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                console.log('[newFieldName] Enter key pressed, triggering addCustomField');
-                addCustomField('add-worker');
-            }
-        });
-    }
 });
-
-// Function to setup Add Custom Field button
-function setupAddCustomFieldButton() {
-    const addFieldBtn = document.getElementById('addCustomFieldBtn');
-    if (addFieldBtn) {
-        console.log('[setupAddCustomFieldButton] Found Add Custom Field button');
-        
-        // Remove any existing click handlers by cloning the button
-        const newBtn = addFieldBtn.cloneNode(true);
-        addFieldBtn.parentNode.replaceChild(newBtn, addFieldBtn);
-        
-        // Add fresh click handler
-        newBtn.addEventListener('click', function(e) {
-            console.log('[Add Field Button] Button clicked');
-            e.preventDefault();
-            e.stopPropagation();
-            addCustomField('add-worker');
-        });
-        
-        console.log('[setupAddCustomFieldButton] Event listener attached');
-    } else {
-        console.warn('[setupAddCustomFieldButton] Add Custom Field button not found yet');
-    }
-}
 
 // --- Edit Worker Modal ---
 window.openEditWorkerModal = function(workerId) {
@@ -586,44 +545,28 @@ function openAddWorkerModal() {
     setTimeout(() => {
         console.log('[openAddWorkerModal] Setting up Add Custom Field button and input listeners');
         
-        // Setup the Add Field button
-        const addFieldBtn = document.getElementById('addCustomFieldBtn');
-        if (addFieldBtn) {
-            console.log('[openAddWorkerModal] Found Add Custom Field button, setting up event listener');
+        const addFieldBtn = document.querySelector('#add-worker-modal #addCustomFieldBtn');
+        const newFieldInput = document.querySelector('#add-worker-modal #newFieldName');
+
+        if (addFieldBtn && newFieldInput) {
+            console.log('[openAddWorkerModal] Found button and input, setting up listeners');
             
-            // Remove any existing click handlers by cloning the button
-            const newBtn = addFieldBtn.cloneNode(true);
-            addFieldBtn.parentNode.replaceChild(newBtn, addFieldBtn);
-            
-            // Add fresh click handler
-            newBtn.addEventListener('click', function(e) {
+            addFieldBtn.onclick = function(e) {
                 console.log('[Add Field Button Click] Button clicked');
                 e.preventDefault();
                 e.stopPropagation();
                 addCustomField('add-worker');
-            });
-        } else {
-            console.warn('[openAddWorkerModal] Add Custom Field button not found');
-        }
-        
-        // Setup Enter key listener
-        const newFieldInput = document.getElementById('newFieldName');
-        if (newFieldInput) {
-            console.log('[openAddWorkerModal] Found input field, setting up Enter key listener');
-            
-            // Clone the input to remove old listeners
-            const newInput = newFieldInput.cloneNode(true);
-            newFieldInput.parentNode.replaceChild(newInput, newFieldInput);
-            
-            newInput.addEventListener('keypress', function(e) {
+            };
+
+            newFieldInput.onkeypress = function(e) {
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     console.log('[newFieldName] Enter key pressed, triggering addCustomField');
                     addCustomField('add-worker');
                 }
-            });
+            };
         } else {
-            console.warn('[openAddWorkerModal] Input field not found');
+            console.warn('[openAddWorkerModal] Add Custom Field button or input not found');
         }
     }, 100);
 }
@@ -671,44 +614,28 @@ function openImportWorkersModal() {
     setTimeout(() => {
         console.log('[openImportWorkersModal] Setting up Import Custom Field button and input listeners');
         
-        // Setup the Add Field button for import modal
-        const addFieldBtn = document.getElementById('addCustomFieldBtnImport');
-        if (addFieldBtn) {
-            console.log('[openImportWorkersModal] Found Import Add Custom Field button, setting up event listener');
+        const addFieldBtn = document.querySelector('#import-workers-modal #addCustomFieldBtnImport');
+        const newFieldInput = document.querySelector('#import-workers-modal #newFieldName');
+
+        if (addFieldBtn && newFieldInput) {
+            console.log('[openImportWorkersModal] Found button and input, setting up listeners');
             
-            // Remove any existing click handlers by cloning the button
-            const newBtn = addFieldBtn.cloneNode(true);
-            addFieldBtn.parentNode.replaceChild(newBtn, addFieldBtn);
-            
-            // Add fresh click handler
-            newBtn.addEventListener('click', function(e) {
+            addFieldBtn.onclick = function(e) {
                 console.log('[Import Add Field Button Click] Button clicked');
                 e.preventDefault();
                 e.stopPropagation();
                 addCustomField('import');
-            });
-        } else {
-            console.warn('[openImportWorkersModal] Import Add Custom Field button not found');
-        }
-        
-        // Setup Enter key listener for import modal
-        const newFieldInput = document.querySelector('#import-workers-modal #newFieldName');
-        if (newFieldInput) {
-            console.log('[openImportWorkersModal] Found import input field, setting up Enter key listener');
-            
-            // Clone the input to remove old listeners
-            const newInput = newFieldInput.cloneNode(true);
-            newFieldInput.parentNode.replaceChild(newInput, newFieldInput);
-            
-            newInput.addEventListener('keypress', function(e) {
+            };
+
+            newFieldInput.onkeypress = function(e) {
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     console.log('[Import newFieldName] Enter key pressed, triggering addCustomField');
                     addCustomField('import');
                 }
-            });
+            };
         } else {
-            console.warn('[openImportWorkersModal] Import input field not found');
+            console.warn('[openImportWorkersModal] Import Add Custom Field button or input not found');
         }
     }, 100);
 }
@@ -786,7 +713,6 @@ function loadImportFields() {
 }
 
 // Expose to global scope
-window.setupAddCustomFieldButton = setupAddCustomFieldButton;
 window.reloadCustomFields = reloadCustomFields;
 window.addCustomField = addCustomField;
 window.deleteCustomField = deleteCustomField;

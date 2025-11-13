@@ -1325,6 +1325,9 @@ def download_reports():
         elif report_type == 'per_part':
             logging.info(f"Generating per_part report for company {company.id} from {start_date_obj} to {end_date_obj}")
             report_data = generate_per_part_report(company, start_date_obj, end_date_obj)
+        elif report_type == 'per_hour':
+            logging.info(f"Generating per_hour report for company {company.id} from {start_date_obj} to {end_date_obj}")
+            report_data = generate_per_hour_report(company, start_date_obj, end_date_obj)
         else:
             return jsonify({'error': 'Invalid report type'}), 400
         
@@ -1664,6 +1667,91 @@ def generate_per_part_report(company, start_date, end_date):
                 report_data.append(record)
         
         logging.info(f"Per_part report generation complete: {len(report_data)} records")
+        return report_data
+        
+    except Exception as e:
+        logging.error(f"Error generating per_part report: {str(e)}", exc_info=True)
+        return []
+
+def generate_per_hour_report(company, start_date, end_date):
+    """Generate per hour report data"""
+    try:
+        logging.info(f"Starting per_hour report generation for company {company.id}")
+        
+        # Get all workers for the company
+        workers = Worker.query.filter_by(company_id=company.id).all()
+        logging.info(f"Found {len(workers)} workers")
+        
+        import_fields = ImportField.query.filter_by(company_id=company.id).all()
+        custom_fields = ReportField.query.filter_by(company_id=company.id).all()
+        
+        report_data = []
+        
+        for worker in workers:
+            # Find all attendance records for this worker in the date range for per_hour tasks
+            attendance_records = Attendance.query.filter(
+                Attendance.worker_id == worker.id,
+                Attendance.company_id == company.id,
+                Attendance.date.between(start_date, end_date)
+            ).all()
+            
+            logging.debug(f"Worker {worker.id}: Found {len(attendance_records)} attendance records")
+            
+            # Group by task (only per_hour tasks)
+            per_hour_tasks = {}
+            for att in attendance_records:
+                if att.task and getattr(att.task, 'payment_type', None) == 'per_hour':
+                    # Only count if task started before or during the end date of the report
+                    if att.task.start_date.date() <= end_date:
+                        task_id = att.task.id
+                        if task_id not in per_hour_tasks:
+                            per_hour_tasks[task_id] = {
+                                'task': att.task,
+                                'hours': 0
+                            }
+                        # Sum up the hours worked
+                        hours = getattr(att, 'hours_worked', 0) or 0
+                        per_hour_tasks[task_id]['hours'] += hours
+            
+            # Create record for each per_hour task
+            for task_id, task_data in per_hour_tasks.items():
+                task = task_data['task']
+                hours = task_data['hours']
+                
+                record = {
+                    'first_name': getattr(worker, 'first_name', ''),
+                    'last_name': getattr(worker, 'last_name', ''),
+                    'task_name': getattr(task, 'name', ''),
+                    'hours_worked': hours,
+                    'per_hour_rate': getattr(task, 'per_hour_payout', None),
+                    'currency': getattr(task, 'per_hour_currency', 'USD')
+                }
+                
+                # Add import field values
+                for field in import_fields:
+                    custom_value = WorkerCustomFieldValue.query.filter_by(
+                        worker_id=worker.id,
+                        custom_field_id=field.id
+                    ).first()
+                    record[field.name] = custom_value.value if custom_value else ''
+                
+                # Add custom report fields
+                for field in custom_fields:
+                    if field.field_type == 'numeric' and field.formula:
+                        try:
+                            formula = field.formula
+                            formula = formula.replace('hours_worked', str(hours))
+                            formula = formula.replace('per_hour_rate', str(record['per_hour_rate'] or 0))
+                            record[field.name] = eval(formula)
+                        except Exception as e:
+                            logging.warning(f"Failed to evaluate formula for field {field.name}: {str(e)}")
+                            record[field.name] = 0
+                    else:
+                        record[field.name] = field.value or ''
+                
+                report_data.append(record)
+        
+        logging.info(f"Per_hour report generation complete: {len(report_data)} records")
         return report_data
         
     except Exception as e:
@@ -2842,15 +2930,18 @@ def reports_route():
                 logging.error(f"Error evaluating formula {formula}: {str(e)}")
                 return 0.00
 
-        # Prepare per_day and per_part records
+        # Prepare per_day, per_part, and per_hour records
         per_day_records = []
         per_part_records = []
+        per_hour_records = []
 
         for worker in workers:
             # For Per Day: attendance and payout
             attendance_days = 0
             # For Per Part: units completed
             total_units_completed = 0
+            # For Per Hour: hours worked
+            total_hours_worked = 0
             # Find all attendance records for this worker in the date range
             attendance_records = Attendance.query.filter(
                 Attendance.worker_id == worker.id,
@@ -2860,6 +2951,7 @@ def reports_route():
             # Group by task payment type
             per_day_attendance = {}
             per_part_units = {}
+            per_hour_hours = {}
             for att in attendance_records:
                 if att.task and getattr(att.task, 'payment_type', None) == 'per_day':
                     # Only count attendance if the task is active during the report period
@@ -2876,6 +2968,13 @@ def reports_route():
                         if att.units_completed:
                             per_part_units.setdefault(att.task_id, 0)
                             per_part_units[att.task_id] += att.units_completed
+                elif att.task and getattr(att.task, 'payment_type', None) == 'per_hour':
+                    # Only count hours if the task is active during the report period
+                    if att.task.start_date.date() <= end_date:
+                        # Task is relevant to the report period
+                        if att.hours_worked:
+                            per_hour_hours.setdefault(att.task_id, 0)
+                            per_hour_hours[att.task_id] += att.hours_worked
             # For each per_day task, add a record
             for task_id, days in per_day_attendance.items():
                 task = Task.query.get(task_id) if task_id else None
@@ -2970,6 +3069,55 @@ def reports_route():
                             logging.error(f"Error calculating field {field.name}: {str(e)}")
                             record[field.name] = 0.00
                 per_part_records.append(record)
+            
+            # For each per_hour task, add a record
+            for task_id, hours in per_hour_hours.items():
+                task = Task.query.get(task_id) if task_id else None
+                # Compute age
+                try:
+                    from datetime import date
+                    if worker.date_of_birth:
+                        today = date.today()
+                        age = today.year - worker.date_of_birth.year - ((today.month, today.day) < (worker.date_of_birth.month, worker.date_of_birth.day))
+                    else:
+                        age = 0
+                except Exception:
+                    age = 0
+                record = {
+                    'first_name': getattr(worker, 'first_name', ''),
+                    'last_name': getattr(worker, 'last_name', ''),
+                    'task_name': getattr(task, 'name', '') if task else '',
+                    'hours_worked': hours,
+                    'per_hour_rate': getattr(task, 'per_hour_payout', None) if task else None,
+                    'per_hour_currency': getattr(task, 'per_hour_currency', None) if task else None,
+                    'age': age,
+                }
+                # Add import field values
+                for field in import_fields:
+                    custom_value = WorkerCustomFieldValue.query.filter_by(
+                        worker_id=worker.id,
+                        custom_field_id=field.id
+                    ).first()
+                    record[field.name] = custom_value.value if custom_value else 'N/A'
+                # Add custom report fields for per_hour
+                per_hour_custom_fields = [f for f in custom_fields if f.payout_type in ('per_hour', 'both')]
+                custom_fields_dict = {field.name: field.formula for field in per_hour_custom_fields if field.field_type == 'numeric'}
+                for field in per_hour_custom_fields:
+                    if field.field_type == 'numeric':
+                        try:
+                            context = {
+                                'hours_worked': hours,
+                                'per_hour_rate': record['per_hour_rate'],
+                                **record
+                            }
+                            result = evaluate_formula(field.formula, context, custom_fields_dict)
+                            if field.max_limit is not None:
+                                result = min(result, field.max_limit)
+                            record[field.name] = result
+                        except Exception as e:
+                            logging.error(f"Error calculating field {field.name}: {str(e)}")
+                            record[field.name] = 0.00
+                per_hour_records.append(record)
 
         return render_template('reports.html', 
             report_data={}, 
@@ -2977,6 +3125,7 @@ def reports_route():
             import_fields=import_fields,
             per_day_records=per_day_records,
             per_part_records=per_part_records,
+            per_hour_records=per_hour_records,
             start_date=start_date.strftime('%Y-%m-%d'),
             end_date=end_date.strftime('%Y-%m-%d')
         )

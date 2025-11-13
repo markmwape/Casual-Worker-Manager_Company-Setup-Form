@@ -14,6 +14,9 @@ const showToast = window.showToast || function(message, type = 'success') {
     }, 3000);
 };
 
+console.log('[worker.js] Script loading...');
+console.log('[worker.js] window.addCustomField before definition:', typeof window.addCustomField);
+
 // Custom Modal Functions
 function showCustomModal(title, message, type = 'info') {
     return new Promise((resolve) => {
@@ -487,6 +490,10 @@ function addCustomField(sourceModal = null) {
     });
 }
 
+// Expose addCustomField immediately to global scope
+window.addCustomField = addCustomField;
+console.log('[worker.js] addCustomField exposed to window:', typeof window.addCustomField);
+
 function deleteCustomField(fieldId, fieldName) {
     window._pendingDelete = { fieldId, fieldName };
     document.getElementById('deleteFieldMessage').textContent =
@@ -740,3 +747,7 @@ window.openDeleteAllWorkersModal = openDeleteAllWorkersModal;
 window.openImportWorkersModal = openImportWorkersModal;
 window.closeImportWorkersModal = closeImportWorkersModal;
 window.loadImportFields = loadImportFields;
+
+console.log('[worker.js] Script fully loaded.');
+console.log('[worker.js] window.addCustomField type:', typeof window.addCustomField);
+console.log('[worker.js] window.addCustomField is:', window.addCustomField);

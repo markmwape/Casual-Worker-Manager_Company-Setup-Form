@@ -3064,7 +3064,7 @@ def import_mapped_workers():
             
             if max_can_import == 0:
                 return jsonify({
-                    'error': f'Worker limit reached. Your {workspace.subscription_tier or "starter"} tier allows {worker_limit} workers, and you already have {current_worker_count} workers.'
+                    'error': f'Subscription limit reached. Your {workspace.subscription_tier or "starter"} plan allows {worker_limit} workers. You currently have {current_worker_count} workers. To add more workers, please upgrade your subscription plan.'
                 }), 403
             
             # Check if we're trying to import more than allowed

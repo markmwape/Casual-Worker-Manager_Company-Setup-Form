@@ -1621,11 +1621,16 @@ window.importWithMapping = async function() {
             'file_id': fileId
         })
     })
-    .then(response => {
+    .then(async response => {
         console.log('Response status:', response.status);
         console.log('Response headers:', response.headers);
         
         if (!response.ok) {
+            // Try to parse error response
+            const errorData = await response.json().catch(() => ({}));
+            if (response.status === 403 && errorData.error) {
+                throw new Error(errorData.error);
+            }
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         return response.json();
@@ -1637,16 +1642,16 @@ window.importWithMapping = async function() {
             showCustomModal('Import Failed', `Import failed: ${result.error}`, 'error');
         } else {
             // Build success message
-            let successMsg = `Import completed!\n\nTotal records: ${result.total_records}\nSuccessful imports: ${result.successful_imports}\nDuplicates skipped: ${result.duplicate_records}\nErrors: ${result.error_records}`;
+            let successMsg = `Total records: ${result.total_records}\nSuccessfully imported: ${result.successful_imports}\nDuplicates skipped: ${result.duplicate_records}\nErrors: ${result.error_records}`;
             
             // Add limit warning if applicable
             if (result.limit_warning) {
-                successMsg += `\n\n⚠️ LIMIT WARNING:\n${result.limit_warning}\n\nYour current plan allows ${result.current_limit} workers. You now have ${result.current_count} workers.`;
+                successMsg += `\n\n⚠️ SUBSCRIPTION LIMIT REACHED\n\nYour plan allows up to ${result.current_limit} workers. You currently have ${result.current_count} workers.\n\n${result.limit_warning}`;
             }
             
             // Determine modal type based on errors and limits
             const modalType = (result.error_records > 0 || result.limit_exceeded) ? 'warning' : 'success';
-            const modalTitle = result.limit_exceeded ? 'Import Completed - Limit Reached' : 'Import Success';
+            const modalTitle = result.limit_exceeded ? 'Import Partially Completed' : 'Import Success';
             
             if (result.error_records > 0) {
                 const showDetails = await showCustomConfirm(modalTitle, successMsg + '\n\nWould you like to see the error details?');
@@ -1664,7 +1669,17 @@ window.importWithMapping = async function() {
     })
     .catch(error => {
         console.error('Error importing workers:', error);
-        showCustomModal('Import Error', `Failed to import workers: ${error.message}\n\nPlease check the browser console for more details and try again.`, 'error');
+        
+        // Check if this is a subscription limit error
+        const errorMessage = error.message || 'Unknown error occurred';
+        const isLimitError = errorMessage.toLowerCase().includes('limit') || errorMessage.toLowerCase().includes('tier');
+        
+        const title = isLimitError ? 'Subscription Limit Reached' : 'Import Error';
+        const message = isLimitError 
+            ? `${errorMessage}\n\nTo import more workers, please upgrade your subscription plan.`
+            : `Failed to import workers: ${errorMessage}\n\nPlease check the browser console for more details and try again.`;
+        
+        showCustomModal(title, message, 'error');
     })
     .finally(() => {
         // Reset button state

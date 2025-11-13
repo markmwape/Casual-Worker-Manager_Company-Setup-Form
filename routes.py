@@ -2504,9 +2504,9 @@ def home_route():
 @app.route("/api/team-member", methods=['POST'])
 def add_team_member():
     try:
-        # Check if current user is a Supervisor
-        if session.get('current_workspace', {}).get('role') == 'Supervisor':
-            return jsonify({'success': False, 'error': 'Supervisors cannot add team members'}), 403
+        # Check if current user is an Admin
+        if session.get('current_workspace', {}).get('role') != 'Admin':
+            return jsonify({'success': False, 'error': 'Only admins can add team members'}), 403
         
         data = request.get_json()
         email = data.get('email')
@@ -2567,9 +2567,9 @@ def add_team_member():
 @app.route("/api/team-member/<int:user_id>/role", methods=['PUT'])
 def update_team_member_role(user_id):
     try:
-        # Check if current user is a Supervisor
-        if session.get('current_workspace', {}).get('role') == 'Supervisor':
-            return jsonify({'error': 'Supervisors cannot update team member roles'}), 403
+        # Check if current user is an Admin
+        if session.get('current_workspace', {}).get('role') != 'Admin':
+            return jsonify({'error': 'Only admins can update team member roles'}), 403
         
         data = request.get_json()
         new_role = data.get('role')
@@ -2667,9 +2667,9 @@ def handle_team_members():
             return jsonify({'success': True, 'team_members': team_members})
         
         elif request.method == 'POST':
-            # Check if current user is a Supervisor
-            if session.get('current_workspace', {}).get('role') == 'Supervisor':
-                return jsonify({'success': False, 'error': 'Supervisors cannot add team members'}), 403
+            # Check if current user is an Admin
+            if session.get('current_workspace', {}).get('role') != 'Admin':
+                return jsonify({'success': False, 'error': 'Only admins can add team members'}), 403
             
             data = request.get_json()
             email = data.get('email')
@@ -2731,9 +2731,9 @@ def handle_team_members():
 def update_team_member_role_api(user_id):
     """Update team member role with proper JSON response"""
     try:
-        # Check if current user is a Supervisor
-        if session.get('current_workspace', {}).get('role') == 'Supervisor':
-            return jsonify({'success': False, 'error': 'Supervisors cannot update team member roles'}), 403
+        # Check if current user is an Admin
+        if session.get('current_workspace', {}).get('role') != 'Admin':
+            return jsonify({'success': False, 'error': 'Only admins can update team member roles'}), 403
         
         # Get JSON data
         if request.content_type == 'application/json':
@@ -2782,9 +2782,9 @@ def update_team_member_role_api(user_id):
 def delete_team_member_api(user_id):
     """Delete team member with proper JSON response"""
     try:
-        # Check if current user is a Supervisor
-        if session.get('current_workspace', {}).get('role') == 'Supervisor':
-            return jsonify({'success': False, 'error': 'Supervisors cannot delete team members'}), 403
+        # Check if current user is an Admin
+        if session.get('current_workspace', {}).get('role') != 'Admin':
+            return jsonify({'success': False, 'error': 'Only admins can delete team members'}), 403
         
         # Get current workspace
         workspace_id = session.get('current_workspace', {}).get('id')
@@ -2822,9 +2822,9 @@ def delete_team_member_api(user_id):
 @app.route("/api/team-member/<int:user_id>", methods=['DELETE'])
 def delete_team_member(user_id):
     try:
-        # Check if current user is a Supervisor
-        if session.get('current_workspace', {}).get('role') == 'Supervisor':
-            return jsonify({'error': 'Supervisors cannot delete team members'}), 403
+        # Check if current user is an Admin
+        if session.get('current_workspace', {}).get('role') != 'Admin':
+            return jsonify({'error': 'Only admins can delete team members'}), 403
         
         # Get current workspace
         workspace_id = session.get('current_workspace', {}).get('id')

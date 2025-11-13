@@ -884,8 +884,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     tr.className = 'hover:bg-gray-50 transition-colors duration-150';
                     tr.setAttribute('data-user-id', result.user.id);
                     
-                    // Check if current user is a Supervisor to conditionally show Actions column
-                    const isSupervisor = window.currentUserRole === 'Supervisor';
+                    // Check if current user is an Admin to conditionally show Actions column
+                    const isAdmin = window.currentUserRole === 'Admin';
                     
                     tr.innerHTML = `
                         <td class="py-4">
@@ -901,7 +901,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 ${result.user.role}
                             </span>
                         </td>
-                        ${!isSupervisor ? `
+                        ${isAdmin ? `
                         <td class="py-4">
                             <div class="flex gap-2 justify-center">
                                 <button onclick="openEditRoleModal('${result.user.id}', '${result.user.email}', '${result.user.role}')" class="btn btn-ghost btn-sm hover:bg-blue-100 text-blue-600 border border-blue-200 p-2 rounded-md transition-all duration-200 hover:shadow-sm flex items-center justify-center" title="Edit">

@@ -355,7 +355,7 @@
                         <p class="text-blue-600">Manage your team access and permissions</p>
                     </div>
                 </div>
-                {% if session.get('current_workspace', {}).get('role') != 'Supervisor' %}
+                {% if session.get('current_workspace', {}).get('role') == 'Admin' %}
                 <button onclick="document.getElementById('add-team-member-modal').showModal()" class="btn btn-primary btn-lg shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl">
                     <i data-feather="user-plus" class="mr-2"></i>Add Team Member
                 </button>
@@ -372,7 +372,7 @@
                             <th class="text-blue-900 font-semibold py-4 px-6 text-left">
                                 <i class="fas fa-user-tag mr-2"></i>Role
                             </th>
-                            {% if session.get('current_workspace', {}).get('role') != 'Supervisor' %}
+                            {% if session.get('current_workspace', {}).get('role') == 'Admin' %}
                             <th class="text-blue-900 font-semibold py-4 px-6 text-center" style="min-width: 120px;">
                                 <i class="fas fa-cog mr-2"></i>Actions
                             </th>
@@ -395,7 +395,7 @@
                                     {{ user.role }}
                                 </span>
                             </td>
-                            {% if session.get('current_workspace', {}).get('role') != 'Supervisor' %}
+                            {% if session.get('current_workspace', {}).get('role') == 'Admin' %}
                             <td class="py-5 px-6">
                                 <div class="flex gap-3 justify-center">
                                     <button onclick="openEditRoleModal('{{ user.id }}', '{{ user.email }}', '{{ user.role }}')" 

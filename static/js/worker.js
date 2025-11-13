@@ -266,6 +266,55 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize the button state on page load
     updateDeleteSelectedBtn();
+    
+    // Add event listener for Add Custom Field button as backup
+    console.log('[DOMContentLoaded] Setting up Add Custom Field button listener');
+    
+    // Use a more robust selector
+    const setupAddFieldButton = () => {
+        const addFieldBtn = document.getElementById('addCustomFieldBtn');
+        if (addFieldBtn) {
+            console.log('[setupAddFieldButton] Found Add Custom Field button, adding click listener');
+            // Remove existing listener if any
+            const newBtn = addFieldBtn.cloneNode(true);
+            addFieldBtn.parentNode.replaceChild(newBtn, addFieldBtn);
+            
+            newBtn.addEventListener('click', function(e) {
+                console.log('[Add Field Button] Button clicked via event listener');
+                e.preventDefault();
+                e.stopPropagation();
+                addCustomField();
+            });
+        } else {
+            console.warn('[setupAddFieldButton] Add Custom Field button not found');
+        }
+    };
+    
+    // Try to set up the button immediately
+    setupAddFieldButton();
+    
+    // Also set up when any modal is shown
+    document.addEventListener('DOMNodeInserted', function(e) {
+        if (e.target.id === 'add-worker-modal' || (e.target.querySelector && e.target.querySelector('#addCustomFieldBtn'))) {
+            console.log('[DOMNodeInserted] Modal or button inserted, setting up button');
+            setTimeout(setupAddFieldButton, 100);
+        }
+    });
+    
+    // Add Enter key support for custom field input
+    const newFieldInput = document.getElementById('newFieldName');
+    if (newFieldInput) {
+        console.log('[DOMContentLoaded] Adding Enter key listener to newFieldName input');
+        newFieldInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                console.log('[newFieldName] Enter key pressed, triggering addCustomField');
+                addCustomField();
+            }
+        });
+    } else {
+        console.warn('[DOMContentLoaded] newFieldName input not found');
+    }
 });
 
 // --- Edit Worker Modal ---
@@ -387,6 +436,8 @@ function reloadCustomFields() {
 
 function addCustomField() {
     const fieldName = document.getElementById('newFieldName')?.value.trim();
+    console.log('[addCustomField] Field name:', fieldName);
+    
     if (!fieldName) {
         showToast('Please enter a field name', 'warning');
         return;
@@ -394,18 +445,29 @@ function addCustomField() {
     
     // Check if field name already exists
     const existingFields = Array.from(document.querySelectorAll('#customFieldsContainer .label-text')).map(el => el.textContent.trim());
+    console.log('[addCustomField] Existing fields:', existingFields);
+    
     if (existingFields.includes(fieldName)) {
         showToast('A field with this name already exists', 'error');
         return;
     }
+    
+    console.log('[addCustomField] Sending request to create field...');
     
     fetch('/api/import-field', {
         method: 'POST', 
         headers: {'Content-Type':'application/json'},
         body: JSON.stringify({ name: fieldName, type: 'text' })
     })
-    .then(res => res.json())
+    .then(res => {
+        console.log('[addCustomField] Response status:', res.status);
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+    })
     .then(result => {
+        console.log('[addCustomField] Result:', result);
         if (result.error) {
             showToast(result.error, 'error');
         } else {
@@ -415,7 +477,7 @@ function addCustomField() {
         }
     })
     .catch(error => {
-        console.error('Error adding custom field:', error);
+        console.error('[addCustomField] Error:', error);
         showToast('Failed to add custom field. Please try again.', 'error');
     });
 }
@@ -485,6 +547,26 @@ function openAddWorkerModal() {
     if (window.feather) {
         feather.replace();
     }
+    
+    // Ensure Add Custom Field functionality is set up after modal is shown
+    setTimeout(() => {
+        const newFieldInput = document.getElementById('newFieldName');
+        if (newFieldInput) {
+            console.log('[openAddWorkerModal] Setting up Enter key listener for newFieldName');
+            
+            // Remove any existing listeners to avoid duplicates
+            newFieldInput.replaceWith(newFieldInput.cloneNode(true));
+            const freshInput = document.getElementById('newFieldName');
+            
+            freshInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    console.log('[newFieldName] Enter key pressed, triggering addCustomField');
+                    addCustomField();
+                }
+            });
+        }
+    }, 100);
 }
 
 function closeAddWorkerModal() {

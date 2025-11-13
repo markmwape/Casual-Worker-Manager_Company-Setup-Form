@@ -394,21 +394,23 @@ function addCustomField(sourceModal = null) {
 
     if (sourceModal === 'import') {
         modalId = '#import-workers-modal';
+        fieldNameInput = document.querySelector('#import-workers-modal #newFieldNameImport');
     } else if (sourceModal === 'add-worker') {
         modalId = '#add-worker-modal';
+        fieldNameInput = document.querySelector('#add-worker-modal #newFieldNameAddWorker');
     } else {
         // Fallback for when sourceModal is not provided
         const importModal = document.getElementById('import-workers-modal');
         if (importModal && importModal.open) {
             modalId = '#import-workers-modal';
             sourceModal = 'import';
+            fieldNameInput = document.querySelector('#import-workers-modal #newFieldNameImport');
         } else {
             modalId = '#add-worker-modal';
             sourceModal = 'add-worker';
+            fieldNameInput = document.querySelector('#add-worker-modal #newFieldNameAddWorker');
         }
     }
-
-    fieldNameInput = document.querySelector(`${modalId} #newFieldName`);
     
     const fieldName = fieldNameInput?.value.trim();
     
@@ -546,7 +548,7 @@ function openAddWorkerModal() {
         console.log('[openAddWorkerModal] Setting up Add Custom Field button and input listeners');
         
         const addFieldBtn = document.querySelector('#add-worker-modal #addCustomFieldBtn');
-        const newFieldInput = document.querySelector('#add-worker-modal #newFieldName');
+        const newFieldInput = document.querySelector('#add-worker-modal #newFieldNameAddWorker');
 
         if (addFieldBtn && newFieldInput) {
             console.log('[openAddWorkerModal] Found button and input, setting up listeners');
@@ -615,7 +617,7 @@ function openImportWorkersModal() {
         console.log('[openImportWorkersModal] Setting up Import Custom Field button and input listeners');
         
         const addFieldBtn = document.querySelector('#import-workers-modal #addCustomFieldBtnImport');
-        const newFieldInput = document.querySelector('#import-workers-modal #newFieldName');
+        const newFieldInput = document.querySelector('#import-workers-modal #newFieldNameImport');
 
         if (addFieldBtn && newFieldInput) {
             console.log('[openImportWorkersModal] Found button and input, setting up listeners');

@@ -2,39 +2,54 @@
     <div class="modal-box max-w-3xl bg-brand-navy-50 w-11/12 max-h-[90vh] overflow-y-auto overflow-x-hidden relative">
         <!-- Custom tooltip styles -->
         <style>
-            .tooltip-high-z {
+            /* Custom tooltip implementation */
+            .custom-tooltip {
                 position: relative;
-                z-index: 9999 !important;
+                display: inline-block;
+                cursor: help;
             }
             
-            .tooltip-high-z:before, 
-            .tooltip-high-z:after {
-                z-index: 9999 !important;
-                position: fixed !important;
+            .custom-tooltip .tooltip-text {
+                visibility: hidden;
+                width: max-content;
+                max-width: 250px;
+                background-color: #1e293b;
+                color: #fff;
+                text-align: center;
+                border-radius: 6px;
+                padding: 8px 12px;
+                position: absolute;
+                z-index: 10000;
+                bottom: 125%;
+                left: 50%;
+                transform: translateX(-50%);
+                opacity: 0;
+                transition: opacity 0.3s;
+                font-size: 13px;
+                line-height: 1.4;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                white-space: normal;
             }
             
-            .tooltip-high-z:hover:before,
-            .tooltip-high-z:hover:after {
-                z-index: 9999 !important;
+            .custom-tooltip .tooltip-text::after {
+                content: "";
+                position: absolute;
+                top: 100%;
+                left: 50%;
+                transform: translateX(-50%);
+                border-width: 5px;
+                border-style: solid;
+                border-color: #1e293b transparent transparent transparent;
             }
-
-            /* Ensure tooltip appears above modal content */
-            .modal-box .tooltip:before,
-            .modal-box .tooltip:after {
-                z-index: 9999 !important;
+            
+            .custom-tooltip:hover .tooltip-text {
+                visibility: visible;
+                opacity: 1;
             }
-
-            /* Force tooltip positioning above */
-            .tooltip-force-top:before {
-                bottom: 100% !important;
-                top: auto !important;
-                margin-bottom: 8px !important;
-            }
-
-            .tooltip-force-top:after {
-                bottom: 100% !important;
-                top: auto !important;
-                margin-bottom: 2px !important;
+            
+            /* Ensure tooltips work in modal */
+            .modal-box {
+                overflow: visible !important;
             }
         </style>
         <div class="flex items-center justify-between mb-6">
@@ -58,8 +73,9 @@
                                 <div class="flex-1 min-w-[200px]">
                                     <input type="file" name="file" accept=".xlsx,.xls" class="file-input file-input-bordered w-full bg-white" required>
                                 </div>
-                                <div class="tooltip tooltip-top tooltip-primary tooltip-high-z tooltip-force-top" data-tip="Supported formats: .xlsx, .xls">
+                                <div class="custom-tooltip">
                                     <i class="material-icons text-brand-navy-600">help_outline</i>
+                                    <span class="tooltip-text">Supported formats: .xlsx, .xls</span>
                                 </div>
                             </div>
                         </div>
@@ -75,8 +91,9 @@
                         <div class="mb-4">
                             <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
                                 <h5 class="text-sm font-medium text-gray-600">Current Fields</h5>
-                                <div class="tooltip tooltip-top tooltip-primary tooltip-high-z tooltip-force-top" data-tip="These fields will be mapped to your Excel columns">
+                                <div class="custom-tooltip">
                                     <i class="material-icons text-brand-navy-600">info_outline</i>
+                                    <span class="tooltip-text">These fields will be mapped to your Excel columns</span>
                                 </div>
                             </div>
                             <div id="currentFields" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">

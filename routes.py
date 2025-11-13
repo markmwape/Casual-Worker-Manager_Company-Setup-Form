@@ -4375,10 +4375,14 @@ def manage_report_field():
             }), 200
         
         # POST method
+        logging.info(f"Creating new report field: name={data.get('name')}, formula={data.get('formula')}, payout_type={data.get('payout_type')}")
+        
         # Check for duplicate field name (case-insensitive)
         existing = ReportField.query.filter(db.func.lower(ReportField.name) == data['name'].lower(), ReportField.company_id == company.id).first()
         if existing:
+            logging.warning(f"Duplicate field name detected: {data['name']}")
             return jsonify({'error': 'A custom field with this name already exists.'}), 400
+        
         new_field = ReportField(
             company_id=company.id,
             name=data['name'],
@@ -4390,6 +4394,7 @@ def manage_report_field():
         
         db.session.add(new_field)
         db.session.commit()
+        logging.info(f"Successfully created report field: id={new_field.id}, name={new_field.name}")
         return jsonify({
             'id': new_field.id,
             'name': new_field.name,
@@ -4400,8 +4405,11 @@ def manage_report_field():
         
     except Exception as e:
         logging.error(f"Error managing report field: {str(e)}")
+        logging.error(f"Request data: {data if 'data' in locals() else 'No data'}")
+        import traceback
+        logging.error(f"Traceback: {traceback.format_exc()}")
         db.session.rollback()
-        return jsonify({'error': 'Failed to manage report field'}), 500
+        return jsonify({'error': f'Failed to manage report field: {str(e)}'}), 500
 
 @app.route("/task/<int:task_id>/units-completed", methods=['GET'])
 def task_units_completed_route(task_id):

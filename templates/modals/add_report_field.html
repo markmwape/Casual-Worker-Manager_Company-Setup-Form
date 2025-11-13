@@ -595,12 +595,25 @@ function addCustomFieldPerHour() {
     const enableMaxLimit = document.getElementById('enableMaxLimitPerHour').checked;
     const maxLimit = enableMaxLimit ? parseFloat(document.getElementById('maxLimitValuePerHour').value) : null;
     const payoutType = document.getElementById('payoutTypeInputPerHour').value || 'per_hour';
+    
+    // Validation
+    if (!fieldName || !fieldName.trim()) {
+        showCustomModal('Validation Error', 'Field name is required', 'error');
+        return;
+    }
+    
     if (!/^[A-Za-z_]+$/.test(fieldName)) {
         document.getElementById('nameErrorPerHour').classList.remove('hidden');
         return;
     } else {
         document.getElementById('nameErrorPerHour').classList.add('hidden');
     }
+    
+    if (!formula || !formula.trim()) {
+        showCustomModal('Validation Error', 'Formula is required', 'error');
+        return;
+    }
+    
     const enableAgeConditionHour = document.getElementById('enableAgeConditionPerHour').checked;
     let finalFormulaHour = formula;
     if (enableAgeConditionHour) {
@@ -609,22 +622,37 @@ function addCustomFieldPerHour() {
         const condVal = document.getElementById('ageConditionValuePerHour').value || 0;
         finalFormulaHour = `${condVal} if age ${op} ${ageVal} else (${formula})`;
     }
+    
     const method = fieldId ? 'PUT' : 'POST';
     const url = fieldId ? `/api/report-field?id=${fieldId}` : '/api/report-field';
+    
+    const requestData = {
+        name: fieldName,
+        formula: finalFormulaHour,
+        field_type: 'numeric',
+        max_limit: enableMaxLimit ? maxLimit : null,
+        payout_type: payoutType
+    };
+    
+    console.log('Sending request to:', url);
+    console.log('Request data:', requestData);
+    
     fetch(url, {
         method: method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            name: fieldName,
-            formula: finalFormulaHour,
-            field_type: 'numeric',
-            max_limit: enableMaxLimit ? maxLimit : null,
-            payout_type: payoutType
-        })
+        body: JSON.stringify(requestData)
     })
     .then(async response => {
+        console.log('Response status:', response.status);
         let result = {};
-        try { result = await response.json(); } catch (e) { showCustomModal('Server Error', 'Server error.', 'error'); return; }
+        try { 
+            result = await response.json();
+            console.log('Response data:', result);
+        } catch (e) { 
+            console.error('Failed to parse response:', e);
+            showCustomModal('Server Error', 'Server error - could not parse response.', 'error'); 
+            return; 
+        }
         if (response.status === 201 || response.status === 200) {
             showCustomModal('Success', 'Custom field saved successfully!', 'success');
             closeAddReportFieldModalPerHour();
@@ -633,7 +661,10 @@ function addCustomFieldPerHour() {
             showCustomModal('Save Error', result.error || 'Failed to save custom field', 'error');
         }
     })
-    .catch(error => { showCustomModal('Save Error', 'Failed to save custom field: ' + error, 'error'); });
+    .catch(error => { 
+        console.error('Fetch error:', error);
+        showCustomModal('Save Error', 'Failed to save custom field: ' + error.message, 'error'); 
+    });
 }
 function closeAddReportFieldModalPerHour() {
     document.getElementById('add-report-field-modal-per-hour').close();

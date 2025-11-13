@@ -109,6 +109,7 @@ def get_user_workspaces():
         logging.error(f"Exception type: {type(e)}")
         import traceback
         logging.error(f"Traceback: {traceback.format_exc()}")
+        db.session.rollback()
         return jsonify({"error": "Failed to retrieve workspaces"}), 500
 
 @app.route('/api/send-workspace-email', methods=['POST'])
@@ -658,12 +659,15 @@ def stripe_webhook():
         
     except ValueError as e:
         logging.error(f"Invalid payload in webhook: {str(e)}")
+        db.session.rollback()
         return jsonify({'error': 'Invalid payload'}), 400
     except stripe.error.SignatureVerificationError as e:
         logging.error(f"Invalid signature in webhook: {str(e)}")
+        db.session.rollback()
         return jsonify({'error': 'Invalid signature'}), 400
     except Exception as e:
         logging.error(f"Error processing webhook: {str(e)}")
+        db.session.rollback()
         return jsonify({'error': 'Webhook processing failed'}), 500
 
 def handle_subscription_created(subscription):
@@ -716,6 +720,7 @@ def handle_subscription_created(subscription):
     except Exception as e:
         logging.error(f"Error handling subscription created: {str(e)}")
         logging.error(traceback.format_exc())
+        db.session.rollback()
 
 def handle_subscription_updated(subscription):
     """Handle subscription updated webhook"""
@@ -738,6 +743,7 @@ def handle_subscription_updated(subscription):
         
     except Exception as e:
         logging.error(f"Error handling subscription updated: {str(e)}")
+        db.session.rollback()
 
 def handle_subscription_deleted(subscription):
     """Handle subscription deleted webhook"""
@@ -755,6 +761,7 @@ def handle_subscription_deleted(subscription):
         
     except Exception as e:
         logging.error(f"Error handling subscription deleted: {str(e)}")
+        db.session.rollback()
 
 def handle_payment_succeeded(invoice):
     """Handle successful payment webhook"""
@@ -774,6 +781,7 @@ def handle_payment_succeeded(invoice):
         
     except Exception as e:
         logging.error(f"Error handling payment succeeded: {str(e)}")
+        db.session.rollback()
 
 def handle_payment_failed(invoice):
     """Handle failed payment webhook"""
@@ -789,6 +797,7 @@ def handle_payment_failed(invoice):
         
     except Exception as e:
         logging.error(f"Error handling payment failed: {str(e)}")
+        db.session.rollback()
 
 def handle_checkout_session_completed(session):
     """Handle completed checkout session - this is the most reliable webhook for subscriptions"""
@@ -924,6 +933,7 @@ def handle_checkout_session_completed(session):
     except Exception as e:
         logging.error(f"Error handling checkout session completed: {str(e)}")
         logging.error(traceback.format_exc())
+        db.session.rollback()
 
 # Frontend Checkout Endpoints
 # =============================================================================
@@ -1020,6 +1030,7 @@ def handle_payment_intent_succeeded(payment_intent):
     except Exception as e:
         logging.error(f"Error handling payment intent succeeded: {str(e)}")
         logging.error(traceback.format_exc())
+        db.session.rollback()
 
 def get_subscription_tier_from_product(product_id, price_id=None, amount=None):
     """Helper function to determine subscription tier from Stripe product/price data"""
@@ -1172,9 +1183,17 @@ def get_time_ago(date_time):
         return "Just now"
 logger = logging.getLogger(__name__)
 
+@app.teardown_request
+def teardown_request(exception=None):
+    """Ensure database session is properly closed and rolled back on errors"""
+    if exception:
+        db.session.rollback()
+    db.session.remove()
+
 @app.errorhandler(500)
 def internal_server_error(error):
     logger.error(f"500 error: {str(error)}\n{traceback.format_exc()}")
+    db.session.rollback()  # Ensure transaction is rolled back
     return render_template('500.html'), 500
 
 @app.route("/")
@@ -3181,6 +3200,7 @@ def reports_route():
         )
     except Exception as e:
         logging.error(f"Error generating reports: {str(e)}")
+        db.session.rollback()  # Rollback failed transaction
         return render_template('500.html'), 500
 @app.route("/api/worker/analyze-columns", methods=['POST'])
 def analyze_columns():

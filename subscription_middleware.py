@@ -193,6 +193,7 @@ def feature_required(feature_name):
                 
             except Exception as e:
                 logging.error(f"Error checking feature access: {str(e)}")
+                db.session.rollback()  # Rollback failed transaction
                 return f(*args, **kwargs)  # Allow access on error
         
         return decorated_function
@@ -240,6 +241,7 @@ def worker_limit_check(f):
             
         except Exception as e:
             logging.error(f"Error checking worker limit: {str(e)}")
+            db.session.rollback()  # Rollback failed transaction
             return f(*args, **kwargs)  # Allow on error
     
     return decorated_function

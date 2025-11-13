@@ -267,39 +267,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize the button state on page load
     updateDeleteSelectedBtn();
     
-    // Add event listener for Add Custom Field button as backup
-    console.log('[DOMContentLoaded] Setting up Add Custom Field button listener');
-    
-    // Use a more robust selector
-    const setupAddFieldButton = () => {
-        const addFieldBtn = document.getElementById('addCustomFieldBtn');
-        if (addFieldBtn) {
-            console.log('[setupAddFieldButton] Found Add Custom Field button, adding click listener');
-            // Remove existing listener if any
-            const newBtn = addFieldBtn.cloneNode(true);
-            addFieldBtn.parentNode.replaceChild(newBtn, addFieldBtn);
-            
-            newBtn.addEventListener('click', function(e) {
-                console.log('[Add Field Button] Button clicked via event listener');
-                e.preventDefault();
-                e.stopPropagation();
-                addCustomField();
-            });
-        } else {
-            console.warn('[setupAddFieldButton] Add Custom Field button not found');
-        }
-    };
-    
-    // Try to set up the button immediately
-    setupAddFieldButton();
-    
-    // Also set up when any modal is shown
-    document.addEventListener('DOMNodeInserted', function(e) {
-        if (e.target.id === 'add-worker-modal' || (e.target.querySelector && e.target.querySelector('#addCustomFieldBtn'))) {
-            console.log('[DOMNodeInserted] Modal or button inserted, setting up button');
-            setTimeout(setupAddFieldButton, 100);
-        }
-    });
+    // Setup Add Custom Field button with proper event handling
+    console.log('[DOMContentLoaded] Setting up Add Custom Field button');
+    setupAddCustomFieldButton();
     
     // Add Enter key support for custom field input
     const newFieldInput = document.getElementById('newFieldName');
@@ -312,10 +282,32 @@ document.addEventListener('DOMContentLoaded', function() {
                 addCustomField();
             }
         });
-    } else {
-        console.warn('[DOMContentLoaded] newFieldName input not found');
     }
 });
+
+// Function to setup Add Custom Field button
+function setupAddCustomFieldButton() {
+    const addFieldBtn = document.getElementById('addCustomFieldBtn');
+    if (addFieldBtn) {
+        console.log('[setupAddCustomFieldButton] Found Add Custom Field button');
+        
+        // Remove any existing click handlers by cloning the button
+        const newBtn = addFieldBtn.cloneNode(true);
+        addFieldBtn.parentNode.replaceChild(newBtn, addFieldBtn);
+        
+        // Add fresh click handler
+        newBtn.addEventListener('click', function(e) {
+            console.log('[Add Field Button] Button clicked');
+            e.preventDefault();
+            e.stopPropagation();
+            addCustomField();
+        });
+        
+        console.log('[setupAddCustomFieldButton] Event listener attached');
+    } else {
+        console.warn('[setupAddCustomFieldButton] Add Custom Field button not found yet');
+    }
+}
 
 // --- Edit Worker Modal ---
 window.openEditWorkerModal = function(workerId) {
@@ -548,17 +540,17 @@ function openAddWorkerModal() {
         feather.replace();
     }
     
-    // Ensure Add Custom Field functionality is set up after modal is shown
+    // Ensure Add Custom Field button is set up after modal is shown
     setTimeout(() => {
+        console.log('[openAddWorkerModal] Setting up Add Custom Field button');
+        setupAddCustomFieldButton();
+        
         const newFieldInput = document.getElementById('newFieldName');
-        if (newFieldInput) {
+        if (newFieldInput && !newFieldInput.dataset.listenerAdded) {
             console.log('[openAddWorkerModal] Setting up Enter key listener for newFieldName');
+            newFieldInput.dataset.listenerAdded = 'true';
             
-            // Remove any existing listeners to avoid duplicates
-            newFieldInput.replaceWith(newFieldInput.cloneNode(true));
-            const freshInput = document.getElementById('newFieldName');
-            
-            freshInput.addEventListener('keypress', function(e) {
+            newFieldInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     console.log('[newFieldName] Enter key pressed, triggering addCustomField');
@@ -682,6 +674,7 @@ function loadImportFields() {
 }
 
 // Expose to global scope
+window.setupAddCustomFieldButton = setupAddCustomFieldButton;
 window.reloadCustomFields = reloadCustomFields;
 window.addCustomField = addCustomField;
 window.deleteCustomField = deleteCustomField;

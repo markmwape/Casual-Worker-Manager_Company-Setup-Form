@@ -1,5 +1,5 @@
 <dialog id="import-workers-modal" class="modal">
-    <div class="modal-box max-w-3xl bg-brand-navy-50 w-11/12 max-h-[90vh] overflow-y-auto relative">
+    <div class="modal-box max-w-3xl bg-brand-navy-50 w-11/12 max-h-[90vh] overflow-y-auto overflow-x-hidden relative">
         <!-- Custom tooltip styles -->
         <style>
             /* Custom tooltip implementation */
@@ -8,7 +8,6 @@
                 display: inline-flex;
                 align-items: center;
                 cursor: help;
-                z-index: 1;
             }
             
             .custom-tooltip .tooltip-text {
@@ -20,7 +19,7 @@
                 text-align: center;
                 border-radius: 8px;
                 padding: 10px 14px;
-                position: absolute;
+                position: fixed;
                 z-index: 999999;
                 opacity: 0;
                 transition: opacity 0.3s ease, visibility 0.3s ease;
@@ -29,15 +28,12 @@
                 box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
                 white-space: normal;
                 pointer-events: none;
-                bottom: calc(100% + 10px);
-                left: 50%;
-                transform: translateX(-50%);
             }
             
             .custom-tooltip .tooltip-text::after {
                 content: "";
                 position: absolute;
-                top: 100%;
+                bottom: -8px;
                 left: 50%;
                 transform: translateX(-50%);
                 border-width: 8px 8px 0 8px;
@@ -48,34 +44,6 @@
             .custom-tooltip:hover .tooltip-text {
                 visibility: visible !important;
                 opacity: 1 !important;
-            }
-            
-            /* Ensure tooltips work in modal - prevent overflow clipping */
-            #import-workers-modal .modal-box {
-                overflow-y: auto;
-                overflow-x: visible !important;
-            }
-            
-            #import-workers-modal .card-body {
-                overflow: visible !important;
-                position: relative;
-            }
-            
-            #import-workers-modal .card {
-                overflow: visible !important;
-            }
-            
-            #import-workers-modal .form-control {
-                overflow: visible !important;
-            }
-            
-            /* Ensure modal container doesn't clip tooltips */
-            #import-workers-modal {
-                overflow: visible !important;
-            }
-            
-            dialog.modal {
-                overflow: visible !important;
             }
         </style>
         <div class="flex items-center justify-between mb-6">
@@ -217,37 +185,33 @@
             if (!tooltipText) return;
             
             icon.addEventListener('mouseenter', function(e) {
-                // Force tooltip to be visible and properly positioned
+                // Get icon position relative to viewport
                 const iconRect = icon.getBoundingClientRect();
-                const modalBox = document.querySelector('#import-workers-modal .modal-box');
                 
-                if (!modalBox) return;
+                // Position tooltip above the icon, centered
+                const tooltipTop = iconRect.top - 10;
+                const tooltipLeft = iconRect.left + (iconRect.width / 2);
                 
-                // Ensure tooltip stays within viewport
+                tooltipText.style.top = tooltipTop + 'px';
+                tooltipText.style.left = tooltipLeft + 'px';
+                tooltipText.style.transform = 'translate(-50%, -100%)';
+                
+                // Ensure tooltip stays within viewport after positioning
                 requestAnimationFrame(() => {
                     const tooltipRect = tooltipText.getBoundingClientRect();
                     const viewportWidth = window.innerWidth;
                     
-                    // Check if tooltip goes off-screen to the right
-                    if (tooltipRect.right > viewportWidth - 20) {
-                        tooltipText.style.left = 'auto';
-                        tooltipText.style.right = '0';
-                        tooltipText.style.transform = 'translateX(0)';
+                    // Adjust if tooltip goes off-screen to the right
+                    if (tooltipRect.right > viewportWidth - 10) {
+                        const adjustment = tooltipRect.right - (viewportWidth - 10);
+                        tooltipText.style.left = (tooltipLeft - adjustment) + 'px';
                     }
-                    // Check if tooltip goes off-screen to the left
-                    else if (tooltipRect.left < 20) {
-                        tooltipText.style.left = '0';
-                        tooltipText.style.right = 'auto';
-                        tooltipText.style.transform = 'translateX(0)';
+                    // Adjust if tooltip goes off-screen to the left
+                    else if (tooltipRect.left < 10) {
+                        const adjustment = 10 - tooltipRect.left;
+                        tooltipText.style.left = (tooltipLeft + adjustment) + 'px';
                     }
                 });
-            });
-            
-            icon.addEventListener('mouseleave', function() {
-                // Reset positioning
-                tooltipText.style.left = '50%';
-                tooltipText.style.right = 'auto';
-                tooltipText.style.transform = 'translateX(-50%)';
             });
         });
     });

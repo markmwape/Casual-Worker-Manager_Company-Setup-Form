@@ -431,27 +431,25 @@ function addCustomField(sourceModal = null) {
     
     // Determine which input field to use based on the modal
     let fieldNameInput;
-    
+    let modalId;
+
     if (sourceModal === 'import') {
-        fieldNameInput = document.querySelector('#import-workers-modal #newFieldName');
+        modalId = '#import-workers-modal';
     } else if (sourceModal === 'add-worker') {
-        fieldNameInput = document.querySelector('#add-worker-modal #newFieldName');
+        modalId = '#add-worker-modal';
     } else {
-        // Try to find which modal is open
+        // Fallback for when sourceModal is not provided
         const importModal = document.getElementById('import-workers-modal');
-        const addWorkerModal = document.getElementById('add-worker-modal');
-        
         if (importModal && importModal.open) {
-            fieldNameInput = document.querySelector('#import-workers-modal #newFieldName');
+            modalId = '#import-workers-modal';
             sourceModal = 'import';
-        } else if (addWorkerModal && addWorkerModal.open) {
-            fieldNameInput = document.querySelector('#add-worker-modal #newFieldName');
-            sourceModal = 'add-worker';
         } else {
-            // Fallback to the old behavior
-            fieldNameInput = document.getElementById('newFieldName');
+            modalId = '#add-worker-modal';
+            sourceModal = 'add-worker';
         }
     }
+
+    fieldNameInput = document.querySelector(`${modalId} #newFieldName`);
     
     const fieldName = fieldNameInput?.value.trim();
     

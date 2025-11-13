@@ -1212,15 +1212,20 @@
     
     // Toggle custom fields visibility
     window.toggleCustomFields = function(type) {
-        const windowId = `customFieldsWindow${type}`;
+        // Capitalize first letter of type to match element IDs
+        // e.g., 'perDay' -> 'PerDay', 'perPart' -> 'PerPart', 'perHour' -> 'PerHour'
+        const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1);
+        const windowId = `customFieldsWindow${capitalizedType}`;
         const fieldWindow = document.getElementById(windowId);
         
         if (fieldWindow) {
-            if (fieldWindow.style.display === 'none') {
+            if (fieldWindow.style.display === 'none' || fieldWindow.style.display === '') {
                 fieldWindow.style.display = 'block';
             } else {
                 fieldWindow.style.display = 'none';
             }
+        } else {
+            console.error('Custom fields window not found:', windowId);
         }
     };
     

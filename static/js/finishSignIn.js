@@ -146,95 +146,47 @@ document.addEventListener('DOMContentLoaded', function() {
             const user = result.user;
             console.log('User data:', user);
             
-            // Extract workspace code from URL parameters
-            const urlParams = new URLSearchParams(window.location.search);
-            const workspaceCodeFromUrl = urlParams.get('workspace');
-            console.log('Workspace code from URL:', workspaceCodeFromUrl);
-            
-            // Determine workspaceData from URL parameter or sessionStorage/localStorage
+            // Fetch user's workspaces and show selection modal (same as Google sign-in)
             let workspaceData = null;
             
-            if (workspaceCodeFromUrl) {
-                console.log('Found workspace code in URL:', workspaceCodeFromUrl);
-                // Fetch workspace details by code
-                try {
-                    const joinResponse = await fetch('/api/workspace/join', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ workspace_code: workspaceCodeFromUrl })
-                    });
+            try {
+                const workspacesResponse = await fetch('/api/user/workspaces', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: user.email })
+                });
+                
+                if (workspacesResponse.ok) {
+                    const workspacesJson = await workspacesResponse.json();
                     
-                    if (joinResponse.ok) {
-                        const joinData = await joinResponse.json();
-                        if (joinData.success && joinData.workspace) {
-                            console.log('Successfully fetched workspace from URL:', joinData.workspace.name);
-                            workspaceData = joinData.workspace;
+                    if (workspacesJson.success && workspacesJson.workspaces.length > 0) {
+                        // Show workspace selection modal
+                        const selectedWorkspace = await showWorkspaceSelectionModal(workspacesJson.workspaces);
+                        if (selectedWorkspace) {
+                            workspaceData = selectedWorkspace;
+                            console.log('User selected workspace:', selectedWorkspace.name);
+                        } else {
+                            // User cancelled selection
+                            showCustomModal('Selection Required', 'Please select a workspace to continue.', 'warning');
+                            return;
                         }
+                    } else {
+                        // No workspaces found, redirect to create workspace
+                        showCustomModal('No Workspaces Found', 'No workspaces found. You will be redirected to create a new workspace.', 'info');
+                        setTimeout(() => window.location.href = '/create-workspace', 2000);
+                        return;
                     }
-                } catch (e) {
-                    console.error('Error fetching workspace from URL code:', e);
+                } else {
+                    const errorData = await workspacesResponse.json();
+                    console.error('Failed to fetch workspaces:', errorData);
+                    showCustomModal('Error', 'Failed to retrieve workspaces: ' + (errorData.error || 'Please try again.'), 'error');
+                    return;
                 }
-            }
-            
-            // If no workspace from URL, try sessionStorage
-            if (!workspaceData) {
-                const pendingSession = window.sessionStorage.getItem('pending_workspace');
-                if (pendingSession) {
-                    try {
-                        const ws = JSON.parse(pendingSession);
-                        if (ws && ws.id) {
-                            console.log('Using pending_workspace from sessionStorage:', ws.name);
-                            workspaceData = ws;
-                        }
-                    } catch (e) {
-                        console.error('Invalid pending_workspace in sessionStorage:', e);
-                    }
-                }
-            }
-            
-            // Fallback: Try localStorage (for backward compatibility)
-            if (!workspaceData) {
-                const pending = window.localStorage.getItem('pendingWorkspace');
-                if (pending) {
-                    try {
-                        const ws = JSON.parse(pending);
-                        if (ws && ws.id) {
-                            console.log('Using pendingWorkspace from localStorage:', ws.name);
-                            workspaceData = ws;
-                        }
-                    } catch (e) {
-                        console.error('Invalid pendingWorkspace in localStorage:', e);
-                    }
-                }
-            }
-            
-            // Final fallback: fetch workspaces and let user select
-            if (!workspaceData) {
-                try {
-                    const workspacesResponse = await fetch('/api/user/workspaces', {
-                        method: 'POST',
-                        credentials: 'same-origin',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email: user.email })
-                    });
-                    if (workspacesResponse.ok) {
-                        const workspacesJson = await workspacesResponse.json();
-                        if (workspacesJson.success && workspacesJson.workspaces.length > 0) {
-                            // Show workspace selection modal
-                            const selectedWorkspace = await showWorkspaceSelectionModal(workspacesJson.workspaces);
-                            if (selectedWorkspace) {
-                                workspaceData = selectedWorkspace;
-                                console.log('User selected workspace:', selectedWorkspace.name);
-                            } else {
-                                // User cancelled selection
-                                showCustomModal('Selection Required', 'Please select a workspace to continue.', 'warning');
-                                return;
-                            }
-                        }
-                    }
-                } catch (err) {
-                    console.error('Error fetching user workspaces:', err);
-                }
+            } catch (err) {
+                console.error('Error fetching user workspaces:', err);
+                showCustomModal('Error', 'Failed to retrieve workspaces. Please try again.', 'error');
+                return;
             }
             
             // Set session on server including workspaceData if any

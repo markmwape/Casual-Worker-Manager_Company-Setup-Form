@@ -11,12 +11,21 @@ from alembic import context
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 # Import Flask app and models
-from app_init import app
-from models import db
+try:
+    from app_init import app
+    from models import db
+except ImportError as e:
+    print(f"Warning: Could not import Flask app: {e}")
+    db = None
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
-config = context.config
+try:
+    config = context.config
+except AttributeError:
+    # Handle potential Alembic version compatibility issues
+    from alembic.config import Config
+    config = Config()
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.

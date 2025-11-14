@@ -146,6 +146,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const user = result.user;
             console.log('User data:', user);
             
+            // Extract workspace code from URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const workspaceCodeFromUrl = urlParams.get('workspace');
+            console.log('Workspace code from URL:', workspaceCodeFromUrl);
+            
             // Determine workspaceData from URL parameter or sessionStorage/localStorage
             let workspaceData = null;
             

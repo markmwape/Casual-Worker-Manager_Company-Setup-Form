@@ -22,7 +22,8 @@ def load_secrets_from_gcp():
             'stripe-pub-secret': 'STRIPE_PUBLISHABLE_KEY',
             'stripe-secret': 'STRIPE_SECRET_KEY',
             'stripe-webhook-secret': 'STRIPE_WEBHOOK_SECRET',
-            'db-pass': 'DB_PASS'
+            'db-pass': 'DB_PASS',
+            'flask-secret-key': 'SECRET_KEY'
         }
         
         for secret_name, env_var_name in secret_mappings.items():

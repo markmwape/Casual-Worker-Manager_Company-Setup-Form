@@ -1,6 +1,6 @@
 from models import WorkerImportLog, ImportField, WorkerCustomFieldValue, ReportField, ActivityLog
 from models import Attendance, Task, Worker, Company, User, Workspace, UserWorkspace, MasterAdmin
-from flask import render_template, session, redirect, url_for, make_response, abort, request, jsonify, send_file
+from flask import render_template, session, redirect, url_for, make_response, abort, request, jsonify, send_file, send_from_directory
 from app_init import app, db
 from datetime import timedelta
 from sqlalchemy import and_
@@ -1040,6 +1040,15 @@ def finish_signin_route():
     if not email:
         return redirect(url_for('signin_route'))
     return render_template('finishSignin.html')
+
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static', 'img'), 'logo.png', mimetype='image/png')
+
+@app.route('/apple-touch-icon.png')
+@app.route('/apple-touch-icon-precomposed.png')
+def apple_touch_icon():
+    return send_from_directory(os.path.join(app.root_path, 'static', 'img'), 'logo.png', mimetype='image/png')
 
 @app.route("/api/company/payout-rate", methods=['POST'])
 def update_payout_rate():

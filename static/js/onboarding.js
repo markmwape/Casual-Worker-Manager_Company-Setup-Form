@@ -54,7 +54,10 @@ class EnhancedOnboardingSystem {
         if (currentPage === 'unknown') return false;
         
         // Check if a modal is open - don't show onboarding
-        const modalOpen = document.querySelector('.modal.show, .modal.active, [role="dialog"][aria-hidden="false"]');
+        const modalOpen = document.querySelector(
+            '.modal.show, .modal.active, [role="dialog"][aria-hidden="false"], ' +
+            'dialog[open], .fixed.inset-0[style*="display"]:not([style*="display: none"])'
+        );
         if (modalOpen) return false;
         
         const isNewSession = !sessionStorage.getItem('user_session_started');
@@ -203,7 +206,10 @@ class EnhancedOnboardingSystem {
         }
         
         // Don't start if a modal is currently open
-        const modalOpen = document.querySelector('.modal.show, .modal.active, [role="dialog"][aria-hidden="false"]');
+        const modalOpen = document.querySelector(
+            '.modal.show, .modal.active, [role="dialog"][aria-hidden="false"], ' +
+            'dialog[open], .fixed.inset-0[style*="display"]:not([style*="display: none"])'
+        );
         if (modalOpen) {
             console.log('Modal is open, skipping onboarding');
             return;
@@ -526,12 +532,6 @@ class EnhancedOnboardingSystem {
     getWorkersFlow() {
         return [
             {
-                title: "Manage Your Team 👥",
-                description: "Central hub for all your workers. Add, update, and organize your team in one place.",
-                selector: ".workers-container, .page-container",
-                padding: 8
-            },
-            {
                 title: "Add New Workers",
                 description: "Click to add individual workers with their contact info, rates, and availability.",
                 selector: "[data-onboarding='add-worker-btn'], .btn-primary, .add-worker-btn",
@@ -609,41 +609,6 @@ class EnhancedOnboardingSystem {
                 description: "Pick your reporting period: daily, weekly, or custom date range.",
                 selector: "[data-onboarding='date-range'], .date-inputs, .date-picker",
                 position: "top",
-                padding: 8
-            },
-            {
-                title: "Custom Fields Workflow 🎯",
-                description: "Custom fields let you add dynamic data to your reports. You can create fields like bonuses, deductions, or special rates that change per worker or task.",
-                selector: "[data-onboarding='custom-fields'], .custom-fields-section, .report-fields",
-                position: "bottom",
-                padding: 8
-            },
-            {
-                title: "Add Custom Field",
-                description: "Click to create a new custom field. Give it a name (e.g., 'Bonus', 'Transport', 'Lunch Deduction') and set the field type.",
-                selector: "[data-onboarding='add-field-btn'], .btn-add-field, .add-custom-field-btn",
-                position: "bottom",
-                padding: 8
-            },
-            {
-                title: "Field Configuration",
-                description: "Set up your custom field: Choose a name, select the payout type (Deduction, Addition, or Custom Rate), and decide if it applies to all workers or specific ones.",
-                selector: "[data-onboarding='field-config'], .field-settings, .custom-field-form",
-                position: "top",
-                padding: 8
-            },
-            {
-                title: "Field Value Entry",
-                description: "Enter the value for each worker. Use positive numbers for additions/bonuses, negative for deductions. Values are applied during calculation.",
-                selector: "[data-onboarding='field-values'], .field-input, .value-column",
-                position: "right",
-                padding: 8
-            },
-            {
-                title: "Apply & Calculate",
-                description: "Once all custom fields are filled, the system automatically calculates the final payroll with additions, deductions, and custom rates included.",
-                selector: "[data-onboarding='calculate-btn'], .btn-primary, .calculate-report-btn",
-                position: "bottom",
                 padding: 8
             },
             {

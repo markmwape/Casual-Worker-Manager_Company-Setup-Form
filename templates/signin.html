@@ -398,11 +398,28 @@
                 const user = result.user;
 
                 // Check for pending workspace first (newly created workspace)
-                const pendingWorkspace = sessionStorage.getItem('pending_workspace');
+                const pendingWorkspace = sessionStorage.getItem('pending_workspace') || localStorage.getItem('pending_workspace');
                 const workspaceData = pendingWorkspace ? JSON.parse(pendingWorkspace) : null;
                 
                 if (workspaceData) {
-                    console.log('Found pending workspace, using it directly:', workspaceData.name);
+                    console.log('Found pending workspace, associating with Google account:', workspaceData.name);
+                    
+                    // Associate this Google email with the workspace first
+                    try {
+                        await fetch('/api/workspace/associate-email', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                workspace_id: workspaceData.id,
+                                email: user.email
+                            })
+                        });
+                        console.log('Google email successfully associated with workspace');
+                    } catch (error) {
+                        console.warn('Could not associate Google email with workspace:', error);
+                        // Don't fail the whole flow if this fails
+                    }
+                    
                     // User just created a workspace, use it directly without showing selection
                     const sessionResponse = await fetch('/set_session', {
                         method: 'POST',
@@ -419,6 +436,7 @@
                     if (sessionResponse.ok) {
                         console.log('Session set successfully with pending workspace');
                         sessionStorage.removeItem('pending_workspace');
+                        localStorage.removeItem('pending_workspace');
                         window.location.href = '/home';
                     } else {
                         const data = await sessionResponse.json();

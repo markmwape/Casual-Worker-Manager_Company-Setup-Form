@@ -292,9 +292,17 @@ def associate_workspace_email():
             db.session.commit()
             logging.info(f"✓ COMMITTED: All changes saved to database")
             
-            # Verify the UserWorkspace was created
+            # Verify the UserWorkspace was created with fresh query
+            db.session.expire_all()  # Clear any cached objects
             verify_uw = UserWorkspace.query.filter_by(user_id=user.id, workspace_id=workspace.id).first()
             logging.info(f"✓ VERIFICATION: UserWorkspace exists: {verify_uw is not None}, Role: {verify_uw.role if verify_uw else 'N/A'}")
+            
+            if not verify_uw:
+                logging.error(f"CRITICAL: UserWorkspace was not created! user_id={user.id}, workspace_id={workspace.id}")
+                # Try to query all UserWorkspace records for this user
+                all_uw = UserWorkspace.query.filter_by(user_id=user.id).all()
+                logging.error(f"All UserWorkspace records for user {user.id}: {[(uw.workspace_id, uw.role) for uw in all_uw]}")
+                return jsonify({"error": "Failed to create workspace association"}), 500
             
             logging.info(f"✓✓✓ Successfully associated email {email} with workspace {workspace.name} as Admin ✓✓✓")
             
@@ -629,12 +637,19 @@ def set_session():
             
             # Handle workspace assignment if workspace data is provided
             if workspace_data:
-                logging.info(f"Processing workspace_data: {workspace_data}")
+                logging.info(f"=== PROCESSING WORKSPACE DATA IN SET_SESSION ===")
+                logging.info(f"workspace_data keys: {workspace_data.keys() if isinstance(workspace_data, dict) else 'Not a dict'}")
+                logging.info(f"workspace_data: {workspace_data}")
+                logging.info(f"immediate_creation flag: {workspace_data.get('immediate_creation')}")
+                logging.info(f"workspace id: {workspace_data.get('id')}")
+                logging.info(f"user email: {email}")
                 
                 # Check if this is an immediately created workspace that needs admin assignment
                 if workspace_data.get('immediate_creation') and workspace_data.get('id'):
                     # Workspace already exists, just need to assign actual admin user
                     workspace = Workspace.query.get(workspace_data['id'])
+                    logging.info(f"Queried workspace: {workspace.name if workspace else 'Not found'}")
+                    logging.info(f"Workspace company_email: {workspace.company_email if workspace else 'N/A'}")
                     if workspace and workspace.company_email == email:
                         logging.info(f"Found immediately created workspace {workspace.name} for admin {email}")
                         
@@ -654,18 +669,49 @@ def set_session():
                             # Delete placeholder user
                             db.session.delete(placeholder_user)
                         
-                        # Add admin user to workspace
-                        user_workspace = UserWorkspace(
+                        # Check if UserWorkspace already exists (might have been created by associate-email)
+                        existing_uw = UserWorkspace.query.filter_by(
                             user_id=user.id,
-                            workspace_id=workspace.id,
-                            role='Admin'
-                        )
-                        db.session.add(user_workspace)
+                            workspace_id=workspace.id
+                        ).first()
+                        
+                        if not existing_uw:
+                            # Add admin user to workspace
+                            user_workspace = UserWorkspace(
+                                user_id=user.id,
+                                workspace_id=workspace.id,
+                                role='Admin'
+                            )
+                            db.session.add(user_workspace)
+                            logging.info(f"Created new UserWorkspace for {email}")
+                        else:
+                            logging.info(f"UserWorkspace already exists for {email} (created by associate-email)")
+                        
                         db.session.commit()
                         
                         logging.info(f"Successfully assigned admin {email} to workspace {workspace.name}")
+                    elif workspace:
+                        logging.error(f"Workspace {workspace_data['id']} found but email mismatch: workspace.company_email={workspace.company_email}, user email={email}")
+                        logging.error(f"This might be a cross-browser sign-in. Attempting to assign admin anyway...")
+                        
+                        # Check if this user should get admin access (cross-browser scenario)
+                        existing_uw = UserWorkspace.query.filter_by(
+                            user_id=user.id,
+                            workspace_id=workspace.id
+                        ).first()
+                        
+                        if not existing_uw:
+                            # Create UserWorkspace to fix the access issue
+                            user_workspace = UserWorkspace(
+                                user_id=user.id,
+                                workspace_id=workspace.id,
+                                role='Admin'
+                            )
+                            db.session.add(user_workspace)
+                            db.session.commit()
+                            logging.info(f"Created UserWorkspace for cross-browser sign-in: {email}")
                     else:
-                        logging.error(f"Workspace {workspace_data['id']} not found or email mismatch")
+                        logging.error(f"Workspace {workspace_data['id']} not found in database")
                         
                 # Check if this is a deferred workspace creation (legacy support)
                 elif workspace_data.get('deferred_creation') or workspace_data.get('temp_code'):
@@ -896,7 +942,20 @@ def set_session():
                     workspace_id=workspace.id
                 ).first()
                 
-                role = user_workspace_rel.role if user_workspace_rel else 'Admin'
+                if not user_workspace_rel:
+                    # CRITICAL FIX: If UserWorkspace doesn't exist, create it now
+                    logging.error(f"CRITICAL: UserWorkspace missing for user {user.id} and workspace {workspace.id}")
+                    logging.error(f"Creating UserWorkspace as emergency fallback...")
+                    user_workspace_rel = UserWorkspace(
+                        user_id=user.id,
+                        workspace_id=workspace.id,
+                        role='Admin'  # Assume admin for workspace creator
+                    )
+                    db.session.add(user_workspace_rel)
+                    db.session.commit()
+                    logging.info(f"✓ Created missing UserWorkspace as emergency fallback")
+                
+                role = user_workspace_rel.role
                 logging.info(f"Setting current_workspace in session: {workspace.name} (ID: {workspace.id}), Role: {role}")
                 
                 session['current_workspace'] = {

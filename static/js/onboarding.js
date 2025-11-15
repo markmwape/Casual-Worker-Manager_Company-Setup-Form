@@ -293,7 +293,15 @@ class EnhancedOnboardingSystem {
     positionElements(step) {
         const target = step.selector ? document.querySelector(step.selector) : null;
         
+        // Remove highlight class from previous element
+        document.querySelectorAll('.onboarding-highlight').forEach(el => {
+            el.classList.remove('onboarding-highlight');
+        });
+        
         if (target && target.offsetParent !== null) {
+            // Add highlight class to make element stand out
+            target.classList.add('onboarding-highlight');
+            
             // Scroll to element if it's not visible or if step requires scrolling
             if (step.scrollToElement !== false) {
                 this.scrollToElement(target);
@@ -374,6 +382,11 @@ class EnhancedOnboardingSystem {
         this.isActive = false;
         this.overlay.classList.remove('active');
         this.tooltip.classList.remove('active');
+        
+        // Remove highlight class from any highlighted elements
+        document.querySelectorAll('.onboarding-highlight').forEach(el => {
+            el.classList.remove('onboarding-highlight');
+        });
         
         // Re-enable scrolling
         document.body.style.overflow = '';
@@ -721,26 +734,45 @@ const onboardingStyles = `
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(15, 23, 42, 0.85);
+        background: rgba(15, 23, 42, 0.92);
         pointer-events: none;
     }
     
     .onboarding-spotlight {
         position: absolute;
-        background: transparent;
+        background: white;
         border-radius: 20px;
-        box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.92);
+        /* Create a cutout effect - the box-shadow creates the dark overlay around it */
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0),
+                    0 0 1px 1px rgba(255, 255, 255, 0.1),
+                    0 0 0 9999px rgba(15, 23, 42, 0.92);
         border: 4px solid #3b82f6;
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         z-index: 10001;
         animation: glow 2s ease-in-out infinite;
         pointer-events: none;
-        /* Ensure content inside is not affected */
+        /* This makes the white background punch through */
         mix-blend-mode: normal;
+        isolation: isolate;
     }
     
     .onboarding-spotlight.pulse {
         animation: pulse 2s infinite, glow 2s ease-in-out infinite;
+    }
+    
+    /* Highlighted element - make it bright and clear */
+    .onboarding-highlight {
+        position: relative !important;
+        z-index: 10002 !important;
+        background: inherit !important;
+        isolation: isolate !important;
+    }
+    
+    /* Ensure highlighted element and its children are fully visible */
+    .onboarding-highlight,
+    .onboarding-highlight * {
+        opacity: 1 !important;
+        filter: none !important;
     }
     
     .onboarding-tooltip {

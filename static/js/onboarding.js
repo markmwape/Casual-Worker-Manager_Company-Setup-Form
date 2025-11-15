@@ -95,20 +95,21 @@ class EnhancedOnboardingSystem {
     
     showWelcomeMessage(callback) {
         const welcomeHtml = `
-            <div id="welcome-message" class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-                <div class="bg-white rounded-2xl p-8 max-w-md shadow-2xl transform animate-slideUp">
-                    <div class="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center shadow-lg">
-                        <span class="text-3xl">✨</span>
+            <div id="welcome-message" class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 backdrop-blur-md">
+                <div class="bg-gradient-to-br from-white via-blue-50 to-cyan-50 rounded-3xl p-10 max-w-md shadow-2xl transform animate-slideUp border-4 border-white/60">
+                    <div class="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-blue-500 via-cyan-500 to-blue-600 rounded-full flex items-center justify-center shadow-xl relative">
+                        <span class="text-4xl animate-bounce">✨</span>
+                        <div class="absolute inset-0 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 opacity-30 animate-pulse"></div>
                     </div>
-                    <h2 class="text-3xl font-bold text-gray-900 mb-2 text-center">Welcome!</h2>
-                    <p class="text-gray-600 text-center mb-1 leading-relaxed">Let us show you around in 2 minutes</p>
-                    <p class="text-sm text-gray-500 text-center mb-6">We'll guide you through managing your team</p>
+                    <h2 class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-600 mb-3 text-center">Welcome!</h2>
+                    <p class="text-gray-700 text-center mb-2 leading-relaxed font-semibold text-lg">Let us show you around in 2 minutes</p>
+                    <p class="text-sm text-gray-600 text-center mb-8">We'll guide you through managing your team</p>
                     
                     <div class="flex gap-3">
-                        <button id="start-tour-btn" class="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-all shadow-md hover:shadow-lg transform hover:scale-105">
-                            Start Tour
+                        <button id="start-tour-btn" class="flex-1 px-6 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-2xl font-bold hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-2xl transform hover:scale-105 hover:-translate-y-1 border-2 border-blue-500">
+                            Start Tour 🚀
                         </button>
-                        <button id="skip-tour-btn" class="flex-1 px-6 py-3 text-gray-700 bg-gray-100 rounded-lg font-semibold hover:bg-gray-200 transition-all">
+                        <button id="skip-tour-btn" class="flex-1 px-6 py-4 text-gray-700 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl font-bold hover:from-gray-200 hover:to-gray-300 transition-all shadow-md hover:shadow-lg transform hover:scale-105 border-2 border-gray-300">
                             Skip
                         </button>
                     </div>
@@ -255,10 +256,46 @@ class EnhancedOnboardingSystem {
         }
     }
     
+    scrollToElement(element) {
+        if (!element) return;
+        
+        const rect = element.getBoundingClientRect();
+        const isVisible = (
+            rect.top >= 0 &&
+            rect.left >= 0 &&
+            rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+            rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+        );
+        
+        if (!isVisible) {
+            // Calculate scroll position to center the element in viewport
+            const elementTop = element.offsetTop;
+            const elementHeight = element.offsetHeight;
+            const windowHeight = window.innerHeight;
+            const scrollTo = elementTop - (windowHeight / 2) + (elementHeight / 2);
+            
+            // Smooth scroll to element
+            window.scrollTo({
+                top: Math.max(0, scrollTo),
+                behavior: 'smooth'
+            });
+            
+            // Wait for scroll to complete before positioning spotlight
+            setTimeout(() => {
+                this.updateSpotlightPosition();
+            }, 500);
+        }
+    }
+    
     positionElements(step) {
         const target = step.selector ? document.querySelector(step.selector) : null;
         
         if (target && target.offsetParent !== null) {
+            // Scroll to element if it's not visible or if step requires scrolling
+            if (step.scrollToElement !== false) {
+                this.scrollToElement(target);
+            }
+            
             const rect = target.getBoundingClientRect();
             const spotlight = this.overlay.querySelector('.onboarding-spotlight');
             const padding = step.padding || 12;
@@ -505,7 +542,7 @@ class EnhancedOnboardingSystem {
             },
             {
                 title: "Record Attendance",
-                description: "Click any task to mark workers present/absent and record hours or units worked.",
+                description: "Click any task to mark workers present/absent and record hours or units worked. Enter units completed for piece-rate tasks or hours worked for hourly tasks to calculate accurate payments.",
                 selector: "[data-onboarding='attendance-link'], .task-row a, .attendance-link",
                 position: "right",
                 padding: 8
@@ -540,7 +577,8 @@ class EnhancedOnboardingSystem {
                 description: "Download as CSV or Excel for accounting, payroll, or record-keeping.",
                 selector: "[data-onboarding='export-buttons'], .export-options, .download-btn",
                 position: "left",
-                padding: 8
+                padding: 8,
+                scrollToElement: true
             }
         ];
     }
@@ -603,7 +641,7 @@ class EnhancedOnboardingSystem {
     }
 }
 
-// Enhanced CSS Styles
+// Enhanced CSS Styles with Beautiful Aesthetics
 const onboardingStyles = `
     @keyframes slideUp {
         from { 
@@ -622,8 +660,23 @@ const onboardingStyles = `
     }
     
     @keyframes pulse {
-        0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
-        50% { box-shadow: 0 0 0 8px rgba(59, 130, 246, 0); }
+        0%, 100% { 
+            box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.8),
+                        0 0 20px 0 rgba(59, 130, 246, 0.4); 
+        }
+        50% { 
+            box-shadow: 0 0 0 12px rgba(59, 130, 246, 0),
+                        0 0 30px 5px rgba(59, 130, 246, 0.2); 
+        }
+    }
+    
+    @keyframes glow {
+        0%, 100% { 
+            filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.6));
+        }
+        50% { 
+            filter: drop-shadow(0 0 16px rgba(59, 130, 246, 0.8));
+        }
     }
     
     .onboarding-overlay {
@@ -635,7 +688,7 @@ const onboardingStyles = `
         z-index: 10000;
         pointer-events: none;
         opacity: 0;
-        transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
     .onboarding-overlay.active {
@@ -649,46 +702,54 @@ const onboardingStyles = `
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(15, 23, 42, 0.7);
+        background: rgba(15, 23, 42, 0.85);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
     }
     
     .onboarding-spotlight {
         position: absolute;
         background: transparent;
-        border-radius: 12px;
-        box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.7);
+        border-radius: 20px;
+        box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.85);
         border: 3px solid #3b82f6;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         z-index: 10001;
+        animation: glow 2s ease-in-out infinite;
     }
     
     .onboarding-spotlight.pulse {
-        animation: pulse 2s infinite;
+        animation: pulse 2s infinite, glow 2s ease-in-out infinite;
     }
     
     .onboarding-tooltip {
         position: fixed;
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 20px 50px rgba(30, 58, 138, 0.2);
-        max-width: 400px;
-        min-width: 300px;
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        border-radius: 24px;
+        box-shadow: 0 25px 60px rgba(30, 58, 138, 0.25),
+                    0 10px 30px rgba(59, 130, 246, 0.15),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        max-width: 420px;
+        min-width: 320px;
         z-index: 10002;
         opacity: 0;
         transform: translateY(10px) scale(0.95);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         pointer-events: all;
+        border: 2px solid rgba(59, 130, 246, 0.2);
+        overflow: hidden;
     }
     
     .onboarding-tooltip.active {
         opacity: 1;
         transform: translateY(0) scale(1);
-        animation: fadeIn 0.3s ease;
+        animation: fadeIn 0.4s ease;
     }
     
     .tooltip-content {
-        padding: 24px;
-        border: 1px solid #dbeafe;
+        padding: 28px;
+        position: relative;
+        background: transparent;
     }
     
     .tooltip-content::before {
@@ -697,51 +758,77 @@ const onboardingStyles = `
         top: 0;
         left: 0;
         right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, #2563eb 0%, #3b82f6 50%, #0ea5e9 100%);
-        border-radius: 12px 12px 0 0;
+        height: 5px;
+        background: linear-gradient(90deg, 
+            #3b82f6 0%, 
+            #06b6d4 25%, 
+            #8b5cf6 50%, 
+            #06b6d4 75%, 
+            #3b82f6 100%);
+        background-size: 200% 100%;
+        animation: shimmer 3s ease-in-out infinite;
+    }
+    
+    @keyframes shimmer {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
     }
     
     .tooltip-header {
-        margin-bottom: 16px;
+        margin-bottom: 20px;
     }
     
     .tooltip-title {
-        font-size: 18px;
-        font-weight: 700;
-        color: #1e3a8a;
+        font-size: 20px;
+        font-weight: 800;
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
         margin: 0;
-        line-height: 1.3;
+        line-height: 1.4;
+        letter-spacing: -0.02em;
     }
     
     .progress-bar {
         width: 100%;
-        height: 4px;
-        background: #e0e7ff;
-        border-radius: 2px;
+        height: 6px;
+        background: linear-gradient(90deg, #e0e7ff 0%, #dbeafe 100%);
+        border-radius: 10px;
         overflow: hidden;
-        margin-top: 12px;
+        margin-top: 14px;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
     }
     
     .progress-fill {
         height: 100%;
-        background: linear-gradient(90deg, #2563eb, #3b82f6, #0ea5e9);
-        transition: width 0.3s ease;
+        background: linear-gradient(90deg, #3b82f6 0%, #06b6d4 50%, #8b5cf6 100%);
+        background-size: 200% 100%;
+        transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 10px;
+        animation: shimmer 2s ease-in-out infinite;
+        box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
     }
     
     .tooltip-description {
-        font-size: 14px;
-        line-height: 1.6;
-        color: #334155;
+        font-size: 15px;
+        line-height: 1.7;
+        color: #475569;
         margin: 0 0 12px 0;
+        font-weight: 400;
     }
     
     .tooltip-highlight-hint {
-        margin-bottom: 4px;
+        margin-bottom: 6px;
     }
     
     .tooltip-highlight-hint p {
-        color: #1e40af;
+        color: #2563eb;
+        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        padding: 10px 14px;
+        border-radius: 12px;
+        border: 1px solid #bfdbfe;
+        font-weight: 500;
     }
     
     .tooltip-actions {
@@ -749,61 +836,74 @@ const onboardingStyles = `
         justify-content: space-between;
         align-items: center;
         gap: 12px;
-        margin-top: 20px;
+        margin-top: 24px;
     }
     
     .btn-skip {
-        background: none;
-        border: none;
-        color: #6b7280;
+        background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+        border: 2px solid #cbd5e1;
+        color: #64748b;
         font-size: 13px;
         cursor: pointer;
-        padding: 8px 12px;
-        border-radius: 6px;
-        transition: all 0.2s;
-        font-weight: 500;
+        padding: 10px 18px;
+        border-radius: 12px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        font-weight: 600;
+        text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
     }
     
     .btn-skip:hover {
-        background: #eff6ff;
-        color: #1e40af;
+        background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+        color: #475569;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(100, 116, 139, 0.2);
     }
     
     .nav-buttons {
         display: flex;
-        gap: 8px;
+        gap: 10px;
     }
     
     .btn-prev, .btn-next {
-        padding: 8px 16px;
-        border-radius: 8px;
-        font-size: 13px;
-        font-weight: 600;
+        padding: 10px 20px;
+        border-radius: 14px;
+        font-size: 14px;
+        font-weight: 700;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         border: none;
+        letter-spacing: 0.01em;
     }
     
     .btn-prev {
-        background: #eff6ff;
+        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
         color: #1e40af;
-        border: 1px solid #dbeafe;
+        border: 2px solid #93c5fd;
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
     }
     
     .btn-prev:hover {
-        background: #dbeafe;
+        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
         color: #1e3a8a;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(59, 130, 246, 0.25);
     }
     
     .btn-next {
-        background: #2563eb;
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
         color: white;
+        border: 2px solid #2563eb;
+        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
     }
     
     .btn-next:hover {
-        background: #1d4ed8;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.5);
+    }
+    
+    .btn-next:active, .btn-prev:active {
+        transform: translateY(0);
     }
     
     .onboarding-completion {
@@ -811,95 +911,144 @@ const onboardingStyles = `
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        background: white;
-        border-radius: 16px;
-        padding: 32px;
-        max-width: 480px;
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        border-radius: 28px;
+        padding: 40px;
+        max-width: 520px;
         text-align: center;
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25),
+                    0 10px 30px rgba(59, 130, 246, 0.15),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.9);
         z-index: 10003;
         opacity: 0;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 2px solid rgba(59, 130, 246, 0.2);
     }
     
     .onboarding-completion.active {
         opacity: 1;
-        animation: slideUp 0.4s ease;
+        animation: slideUp 0.5s ease;
     }
     
     .completion-content h3 {
-        font-size: 24px;
-        color: #111827;
-        margin: 0 0 8px 0;
-        font-weight: 700;
+        font-size: 28px;
+        color: #0f172a;
+        margin: 0 0 10px 0;
+        font-weight: 800;
+        letter-spacing: -0.02em;
     }
     
     .completion-content p {
-        color: #6b7280;
-        margin: 0 0 20px 0;
+        color: #64748b;
+        margin: 0 0 24px 0;
         line-height: 1.6;
+        font-size: 15px;
     }
     
     .completion-tips {
-        background: linear-gradient(135deg, #f0f9ff 0%, #f0fdf4 100%);
-        border: 1px solid #e0f2fe;
-        border-radius: 12px;
-        padding: 20px;
-        margin: 24px 0;
+        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        border: 2px solid #bfdbfe;
+        border-radius: 18px;
+        padding: 24px;
+        margin: 28px 0;
         text-align: left;
+        box-shadow: inset 0 2px 8px rgba(59, 130, 246, 0.1);
     }
     
     .completion-tips p {
-        color: #0369a1;
+        color: #1e40af;
         font-weight: 700;
-        margin: 0 0 12px 0;
-        font-size: 14px;
+        margin: 0 0 16px 0;
+        font-size: 15px;
+    }
+    
+    .completion-tips .space-y-2 {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .completion-tips .flex {
+        background: white;
+        padding: 12px;
+        border-radius: 12px;
+        border: 1px solid #bfdbfe;
+        transition: all 0.2s;
+    }
+    
+    .completion-tips .flex:hover {
+        transform: translateX(4px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
     }
     
     .btn-dismiss {
-        transition: all 0.2s;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         cursor: pointer;
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        border: 2px solid #2563eb;
+        box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
+        font-weight: 700;
+        letter-spacing: 0.01em;
     }
     
     .btn-dismiss:hover {
-        background: #2563eb;
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        transform: translateY(-3px);
+        box-shadow: 0 12px 28px rgba(37, 99, 235, 0.45);
     }
     
     .onboarding-help-button {
         position: fixed;
-        bottom: 24px;
-        right: 24px;
-        width: 56px;
-        height: 56px;
+        bottom: 28px;
+        right: 28px;
+        width: 64px;
+        height: 64px;
         background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
         color: white;
         border: none;
         border-radius: 50%;
-        font-size: 20px;
+        font-size: 24px;
         cursor: pointer;
-        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+        box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4),
+                    0 4px 12px rgba(6, 182, 212, 0.3);
         z-index: 1000;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         display: flex;
         align-items: center;
         justify-content: center;
+        border: 3px solid rgba(255, 255, 255, 0.9);
+    }
+    
+    .onboarding-help-button::before {
+        content: '';
+        position: absolute;
+        inset: -6px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #3b82f6, #06b6d4);
+        z-index: -1;
+        opacity: 0;
+        transition: opacity 0.3s;
     }
     
     .onboarding-help-button:hover {
-        transform: translateY(-4px) scale(1.1);
-        box-shadow: 0 12px 28px rgba(59, 130, 246, 0.4);
+        transform: translateY(-6px) scale(1.1) rotate(5deg);
+        box-shadow: 0 16px 36px rgba(59, 130, 246, 0.5),
+                    0 8px 20px rgba(6, 182, 212, 0.4);
+    }
+    
+    .onboarding-help-button:hover::before {
+        opacity: 0.5;
+        animation: pulse 1.5s infinite;
     }
     
     .onboarding-help-button:active {
-        transform: translateY(-2px) scale(1.05);
+        transform: translateY(-3px) scale(1.05) rotate(5deg);
     }
     
     .onboarding-help-button.hidden {
         opacity: 0;
         pointer-events: none;
-        transform: translateY(20px) scale(0.8);
+        transform: translateY(30px) scale(0.7);
     }
     
     @media (max-width: 768px) {

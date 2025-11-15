@@ -225,7 +225,15 @@ def associate_workspace_email():
             user = User(email=email, profile_picture="")
             db.session.add(user)
             db.session.flush()
-            logging.info(f"Created new user for email association: {email}")
+            db.session.commit()  # Commit to ensure user.id is set
+            logging.info(f"Created new user for email association: {email} (ID: {user.id})")
+        else:
+            logging.info(f"Found existing user: {email} (ID: {user.id})")
+        
+        # Verify user.id is set
+        if not user.id:
+            logging.error(f"CRITICAL: User ID is None for {email}")
+            return jsonify({"error": "Failed to create user"}), 500
         
         # Check if UserWorkspace relationship already exists
         existing_relationship = UserWorkspace.query.filter_by(
@@ -253,12 +261,23 @@ def associate_workspace_email():
             logging.info(f"✓ TRANSFERRING OWNERSHIP: workspace {workspace.name} from {placeholder_email} to {email}")
             
             workspace.created_by = user.id
+            logging.info(f"✓ Updated workspace.created_by to {user.id}")
             
             # Update company ownership too
             company = Company.query.filter_by(workspace_id=workspace.id).first()
-            if company and company.created_by == placeholder_user.id:
-                company.created_by = user.id
-                logging.info(f"✓ Updated company ownership to user {user.id}")
+            if company:
+                logging.info(f"Found company: {company.name} (ID: {company.id}), current created_by: {company.created_by}")
+                if company.created_by == placeholder_user.id:
+                    company.created_by = user.id
+                    logging.info(f"✓ Updated company {company.id} ownership from {placeholder_user.id} to {user.id}")
+                elif company.created_by is None:
+                    # Orphaned company without owner - assign to user
+                    company.created_by = user.id
+                    logging.info(f"✓ Assigned orphaned company {company.id} to user {user.id}")
+                else:
+                    logging.info(f"Company {company.id} already has a different owner: {company.created_by}")
+            else:
+                logging.warning(f"No company found for workspace {workspace.id}")
             
             # Create UserWorkspace with Admin role
             user_workspace = UserWorkspace(

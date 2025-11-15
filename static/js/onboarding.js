@@ -1265,4 +1265,63 @@ function addHelpButton() {
     helpButton.classList.remove('hidden');
 }
 
+// Contextual Help System for Reports Page
+function initializeContextualHelp() {
+    const path = window.location.pathname;
+    if (!path.includes('/reports')) return;
+    
+    const helpGuides = {
+        'report-types': 'Per Day: Total per day. Per Hour: Hourly rate × hours. Per Unit: Rate × units completed.',
+        'date-range': 'Select report period: Daily (1 day), Weekly (7 days), or Custom (pick dates).',
+        'custom-fields': 'Add bonuses, deductions, or custom rates. Each field applies to workers in the report.',
+        'payout-type': 'Addition (adds to pay), Deduction (subtracts), Custom Rate (custom price per worker).',
+        'field-values': 'Use positive for bonuses (+500), negative for deductions (-200).',
+        'apply-custom': 'Click Calculate to apply custom fields and see final payroll amounts.',
+        'export-report': 'Download as CSV or Excel. Use for accounting, payroll, or record-keeping.',
+        'worker-search': 'Type worker name or ID to filter the report quickly.'
+    };
+    
+    const helperSelectors = [
+        { selector: '[data-onboarding="report-types"]', key: 'report-types' },
+        { selector: '[data-onboarding="date-range"]', key: 'date-range' },
+        { selector: '[data-onboarding="custom-fields"]', key: 'custom-fields' },
+        { selector: '[data-onboarding="field-config"]', key: 'payout-type' },
+        { selector: '[data-onboarding="field-values"]', key: 'field-values' },
+        { selector: '[data-onboarding="calculate-btn"]', key: 'apply-custom' },
+        { selector: '[data-onboarding="export-buttons"]', key: 'export-report' }
+    ];
+    
+    helperSelectors.forEach(({ selector, key }) => {
+        const elements = document.querySelectorAll(selector);
+        elements.forEach(element => {
+            if (element && helpGuides[key] && !element.querySelector('.help-icon')) {
+                addHelpIcon(element, helpGuides[key]);
+            }
+        });
+    });
+}
+
+function addHelpIcon(element, helpText) {
+    const helpIcon = document.createElement('span');
+    helpIcon.className = 'help-icon';
+    helpIcon.innerHTML = '?';
+    element.appendChild(helpIcon);
+    
+    const tooltip = document.createElement('div');
+    tooltip.className = 'help-tooltip';
+    tooltip.textContent = helpText;
+    document.body.appendChild(tooltip);
+    
+    helpIcon.addEventListener('mouseenter', () => {
+        const rect = helpIcon.getBoundingClientRect();
+        tooltip.style.left = (rect.left - 140) + 'px';
+        tooltip.style.top = (rect.bottom + 12) + 'px';
+        tooltip.classList.add('show');
+    });
+    
+    helpIcon.addEventListener('mouseleave', () => {
+        tooltip.classList.remove('show');
+    });
+}
+
 window.EnhancedOnboardingSystem = EnhancedOnboardingSystem;

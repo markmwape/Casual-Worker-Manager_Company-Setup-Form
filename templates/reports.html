@@ -86,7 +86,12 @@
                         <i data-feather="calendar" class="w-8 h-8 text-white"></i>
                     </div>
                     <div>
-                        <h2 class="text-lg font-bold text-white mb-1">Report Date Range</h2>
+                        <h2 class="text-lg font-bold text-white mb-1 flex items-center gap-2">
+                            Report Date Range
+                            <span class="tooltip" data-tip="Select the date range for your report. Reports include all activities within these dates.">
+                                <button type="button" class="w-6 h-6 rounded-full bg-white/30 hover:bg-white/50 flex items-center justify-center text-white text-sm font-bold transition-colors cursor-help">?</button>
+                            </span>
+                        </h2>
                         <p class="text-brand-navy-100 text-sm">Configure the time period for your workforce analytics</p>
                     </div>
                 </div>
@@ -148,13 +153,20 @@
                                 <i data-feather="calendar" class="w-8 h-8 text-white"></i>
                             </div>
                             <div>
-                                <h4 class="text-lg font-bold text-white mb-1">Per Day Report</h4>
+                                <h4 class="text-lg font-bold text-white mb-1 flex items-center gap-2">
+                                    Per Day Report
+                                    <span class="tooltip" data-tip="Track daily attendance and payment. Shows how many days each worker was present.">
+                                        <button type="button" class="w-5 h-5 rounded-full bg-white/30 hover:bg-white/50 flex items-center justify-center text-white text-xs font-bold transition-colors cursor-help">?</button>
+                                    </span>
+                                </h4>
                                 <p class="text-green-100 text-sm">Daily attendance and payment tracking</p>
                             </div>
                         </div>
-                        <button id="toggleCustomFieldsPerDay" class="btn bg-white/20 border-white/30 text-white hover:bg-white/30 backdrop-blur-sm rounded-xl" onclick="toggleCustomFields('perDay')">
-                            <i class="fas fa-cogs mr-2"></i>Custom Fields
-                        </button>
+                        <div class="tooltip" data-tip="Add custom fields like bonuses, deductions, or special rates to your reports">
+                            <button id="toggleCustomFieldsPerDay" class="btn bg-white/20 border-white/30 text-white hover:bg-white/30 backdrop-blur-sm rounded-xl" onclick="toggleCustomFields('perDay')">
+                                <i class="fas fa-cogs mr-2"></i>Custom Fields
+                            </button>
+                        </div>
                     </div>
                 </div>
                 
@@ -314,13 +326,20 @@
                                 <i data-feather="package" class="w-8 h-8 text-white"></i>
                             </div>
                             <div>
-                                <h4 class="text-lg font-bold text-white mb-1">Per Unit Report</h4>
+                                <h4 class="text-lg font-bold text-white mb-1 flex items-center gap-2">
+                                    Per Unit Report
+                                    <span class="tooltip" data-tip="Track units/pieces completed. Shows productivity and payment based on work output.">
+                                        <button type="button" class="w-5 h-5 rounded-full bg-white/30 hover:bg-white/50 flex items-center justify-center text-white text-xs font-bold transition-colors cursor-help">?</button>
+                                    </span>
+                                </h4>
                                 <p class="text-blue-100 text-sm">Unit-based productivity and payment tracking</p>
                             </div>
                         </div>
-                        <button id="toggleCustomFieldsPerPart" class="btn bg-white/20 border-white/30 text-white hover:bg-white/30 backdrop-blur-sm rounded-xl" onclick="toggleCustomFields('perPart')">
-                            <i class="fas fa-cogs mr-2"></i>Custom Fields
-                        </button>
+                        <div class="tooltip" data-tip="Add custom fields like bonuses, deductions, or special rates to your reports">
+                            <button id="toggleCustomFieldsPerPart" class="btn bg-white/20 border-white/30 text-white hover:bg-white/30 backdrop-blur-sm rounded-xl" onclick="toggleCustomFields('perPart')">
+                                <i class="fas fa-cogs mr-2"></i>Custom Fields
+                            </button>
+                        </div>
                     </div>
                 </div>
                 
@@ -500,13 +519,20 @@
                                 <i data-feather="clock" class="w-8 h-8 text-white"></i>
                             </div>
                             <div>
-                                <h4 class="text-lg font-bold text-white mb-1">Per Hour Report</h4>
+                                <h4 class="text-lg font-bold text-white mb-1 flex items-center gap-2">
+                                    Per Hour Report
+                                    <span class="tooltip" data-tip="Track hours worked. Shows payment calculated based on hourly rates and time logged.">
+                                        <button type="button" class="w-5 h-5 rounded-full bg-white/30 hover:bg-white/50 flex items-center justify-center text-white text-xs font-bold transition-colors cursor-help">?</button>
+                                    </span>
+                                </h4>
                                 <p class="text-purple-100 text-sm">Hourly-based work tracking and payment</p>
                             </div>
                         </div>
-                        <button id="toggleCustomFieldsPerHour" class="btn bg-white/20 border-white/30 text-white hover:bg-white/30 backdrop-blur-sm rounded-xl" onclick="toggleCustomFields('perHour')">
-                            <i class="fas fa-cogs mr-2"></i>Custom Fields
-                        </button>
+                        <div class="tooltip" data-tip="Add custom fields like bonuses, deductions, or special rates to your reports">
+                            <button id="toggleCustomFieldsPerHour" class="btn bg-white/20 border-white/30 text-white hover:bg-white/30 backdrop-blur-sm rounded-xl" onclick="toggleCustomFields('perHour')">
+                                <i class="fas fa-cogs mr-2"></i>Custom Fields
+                            </button>
+                        </div>
                     </div>
                 </div>
                 

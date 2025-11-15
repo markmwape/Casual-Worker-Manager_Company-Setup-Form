@@ -572,6 +572,23 @@
                 });
             });
         }
+
+        // Auto-focus email input when page loads (especially after workspace creation)
+        window.addEventListener('DOMContentLoaded', function() {
+            // Check if coming from workspace creation
+            const pendingWorkspace = sessionStorage.getItem('pending_workspace') || localStorage.getItem('pending_workspace');
+            
+            if (pendingWorkspace) {
+                // Focus the email input for easy typing
+                setTimeout(() => {
+                    const emailInput = document.getElementById('user-email');
+                    if (emailInput) {
+                        emailInput.focus();
+                        console.log('Auto-focused email input for workspace creator');
+                    }
+                }, 300);
+            }
+        });
     </script>
     <script src="{{ url_for('static', filename='js/onboarding.js') }}"></script>
 </body>

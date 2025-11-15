@@ -3,12 +3,60 @@
 {% block title %}Hours Worked - {{ task.name }} - Embee Accounting{% endblock %}
 
 {% block content %}
+<style>
+    .tooltip {
+        position: relative;
+    }
+
+    .tooltip::before {
+        content: attr(data-tip);
+        position: absolute;
+        bottom: 125%;
+        left: 50%;
+        margin-left: -140px;
+        width: 280px;
+        background: #1f2937;
+        color: white;
+        text-align: center;
+        padding: 12px;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        white-space: normal;
+        z-index: 1000;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+        line-height: 1.4;
+    }
+
+    .tooltip::after {
+        content: '';
+        position: absolute;
+        bottom: 115%;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 6px solid transparent;
+        border-top-color: #1f2937;
+        z-index: 1000;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+    }
+
+    .tooltip:hover::before,
+    .tooltip:hover::after {
+        opacity: 1;
+    }
+</style>
 <div class="container mx-auto px-4 w-full max-w-6xl pt-8">
     <!-- Desktop header and actions -->
     <div class="hidden lg:flex items-center justify-between mb-6">
         <div>
-            <div class="text-2xl font-bold text-primary">
+            <div class="text-2xl font-bold text-primary flex items-center gap-3">
                 Hours Worked
+                <span class="tooltip" data-tip="Record hours worked for hourly payment calculation. Enter total hours worked to calculate accurate hourly-based payments.">
+                    <button type="button" class="w-6 h-6 rounded-full bg-blue-100 hover:bg-blue-200 flex items-center justify-center text-blue-600 text-sm font-bold transition-colors cursor-help">?</button>
+                </span>
             </div>
             <div class="text-lg text-gray-600 mt-1">{{ task.name }}</div>
         </div>
@@ -29,8 +77,11 @@
     {% endif %}
     <!-- Mobile header -->
     <div class="lg:hidden mb-6">
-        <div class="text-2xl font-bold text-primary mb-2">
+        <div class="text-2xl font-bold text-primary mb-2 flex items-center gap-3">
             Hours Worked
+            <span class="tooltip" data-tip="Record hours worked for hourly payment calculation. Enter total hours worked to calculate accurate hourly-based payments.">
+                <button type="button" class="w-6 h-6 rounded-full bg-blue-100 hover:bg-blue-200 flex items-center justify-center text-blue-600 text-sm font-bold transition-colors cursor-help">?</button>
+            </span>
         </div>
         <div class="text-lg text-gray-600 mb-4">{{ task.name }}</div>
         <div class="flex flex-col gap-2">

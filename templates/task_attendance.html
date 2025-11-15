@@ -104,11 +104,73 @@
 {% endblock %}
 
 {% block content %}
+<style>
+    /* Custom tooltip styling */
+    .tooltip {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .tooltip::before {
+        position: absolute;
+        content: attr(data-tip);
+        bottom: 125%;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 8px 12px;
+        background-color: #1f2937;
+        color: #ffffff;
+        text-align: center;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 500;
+        white-space: normal;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s, visibility 0.3s;
+        pointer-events: none;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        max-width: 280px;
+        word-wrap: break-word;
+        margin-left: -140px;
+        width: 280px;
+        line-height: 1.4;
+    }
+    
+    .tooltip:hover::before {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    .tooltip::after {
+        position: absolute;
+        content: '';
+        bottom: 115%;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 6px solid transparent;
+        border-top-color: #1f2937;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s, visibility 0.3s;
+        pointer-events: none;
+    }
+    
+    .tooltip:hover::after {
+        opacity: 1;
+        visibility: visible;
+    }
+</style>
 <div class="container mx-auto px-4 w-full max-w-6xl pt-8 attendance-container" data-onboarding="attendance-container">
     <!-- Desktop header and actions -->
     <div class="hidden lg:flex items-center justify-between mb-6">
-        <div class="text-2xl font-bold text-black">
+        <div class="text-2xl font-bold text-black flex items-center gap-3">
             Task Attendance: {{ task.name }}
+            <span class="tooltip" data-tip="Mark workers present/absent and record hours or units completed for accurate payment calculation.">
+                <button type="button" class="w-6 h-6 rounded-full bg-blue-100 hover:bg-blue-200 flex items-center justify-center text-blue-600 text-sm font-bold transition-colors cursor-help">?</button>
+            </span>
         </div>
         <div class="flex gap-2">
             <button onclick="openAddWorkerToTaskModal('{{ task.id }}')" class="btn btn-primary">
@@ -121,8 +183,11 @@
     </div>
     <!-- Mobile header -->
     <div class="lg:hidden mb-6">
-        <div class="text-2xl font-bold text-black mb-4">
+        <div class="text-2xl font-bold text-black mb-4 flex items-center gap-3">
             Task Attendance: {{ task.name }}
+            <span class="tooltip" data-tip="Mark workers present/absent and record hours or units completed for accurate payment calculation.">
+                <button type="button" class="w-6 h-6 rounded-full bg-blue-100 hover:bg-blue-200 flex items-center justify-center text-blue-600 text-sm font-bold transition-colors cursor-help">?</button>
+            </span>
         </div>
         <div class="flex flex-col gap-2">
             <button onclick="openAddWorkerToTaskModal('{{ task.id }}')" class="btn btn-primary">

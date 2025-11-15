@@ -578,13 +578,6 @@ class EnhancedOnboardingSystem {
                 selector: "[data-onboarding='tasks-table'], .tasks-table, table",
                 position: "top",
                 padding: 8
-            },
-            {
-                title: "Record Attendance",
-                description: "Click any task to mark workers present/absent and record hours or units worked. Enter units completed for piece-rate tasks or hours worked for hourly tasks to calculate accurate payments.",
-                selector: "[data-onboarding='attendance-link'], .task-row a, .attendance-link",
-                position: "right",
-                padding: 8
             }
         ];
     }

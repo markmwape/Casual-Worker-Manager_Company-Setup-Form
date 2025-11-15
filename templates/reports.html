@@ -813,34 +813,34 @@
     .tooltip {
         position: relative;
         display: inline-block;
+        overflow: visible !important;
+        --tooltip-top: 0;
+        --tooltip-left: 0;
     }
     
     .tooltip::before {
-        position: absolute;
+        position: fixed !important;
         content: attr(data-tip);
-        bottom: 125%;
-        left: 50%;
-        transform: translateX(-50%);
-        padding: 8px 12px;
+        top: var(--tooltip-top);
+        left: var(--tooltip-left);
+        transform: translate(-50%, -100%);
+        padding: 10px 14px;
         background-color: #1f2937;
         color: #ffffff;
         text-align: center;
-        border-radius: 6px;
+        border-radius: 8px;
         font-size: 13px;
         font-weight: 500;
-        white-space: nowrap;
-        z-index: 1000;
+        white-space: normal;
+        word-wrap: break-word;
+        max-width: 300px;
+        line-height: 1.5;
+        z-index: 99999 !important;
         opacity: 0;
         visibility: hidden;
         transition: opacity 0.3s, visibility 0.3s;
         pointer-events: none;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        max-width: 280px;
-        white-space: normal;
-        word-wrap: break-word;
-        margin-left: -140px;
-        width: 280px;
-        line-height: 1.4;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
     }
     
     .tooltip:hover::before {
@@ -849,14 +849,14 @@
     }
     
     .tooltip::after {
-        position: absolute;
+        position: fixed !important;
         content: '';
-        bottom: 115%;
-        left: 50%;
-        transform: translateX(-50%);
-        border: 6px solid transparent;
+        top: var(--tooltip-top);
+        left: var(--tooltip-left);
+        transform: translate(-50%, -8px);
+        border: 8px solid transparent;
         border-top-color: #1f2937;
-        z-index: 1000;
+        z-index: 99999 !important;
         opacity: 0;
         visibility: hidden;
         transition: opacity 0.3s, visibility 0.3s;
@@ -1324,5 +1324,21 @@
     window.changeMonth = changeMonth;
     window.selectDate = selectDate;
     window.confirmDateSelection = confirmDateSelection;
+    
+    // Position tooltips dynamically to avoid cutoff
+    document.addEventListener('DOMContentLoaded', function() {
+        const tooltips = document.querySelectorAll('.tooltip');
+        
+        tooltips.forEach(tooltip => {
+            tooltip.addEventListener('mouseenter', function() {
+                const rect = this.getBoundingClientRect();
+                const tooltipBefore = window.getComputedStyle(this, '::before');
+                
+                // Position tooltip above the element
+                this.style.setProperty('--tooltip-top', `${rect.top - 10}px`);
+                this.style.setProperty('--tooltip-left', `${rect.left + (rect.width / 2)}px`);
+            });
+        });
+    });
 </script>
 {% endblock %}

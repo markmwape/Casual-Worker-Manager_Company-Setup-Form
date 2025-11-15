@@ -183,6 +183,108 @@ def get_user_workspaces():
         db.session.rollback()
         return jsonify({"error": "Failed to retrieve workspaces"}), 500
 
+@app.route('/api/workspace/associate-email', methods=['POST'])
+def associate_workspace_email():
+    """Associate an email with a workspace when sign-in link is sent"""
+    try:
+        data = request.get_json()
+        workspace_id = data.get('workspace_id')
+        email = data.get('email', '').strip().lower()
+        
+        if not workspace_id or not email:
+            return jsonify({"error": "workspace_id and email are required"}), 400
+        
+        logging.info(f"Associating email {email} with workspace ID {workspace_id}")
+        
+        # Get the workspace
+        workspace = Workspace.query.get(workspace_id)
+        if not workspace:
+            logging.error(f"Workspace {workspace_id} not found")
+            return jsonify({"error": "Workspace not found"}), 404
+        
+        # Get or create the user with this email
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            user = User(email=email, profile_picture="")
+            db.session.add(user)
+            db.session.flush()
+            logging.info(f"Created new user for email association: {email}")
+        
+        # Check if UserWorkspace relationship already exists
+        existing_relationship = UserWorkspace.query.filter_by(
+            user_id=user.id,
+            workspace_id=workspace_id
+        ).first()
+        
+        if existing_relationship:
+            logging.info(f"User {email} already has access to workspace {workspace.name} with role {existing_relationship.role}")
+            return jsonify({
+                "success": True,
+                "message": "User already associated with workspace"
+            }), 200
+        
+        # Check if workspace has a placeholder admin
+        placeholder_email = f"pending_{workspace.company_email}"
+        placeholder_user = User.query.filter_by(email=placeholder_email).first()
+        
+        if placeholder_user and workspace.created_by == placeholder_user.id:
+            # This workspace is waiting for its admin - transfer ownership
+            logging.info(f"Transferring workspace {workspace.name} ownership from placeholder to {email}")
+            
+            workspace.created_by = user.id
+            
+            # Update company ownership too
+            company = Company.query.filter_by(workspace_id=workspace.id).first()
+            if company and company.created_by == placeholder_user.id:
+                company.created_by = user.id
+            
+            # Create UserWorkspace with Admin role
+            user_workspace = UserWorkspace(
+                user_id=user.id,
+                workspace_id=workspace.id,
+                role='Admin'
+            )
+            db.session.add(user_workspace)
+            
+            # Delete placeholder user
+            db.session.delete(placeholder_user)
+            
+            db.session.commit()
+            
+            logging.info(f"Successfully associated email {email} with workspace {workspace.name} as Admin")
+            
+            return jsonify({
+                "success": True,
+                "message": "Email successfully associated as admin",
+                "role": "Admin"
+            }), 200
+        else:
+            # Workspace already has a real admin - just add this user as member
+            logging.info(f"Adding {email} to workspace {workspace.name} as Member")
+            
+            user_workspace = UserWorkspace(
+                user_id=user.id,
+                workspace_id=workspace.id,
+                role='Member'
+            )
+            db.session.add(user_workspace)
+            db.session.commit()
+            
+            logging.info(f"Successfully associated email {email} with workspace {workspace.name} as Member")
+            
+            return jsonify({
+                "success": True,
+                "message": "Email successfully associated as member",
+                "role": "Member"
+            }), 200
+            
+    except Exception as e:
+        logging.error(f"Error associating email with workspace: {str(e)}")
+        import traceback
+        logging.error(f"Traceback: {traceback.format_exc()}")
+        db.session.rollback()
+        return jsonify({"error": "Failed to associate email with workspace"}), 500
+
 @app.route('/api/send-workspace-email', methods=['POST'])
 def send_workspace_email():
     """Send an email with a link to retrieve workspace codes"""

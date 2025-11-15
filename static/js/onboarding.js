@@ -130,21 +130,24 @@ class OnboardingSystem {
     // Show a welcome message for first-time users
     showWelcomeMessage(callback) {
         const welcomeHtml = `
-            <div id="welcome-message" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-                <div class="bg-white rounded-lg p-6 m-4 max-w-md text-center shadow-xl">
-                    <div class="text-4xl mb-4">👋</div>
-                    <h2 class="text-xl font-bold mb-2">Welcome to Casual Worker Manager!</h2>
-                    <p class="text-gray-600 mb-4">Let us show you around with a quick guided tour to help you get started with managing your workforce effectively.</p>
-                    <div class="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                        <div class="flex items-center gap-2 text-blue-800">
-                            <i class="fas fa-clock"></i>
-                            <span class="font-semibold">About Your Trial</span>
-                        </div>
-                        <p class="text-sm text-blue-700 mt-1">You're currently on a free trial. When your trial period ends, you'll need to choose a subscription plan to continue using all features.</p>
+            <div id="welcome-message" class="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center p-4">
+                <div class="bg-white rounded-2xl p-8 m-4 max-w-lg text-center shadow-2xl transform animate-fadeIn">
+                    <div class="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+                        <span class="text-2xl">👋</span>
                     </div>
-                    <div class="flex gap-2 justify-center">
-                        <button id="start-tour-btn" class="btn btn-primary">Start Tour</button>
-                        <button id="skip-tour-btn" class="btn btn-outline">Skip for Now</button>
+                    <h2 class="text-2xl font-bold mb-3 text-gray-800">Welcome!</h2>
+                    <p class="text-gray-600 mb-6 leading-relaxed">Ready for a quick 2-minute tour? We'll show you the essentials to get started managing your team.</p>
+                    <div class="mb-6 text-sm text-gray-500 flex items-center justify-center gap-2">
+                        <i class="fas fa-clock text-blue-500"></i>
+                        <span>You're on a free trial - upgrade anytime to unlock all features</span>
+                    </div>
+                    <div class="flex gap-3 justify-center">
+                        <button id="start-tour-btn" class="px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors">
+                            Start Quick Tour
+                        </button>
+                        <button id="skip-tour-btn" class="px-6 py-3 text-gray-600 rounded-xl font-medium hover:bg-gray-100 transition-colors">
+                            Skip for Now
+                        </button>
                     </div>
                 </div>
             </div>
@@ -179,26 +182,27 @@ class OnboardingSystem {
         this.tooltip.innerHTML = `
             <div class="tooltip-content">
                 <div class="tooltip-header">
-                    <h3 class="tooltip-title"></h3>
-                    <div class="tooltip-progress">
-                        <span class="progress-text">Step <span class="current-step">1</span> of <span class="total-steps">1</span></span>
-                        <div class="progress-bar">
-                            <div class="progress-fill"></div>
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="tooltip-title"></h3>
+                        <div class="tooltip-progress">
+                            <span class="progress-text"><span class="current-step">1</span>/<span class="total-steps">1</span></span>
                         </div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
                     </div>
                 </div>
                 <div class="tooltip-body">
                     <p class="tooltip-description"></p>
                     <div class="tooltip-actions">
-                        <button class="btn-skip">Skip Tour</button>
+                        <button class="btn-skip">Skip</button>
                         <div class="nav-buttons">
-                            <button class="btn-prev">Previous</button>
-                            <button class="btn-next">Next</button>
+                            <button class="btn-prev">← Back</button>
+                            <button class="btn-next">Next →</button>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="tooltip-arrow"></div>
         `;
         document.body.appendChild(this.tooltip);
     }
@@ -363,30 +367,26 @@ class OnboardingSystem {
         message.className = 'onboarding-completion';
         message.innerHTML = `
             <div class="completion-content">
-                <div class="completion-animation">
-                    <div class="success-checkmark">
-                        <div class="check-icon">
-                            <span class="icon-line line-tip"></span>
-                            <span class="icon-line line-long"></span>
-                            <div class="icon-circle"></div>
-                            <div class="icon-fix"></div>
-                        </div>
+                <div class="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
+                    <span class="text-2xl">✅</span>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-3">You're All Set!</h3>
+                <p class="text-gray-600 mb-6">Ready to start managing your team. Remember, you're on a free trial - upgrade anytime for full access.</p>
+                <div class="completion-tips bg-blue-50 rounded-lg p-4 mb-6">
+                    <p class="font-semibold text-blue-800 mb-2">Next Steps:</p>
+                    <div class="text-sm text-blue-700 space-y-1">
+                        <div>1. Add your first workers</div>
+                        <div>2. Create a task and assign workers</div>
+                        <div>3. Track attendance and generate reports</div>
                     </div>
                 </div>
-                <h3>🎉 Onboarding Complete!</h3>
-                <p>You're now ready to manage your casual workers like a pro! Remember that your trial has limitations, and you'll need to upgrade when it expires to continue using all features.</p>
-                <div class="completion-tips">
-                    <p><strong>💡 Quick Tips:</strong></p>
-                    <ul class="text-left mt-2 space-y-1">
-                        <li>• Start by adding your first workers</li>
-                        <li>• Create tasks and assign workers to them</li>
-                        <li>• Track attendance and generate reports</li>
-                        <li>• Use the help button (?) anytime for guidance</li>
-                    </ul>
-                </div>
-                <div class="completion-actions">
-                    <button class="btn-dismiss">Start Managing Workers</button>
-                    <button class="btn-replay" onclick="window.onboardingSystem?.restartOnboarding()">Replay Tour</button>
+                <div class="completion-actions flex gap-3 justify-center">
+                    <button class="btn-dismiss px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
+                        Get Started
+                    </button>
+                    <button class="btn-replay px-6 py-3 text-gray-600 rounded-lg font-medium hover:bg-gray-100 transition-colors" onclick="window.onboardingSystem?.restartOnboarding()">
+                        Replay Tour
+                    </button>
                 </div>
             </div>
         `;
@@ -410,19 +410,19 @@ class OnboardingSystem {
     getSignInFlow() {
         return [
             {
-                title: "Welcome to Casual Worker Manager!",
-                description: "This powerful platform helps you manage your casual workforce efficiently. Let's start with a quick tour to show you everything you need to know about managing workers, tasks, and reports.",
+                title: "Let's Get Started! 🚀",
+                description: "Welcome to your workforce management platform. We'll show you the key features in just a few quick steps.",
                 selector: null
             },
             {
-                title: "Sign In to Get Started",
-                description: "Use your Google account or email to sign in. If you're new, you can create a workspace for your company right here. This is where your workforce management journey begins!",
+                title: "Sign In",
+                description: "Use Google or email to sign in. New here? You can create your company workspace right from this page.",
                 selector: ".auth-container, .signin-form",
                 position: "bottom"
             },
             {
-                title: "Join or Create Your Workspace",
-                description: "If you have a workspace code from your team, enter it here to join an existing workspace. Otherwise, create a new workspace for your organization to start fresh.",
+                title: "Workspace Setup",
+                description: "Join your team's workspace with a code, or create a new one for your company.",
                 selector: "[data-onboarding='workspace-section'], .workspace-section",
                 position: "top"
             }
@@ -432,39 +432,27 @@ class OnboardingSystem {
     getHomeFlow() {
         return [
             {
-                title: "Welcome to Your Dashboard!",
-                description: "This is your control center where you can see an overview of your workers, tasks, and business metrics at a glance. Everything you need to manage your workforce is accessible from here.",
+                title: "Your Dashboard 📊",
+                description: "This is your control center. See your team stats and access everything in one place.",
                 selector: ".dashboard-container, .hero-glass"
             },
             {
-                title: "Quick Stats Overview",
-                description: "These cards show your key metrics - total workers, active tasks, and reports. Click any card to navigate directly to that section and manage your workforce data.",
+                title: "Key Metrics",
+                description: "These cards show your workers, tasks, and reports. Click any card to dive deeper.",
                 selector: "[data-onboarding='stats-container'], .stat-card",
                 position: "bottom"
             },
             {
                 title: "Quick Actions",
-                description: "Use these buttons to quickly add new workers, create tasks, or record attendance without navigating to other pages. These shortcuts save you time in daily operations.",
+                description: "Fast shortcuts to add workers, create tasks, or record attendance.",
                 selector: "[data-onboarding='quick-actions'], .quick-action-btn",
                 position: "top"
             },
             {
-                title: "Navigation Sidebar",
-                description: "Use the sidebar to navigate between different sections: Dashboard (home), Workers (team management), Tasks (project management), and Reports (analytics). Each section has specialized tools for managing your business.",
+                title: "Main Navigation",
+                description: "Use the sidebar to navigate: Workers, Tasks, and Reports. Each has specialized tools.",
                 selector: ".sidebar, .sidebar-container",
                 position: "right"
-            },
-            {
-                title: "Team Members",
-                description: "See who has access to your workspace and their roles. If you're an admin, you can add new team members and manage their permissions here.",
-                selector: "[data-onboarding='team-section'], .team-table",
-                position: "top"
-            },
-            {
-                title: "Trial Information",
-                description: "Keep track of your trial period here. You can see how much time is remaining and upgrade your plan when needed. The timer shows exactly when your trial expires.",
-                selector: ".subscription-success-alert, .trial-info, #trial-info",
-                position: "bottom"
             }
         ];
     }
@@ -472,37 +460,25 @@ class OnboardingSystem {
     getWorkersFlow() {
         return [
             {
-                title: "Worker Management Hub",
-                description: "This is your central place for managing all workers. Here you can add new team members, view their details, organize your workforce, and track their information efficiently.",
+                title: "Manage Your Team 👥",
+                description: "Add, organize, and track all your workers in one place.",
                 selector: ".workers-container, .page-container"
             },
             {
-                title: "Add New Workers",
-                description: "Click this button to add individual workers to your team. You can enter their personal details, contact information, and any custom fields specific to your business needs.",
+                title: "Add Workers",
+                description: "Click here to add new team members with their details and contact info.",
                 selector: "[data-onboarding='add-worker-btn'], .btn-primary, .add-worker-btn",
                 position: "bottom"
             },
             {
                 title: "Workers List",
-                description: "All your workers are displayed here with their information. You can search for specific workers, filter the list, and click on any worker to edit their details or view their work history.",
+                description: "View all your workers here. Click on any worker to edit their details.",
                 selector: "[data-onboarding='workers-table'], .workers-table, table",
                 position: "top"
             },
             {
-                title: "Search and Filter Workers",
-                description: "Use these tools to quickly find specific workers or filter your team by different criteria. This is especially useful when you have a large workforce to manage.",
-                selector: "[data-onboarding='search-workers'], .search-input, input[type='search']",
-                position: "bottom"
-            },
-            {
-                title: "Custom Fields",
-                description: "Create custom fields to capture additional information about your workers that's specific to your business. This could include skills, certifications, or any other relevant data.",
-                selector: "[data-onboarding='custom-fields'], .custom-fields-section",
-                position: "left"
-            },
-            {
-                title: "Import Workers from Excel",
-                description: "Save time by importing multiple workers at once from an Excel spreadsheet. The system will guide you through mapping your data columns to worker information fields.",
+                title: "Import from Excel",
+                description: "Add multiple workers at once by uploading a spreadsheet.",
                 selector: "[data-onboarding='import-btn'], .import-workers-btn",
                 position: "bottom"
             }
@@ -512,39 +488,27 @@ class OnboardingSystem {
     getTasksFlow() {
         return [
             {
-                title: "Task Management Center",
-                description: "Create and manage all your work projects here. You can assign workers to tasks, set deadlines, define payment structures, and track progress efficiently across all your projects.",
+                title: "Manage Tasks 📋",
+                description: "Create projects, assign workers, and track progress all in one place.",
                 selector: ".tasks-container, .page-container"
             },
             {
-                title: "Create New Tasks",
-                description: "Click here to create a new task or project. You can set different payment types (daily rate, hourly rate, or piece-rate work), assign specific workers, and set schedules and deadlines.",
+                title: "Create Tasks",
+                description: "Click here to create new tasks. Set payment type (daily, hourly, or per-piece) and assign workers.",
                 selector: "[data-onboarding='create-task-btn'], .btn-primary, .create-task-btn",
                 position: "bottom"
             },
             {
-                title: "Task List & Status Tracking",
-                description: "View all your tasks with their current status: Pending (not started), In Progress (currently running), or Completed (finished). Tasks automatically update their status based on start dates and completion.",
+                title: "Task Status",
+                description: "See all tasks with their status: Pending, In Progress, or Completed.",
                 selector: "[data-onboarding='tasks-table'], .tasks-table, table",
                 position: "top"
             },
             {
-                title: "Payment Structure Options",
-                description: "Tasks support different payment structures to match your business needs: daily rates (fixed amount per day), hourly rates (payment per hour worked), or piece-rate work (payment per unit completed).",
-                selector: "[data-onboarding='payment-types'], .payment-type-selector",
-                position: "left"
-            },
-            {
-                title: "Track Worker Attendance",
-                description: "Click on any task to track worker attendance and productivity. You can record who showed up, how many hours they worked, or how many units they completed for accurate payment calculation.",
+                title: "Track Attendance",
+                description: "Click any task to record who showed up and track hours or units completed.",
                 selector: "[data-onboarding='attendance-link'], .task-row a, .attendance-link",
                 position: "right"
-            },
-            {
-                title: "Assign Workers to Tasks",
-                description: "Select which workers will be part of each task. You can assign multiple workers to a single task and track their individual performance and attendance separately.",
-                selector: "[data-onboarding='assign-workers'], .worker-assignment",
-                position: "top"
             }
         ];
     }
@@ -552,39 +516,27 @@ class OnboardingSystem {
     getReportsFlow() {
         return [
             {
-                title: "Reports & Analytics Hub",
-                description: "Generate comprehensive reports for payroll processing, attendance tracking, and productivity analysis. Export your data in various formats for accounting software or team sharing.",
+                title: "Generate Reports 📈",
+                description: "Create payroll and attendance reports for your team.",
                 selector: ".reports-container, .page-container"
             },
             {
-                title: "Report Type Selection",
-                description: "Choose from different report types based on your payment structure: 'Per Day' reports for daily-rate workers, 'Per Part' for piece-rate work, or 'Per Hour' for hourly workers. Each type provides relevant calculations.",
+                title: "Report Types",
+                description: "Choose 'Per Day', 'Per Hour', or 'Per Part' based on how you pay workers.",
                 selector: "[data-onboarding='report-types'], .report-type-selector, .report-tabs",
                 position: "bottom"
             },
             {
-                title: "Date Range Selection",
-                description: "Select the specific date range for your report. You can generate reports for daily, weekly, monthly, or custom periods to match your payroll cycles and business needs.",
+                title: "Select Date Range",
+                description: "Pick the time period for your report - daily, weekly, or custom range.",
                 selector: "[data-onboarding='date-range'], .date-inputs, .date-picker",
                 position: "top"
             },
             {
-                title: "Filter Options",
-                description: "Use filters to narrow down your reports by specific workers, tasks, or other criteria. This helps you generate focused reports for specific teams or projects.",
-                selector: "[data-onboarding='report-filters'], .filter-section",
-                position: "left"
-            },
-            {
-                title: "Export and Download",
-                description: "Download your reports in CSV or Excel format. These files are perfect for importing into accounting software like Excel, QuickBooks, or for sharing with your accounting team.",
+                title: "Export Reports",
+                description: "Download as CSV or Excel for your accounting software or records.",
                 selector: "[data-onboarding='export-buttons'], .export-options, .download-btn",
                 position: "left"
-            },
-            {
-                title: "Custom Report Fields",
-                description: "Add custom calculations and additional fields to your reports to match your specific business requirements and payment structures. Customize reports to show exactly what you need.",
-                selector: "[data-onboarding='custom-fields-report'], .custom-report-fields",
-                position: "right"
             }
         ];
     }
@@ -592,51 +544,33 @@ class OnboardingSystem {
     getAttendanceFlow() {
         return [
             {
-                title: "Task Attendance Tracking",
-                description: "This is where you record worker attendance and track productivity for specific tasks. You can manage who showed up, hours worked, units completed, and calculate accurate payments.",
+                title: "Track Attendance ✅",
+                description: "Record who showed up and track hours or units completed for payment.",
                 selector: ".attendance-container, .page-container"
             },
             {
-                title: "Worker Attendance List",
-                description: "All workers assigned to this task are listed here. You can see their attendance status, hours worked, and units completed at a glance. Each row represents one worker's performance for this task.",
+                title: "Worker List",
+                description: "See all workers assigned to this task. Each row shows their attendance and performance.",
                 selector: "[data-onboarding='attendance-table'], .attendance-table, table",
                 position: "top"
             },
             {
-                title: "Mark Attendance Status",
-                description: "Use these checkboxes to mark workers as Present, Absent, or Late. Only workers marked as present can have hours or units recorded, ensuring accurate payment calculations.",
+                title: "Mark Present/Absent",
+                description: "Check the box to mark workers as present. Only present workers get paid.",
                 selector: "[data-onboarding='attendance-checkbox'], input[type='checkbox'], .attendance-status",
                 position: "right"
             },
             {
-                title: "Record Hours Worked",
-                description: "For hourly-paid tasks, enter the exact hours each worker worked. You can use decimal format (e.g., 8.5 for 8 hours 30 minutes). This directly affects their payment calculation.",
+                title: "Record Hours or Units",
+                description: "Enter hours worked (e.g., 8.5) or units completed (e.g., 50 pieces) for payment calculation.",
                 selector: "[data-onboarding='hours-input'], input[name*='hours'], .hours-input",
                 position: "bottom"
             },
             {
-                title: "Track Units Completed",
-                description: "For piece-rate work, enter how many units each worker completed (e.g., pieces produced, tasks finished, items assembled). Payment is automatically calculated as units × rate per unit.",
-                selector: "[data-onboarding='units-input'], input[name*='units'], .units-input",
-                position: "top"
-            },
-            {
-                title: "Save Attendance Data",
-                description: "Click this button to save all attendance, hours, and units data. The system will automatically calculate payments based on the task's payment structure (daily, hourly, or piece-rate).",
+                title: "Save Data",
+                description: "Click to save all attendance data. Payments are calculated automatically.",
                 selector: "[data-onboarding='save-attendance'], .btn-primary, .save-btn",
                 position: "bottom"
-            },
-            {
-                title: "Real-time Payment Preview",
-                description: "See live payment calculations as you enter data. This shows how much each worker will earn based on their attendance, hours worked, or units completed, helping you verify accuracy.",
-                selector: "[data-onboarding='payment-preview'], .payment-calculation, .payment-summary",
-                position: "left"
-            },
-            {
-                title: "Add Performance Notes",
-                description: "Add notes about worker performance, issues, or special circumstances. These notes help with future scheduling decisions and performance reviews.",
-                selector: "[data-onboarding='attendance-notes'], textarea[name*='notes'], .notes-section",
-                position: "right"
             }
         ];
     }
@@ -691,82 +625,50 @@ const onboardingStyles = `
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.7);
-        backdrop-filter: blur(2px);
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(1px);
     }
     
     .onboarding-spotlight {
         position: absolute;
         background: transparent;
-        border-radius: 12px;
+        border-radius: 8px;
         box-shadow: 
-            0 0 0 4px rgba(59, 130, 246, 0.5),
-            0 0 0 9999px rgba(0, 0, 0, 0.75);
+            0 0 0 3px rgba(59, 130, 246, 0.6),
+            0 0 0 9999px rgba(0, 0, 0, 0.5);
         pointer-events: none;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.3s ease;
         z-index: 10001;
-        animation: spotlightPulse 2s ease-in-out infinite;
     }
     
-    @keyframes spotlightPulse {
-        0%, 100% {
-            box-shadow: 
-                0 0 0 4px rgba(59, 130, 246, 0.5),
-                0 0 0 9999px rgba(0, 0, 0, 0.75);
-        }
-        50% {
-            box-shadow: 
-                0 0 0 8px rgba(59, 130, 246, 0.8),
-                0 0 20px rgba(59, 130, 246, 0.6),
-                0 0 0 9999px rgba(0, 0, 0, 0.75);
-        }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
     
     .onboarding-tooltip {
         position: fixed;
-        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-        border: 2px solid #e2e8f0;
-        border-radius: 20px;
-        box-shadow: 
-            0 25px 50px rgba(0, 0, 0, 0.25),
-            0 0 0 1px rgba(255, 255, 255, 0.05),
-            inset 0 1px 0 rgba(255, 255, 255, 0.9);
-        max-width: 450px;
-        min-width: 350px;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        max-width: 380px;
+        min-width: 300px;
         z-index: 10002;
         opacity: 0;
-        transform: scale(0.8) translateY(-10px);
-        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        transform: translateY(10px);
+        transition: all 0.2s ease;
         pointer-events: all;
-        backdrop-filter: blur(10px);
     }
     
     .onboarding-tooltip.active {
         opacity: 1;
-        transform: scale(1) translateY(0);
-        animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    }
-    
-    @keyframes bounceIn {
-        0% {
-            opacity: 0;
-            transform: scale(0.3) translateY(-20px);
-        }
-        50% {
-            opacity: 1;
-            transform: scale(1.05) translateY(5px);
-        }
-        70% {
-            transform: scale(0.95) translateY(-2px);
-        }
-        100% {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-        }
+        transform: translateY(0);
+        animation: fadeIn 0.3s ease;
     }
     
     .tooltip-content {
-        padding: 28px;
+        padding: 24px;
         position: relative;
     }
     
@@ -776,59 +678,54 @@ const onboardingStyles = `
         top: 0;
         left: 0;
         right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, #3b82f6, #8b5cf6, #06b6d4);
-        border-radius: 20px 20px 0 0;
+        height: 3px;
+        background: linear-gradient(90deg, #3b82f6, #06b6d4);
+        border-radius: 16px 16px 0 0;
     }
     
     .tooltip-header {
-        margin-bottom: 20px;
-        margin-top: 8px;
+        margin-bottom: 16px;
+        margin-top: 4px;
     }
     
     .tooltip-title {
-        font-size: 20px;
-        font-weight: 700;
-        background: linear-gradient(135deg, #1e293b 0%, #3b82f6 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        margin: 0 0 16px 0;
-        line-height: 1.3;
+        font-size: 18px;
+        font-weight: 600;
+        color: #1f2937;
+        margin: 0;
+        line-height: 1.4;
     }
     
     .tooltip-progress {
-        display: flex;
-        justify-content: space-between;
         align-items: center;
-        margin-bottom: 8px;
     }
     
     .progress-text {
         font-size: 12px;
-        color: #6B7280;
+        color: #6b7280;
         font-weight: 500;
     }
     
     .progress-bar {
-        width: 100px;
-        height: 4px;
-        background: #E5E7EB;
-        border-radius: 2px;
+        width: 100%;
+        height: 3px;
+        background: #f3f4f6;
+        border-radius: 3px;
         overflow: hidden;
+        margin-top: 8px;
     }
     
     .progress-fill {
         height: 100%;
-        background: linear-gradient(90deg, #1A2B48, #E5B23A);
-        border-radius: 2px;
+        background: linear-gradient(90deg, #3b82f6, #06b6d4);
+        border-radius: 3px;
         transition: width 0.3s ease;
     }
     
     .tooltip-description {
         font-size: 14px;
-        line-height: 1.6;
-        color: #374151;
+        line-height: 1.5;
+        color: #4b5563;
         margin: 0 0 20px 0;
     }
     
@@ -840,66 +737,53 @@ const onboardingStyles = `
     
     .btn-skip {
         background: none;
-        border: 1px solid #e2e8f0;
-        color: #64748b;
+        border: none;
+        color: #6b7280;
         font-size: 13px;
         cursor: pointer;
-        padding: 8px 16px;
-        border-radius: 12px;
-        transition: all 0.3s ease;
+        padding: 8px 12px;
+        border-radius: 6px;
+        transition: all 0.2s ease;
         font-weight: 500;
     }
     
     .btn-skip:hover {
-        background: #f1f5f9;
-        color: #475569;
-        border-color: #cbd5e1;
-        transform: translateY(-1px);
+        background: #f3f4f6;
+        color: #374151;
     }
     
     .nav-buttons {
         display: flex;
-        gap: 12px;
+        gap: 8px;
     }
     
     .btn-prev, .btn-next {
-        padding: 12px 24px;
-        border-radius: 12px;
+        padding: 8px 16px;
+        border-radius: 8px;
         font-size: 14px;
-        font-weight: 600;
+        font-weight: 500;
         cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.2s ease;
         border: none;
-        position: relative;
-        overflow: hidden;
     }
     
     .btn-prev {
-        background: #f8fafc;
-        color: #475569;
-        border: 1px solid #e2e8f0;
+        background: #f9fafb;
+        color: #374151;
+        border: 1px solid #e5e7eb;
     }
     
     .btn-prev:hover {
-        background: #f1f5f9;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        background: #f3f4f6;
     }
     
     .btn-next {
-        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        background: #3b82f6;
         color: white;
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
     }
     
     .btn-next:hover {
-        background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.6);
-    }
-    
-    .btn-next:active, .btn-prev:active {
-        transform: translateY(0);
+        background: #2563eb;
     }
     
     .tooltip-arrow {
@@ -916,41 +800,42 @@ const onboardingStyles = `
         position: fixed;
         top: 50%;
         left: 50%;
-        transform: translate(-50%, -50%) scale(0.9);
+        transform: translate(-50%, -50%);
         background: white;
-        border-radius: 20px;
-        padding: 40px;
-        max-width: 500px;
+        border-radius: 16px;
+        padding: 32px;
+        max-width: 450px;
         text-align: center;
-        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
         z-index: 10003;
         opacity: 0;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.3s ease;
     }
     
     .onboarding-completion.active {
         opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
+        animation: fadeIn 0.3s ease;
     }
     
     .completion-content h3 {
-        font-size: 24px;
-        color: #1A2B48;
+        font-size: 20px;
+        color: #1f2937;
         margin: 0 0 12px 0;
+        font-weight: 600;
     }
     
     .completion-content p {
-        color: #6B7280;
-        margin: 0 0 20px 0;
-        line-height: 1.6;
+        color: #6b7280;
+        margin: 0 0 24px 0;
+        line-height: 1.5;
     }
     
     .completion-tips {
         background: #f0f9ff;
-        border: 2px solid #bae6fd;
-        border-radius: 12px;
+        border: 1px solid #e0f2fe;
+        border-radius: 8px;
         padding: 16px;
-        margin: 20px 0;
+        margin: 24px 0;
         text-align: left;
     }
     
@@ -958,11 +843,12 @@ const onboardingStyles = `
         color: #0369a1;
         font-weight: 600;
         margin: 0 0 8px 0;
+        font-size: 14px;
     }
     
-    .completion-tips ul {
+    .completion-tips div {
         color: #0284c7;
-        font-size: 14px;
+        font-size: 13px;
         line-height: 1.4;
     }
     
@@ -970,37 +856,7 @@ const onboardingStyles = `
         display: flex;
         gap: 12px;
         justify-content: center;
-        margin-top: 24px;
-    }
-    
-    .btn-dismiss, .btn-replay {
-        padding: 12px 24px;
-        border-radius: 12px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        border: none;
-    }
-    
-    .btn-dismiss {
-        background: linear-gradient(135deg, #1A2B48, #E5B23A);
-        color: white;
-    }
-    
-    .btn-dismiss:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(26, 43, 72, 0.3);
-    }
-    
-    .btn-replay {
-        background: #f8fafc;
-        color: #475569;
-        border: 1px solid #e2e8f0;
-    }
-    
-    .btn-replay:hover {
-        background: #f1f5f9;
-        transform: translateY(-1px);
+        margin-top: 0;
     }
     
     /* Mobile responsive styles */
@@ -1008,7 +864,7 @@ const onboardingStyles = `
         .onboarding-tooltip {
             max-width: 90vw;
             min-width: 280px;
-            margin: 20px;
+            margin: 16px;
         }
         
         .tooltip-content {
@@ -1022,6 +878,7 @@ const onboardingStyles = `
         .tooltip-actions {
             flex-direction: column;
             gap: 12px;
+            align-items: stretch;
         }
         
         .nav-buttons {
@@ -1035,11 +892,18 @@ const onboardingStyles = `
         
         .onboarding-completion {
             max-width: 90vw;
-            padding: 30px 20px;
+            padding: 24px 20px;
+            margin: 16px;
         }
         
         .completion-actions {
             flex-direction: column;
+            gap: 8px;
+        }
+        
+        #welcome-message .bg-white {
+            margin: 16px;
+            padding: 24px;
         }
     }
     

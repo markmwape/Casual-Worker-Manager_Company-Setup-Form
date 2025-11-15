@@ -104,7 +104,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 w-full max-w-6xl pt-8">
+<div class="container mx-auto px-4 w-full max-w-6xl pt-8 attendance-container" data-onboarding="attendance-container">
     <!-- Desktop header and actions -->
     <div class="hidden lg:flex items-center justify-between mb-6">
         <div class="text-2xl font-bold text-black">
@@ -201,7 +201,7 @@
                     You cannot select a date before the task's start date ({{ task_start_date }}).
                 </div>
                 <form id="attendanceForm" data-per-part="{{ 'true' if task.payment_type == 'per_part' else 'false' }}">
-                    <table class="table w-full">
+                    <table class="table w-full attendance-table" data-onboarding="attendance-table">
                         <thead>
                             <tr>
                                 <th>Name</th>
@@ -221,7 +221,7 @@
                                 <td>{{ record.worker.first_name }} {{ record.worker.last_name }}</td>
                                 {% if task.payment_type == 'per_part' %}
                                     <td>
-                                        <input type="number" min="0" step="1" name="units_{{ record.worker.id }}" class="input input-bordered w-32" value="{{ (record.units_completed or '')|int if record.units_completed is not none else '' }}" placeholder="e.g. 5" inputmode="numeric" pattern="[0-9]*">
+                                        <input type="number" min="0" step="1" name="units_{{ record.worker.id }}" class="input input-bordered w-32" value="{{ (record.units_completed or '')|int if record.units_completed is not none else '' }}" placeholder="e.g. 5" inputmode="numeric" pattern="[0-9]*" data-onboarding="units-input">
                                     </td>
                                 {% else %}
                                     <td>
@@ -230,7 +230,8 @@
                                                    name="attendance_{{ record.worker.id }}" 
                                                    class="sr-only" 
                                                    value="present"
-                                                   {{ 'checked' if record.status == 'Present' else '' }}>
+                                                   {{ 'checked' if record.status == 'Present' else '' }}
+                                                   data-onboarding="attendance-checkbox">
                                             <div class="attendance-btn present-btn {{ 'active' if record.status == 'Present' else '' }}">
                                                 <i class="fas fa-check mr-1"></i>
                                                 Present
@@ -256,7 +257,7 @@
                         </tbody>
                     </table>
                     <div class="mt-4 flex justify-end">
-                        <button type="button" onclick="saveAttendance({{ task.id }})" class="btn btn-primary">
+                        <button type="button" onclick="saveAttendance({{ task.id }})" class="btn btn-primary" data-onboarding="save-attendance">
                             <i data-feather="save" class="mr-2"></i>Save
                         </button>
                     </div>

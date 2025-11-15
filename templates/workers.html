@@ -1,14 +1,14 @@
 {% extends "base_with_sidebar.html" %}
 
 {% block content %}
-<div class="container mx-auto px-4 w-full max-w-6xl pt-8">
+<div class="container mx-auto px-4 w-full max-w-6xl pt-8 workers-container" data-onboarding="page-container">
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
         <h1 class="text-3xl font-bold text-black">Workers</h1>
-        <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-            <button onclick="openImportWorkersModal()" class="btn btn-secondary w-full sm:w-auto">
+        <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto" data-onboarding="quick-actions">
+            <button onclick="openImportWorkersModal()" class="btn btn-secondary w-full sm:w-auto" data-onboarding="import-btn">
                 <i data-feather="upload" class="mr-2"></i>Import Workers
             </button>
-            <button onclick="openAddWorkerModal()" class="btn btn-primary w-full sm:w-auto">
+            <button onclick="openAddWorkerModal()" class="btn btn-primary w-full sm:w-auto" data-onboarding="add-worker-btn">
                 <i data-feather="plus" class="mr-2"></i>Add Worker
             </button>
         </div>
@@ -29,7 +29,7 @@
                 <!-- Removed Edit button from here -->
             </div>
             <div class="overflow-x-auto rounded-xl">
-                <table class="table w-full text-base text-gray-800">
+                <table class="table w-full text-base text-gray-800 workers-table" data-onboarding="workers-table">
                     <thead class="bg-gradient-to-r from-brand-navy-50 to-brand-navy-100 sticky top-0 z-10">
                         <tr>
                             <th class="w-12"></th> <!-- Checkbox column -->

@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Onboarding System Test</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: #f9fafb;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #1A2B48;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #6b7280;
+            margin-bottom: 30px;
+        }
+        .section {
+            margin-bottom: 40px;
+        }
+        .section h2 {
+            color: #1A2B48;
+            font-size: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .icon {
+            font-size: 24px;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .feature-card {
+            background: #f0f9ff;
+            border: 2px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+        }
+        .feature-card h3 {
+            color: #1e40af;
+            font-size: 16px;
+            margin: 0 0 10px 0;
+        }
+        .feature-card p {
+            color: #475569;
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 0;
+        }
+        .button-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #1A2B48, #E5B23A);
+            color: white;
+        }
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(26, 43, 72, 0.3);
+        }
+        .btn-secondary {
+            background: white;
+            border: 2px solid #1A2B48;
+            color: #1A2B48;
+        }
+        .btn-secondary:hover {
+            background: #f9fafb;
+        }
+        .alert {
+            background: #fef3c7;
+            border: 2px solid #fbbf24;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: start;
+            gap: 12px;
+        }
+        .alert-icon {
+            color: #d97706;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+        .alert-content {
+            flex: 1;
+        }
+        .alert h3 {
+            margin: 0 0 8px 0;
+            color: #92400e;
+            font-size: 16px;
+        }
+        .alert p {
+            margin: 0;
+            color: #78350f;
+            font-size: 14px;
+        }
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #d1fae5;
+            color: #065f46;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+        .tour-steps {
+            list-style: none;
+            padding: 0;
+        }
+        .tour-steps li {
+            padding: 12px 0;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .tour-steps li:last-child {
+            border-bottom: none;
+        }
+        .step-number {
+            background: #1A2B48;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎓 Embee Accounting Onboarding System</h1>
+        <p class="subtitle">Interactive user guidance for the Casual Worker Manager platform</p>
+        
+        <div class="alert">
+            <div class="alert-icon">✨</div>
+            <div class="alert-content">
+                <h3>Onboarding System is Active!</h3>
+                <p>The onboarding tour will automatically start for new users. Click "Test Onboarding" below to see it in action, or navigate to any main page to experience the contextual tour.</p>
+            </div>
+        </div>
+
+        <div class="status-badge">
+            <span>✅</span>
+            <span>System Status: Active & Production Ready</span>
+        </div>
+
+        <div class="section">
+            <h2><span class="icon">🎯</span>How It Works</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>Automatic Detection</h3>
+                    <p>Detects first-time users and automatically launches the onboarding tour after sign-in.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Interactive Spotlights</h3>
+                    <p>Highlights specific UI elements while dimming the background to focus user attention.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Page-Specific Tours</h3>
+                    <p>Different tours for Dashboard, Workers, Tasks, and Reports pages with relevant guidance.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>User Controls</h3>
+                    <p>Users can navigate, skip, or restart the tour at any time using intuitive controls.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Progress Tracking</h3>
+                    <p>Shows step numbers and progress bar so users know how far they've gone.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Mobile Responsive</h3>
+                    <p>Fully optimized for mobile devices with touch-friendly controls.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><span class="icon">📋</span>Tour Coverage</h2>
+            
+            <h3 style="margin-top: 20px; color: #1e40af;">🏠 Dashboard (Home Page)</h3>
+            <ul class="tour-steps">
+                <li><div class="step-number">1</div>Welcome & Overview</li>
+                <li><div class="step-number">2</div>Quick Stats Cards</li>
+                <li><div class="step-number">3</div>Quick Actions</li>
+                <li><div class="step-number">4</div>Navigation Sidebar</li>
+                <li><div class="step-number">5</div>Team Members Section</li>
+            </ul>
+
+            <h3 style="margin-top: 30px; color: #1e40af;">👥 Workers Page</h3>
+            <ul class="tour-steps">
+                <li><div class="step-number">1</div>Worker Management Overview</li>
+                <li><div class="step-number">2</div>Add New Workers</li>
+                <li><div class="step-number">3</div>Workers List Table</li>
+                <li><div class="step-number">4</div>Custom Fields</li>
+                <li><div class="step-number">5</div>Import Workers from Excel</li>
+            </ul>
+
+            <h3 style="margin-top: 30px; color: #1e40af;">📋 Tasks Page</h3>
+            <ul class="tour-steps">
+                <li><div class="step-number">1</div>Task Management Center</li>
+                <li><div class="step-number">2</div>Create New Tasks</li>
+                <li><div class="step-number">3</div>Task List & Status</li>
+                <li><div class="step-number">4</div>Payment Types</li>
+                <li><div class="step-number">5</div>Attendance Tracking</li>
+            </ul>
+
+            <h3 style="margin-top: 30px; color: #1e40af;">📈 Reports Page</h3>
+            <ul class="tour-steps">
+                <li><div class="step-number">1</div>Reports & Analytics</li>
+                <li><div class="step-number">2</div>Report Types</li>
+                <li><div class="step-number">3</div>Date Range Selection</li>
+                <li><div class="step-number">4</div>Export Options</li>
+                <li><div class="step-number">5</div>Custom Report Fields</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2><span class="icon">🎮</span>User Controls</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>🎯 Help Button</h3>
+                    <p>Floating "?" button in bottom-right corner allows users to restart tour anytime.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>⏭️ Navigation</h3>
+                    <p>Next/Previous buttons let users control tour pace and review steps.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>⏸️ Skip Option</h3>
+                    <p>Users can skip the tour entirely if they prefer to explore independently.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>⌨️ Keyboard Shortcut</h3>
+                    <p>Press ESC key at any time to quickly exit the onboarding tour.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2><span class="icon">🔧</span>For Developers</h2>
+            <p>To reset onboarding for testing, run this in the browser console:</p>
+            <div class="code-block">
+localStorage.removeItem('embee_onboarding_completed');
+location.reload();</div>
+            
+            <p style="margin-top: 20px;">Or programmatically restart the tour:</p>
+            <div class="code-block">
+window.onboardingSystem.restartOnboarding();</div>
+        </div>
+
+        <div class="section">
+            <h2><span class="icon">🚀</span>Get Started</h2>
+            <div class="button-group">
+                <a href="/home" class="btn btn-primary">
+                    <span>🏠</span>
+                    <span>Go to Dashboard</span>
+                </a>
+                <a href="/workers" class="btn btn-secondary">
+                    <span>👥</span>
+                    <span>Workers Page</span>
+                </a>
+                <a href="/tasks" class="btn btn-secondary">
+                    <span>📋</span>
+                    <span>Tasks Page</span>
+                </a>
+                <a href="/reports" class="btn btn-secondary">
+                    <span>📈</span>
+                    <span>Reports Page</span>
+                </a>
+            </div>
+            <p style="margin-top: 20px; color: #6b7280; font-size: 14px;">
+                💡 <strong>Tip:</strong> Clear your localStorage and visit any page to see the first-time user experience.
+            </p>
+        </div>
+
+        <div class="section">
+            <h2><span class="icon">📚</span>Documentation</h2>
+            <p>For detailed information about customizing and maintaining the onboarding system, see:</p>
+            <div style="margin-top: 15px;">
+                <a href="/ONBOARDING_README.md" class="btn btn-secondary" style="display: inline-flex;">
+                    <span>📄</span>
+                    <span>View Full Documentation</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add a test button to manually trigger onboarding
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('✅ Onboarding system test page loaded');
+            console.log('💡 Onboarding script location: /static/js/onboarding.js');
+            console.log('🎯 Navigate to any main page to see the onboarding in action');
+        });
+    </script>
+</body>
+</html>

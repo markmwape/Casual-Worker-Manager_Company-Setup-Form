@@ -227,7 +227,7 @@ def join_workspace():
                 "code": workspace.workspace_code,
                 "address": workspace.address
             }
-        }), 200
+        }, 200)
         
     except Exception as e:
         logging.error(f"Error joining workspace: {str(e)}")
@@ -1177,6 +1177,86 @@ def legal_compliance_route():
 def logout_route():
     session.clear()
     return redirect(url_for('landing_route'))
+
+@app.route("/onboarding-test")
+def onboarding_test_route():
+    """Test route for the onboarding system"""
+    return render_template("onboarding_test.html")
+
+@app.route('/api/user/onboarding-status', methods=['GET'])
+def get_onboarding_status():
+    """Check if user should see onboarding (first-time user detection)"""
+    try:
+        # Check if user is authenticated
+        if 'user' not in session or 'user_email' not in session['user']:
+            return jsonify({
+                'completed': True,  # Don't show onboarding for unauthenticated users
+                'isFirstTime': False
+            }), 200
+        
+        user_email = session['user']['user_email']
+        user = User.query.filter_by(email=user_email).first()
+        
+        if not user:
+            return jsonify({
+                'completed': True,
+                'isFirstTime': False
+            }), 200
+        
+        # Check if user was created recently (within last 5 minutes = likely first session)
+        from datetime import datetime, timedelta
+        if user.created_at:
+            time_since_creation = datetime.utcnow() - user.created_at
+            is_new_user = time_since_creation < timedelta(minutes=5)
+        else:
+            is_new_user = True  # No creation date = assume new
+        
+        # Check if user has workspaces (new users might not have set up workspaces yet)
+        user_workspaces = UserWorkspace.query.filter_by(user_id=user.id).count()
+        has_minimal_setup = user_workspaces > 0
+        
+        # Additional check: see if user has created any workers or tasks (indicates they've used the system)
+        current_workspace = session.get('current_workspace')
+        has_activity = False
+        
+        if current_workspace and has_minimal_setup:
+            company = Company.query.filter_by(workspace_id=current_workspace['id']).first()
+            if company:
+                workers_count = Worker.query.filter_by(company_id=company.id).count()
+                tasks_count = Task.query.filter_by(company_id=company.id).count()
+                has_activity = workers_count > 0 or tasks_count > 0
+        
+        # Determine if this is a first-time user
+        is_first_time = is_new_user and not has_activity
+        
+        return jsonify({
+            'completed': has_activity,  # If they have activity, they've used the system
+            'isFirstTime': is_first_time,
+            'hasWorkspace': has_minimal_setup,
+            'userAge': time_since_creation.total_seconds() if user.created_at else 0
+        }), 200
+        
+    except Exception as e:
+        logging.error(f"Error checking onboarding status: {str(e)}")
+        # On error, don't show onboarding to be safe
+        return jsonify({
+            'completed': True,
+            'isFirstTime': False
+        }), 200
+
+@app.route('/api/onboarding/reset', methods=['POST'])
+def reset_onboarding():
+    """API endpoint to reset onboarding status for the current user"""
+    try:
+        # This is primarily a client-side feature using localStorage
+        # But we can track it server-side if needed in the future
+        return jsonify({
+            'success': True,
+            'message': 'Onboarding reset successful. Refresh the page to see the tour again.'
+        }), 200
+    except Exception as e:
+        logging.error(f"Error resetting onboarding: {str(e)}")
+        return jsonify({'error': 'Failed to reset onboarding'}), 500
 
 @app.route("/signout")
 def signout():

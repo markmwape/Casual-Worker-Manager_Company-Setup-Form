@@ -418,17 +418,17 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 w-full max-w-6xl pt-8">
+<div class="container mx-auto px-4 w-full max-w-6xl pt-8 tasks-container" data-onboarding="page-container">
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
         <h1 class="text-3xl font-bold text-black">Tasks</h1>
-        <button onclick="openAddTaskModal()" class="btn btn-primary w-full sm:w-auto">
+        <button onclick="openAddTaskModal()" class="btn btn-primary w-full sm:w-auto" data-onboarding="create-task-btn">
             <i class="fas fa-plus mr-2"></i>Create New Task
         </button>
     </div>
 
     <!-- Tasks Grid -->
     {% if tasks %}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8 tasks-table" data-onboarding="tasks-table">
                         {% for task in tasks %}
                         <div class="group relative" onclick="navigateToTask(event, {{ task.id|tojson }})" data-payment-type="{{ task.payment_type|tojson }}" data-task-id="{{ task.id|tojson }}">
                             <div class="task-card bg-white shadow-lg hover:shadow-2xl transition-all duration-300 rounded-2xl border border-gray-200 overflow-visible transform hover:-translate-y-1 cursor-pointer">

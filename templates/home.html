@@ -290,8 +290,7 @@
         {% endif %}
 
         <!-- Stats Cards -->
-                <!-- Stats Cards -->
-        <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+        <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 mb-8" data-onboarding="stats-container">
             <a href="{{ url_for('workers_route') }}" class="stat-card p-8 group cursor-pointer">
                 <div class="flex justify-between items-center">
                     <div>
@@ -343,8 +342,60 @@
                 </div>
             </a>
         </div>
+        
+        <!-- Quick Actions Card -->
+        <div class="dashboard-card rounded-3xl p-8 mb-8" data-onboarding="quick-actions">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="w-16 h-16 bg-gradient-to-br from-emerald-600 to-emerald-800 rounded-2xl flex items-center justify-center shadow-lg">
+                    <i class="fas fa-bolt text-white text-2xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-bold bg-gradient-to-r from-emerald-700 to-emerald-900 bg-clip-text text-transparent mb-1">Quick Actions</h3>
+                    <p class="text-emerald-600">Jump straight into common tasks</p>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <a href="{{ url_for('workers_route') }}" class="quick-action-btn bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 rounded-xl p-6 border-2 border-blue-200 hover:border-blue-300 transition-all duration-200 group">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                            <i class="fas fa-user-plus text-white"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-blue-800 group-hover:text-blue-900">Add Worker</h4>
+                            <p class="text-sm text-blue-600">Register new team member</p>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="{{ url_for('tasks_route') }}" class="quick-action-btn bg-gradient-to-br from-green-50 to-green-100 hover:from-green-100 hover:to-green-200 rounded-xl p-6 border-2 border-green-200 hover:border-green-300 transition-all duration-200 group">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                            <i class="fas fa-plus text-white"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-green-800 group-hover:text-green-900">Create Task</h4>
+                            <p class="text-sm text-green-600">Start a new project</p>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="{{ url_for('tasks_route') }}" class="quick-action-btn bg-gradient-to-br from-orange-50 to-orange-100 hover:from-orange-100 hover:to-orange-200 rounded-xl p-6 border-2 border-orange-200 hover:border-orange-300 transition-all duration-200 group">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                            <i class="fas fa-clipboard-check text-white"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-orange-800 group-hover:text-orange-900">Record Attendance</h4>
+                            <p class="text-sm text-orange-600">Mark worker presence</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+        
         <!-- Team Members Card -->
-        <div class="dashboard-card rounded-3xl p-8 mb-8">
+        <div class="dashboard-card rounded-3xl p-8 mb-8" data-onboarding="team-section">
             <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-6 mb-8">
                 <div class="flex items-center gap-4">
                     <div class="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl flex items-center justify-center shadow-lg">

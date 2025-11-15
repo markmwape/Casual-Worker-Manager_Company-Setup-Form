@@ -184,7 +184,7 @@
     <div class="floating-shape floating-shape-5"></div>
     
     <!-- Main container -->
-    <div class="w-full max-w-md relative z-10">
+    <div class="w-full max-w-md relative z-10 auth-container" data-onboarding="auth-container">
         <!-- Logo and Title -->
         <div class="text-center mb-8">
             <div class="inline-block mb-4 relative">
@@ -265,7 +265,7 @@
                 </button>
 
                 <!-- Create Workspace Link -->
-                <div class="mt-6 pt-6 border-t border-gray-300">
+                <div class="mt-6 pt-6 border-t border-gray-300" data-onboarding="workspace-section">
                     <p class="text-center text-gray-600 text-sm mb-3 font-medium">Don't have a workspace yet?</p>
                     <a href="/create-workspace" class="block w-full py-3 px-4 border-2 border-blue-500 text-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition text-center shadow-md hover:shadow-lg hover:scale-105">
                         <i class="fas fa-plus mr-2"></i>Create New Workspace
@@ -521,5 +521,6 @@
             });
         }
     </script>
+    <script src="{{ url_for('static', filename='js/onboarding.js') }}"></script>
 </body>
 </html>

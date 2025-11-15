@@ -69,29 +69,36 @@ def get_user_workspaces():
     """Get all workspaces associated with a user's email"""
     try:
         data = request.get_json()
-        logging.info(f"Get user workspaces request data: {data}")
+        logging.info(f"=== GET USER WORKSPACES CALLED ===")
+        logging.info(f"Request data: {data}")
         
         email = data.get('email', '').strip().lower()
+        logging.info(f"Normalized email: {email}")
         
         if not email:
             return jsonify({"error": "Email is required"}), 400
         
         # Find user by email
         user = User.query.filter_by(email=email).first()
+        logging.info(f"User lookup result: {user.email if user else 'User not found'}")
         
         # If user doesn't exist, create them (they might be signing in for first time)
         if not user:
             user = User(email=email, profile_picture="")
             db.session.add(user)
             db.session.commit()
-            logging.info(f"Created new user during workspace lookup: {email}")
+            logging.info(f"Created new user during workspace lookup: {email} (ID: {user.id})")
+        else:
+            logging.info(f"Found existing user: {email} (ID: {user.id})")
         
         workspaces_data = []
         processed_workspace_ids = set()
         
         # Get all workspaces this user already has explicit access to
         user_workspaces = UserWorkspace.query.filter_by(user_id=user.id).all()
+        logging.info(f"=== CHECKING UserWorkspace TABLE ===")
         logging.info(f"Found {len(user_workspaces)} workspace memberships for user {email} (ID: {user.id})")
+        logging.info(f"UserWorkspace records: {[(uw.workspace_id, uw.role) for uw in user_workspaces]}")
         
         for uw in user_workspaces:
             workspace = uw.workspace
@@ -191,7 +198,12 @@ def associate_workspace_email():
         workspace_id = data.get('workspace_id')
         email = data.get('email', '').strip().lower()
         
+        logging.info(f"=== ASSOCIATE EMAIL CALLED ===")
+        logging.info(f"Request data: {data}")
+        logging.info(f"workspace_id: {workspace_id}, email: {email}")
+        
         if not workspace_id or not email:
+            logging.error(f"Missing required data - workspace_id: {workspace_id}, email: {email}")
             return jsonify({"error": "workspace_id and email are required"}), 400
         
         logging.info(f"Associating email {email} with workspace ID {workspace_id}")
@@ -199,8 +211,13 @@ def associate_workspace_email():
         # Get the workspace
         workspace = Workspace.query.get(workspace_id)
         if not workspace:
-            logging.error(f"Workspace {workspace_id} not found")
+            logging.error(f"Workspace {workspace_id} not found in database")
+            # List all workspaces for debugging
+            all_workspaces = Workspace.query.all()
+            logging.error(f"All workspaces in DB: {[(w.id, w.name, w.company_email) for w in all_workspaces]}")
             return jsonify({"error": "Workspace not found"}), 404
+        
+        logging.info(f"Found workspace: {workspace.name}, company_email: {workspace.company_email}, created_by: {workspace.created_by}")
         
         # Get or create the user with this email
         user = User.query.filter_by(email=email).first()
@@ -225,11 +242,15 @@ def associate_workspace_email():
         
         # Check if workspace has a placeholder admin
         placeholder_email = f"pending_{workspace.company_email}"
+        logging.info(f"Looking for placeholder user: {placeholder_email}")
         placeholder_user = User.query.filter_by(email=placeholder_email).first()
+        
+        logging.info(f"Placeholder user found: {placeholder_user.email if placeholder_user else 'None'}")
+        logging.info(f"Workspace created_by: {workspace.created_by}, Placeholder user ID: {placeholder_user.id if placeholder_user else 'None'}")
         
         if placeholder_user and workspace.created_by == placeholder_user.id:
             # This workspace is waiting for its admin - transfer ownership
-            logging.info(f"Transferring workspace {workspace.name} ownership from placeholder to {email}")
+            logging.info(f"✓ TRANSFERRING OWNERSHIP: workspace {workspace.name} from {placeholder_email} to {email}")
             
             workspace.created_by = user.id
             
@@ -237,6 +258,7 @@ def associate_workspace_email():
             company = Company.query.filter_by(workspace_id=workspace.id).first()
             if company and company.created_by == placeholder_user.id:
                 company.created_by = user.id
+                logging.info(f"✓ Updated company ownership to user {user.id}")
             
             # Create UserWorkspace with Admin role
             user_workspace = UserWorkspace(
@@ -245,13 +267,20 @@ def associate_workspace_email():
                 role='Admin'
             )
             db.session.add(user_workspace)
+            logging.info(f"✓ Created UserWorkspace: user_id={user.id}, workspace_id={workspace.id}, role=Admin")
             
             # Delete placeholder user
             db.session.delete(placeholder_user)
+            logging.info(f"✓ Deleted placeholder user: {placeholder_email}")
             
             db.session.commit()
+            logging.info(f"✓ COMMITTED: All changes saved to database")
             
-            logging.info(f"Successfully associated email {email} with workspace {workspace.name} as Admin")
+            # Verify the UserWorkspace was created
+            verify_uw = UserWorkspace.query.filter_by(user_id=user.id, workspace_id=workspace.id).first()
+            logging.info(f"✓ VERIFICATION: UserWorkspace exists: {verify_uw is not None}, Role: {verify_uw.role if verify_uw else 'N/A'}")
+            
+            logging.info(f"✓✓✓ Successfully associated email {email} with workspace {workspace.name} as Admin ✓✓✓")
             
             return jsonify({
                 "success": True,

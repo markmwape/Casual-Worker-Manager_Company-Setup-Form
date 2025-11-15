@@ -624,18 +624,58 @@
         }
     }
     
-    // Load trial information
+    // Load trial information and start countdown timer
     function loadTrialInfo() {
         fetch('/api/trial-info')
             .then(response => response.json())
             .then(data => {
                 const trialInfoElement = document.getElementById('trial-info');
-                if (trialInfoElement && data.success) {
-                    if (data.days_remaining > 0) {
-                        trialInfoElement.innerHTML = `${data.days_remaining} days remaining`;
+                if (trialInfoElement && data.success && data.trial_end_date) {
+                    const trialEndDate = new Date(data.trial_end_date + 'T23:59:59');
+                    
+                    // Start countdown timer
+                    const updateCountdown = () => {
+                        const now = new Date();
+                        const timeLeft = trialEndDate - now;
+                        
+                        if (timeLeft <= 0) {
+                            trialInfoElement.innerHTML = `<span class="text-red-600 font-medium">Expired</span>`;
+                            return;
+                        }
+                        
+                        const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+                        const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+                        
+                        let countdownText = '';
+                        if (days > 0) {
+                            countdownText = `<span class="font-mono">${days}d ${hours}h ${minutes}m ${seconds}s</span> remaining`;
+                        } else if (hours > 0) {
+                            countdownText = `<span class="font-mono">${hours}h ${minutes}m ${seconds}s</span> remaining`;
+                        } else if (minutes > 0) {
+                            countdownText = `<span class="font-mono">${minutes}m ${seconds}s</span> remaining`;
+                        } else {
+                            countdownText = `<span class="font-mono">${seconds}s</span> remaining`;
+                        }
+                        
+                        // Add warning color if less than 7 days remaining
+                        if (days <= 7) {
+                            trialInfoElement.innerHTML = `<span class="text-orange-600 font-medium">${countdownText}</span>`;
+                        } else {
+                            trialInfoElement.innerHTML = countdownText;
+                        }
+                    };
+                    
+                    // Update immediately and then every second
+                    updateCountdown();
+                    setInterval(updateCountdown, 1000);
+                    
+                } else if (trialInfoElement) {
+                    if (data.success && data.days_remaining <= 0) {
+                        trialInfoElement.innerHTML = `<span class="text-red-600 font-medium">Expired</span>`;
                     } else {
-                        trialInfoElement.innerHTML = `Expired`;
-                        trialInfoElement.className = 'text-red-600 font-medium';
+                        trialInfoElement.innerHTML = 'Active';
                     }
                 }
             })

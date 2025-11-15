@@ -853,6 +853,44 @@
             return /^[\+]?[1-9][\d]{0,15}$/.test(cleanPhone);
         }
 
+        function showSuccessModal(title, message, onClose) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+            modal.style.fontFamily = 'Inter, sans-serif';
+            
+            modal.innerHTML = `
+                <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+                    <div class="p-6 text-center">
+                        <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mb-4 mx-auto shadow-lg animate-pulse">
+                            <i class="fas fa-check text-3xl text-white"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2">${title}</h3>
+                        <p class="text-gray-600 mb-6">${message}</p>
+                        <button id="success-modal-ok" class="btn w-full text-lg font-semibold bg-green-500 hover:bg-green-600 text-white border-0 py-3 rounded-lg shadow-lg">
+                            <i class="fas fa-arrow-right mr-2"></i>
+                            Continue to Sign In
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            const okBtn = modal.querySelector('#success-modal-ok');
+            okBtn.addEventListener('click', () => {
+                modal.remove();
+                if (onClose) onClose();
+            });
+            
+            // Auto-close after 3 seconds
+            setTimeout(() => {
+                if (document.body.contains(modal)) {
+                    modal.remove();
+                    if (onClose) onClose();
+                }
+            }, 3000);
+        }
+
         // Real-time validation
         function addValidationFeedback() {
             const companyName = document.getElementById('company-name');
@@ -980,9 +1018,14 @@
                     // Store workspace data for later use in sessionStorage
                     sessionStorage.setItem('pending_workspace', JSON.stringify(data.workspace));
                     
-                    // Show success and redirect to sign-in
-                    alert(`Workspace "${data.workspace.name}" created! Proceeding to sign in...`);
-                    window.location.href = '/signin';
+                    // Show success modal and redirect to sign-in
+                    showSuccessModal(
+                        'Workspace Created!', 
+                        `Your workspace "${data.workspace.name}" has been successfully created. You will now be redirected to sign in.`,
+                        () => {
+                            window.location.href = '/signin';
+                        }
+                    );
                 } else {
                     throw new Error(data.error || 'Failed to create workspace');
                 }

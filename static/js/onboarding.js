@@ -42,14 +42,16 @@ class EnhancedOnboardingSystem {
         if (path === '/signin' || path === '/finishSignin') return 'signin';
         if (path === '/home' || path === '/') return 'home';
         if (path === '/workers') return 'workers';
-        if (path === '/tasks' || path.includes('/task/')) return 'tasks';
         if (path === '/reports') return 'reports';
-        // Specific task tracking pages
-        if (path.includes('/task_attendance')) return 'task_attendance';
-        if (path.includes('/task_hours_worked')) return 'task_hours_worked';
-        if (path.includes('/task_units_completed')) return 'task_units_completed';
-        // Legacy/fallback
-        if (path.includes('/attendance')) return 'attendance';
+        
+        // Specific task tracking pages - check these BEFORE general /task/ check
+        if (path.includes('/attendance')) return 'task_attendance';
+        if (path.includes('/hours-worked')) return 'task_hours_worked';
+        if (path.includes('/units-completed')) return 'task_units_completed';
+        
+        // General task pages (but not the specific tracking pages above)
+        if (path === '/tasks' || (path.includes('/task/') && !path.includes('/attendance') && !path.includes('/hours-worked') && !path.includes('/units-completed'))) return 'tasks';
+        
         return 'unknown';
     }
     
@@ -213,8 +215,13 @@ class EnhancedOnboardingSystem {
     }
     
     startOnboarding() {
+        console.log('=== STARTING ONBOARDING ===');
+        console.log('Current page:', this.currentPage);
+        console.log('Flow exists:', !!this.flows[this.currentPage]);
+        
         if (!this.flows[this.currentPage]) {
-            console.warn(`No onboarding flow for: ${this.currentPage}`);
+            console.warn(`❌ No onboarding flow for: ${this.currentPage}`);
+            console.log('Available flows:', Object.keys(this.flows));
             return;
         }
         
@@ -226,9 +233,11 @@ class EnhancedOnboardingSystem {
             'dialog[open]:not(#date-picker-modal):not(#format-selection-modal)'
         );
         if (modalOpen) {
-            console.log('Modal is open, skipping onboarding');
+            console.log('❌ Modal is open, skipping onboarding:', modalOpen);
             return;
         }
+        
+        console.log('✅ Starting onboarding tour with', this.flows[this.currentPage].length, 'steps');
         
         this.isActive = true;
         this.currentStep = 0;
@@ -817,16 +826,63 @@ class EnhancedOnboardingSystem {
         sessionStorage.removeItem('embee_onboarding_completed');
         sessionStorage.setItem('user_session_started', 'true');
         
-        // Debug: Log current page and flow availability
-        console.log('Restarting onboarding for page:', this.currentPage);
-        console.log('Flow available:', !!this.flows[this.currentPage]);
-        console.log('Flow steps:', this.flows[this.currentPage]?.length);
-        
         // Ensure we have the correct current page
         this.currentPage = this.getCurrentPage();
         
-        // Start onboarding immediately
-        this.startOnboarding();
+        // Debug: Log current page and flow availability
+        console.log('=== ONBOARDING DEBUG ===');
+        console.log('Current URL:', window.location.pathname);
+        console.log('Detected page:', this.currentPage);
+        console.log('Available flows:', Object.keys(this.flows));
+        console.log('Flow available for current page:', !!this.flows[this.currentPage]);
+        console.log('Flow steps:', this.flows[this.currentPage]?.length);
+        
+        if (this.flows[this.currentPage]) {
+            console.log('Flow steps details:');
+            this.flows[this.currentPage].forEach((step, i) => {
+                console.log(`  Step ${i + 1}: ${step.title} - Selector: ${step.selector}`);
+                if (step.selector) {
+                    const element = document.querySelector(step.selector);
+                    console.log(`    Element found: ${!!element}`);
+                }
+            });
+        }
+        console.log('========================');
+        
+        // For manual restart, force start even if modals are detected
+        this.forceStartOnboarding();
+    }
+    
+    forceStartOnboarding() {
+        console.log('=== FORCE STARTING ONBOARDING ===');
+        console.log('Current page:', this.currentPage);
+        
+        if (!this.flows[this.currentPage]) {
+            console.warn(`❌ No onboarding flow for: ${this.currentPage}`);
+            console.log('Available flows:', Object.keys(this.flows));
+            return;
+        }
+        
+        this.isActive = true;
+        this.currentStep = 0;
+        this.totalSteps = this.flows[this.currentPage].length;
+        
+        this.overlay.classList.add('active');
+        this.showStep(0);
+        
+        document.body.style.overflow = 'hidden';
+        document.documentElement.style.overflow = 'hidden';
+        
+        // Prevent scroll and re-position spotlight on any scroll attempt
+        this.scrollHandler = () => this.updateSpotlightPosition();
+        this.wheelHandler = (e) => e.preventDefault();
+        this.touchmoveHandler = (e) => e.preventDefault();
+        
+        window.addEventListener('scroll', this.scrollHandler, true);
+        window.addEventListener('wheel', this.wheelHandler, { passive: false });
+        window.addEventListener('touchmove', this.touchmoveHandler, { passive: false });
+        
+        console.log('✅ Force started onboarding tour with', this.totalSteps, 'steps');
     }
     
     skipOnboarding() {
@@ -1346,8 +1402,13 @@ document.addEventListener('DOMContentLoaded', function() {
     styleSheet.textContent = onboardingStyles;
     document.head.appendChild(styleSheet);
     
+    // Initialize onboarding system
     window.onboardingSystem = new EnhancedOnboardingSystem();
-    addHelpButton();
+    
+    // Add help button with a small delay to ensure page is fully loaded
+    setTimeout(() => {
+        addHelpButton();
+    }, 500);
 });
 
 function addHelpButton() {
@@ -1359,7 +1420,7 @@ function addHelpButton() {
     
     const helpButton = document.createElement('button');
     helpButton.className = 'onboarding-help-button';
-    helpButton.innerHTML = '<i class="fas fa-question"></i>';
+    helpButton.innerHTML = '?';
     helpButton.title = 'Replay tour - Learn how to use all features';
     helpButton.setAttribute('aria-label', 'Start onboarding tour');
     

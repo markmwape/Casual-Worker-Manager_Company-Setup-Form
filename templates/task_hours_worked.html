@@ -48,9 +48,9 @@
         opacity: 1;
     }
 </style>
-<div class="container mx-auto px-4 w-full max-w-6xl pt-8">
+<div class="container mx-auto px-4 w-full max-w-6xl pt-8 hours-worked-container" data-onboarding="hours-worked-container">
     <!-- Desktop header and actions -->
-    <div class="hidden lg:flex items-center justify-between mb-6">
+    <div class="hidden lg:flex items-center justify-between mb-6" data-onboarding="page-header">
         <div>
             <div class="text-2xl font-bold text-primary flex items-center gap-3">
                 Hours Worked
@@ -169,7 +169,7 @@
                     You cannot select a date before the task's start date ({{ task.start_date.strftime('%Y-%m-%d') }}).
                 </div>
                 <form id="hoursForm">
-                    <table class="table w-full">
+                    <table class="table w-full hours-table" data-onboarding="hours-table">
                         <thead>
                             <tr>
                                 <th>Name</th>
@@ -183,14 +183,14 @@
                             >
                                 <td>{{ record.worker.first_name }} {{ record.worker.last_name }}</td>
                                 <td>
-                                    <input type="number" min="0" step="0.5" name="hours_{{ record.worker.id }}" class="input input-bordered w-32" value="{{ record.hours_worked if record.hours_worked is not none else '' }}" placeholder="e.g. 8.5" inputmode="decimal">
+                                    <input type="number" min="0" step="0.5" name="hours_{{ record.worker.id }}" class="input input-bordered w-32" value="{{ record.hours_worked if record.hours_worked is not none else '' }}" placeholder="e.g. 8.5" inputmode="decimal" data-onboarding="hours-input">
                                 </td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                     <div class="mt-4 flex justify-end">
-                        <button type="button" onclick="saveHoursWorked('{{ task.id }}')" class="btn btn-primary">
+                        <button type="button" onclick="saveHoursWorked('{{ task.id }}')" class="btn btn-primary" data-onboarding="save-hours-btn">
                             <i data-feather="save" class="mr-2"></i>Save
                         </button>
                     </div>

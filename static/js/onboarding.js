@@ -19,7 +19,10 @@ class EnhancedOnboardingSystem {
             'workers': this.getWorkersFlow(),
             'tasks': this.getTasksFlow(),
             'reports': this.getReportsFlow(),
-            'attendance': this.getAttendanceFlow()
+            'attendance': this.getAttendanceFlow(),
+            'task_attendance': this.getTaskAttendanceFlow(),
+            'task_hours_worked': this.getTaskHoursWorkedFlow(),
+            'task_units_completed': this.getTaskUnitsCompletedFlow()
         };
         
         this.init();
@@ -29,6 +32,8 @@ class EnhancedOnboardingSystem {
         this.createOverlay();
         this.createTooltip();
         this.bindEvents();
+        console.log('Onboarding system initialized for page:', this.currentPage);
+        console.log('Available flows:', Object.keys(this.flows));
         this.checkAndStartOnboarding();
     }
     
@@ -39,7 +44,12 @@ class EnhancedOnboardingSystem {
         if (path === '/workers') return 'workers';
         if (path === '/tasks' || path.includes('/task/')) return 'tasks';
         if (path === '/reports') return 'reports';
-        if (path.includes('/attendance') || path.includes('/task_attendance')) return 'attendance';
+        // Specific task tracking pages
+        if (path.includes('/task_attendance')) return 'task_attendance';
+        if (path.includes('/task_hours_worked')) return 'task_hours_worked';
+        if (path.includes('/task_units_completed')) return 'task_units_completed';
+        // Legacy/fallback
+        if (path.includes('/attendance')) return 'attendance';
         return 'unknown';
     }
     
@@ -54,9 +64,12 @@ class EnhancedOnboardingSystem {
         if (currentPage === 'unknown') return false;
         
         // Check if a modal is open - don't show onboarding
+        // Exclude date-picker-modal and format-selection-modal as they're part of the page
         const modalOpen = document.querySelector(
-            '.modal.show, .modal.active, [role="dialog"][aria-hidden="false"], ' +
-            'dialog[open], .fixed.inset-0[style*="display"]:not([style*="display: none"])'
+            '.modal.show:not(#date-picker-modal):not(#format-selection-modal), ' +
+            '.modal.active:not(#date-picker-modal):not(#format-selection-modal), ' +
+            '[role="dialog"][aria-hidden="false"]:not(#date-picker-modal):not(#format-selection-modal), ' +
+            'dialog[open]:not(#date-picker-modal):not(#format-selection-modal)'
         );
         if (modalOpen) return false;
         
@@ -205,10 +218,12 @@ class EnhancedOnboardingSystem {
             return;
         }
         
-        // Don't start if a modal is currently open
+        // Don't start if a modal is currently open (exclude date-picker and format-selection modals)
         const modalOpen = document.querySelector(
-            '.modal.show, .modal.active, [role="dialog"][aria-hidden="false"], ' +
-            'dialog[open], .fixed.inset-0[style*="display"]:not([style*="display: none"])'
+            '.modal.show:not(#date-picker-modal):not(#format-selection-modal), ' +
+            '.modal.active:not(#date-picker-modal):not(#format-selection-modal), ' +
+            '[role="dialog"][aria-hidden="false"]:not(#date-picker-modal):not(#format-selection-modal), ' +
+            'dialog[open]:not(#date-picker-modal):not(#format-selection-modal)'
         );
         if (modalOpen) {
             console.log('Modal is open, skipping onboarding');
@@ -310,6 +325,11 @@ class EnhancedOnboardingSystem {
     positionElements(step) {
         const target = step.selector ? document.querySelector(step.selector) : null;
         
+        // Debug: Log selector and element found
+        if (step.selector && !target) {
+            console.warn('Onboarding element not found:', step.selector);
+        }
+        
         // Remove highlight class from previous element
         document.querySelectorAll('.onboarding-highlight').forEach(el => {
             el.classList.remove('onboarding-highlight');
@@ -336,6 +356,7 @@ class EnhancedOnboardingSystem {
             
             this.positionTooltip(rect, step.position || 'bottom');
         } else {
+            console.log('Centering tooltip - no target element or element not visible');
             this.centerTooltip();
         }
     }
@@ -587,29 +608,32 @@ class EnhancedOnboardingSystem {
             {
                 title: "Generate Reports 📈",
                 description: "Create payroll, attendance, and performance reports for payouts and analysis.",
-                selector: ".reports-container, .page-container",
-                padding: 8
-            },
-            {
-                title: "Report Types",
-                description: "Choose how to calculate: Per Day, Per Hour, or Per Unit. Matches your payment structure.",
-                selector: "[data-onboarding='report-types'], .report-type-selector, .report-tabs",
-                position: "bottom",
-                padding: 8
+                selector: "[data-onboarding='page-container']",
+                padding: 8,
+                position: "bottom"
             },
             {
                 title: "Select Date Range",
-                description: "Pick your reporting period: daily, weekly, or custom date range.",
-                selector: "[data-onboarding='date-range'], .date-inputs, .date-picker",
+                description: "Pick your reporting period: daily, weekly, or custom date range. Click on the date fields to select dates.",
+                selector: "[data-onboarding='date-range']",
+                position: "bottom",
+                padding: 12,
+                scrollToElement: false
+            },
+            {
+                title: "Report Types",
+                description: "Choose how to calculate: Per Day (daily wages), Per Hour (hourly rates), or Per Unit (piece-rate work). Each report type matches your payment structure.",
+                selector: "[data-onboarding='report-types']",
                 position: "top",
-                padding: 8
+                padding: 12,
+                scrollToElement: true
             },
             {
                 title: "Export & Download",
-                description: "Download as CSV or Excel for accounting, payroll, or record-keeping.",
-                selector: "[data-onboarding='export-buttons'], .export-options, .download-btn",
-                position: "left",
-                padding: 8,
+                description: "Download reports as CSV or Excel for accounting, payroll, or record-keeping. Click these buttons to export your data.",
+                selector: "[data-onboarding='export-buttons']",
+                position: "top",
+                padding: 12,
                 scrollToElement: true
             }
         ];
@@ -655,11 +679,151 @@ class EnhancedOnboardingSystem {
         ];
     }
     
+    getTaskAttendanceFlow() {
+        return [
+            {
+                title: "Mark Daily Attendance 📋",
+                description: "Track who shows up each day. This page is for marking workers as Present or Absent, which affects their daily or unit-based payments.",
+                selector: "[data-onboarding='attendance-container']",
+                padding: 10,
+                position: "bottom"
+            },
+            {
+                title: "Select Date",
+                description: "Choose the date you want to record attendance for. You can navigate between dates using the arrows or select a specific date from the calendar.",
+                selector: "#taskDateInput",
+                position: "bottom",
+                padding: 12,
+                scrollToElement: false
+            },
+            {
+                title: "Worker List",
+                description: "All workers assigned to this task are listed here. You'll mark each one as Present or Absent, or enter units completed if it's a piece-rate task.",
+                selector: "[data-onboarding='attendance-table']",
+                position: "top",
+                padding: 12,
+                scrollToElement: true
+            },
+            {
+                title: "Mark Present or Absent",
+                description: "Click 'Present' if the worker showed up, or 'Absent' if they didn't. For piece-rate tasks, enter the number of units they completed instead.",
+                selector: "[data-onboarding='attendance-checkbox']",
+                position: "right",
+                padding: 12,
+                scrollToElement: true
+            },
+            {
+                title: "Save Attendance",
+                description: "Click Save when you're done marking attendance. This data will automatically appear in your reports and be used for payroll calculations.",
+                selector: "[data-onboarding='save-attendance']",
+                position: "top",
+                padding: 12,
+                scrollToElement: true
+            }
+        ];
+    }
+    
+    getTaskHoursWorkedFlow() {
+        return [
+            {
+                title: "Record Hours Worked ⏰",
+                description: "Track the exact hours each worker spent on this task. Perfect for hourly-rate jobs where payment is based on time worked.",
+                selector: "[data-onboarding='hours-worked-container']",
+                padding: 10,
+                position: "bottom"
+            },
+            {
+                title: "Select Date",
+                description: "Pick the date you're recording hours for. Use the arrows to navigate between days or select a specific date.",
+                selector: "#taskDateInput",
+                position: "bottom",
+                padding: 12,
+                scrollToElement: false
+            },
+            {
+                title: "Worker Hours List",
+                description: "Here's your list of workers. You'll enter the hours each person worked (e.g., 8, 8.5, or 4.5 hours).",
+                selector: "[data-onboarding='hours-table']",
+                position: "top",
+                padding: 12,
+                scrollToElement: true
+            },
+            {
+                title: "Enter Hours",
+                description: "Type the number of hours worked by each worker. You can use decimals (e.g., 8.5 for 8 hours 30 minutes). Payment will be calculated by multiplying hours × hourly rate.",
+                selector: "[data-onboarding='hours-input']",
+                position: "right",
+                padding: 12,
+                scrollToElement: true
+            },
+            {
+                title: "Save Hours",
+                description: "Click Save to record all hours. The system will automatically calculate payments based on each worker's hourly rate and show the data in your reports.",
+                selector: "[data-onboarding='save-hours-btn']",
+                position: "top",
+                padding: 12,
+                scrollToElement: true
+            }
+        ];
+    }
+    
+    getTaskUnitsCompletedFlow() {
+        return [
+            {
+                title: "Track Units Completed 📦",
+                description: "Record how many pieces, units, or items each worker completed. Ideal for piece-rate or production-based payment systems.",
+                selector: "[data-onboarding='units-completed-container']",
+                padding: 10,
+                position: "bottom"
+            },
+            {
+                title: "Select Date",
+                description: "Choose the date for recording completed units. Navigate through dates using arrows or pick from the calendar.",
+                selector: "#taskDateInput",
+                position: "bottom",
+                padding: 12,
+                scrollToElement: false
+            },
+            {
+                title: "Worker Production List",
+                description: "All assigned workers are shown here. You'll enter how many units, pieces, or items each worker completed.",
+                selector: "[data-onboarding='units-table']",
+                position: "top",
+                padding: 12,
+                scrollToElement: true
+            },
+            {
+                title: "Enter Units",
+                description: "Type the number of units completed by each worker (e.g., 50, 100, 25). This should be a whole number. Payment = units × per-unit rate.",
+                selector: "[data-onboarding='units-input']",
+                position: "right",
+                padding: 12,
+                scrollToElement: true
+            },
+            {
+                title: "Save Units",
+                description: "Click Save to record all completed units. The system calculates payments automatically (units × rate per unit) and includes this in your reports.",
+                selector: "[data-onboarding='save-units-btn']",
+                position: "top",
+                padding: 12,
+                scrollToElement: true
+            }
+        ];
+    }
+    
     restartOnboarding() {
         // Clear all onboarding completion flags
         localStorage.removeItem('embee_onboarding_completed');
         sessionStorage.removeItem('embee_onboarding_completed');
         sessionStorage.setItem('user_session_started', 'true');
+        
+        // Debug: Log current page and flow availability
+        console.log('Restarting onboarding for page:', this.currentPage);
+        console.log('Flow available:', !!this.flows[this.currentPage]);
+        console.log('Flow steps:', this.flows[this.currentPage]?.length);
+        
+        // Ensure we have the correct current page
+        this.currentPage = this.getCurrentPage();
         
         // Start onboarding immediately
         this.startOnboarding();
@@ -1201,12 +1365,17 @@ function addHelpButton() {
     
     helpButton.addEventListener('click', (e) => {
         e.preventDefault();
+        e.stopPropagation();
+        console.log('Help button clicked - starting onboarding tour');
         if (window.onboardingSystem) {
             window.onboardingSystem.restartOnboarding();
+        } else {
+            console.error('Onboarding system not initialized');
         }
     });
     
     document.body.appendChild(helpButton);
+    console.log('Help button added to page');
     
     // Always keep the button visible, hide only during active onboarding
     const observer = new MutationObserver(() => {

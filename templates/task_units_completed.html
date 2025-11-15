@@ -46,9 +46,9 @@
         opacity: 1;
     }
 </style>
-<div class="container mx-auto px-4 w-full max-w-6xl pt-8">
+<div class="container mx-auto px-4 w-full max-w-6xl pt-8 units-completed-container" data-onboarding="units-completed-container">
     <!-- Desktop header and actions -->
-    <div class="hidden lg:flex items-center justify-between mb-6">
+    <div class="hidden lg:flex items-center justify-between mb-6" data-onboarding="page-header">
         <div class="text-2xl font-bold text-primary flex items-center gap-3">
             Units Completed: {{ task.name }}
             <span class="tooltip" data-tip="Record units completed for piece-rate calculation. Enter the total number of units/pieces finished to calculate accurate payments.">
@@ -163,7 +163,7 @@
                     You cannot select a date before the task's start date ({{ task.start_date.strftime('%Y-%m-%d') }}).
                 </div>
                 <form id="unitsForm">
-                    <table class="table w-full">
+                    <table class="table w-full units-table" data-onboarding="units-table">
                         <thead>
                             <tr>
                                 <th>Name</th>
@@ -177,14 +177,14 @@
                             >
                                 <td>{{ record.worker.first_name }} {{ record.worker.last_name }}</td>
                                 <td>
-                                    <input type="number" min="0" step="1" name="units_{{ record.worker.id }}" class="input input-bordered w-32" value="{{ (record.units_completed or '')|int if record.units_completed is not none else '' }}" placeholder="e.g. 5" inputmode="numeric" pattern="[0-9]*">
+                                    <input type="number" min="0" step="1" name="units_{{ record.worker.id }}" class="input input-bordered w-32" value="{{ (record.units_completed or '')|int if record.units_completed is not none else '' }}" placeholder="e.g. 5" inputmode="numeric" pattern="[0-9]*" data-onboarding="units-input">
                                 </td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                     <div class="mt-4 flex justify-end">
-                        <button type="button" onclick="saveUnitsCompleted('{{ task.id }}')" class="btn btn-primary">
+                        <button type="button" onclick="saveUnitsCompleted('{{ task.id }}')" class="btn btn-primary" data-onboarding="save-units-btn">
                             <i data-feather="save" class="mr-2"></i>Save
                         </button>
                     </div>

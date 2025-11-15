@@ -347,19 +347,16 @@
                     handleCodeInApp: true,
                 };
 
-                console.log('Sending sign-in link to:', email);
-                await sendSignInLinkToEmail(window.firebaseAuth, email, actionCodeSettings);
-                console.log('Sign-in link sent successfully');
-                localStorage.setItem('emailForSignIn', email);
-                
-                // Save email to database and associate with pending workspace
-                try {
-                    const pendingWorkspace = sessionStorage.getItem('pending_workspace') || localStorage.getItem('pending_workspace');
-                    if (pendingWorkspace) {
-                        const workspaceData = JSON.parse(pendingWorkspace);
-                        console.log('Associating email with workspace:', email, workspaceData.name);
-                        
-                        await fetch('/api/workspace/associate-email', {
+                // CRITICAL: Associate email with workspace BEFORE sending link
+                // This ensures cross-browser/cross-device sign-in works
+                const pendingWorkspace = sessionStorage.getItem('pending_workspace') || localStorage.getItem('pending_workspace');
+                if (pendingWorkspace) {
+                    const workspaceData = JSON.parse(pendingWorkspace);
+                    console.log('🔗 Associating email with workspace in DATABASE:', email, workspaceData.name);
+                    console.log('This allows sign-in from ANY browser/device');
+                    
+                    try {
+                        const associateResponse = await fetch('/api/workspace/associate-email', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
@@ -367,12 +364,26 @@
                                 email: email
                             })
                         });
-                        console.log('Email successfully associated with workspace');
+                        
+                        if (associateResponse.ok) {
+                            console.log('✅ Email successfully associated with workspace in database');
+                        } else {
+                            const errorData = await associateResponse.json();
+                            console.error('❌ Failed to associate email:', errorData);
+                            showError(errorData.message || 'Failed to associate email with workspace');
+                            return;
+                        }
+                    } catch (error) {
+                        console.error('Error associating email with workspace:', error);
+                        showError('Failed to prepare workspace. Please try again.');
+                        return;
                     }
-                } catch (error) {
-                    console.warn('Could not associate email with workspace:', error);
-                    // Don't fail the whole flow if this fails
                 }
+                
+                console.log('Sending sign-in link to:', email);
+                await sendSignInLinkToEmail(window.firebaseAuth, email, actionCodeSettings);
+                console.log('Sign-in link sent successfully');
+                localStorage.setItem('emailForSignIn', email);
                 
                 showSuccess('✉️ Sign-in link sent! Check your email inbox. If you don\'t see it, check your SPAM/JUNK folder!');
             } catch (error) {
@@ -403,10 +414,12 @@
                 
                 if (workspaceData) {
                     console.log('Found pending workspace, associating with Google account:', workspaceData.name);
+                    console.log('Workspace email:', workspaceData.company_email || 'Not set');
+                    console.log('Google email:', user.email);
                     
                     // Associate this Google email with the workspace first
                     try {
-                        await fetch('/api/workspace/associate-email', {
+                        const associateResponse = await fetch('/api/workspace/associate-email', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
@@ -414,10 +427,20 @@
                                 email: user.email
                             })
                         });
-                        console.log('Google email successfully associated with workspace');
+                        
+                        if (associateResponse.ok) {
+                            console.log('✅ Google email successfully associated with workspace');
+                        } else {
+                            const errorData = await associateResponse.json();
+                            console.error('❌ Failed to associate Google email:', errorData);
+                            throw new Error(errorData.message || 'Failed to associate workspace');
+                        }
                     } catch (error) {
-                        console.warn('Could not associate Google email with workspace:', error);
-                        // Don't fail the whole flow if this fails
+                        console.error('Error associating Google email with workspace:', error);
+                        showError(error.message || 'Failed to prepare workspace. Please try again.');
+                        googleBtn.disabled = false;
+                        googleBtn.innerHTML = '<i class="fab fa-google"></i> Sign in with Google';
+                        return;
                     }
                     
                     // User just created a workspace, use it directly without showing selection

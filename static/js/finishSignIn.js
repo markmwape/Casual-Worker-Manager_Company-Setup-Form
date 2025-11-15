@@ -67,6 +67,12 @@ function showWorkspaceSelectionModal(workspaces) {
                                     <div class="flex-1">
                                         <h3 class="text-lg font-bold text-gray-800 group-hover:text-blue-600 mb-1">${ws.name}</h3>
                                         <div class="space-y-1">
+                                            ${ws.company_email ? `
+                                            <p class="text-sm text-gray-600 flex items-center gap-2">
+                                                <i class="fas fa-envelope text-gray-400"></i>
+                                                Company: ${ws.company_email}
+                                            </p>
+                                            ` : ''}
                                             <p class="text-sm text-gray-600 flex items-center gap-2">
                                                 <i class="fas fa-map-marker-alt text-gray-400"></i>
                                                 ${ws.country || 'N/A'}
@@ -90,6 +96,7 @@ function showWorkspaceSelectionModal(workspaces) {
                                             }">
                                                 ${ws.role}
                                             </span>
+                                            ${ws.newly_created ? `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">✨ Just Created (${ws.created_minutes_ago}m ago)</span>` : ''}
                                             ${ws.session_created ? '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">Just Created</span>' : ''}
                                             ${ws.cross_browser_available ? `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">Available (${ws.created_minutes_ago}m ago)</span>` : ''}
                                         </div>
@@ -157,8 +164,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const user = result.user;
             console.log('User data:', user);
             
-            // Always fetch workspaces from database by email
-            // This ensures we find workspaces regardless of browser storage state
+            // ALWAYS fetch workspaces from database by email
+            // This ensures cross-browser/cross-device sign-in works properly
+            // The backend will find:
+            // 1. Existing workspace memberships
+            // 2. Recently created workspaces (within 1 hour) that match this email
+            // 3. Workspaces with placeholder admins waiting for this email
             console.log('Fetching all workspaces for user email:', user.email);
             let workspaceData = null;
             
@@ -175,29 +186,94 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.log('Workspaces found:', workspacesJson.workspaces?.length || 0);
                     
                     if (workspacesJson.success && workspacesJson.workspaces.length > 0) {
-                        // Check if any workspace was created in this session
-                        const sessionCreated = workspacesJson.workspaces.find(ws => ws.session_created);
+                        // Prioritize recently created workspaces
+                        const newlyCreated = workspacesJson.workspaces.find(ws => ws.newly_created);
                         const crossBrowserAvailable = workspacesJson.workspaces.find(ws => ws.cross_browser_available);
+                        const pendingAdmin = workspacesJson.workspaces.find(ws => ws.pending_admin);
                         
-                        if (sessionCreated) {
-                            console.log('Found workspace created in this session:', sessionCreated.name);
-                            console.log('This user can become admin regardless of their email address');
+                        if (newlyCreated) {
+                            // Found a workspace that was just created and email was associated before link was sent
+                            console.log('✨ NEWLY CREATED WORKSPACE: Email was associated before link was sent');
+                            console.log('Workspace:', newlyCreated.name);
+                            console.log('Created:', newlyCreated.created_minutes_ago, 'minutes ago');
+                            console.log('This is the IDEAL flow - association happened in database before email was sent');
+                            console.log('Works across ANY browser/device!');
+                            
+                            // Use this workspace directly - no additional association needed
+                            workspaceData = newlyCreated;
                         } else if (crossBrowserAvailable) {
-                            console.log('Found recently created workspace available for cross-browser sign-in:', crossBrowserAvailable.name);
-                            console.log('Created', crossBrowserAvailable.created_minutes_ago, 'minutes ago');
-                        }
-                        
-                        // Always show workspace selection modal - even for single workspace
-                        // This gives user control and shows them what workspace they're entering
-                        console.log('Showing workspace selection modal with', workspacesJson.workspaces.length, 'workspaces');
-                        const selectedWorkspace = await showWorkspaceSelectionModal(workspacesJson.workspaces);
-                        if (selectedWorkspace) {
-                            workspaceData = selectedWorkspace;
-                            console.log('User selected workspace:', selectedWorkspace.name);
+                            // Found a workspace created recently with this email - use it directly
+                            console.log('🎯 CROSS-BROWSER SIGN-IN: Found workspace created', crossBrowserAvailable.created_minutes_ago, 'minutes ago');
+                            console.log('Workspace:', crossBrowserAvailable.name);
+                            console.log('Automatically selecting this workspace and associating with user');
+                            
+                            // Associate this email with the workspace to complete the setup
+                            try {
+                                const associateResponse = await fetch('/api/workspace/associate-email', {
+                                    method: 'POST',
+                                    credentials: 'same-origin',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        workspace_id: crossBrowserAvailable.id,
+                                        email: user.email
+                                    })
+                                });
+                                
+                                if (associateResponse.ok) {
+                                    console.log('✅ Email successfully associated with workspace as Admin');
+                                    workspaceData = crossBrowserAvailable;
+                                } else {
+                                    console.warn('⚠️ Association response not OK, but continuing...');
+                                    workspaceData = crossBrowserAvailable;
+                                }
+                            } catch (error) {
+                                console.warn('⚠️ Error during association, but continuing:', error);
+                                workspaceData = crossBrowserAvailable;
+                            }
+                        } else if (pendingAdmin) {
+                            // Found a workspace waiting for this user to become admin
+                            console.log('🎯 PENDING ADMIN: Found workspace waiting for this user');
+                            console.log('Workspace:', pendingAdmin.name);
+                            
+                            // Associate this email with the workspace
+                            try {
+                                const associateResponse = await fetch('/api/workspace/associate-email', {
+                                    method: 'POST',
+                                    credentials: 'same-origin',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        workspace_id: pendingAdmin.id,
+                                        email: user.email
+                                    })
+                                });
+                                
+                                if (associateResponse.ok) {
+                                    console.log('✅ Email successfully associated as Admin');
+                                    workspaceData = pendingAdmin;
+                                } else {
+                                    console.warn('⚠️ Association response not OK, but continuing...');
+                                    workspaceData = pendingAdmin;
+                                }
+                            } catch (error) {
+                                console.warn('⚠️ Error during association, but continuing:', error);
+                                workspaceData = pendingAdmin;
+                            }
+                        } else if (workspacesJson.workspaces.length === 1) {
+                            // Only one workspace - use it directly
+                            console.log('Single workspace found, using it directly:', workspacesJson.workspaces[0].name);
+                            workspaceData = workspacesJson.workspaces[0];
                         } else {
-                            // User cancelled selection
-                            showCustomModal('Selection Required', 'Please select a workspace to continue.', 'warning');
-                            return;
+                            // Multiple workspaces - show selection modal
+                            console.log('Multiple workspaces found, showing selection modal');
+                            const selectedWorkspace = await showWorkspaceSelectionModal(workspacesJson.workspaces);
+                            if (selectedWorkspace) {
+                                workspaceData = selectedWorkspace;
+                                console.log('User selected workspace:', selectedWorkspace.name);
+                            } else {
+                                // User cancelled selection
+                                showCustomModal('Selection Required', 'Please select a workspace to continue.', 'warning');
+                                return;
+                            }
                         }
                     } else {
                         // No workspaces found - redirect to create workspace

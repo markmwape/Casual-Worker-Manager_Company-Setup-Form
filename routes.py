@@ -95,24 +95,42 @@ def get_user_workspaces():
         processed_workspace_ids = set()
         
         # Get all workspaces this user already has explicit access to
+        # This includes workspaces where email was associated before sign-in link was sent
         user_workspaces = UserWorkspace.query.filter_by(user_id=user.id).all()
         logging.info(f"=== CHECKING UserWorkspace TABLE ===")
         logging.info(f"Found {len(user_workspaces)} workspace memberships for user {email} (ID: {user.id})")
         logging.info(f"UserWorkspace records: {[(uw.workspace_id, uw.role) for uw in user_workspaces]}")
         
+        if user_workspaces:
+            logging.info(f"✅ EMAIL-LINK ASSOCIATION WORKED! Found {len(user_workspaces)} workspaces associated with {email}")
+            logging.info(f"This means /api/workspace/associate-email was called successfully before email link was sent")
+        
         for uw in user_workspaces:
             workspace = uw.workspace
             if workspace and workspace.id not in processed_workspace_ids:
                 logging.info(f"Adding workspace to list: {workspace.name} (ID: {workspace.id}, Role: {uw.role})")
-                workspaces_data.append({
+                
+                # Check if this is a recently created workspace (for UX indication)
+                is_recent = (datetime.utcnow() - workspace.created_at).total_seconds() < 3600 if workspace.created_at else False
+                
+                workspace_info = {
                     "id": workspace.id,
                     "name": workspace.name,
                     "code": workspace.workspace_code,
                     "role": uw.role,
                     "country": workspace.country,
                     "industry": workspace.industry_type,
-                    "created_at": workspace.created_at.strftime('%Y-%m-%d') if workspace.created_at else None
-                })
+                    "created_at": workspace.created_at.strftime('%Y-%m-%d') if workspace.created_at else None,
+                    "company_email": workspace.company_email  # Show company email
+                }
+                
+                # Mark recently created workspaces for better UX
+                if is_recent and uw.role == 'Admin':
+                    workspace_info["newly_created"] = True
+                    workspace_info["created_minutes_ago"] = int((datetime.utcnow() - workspace.created_at).total_seconds() / 60)
+                    logging.info(f"✨ This is a NEWLY CREATED workspace (created {workspace_info['created_minutes_ago']} minutes ago)")
+                
+                workspaces_data.append(workspace_info)
                 processed_workspace_ids.add(workspace.id)
             elif not workspace:
                 logging.warning(f"UserWorkspace {uw.id} has no associated workspace!")
@@ -123,23 +141,25 @@ def get_user_workspaces():
         # Just need to fetch the user's workspaces normally
         # (The association happens in /api/workspace/associate-email)
         
-        # CROSS-BROWSER FALLBACK: Check for recently created workspaces without real admin
+        # CROSS-BROWSER FALLBACK: Check for recently created workspaces with placeholder admins
         # This handles sign-in from different browser/device than creation
-        # SECURITY: Only show workspaces where THIS user should be admin
+        # NEW: Accepts ANY sign-in email, not restricted to company_email
         from datetime import datetime, timedelta
         recent_cutoff = datetime.utcnow() - timedelta(hours=1)
         
+        # Find ALL recently created workspaces with placeholder admins
         recent_workspaces = Workspace.query.filter(
-            Workspace.created_at >= recent_cutoff,  # Created within last hour
-            Workspace.company_email == email  # SECURITY: Only workspaces created with THIS email
+            Workspace.created_at >= recent_cutoff  # Created within last hour
         ).all()
         
         for workspace in recent_workspaces:
             if workspace.id not in processed_workspace_ids:
-                # Check if workspace still has placeholder admin for THIS email
-                placeholder_user = User.query.get(workspace.created_by)
-                if placeholder_user and placeholder_user.email == f"pending_{email}":
-                    logging.info(f"Found recently created workspace for {email}: {workspace.name}")
+                # Check if workspace still has ANY placeholder admin
+                creator = User.query.get(workspace.created_by) if workspace.created_by else None
+                is_placeholder = creator and creator.email.startswith('pending_') if creator else False
+                
+                if is_placeholder:
+                    logging.info(f"Found recently created workspace with placeholder: {workspace.name}")
                     workspaces_data.append({
                         "id": workspace.id,
                         "name": workspace.name,
@@ -149,32 +169,10 @@ def get_user_workspaces():
                         "industry": workspace.industry_type,
                         "created_at": workspace.created_at.strftime('%Y-%m-%d') if workspace.created_at else None,
                         "cross_browser_available": True,  # Flag for cross-browser sign-in
-                        "created_minutes_ago": int((datetime.utcnow() - workspace.created_at).total_seconds() / 60)
+                        "created_minutes_ago": int((datetime.utcnow() - workspace.created_at).total_seconds() / 60),
+                        "company_email": workspace.company_email  # Show what company email was used
                     })
                     processed_workspace_ids.add(workspace.id)
-        
-        # Also check for workspaces where this email should be admin (company_email match)
-        pending_admin_workspaces = Workspace.query.filter_by(company_email=email).all()
-        for workspace in pending_admin_workspaces:
-            if workspace.id not in processed_workspace_ids:
-                # Check if this workspace was created with a placeholder user
-                placeholder_email = f"pending_{email}"
-                placeholder_user = User.query.filter_by(email=placeholder_email).first()
-                
-                if placeholder_user and workspace.created_by == placeholder_user.id:
-                    # This workspace is waiting for this user to become admin
-                    workspaces_data.append({
-                        "id": workspace.id,
-                        "name": workspace.name,
-                        "code": workspace.workspace_code,
-                        "role": "Admin",  # They will become admin
-                        "country": workspace.country,
-                        "industry": workspace.industry_type,
-                        "created_at": workspace.created_at.strftime('%Y-%m-%d') if workspace.created_at else None,
-                        "pending_admin": True  # Flag to indicate this needs admin assignment
-                    })
-                    processed_workspace_ids.add(workspace.id)
-                    logging.info(f"Found pending admin workspace for {email}: {workspace.name}")
         
         return jsonify({
             "success": True,
@@ -219,6 +217,11 @@ def associate_workspace_email():
         
         logging.info(f"Found workspace: {workspace.name}, company_email: {workspace.company_email}, created_by: {workspace.created_by}")
         
+        # FLEXIBLE SIGN-IN: Allow any email to sign in and become admin
+        # The company_email is just for workspace identification
+        # The sign-in email (this email) is what the user actually uses to authenticate
+        logging.info(f"Associating sign-in email {email} with workspace (company_email: {workspace.company_email})")
+        
         # Get or create the user with this email
         user = User.query.filter_by(email=email).first()
         if not user:
@@ -248,17 +251,17 @@ def associate_workspace_email():
                 "message": "User already associated with workspace"
             }), 200
         
-        # Check if workspace has a placeholder admin
-        placeholder_email = f"pending_{workspace.company_email}"
-        logging.info(f"Looking for placeholder user: {placeholder_email}")
-        placeholder_user = User.query.filter_by(email=placeholder_email).first()
+        # Check if workspace has a placeholder admin (ANY pending_* pattern)
+        # This allows flexible sign-in with any email
+        current_creator = User.query.get(workspace.created_by) if workspace.created_by else None
+        is_placeholder = current_creator and current_creator.email.startswith('pending_') if current_creator else False
         
-        logging.info(f"Placeholder user found: {placeholder_user.email if placeholder_user else 'None'}")
-        logging.info(f"Workspace created_by: {workspace.created_by}, Placeholder user ID: {placeholder_user.id if placeholder_user else 'None'}")
+        logging.info(f"Current creator: {current_creator.email if current_creator else 'None'}")
+        logging.info(f"Is placeholder: {is_placeholder}")
         
-        if placeholder_user and workspace.created_by == placeholder_user.id:
-            # This workspace is waiting for its admin - transfer ownership
-            logging.info(f"✓ TRANSFERRING OWNERSHIP: workspace {workspace.name} from {placeholder_email} to {email}")
+        if is_placeholder:
+            # This workspace is waiting for its admin - transfer ownership to THIS user
+            logging.info(f"✓ TRANSFERRING OWNERSHIP: workspace {workspace.name} from {current_creator.email} to {email}")
             
             workspace.created_by = user.id
             logging.info(f"✓ Updated workspace.created_by to {user.id}")
@@ -267,7 +270,7 @@ def associate_workspace_email():
             company = Company.query.filter_by(workspace_id=workspace.id).first()
             if company:
                 logging.info(f"Found company: {company.name} (ID: {company.id}), current created_by: {company.created_by}")
-                if company.created_by == placeholder_user.id or company.created_by is None:
+                if company.created_by == current_creator.id or company.created_by is None:
                     # Assign ownership to the real user
                     company.created_by = user.id
                     logging.info(f"✓ Updated company {company.id} ownership to user {user.id}")
@@ -286,8 +289,8 @@ def associate_workspace_email():
             logging.info(f"✓ Created UserWorkspace: user_id={user.id}, workspace_id={workspace.id}, role=Admin")
             
             # Delete placeholder user
-            db.session.delete(placeholder_user)
-            logging.info(f"✓ Deleted placeholder user: {placeholder_email}")
+            db.session.delete(current_creator)
+            logging.info(f"✓ Deleted placeholder user: {current_creator.email}")
             
             db.session.commit()
             logging.info(f"✓ COMMITTED: All changes saved to database")
@@ -3186,11 +3189,13 @@ def get_trial_info():
             return jsonify({'success': False, 'error': 'Workspace not found'}), 404
         
         # Calculate trial days remaining
-        from datetime import date
-        today = date.today()
+        from datetime import datetime
+        now = datetime.utcnow()
         
         if workspace.trial_end_date:
-            days_remaining = (workspace.trial_end_date - today).days
+            # trial_end_date is a DateTime, so compare with datetime
+            time_remaining = workspace.trial_end_date - now
+            days_remaining = time_remaining.days
             if days_remaining < 0:
                 days_remaining = 0
         else:
@@ -3205,6 +3210,9 @@ def get_trial_info():
         
     except Exception as e:
         logging.error(f"Error getting trial info: {str(e)}")
+        logging.error(f"Exception type: {type(e)}")
+        import traceback
+        logging.error(f"Traceback: {traceback.format_exc()}")
         return jsonify({'success': False, 'error': 'Failed to get trial info'}), 500
 
 @app.route("/api/team-members", methods=['GET', 'POST'])

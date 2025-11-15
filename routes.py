@@ -292,35 +292,61 @@ def create_workspace():
         if expected_workers not in valid_worker_ranges:
             expected_workers = 'not_specified'
         
-        # Store workspace creation data in session for completion during sign-in
-        # No system user needed - workspace will be created when admin signs in
-        workspace_data = {
-            'company_name': company_name,
-            'country': country,
-            'industry_type': industry_type,
-            'expected_workers_string': expected_workers,
-            'company_phone': company_phone,
-            'company_email': company_email
-        }
+        # Create workspace immediately in database with system/placeholder user
+        # We'll associate it with the actual user when they sign in
         
-        # Generate a temporary workspace code for the user to use
-        import secrets
-        import string
-        temp_code = ''.join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(16))
+        # Create a placeholder user for workspace creation (will be updated during sign-in)
+        placeholder_email = f"pending_{company_email}"  # Temporary placeholder
+        placeholder_user = User.query.filter_by(email=placeholder_email).first()
+        if not placeholder_user:
+            placeholder_user = User(email=placeholder_email, profile_picture="")
+            db.session.add(placeholder_user)
+            db.session.flush()
         
-        # Return the workspace data for frontend to store
+        # Create the workspace immediately
+        workspace = Workspace(
+            name=company_name,
+            country=country,
+            industry_type=industry_type,
+            expected_workers_string=expected_workers,
+            expected_workers=0,
+            company_phone=company_phone,
+            company_email=company_email,
+            address="",
+            created_by=placeholder_user.id  # Will be updated to actual user during sign-in
+        )
+        
+        db.session.add(workspace)
+        db.session.flush()  # Get the workspace ID
+        
+        # Create a company for this workspace
+        company = Company(
+            name=company_name,
+            registration_number="",
+            address="",
+            industry=industry_type,
+            phone=company_phone,
+            created_by=placeholder_user.id,
+            workspace_id=workspace.id
+        )
+        db.session.add(company)
+        db.session.commit()
+        
+        logging.info(f"Created workspace immediately: {workspace.name} (ID: {workspace.id}) for pending admin: {company_email}")
+        
+        # Return the workspace data
         return jsonify({
             "success": True,
             "workspace": {
-                "temp_code": temp_code,
-                "name": company_name,
-                "code": temp_code,
-                "country": country,
-                "industry_type": industry_type,
-                "company_phone": company_phone,
-                "company_email": company_email
+                "id": workspace.id,
+                "name": workspace.name,
+                "code": workspace.workspace_code,
+                "country": workspace.country,
+                "industry_type": workspace.industry_type,
+                "company_phone": workspace.company_phone,
+                "company_email": workspace.company_email
             },
-            "deferred_creation": True
+            "immediate_creation": True
         }), 200
         
     except Exception as e:
@@ -369,9 +395,45 @@ def set_session():
             # Handle workspace assignment if workspace data is provided
             if workspace_data:
                 logging.info(f"Processing workspace_data: {workspace_data}")
-                logging.info(f"Deferred creation check: deferred_creation={workspace_data.get('deferred_creation')}, temp_code={workspace_data.get('temp_code')}")
-                # Check if this is a deferred workspace creation (new workspace)
-                if workspace_data.get('deferred_creation') or workspace_data.get('temp_code'):
+                
+                # Check if this is an immediately created workspace that needs admin assignment
+                if workspace_data.get('immediate_creation') and workspace_data.get('id'):
+                    # Workspace already exists, just need to assign actual admin user
+                    workspace = Workspace.query.get(workspace_data['id'])
+                    if workspace and workspace.company_email == email:
+                        logging.info(f"Found immediately created workspace {workspace.name} for admin {email}")
+                        
+                        # Update workspace to use actual admin user instead of placeholder
+                        placeholder_email = f"pending_{email}"
+                        placeholder_user = User.query.filter_by(email=placeholder_email).first()
+                        
+                        if placeholder_user:
+                            # Transfer ownership from placeholder to actual user
+                            workspace.created_by = user.id
+                            
+                            # Update company ownership too
+                            company = Company.query.filter_by(workspace_id=workspace.id).first()
+                            if company:
+                                company.created_by = user.id
+                            
+                            # Delete placeholder user
+                            db.session.delete(placeholder_user)
+                        
+                        # Add admin user to workspace
+                        user_workspace = UserWorkspace(
+                            user_id=user.id,
+                            workspace_id=workspace.id,
+                            role='Admin'
+                        )
+                        db.session.add(user_workspace)
+                        db.session.commit()
+                        
+                        logging.info(f"Successfully assigned admin {email} to workspace {workspace.name}")
+                    else:
+                        logging.error(f"Workspace {workspace_data['id']} not found or email mismatch")
+                        
+                # Check if this is a deferred workspace creation (legacy support)
+                elif workspace_data.get('deferred_creation') or workspace_data.get('temp_code'):
                     # Create the workspace now with the actual admin user
                     workspace = Workspace(
                         name=workspace_data.get('company_name') or workspace_data.get('name'),

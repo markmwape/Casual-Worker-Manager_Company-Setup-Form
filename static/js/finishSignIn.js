@@ -165,8 +165,15 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (workspaceData) {
                 console.log('Found pending workspace, using it directly:', workspaceData.name || workspaceData.company_name);
-                // Mark this workspace for deferred creation
-                workspaceData.deferred_creation = true;
+                // Mark this workspace appropriately based on creation type
+                if (workspaceData.id) {
+                    // Immediate creation - workspace already exists in database
+                    workspaceData.immediate_creation = true;
+                    console.log('Workspace was immediately created, ID:', workspaceData.id);
+                } else {
+                    // Legacy deferred creation
+                    workspaceData.deferred_creation = true;
+                }
                 // User just created a workspace, use it directly without showing selection
             } else {
                 console.log('No pending workspace found, checking existing workspaces...');

@@ -1016,9 +1016,16 @@
                     }
                     
                     // Store workspace data for later use in both sessionStorage and localStorage
-                    // localStorage persists across tabs, sessionStorage is for the current tab
                     const workspaceDataToStore = data.workspace;
                     console.log('Storing workspace data:', workspaceDataToStore);
+                    console.log('Creation type:', data.immediate_creation ? 'Immediate' : 'Deferred');
+                    
+                    // Add creation type flag to workspace data
+                    if (data.immediate_creation) {
+                        workspaceDataToStore.immediate_creation = true;
+                    } else {
+                        workspaceDataToStore.deferred_creation = true;
+                    }
                     
                     // Store in both for maximum persistence
                     sessionStorage.setItem('pending_workspace', JSON.stringify(workspaceDataToStore));

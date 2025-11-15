@@ -363,43 +363,72 @@
                 const result = await signInWithPopup(window.firebaseAuth, provider);
                 const user = result.user;
 
-                // Fetch user's workspaces
-                const workspacesResponse = await fetch('/api/user/workspaces', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: user.email })
-                });
+                // Check for pending workspace first (newly created workspace)
+                const pendingWorkspace = sessionStorage.getItem('pending_workspace');
+                const workspaceData = pendingWorkspace ? JSON.parse(pendingWorkspace) : null;
+                
+                if (workspaceData) {
+                    console.log('Found pending workspace, using it directly:', workspaceData.name);
+                    // User just created a workspace, use it directly without showing selection
+                    const sessionResponse = await fetch('/set_session', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            email: user.email,
+                            displayName: user.displayName || '',
+                            photoURL: user.photoURL || '',
+                            uid: user.uid,
+                            workspace_data: workspaceData
+                        })
+                    });
 
-                if (workspacesResponse.ok) {
-                    const workspacesData = await workspacesResponse.json();
-                    
-                    if (workspacesData.success && workspacesData.workspaces.length > 0) {
-                        // Show workspace selection modal
-                        await showWorkspaceSelectionModal(workspacesData.workspaces, user);
+                    if (sessionResponse.ok) {
+                        console.log('Session set successfully with pending workspace');
+                        sessionStorage.removeItem('pending_workspace');
+                        window.location.href = '/home';
                     } else {
-                        // No workspaces found, set session without workspace and redirect
-                        const sessionResponse = await fetch('/set_session', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                email: user.email,
-                                displayName: user.displayName || '',
-                                photoURL: user.photoURL || '',
-                                uid: user.uid
-                            })
-                        });
-
-                        if (sessionResponse.ok) {
-                            showError('No workspaces found. Please create a new workspace.');
-                            setTimeout(() => window.location.href = '/create-workspace', 2000);
-                        } else {
-                            const data = await sessionResponse.json();
-                            showError(data.error || 'Failed to sign in');
-                        }
+                        const data = await sessionResponse.json();
+                        showError(data.error || 'Failed to sign in');
                     }
                 } else {
-                    const data = await workspacesResponse.json();
-                    showError(data.error || 'Failed to retrieve workspaces');
+                    // No pending workspace, fetch user's existing workspaces
+                    const workspacesResponse = await fetch('/api/user/workspaces', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: user.email })
+                    });
+
+                    if (workspacesResponse.ok) {
+                        const workspacesData = await workspacesResponse.json();
+                        
+                        if (workspacesData.success && workspacesData.workspaces.length > 0) {
+                            // Show workspace selection modal
+                            await showWorkspaceSelectionModal(workspacesData.workspaces, user);
+                        } else {
+                            // No workspaces found, set session without workspace and redirect
+                            const sessionResponse = await fetch('/set_session', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    email: user.email,
+                                    displayName: user.displayName || '',
+                                    photoURL: user.photoURL || '',
+                                    uid: user.uid
+                                })
+                            });
+
+                            if (sessionResponse.ok) {
+                                showError('No workspaces found. Please create a new workspace.');
+                                setTimeout(() => window.location.href = '/create-workspace', 2000);
+                            } else {
+                                const data = await sessionResponse.json();
+                                showError(data.error || 'Failed to sign in');
+                            }
+                        }
+                    } else {
+                        const data = await workspacesResponse.json();
+                        showError(data.error || 'Failed to retrieve workspaces');
+                    }
                 }
             } catch (error) {
                 console.error('Google sign-in error:', error);

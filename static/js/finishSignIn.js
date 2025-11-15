@@ -146,47 +146,54 @@ document.addEventListener('DOMContentLoaded', function() {
             const user = result.user;
             console.log('User data:', user);
             
-            // Fetch user's workspaces and show selection modal (same as Google sign-in)
-            let workspaceData = null;
+            // Check for pending workspace first (newly created workspace)
+            const pendingWorkspace = sessionStorage.getItem('pending_workspace');
+            let workspaceData = pendingWorkspace ? JSON.parse(pendingWorkspace) : null;
             
-            try {
-                const workspacesResponse = await fetch('/api/user/workspaces', {
-                    method: 'POST',
-                    credentials: 'same-origin',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: user.email })
-                });
-                
-                if (workspacesResponse.ok) {
-                    const workspacesJson = await workspacesResponse.json();
+            if (workspaceData) {
+                console.log('Found pending workspace, using it directly:', workspaceData.name);
+                // User just created a workspace, use it directly without showing selection
+            } else {
+                // No pending workspace, fetch user's existing workspaces and show selection modal
+                try {
+                    const workspacesResponse = await fetch('/api/user/workspaces', {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: user.email })
+                    });
                     
-                    if (workspacesJson.success && workspacesJson.workspaces.length > 0) {
-                        // Show workspace selection modal
-                        const selectedWorkspace = await showWorkspaceSelectionModal(workspacesJson.workspaces);
-                        if (selectedWorkspace) {
-                            workspaceData = selectedWorkspace;
-                            console.log('User selected workspace:', selectedWorkspace.name);
+                    if (workspacesResponse.ok) {
+                        const workspacesJson = await workspacesResponse.json();
+                        
+                        if (workspacesJson.success && workspacesJson.workspaces.length > 0) {
+                            // Show workspace selection modal
+                            const selectedWorkspace = await showWorkspaceSelectionModal(workspacesJson.workspaces);
+                            if (selectedWorkspace) {
+                                workspaceData = selectedWorkspace;
+                                console.log('User selected workspace:', selectedWorkspace.name);
+                            } else {
+                                // User cancelled selection
+                                showCustomModal('Selection Required', 'Please select a workspace to continue.', 'warning');
+                                return;
+                            }
                         } else {
-                            // User cancelled selection
-                            showCustomModal('Selection Required', 'Please select a workspace to continue.', 'warning');
+                            // No workspaces found, redirect to create workspace
+                            showCustomModal('No Workspaces Found', 'No workspaces found. You will be redirected to create a new workspace.', 'info');
+                            setTimeout(() => window.location.href = '/create-workspace', 2000);
                             return;
                         }
                     } else {
-                        // No workspaces found, redirect to create workspace
-                        showCustomModal('No Workspaces Found', 'No workspaces found. You will be redirected to create a new workspace.', 'info');
-                        setTimeout(() => window.location.href = '/create-workspace', 2000);
+                        const errorData = await workspacesResponse.json();
+                        console.error('Failed to fetch workspaces:', errorData);
+                        showCustomModal('Error', 'Failed to retrieve workspaces: ' + (errorData.error || 'Please try again.'), 'error');
                         return;
                     }
-                } else {
-                    const errorData = await workspacesResponse.json();
-                    console.error('Failed to fetch workspaces:', errorData);
-                    showCustomModal('Error', 'Failed to retrieve workspaces: ' + (errorData.error || 'Please try again.'), 'error');
+                } catch (err) {
+                    console.error('Error fetching user workspaces:', err);
+                    showCustomModal('Error', 'Failed to retrieve workspaces. Please try again.', 'error');
                     return;
                 }
-            } catch (err) {
-                console.error('Error fetching user workspaces:', err);
-                showCustomModal('Error', 'Failed to retrieve workspaces. Please try again.', 'error');
-                return;
             }
             
             // Set session on server including workspaceData if any

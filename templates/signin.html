@@ -586,10 +586,27 @@
 
         // Auto-focus email input when page loads (especially after workspace creation)
         window.addEventListener('DOMContentLoaded', function() {
-            // Check if coming from workspace creation
-            const pendingWorkspace = sessionStorage.getItem('pending_workspace') || localStorage.getItem('pending_workspace');
+            // Check if coming from workspace creation (with timestamp validation)
+            const pendingWorkspace = sessionStorage.getItem('pending_workspace');
+            let workspaceData = null;
+            let isRecentlyCreated = false;
             
             if (pendingWorkspace) {
+                try {
+                    workspaceData = JSON.parse(pendingWorkspace);
+                    // Check if workspace was created in the last 5 minutes
+                    const creationTime = sessionStorage.getItem('workspace_creation_time');
+                    if (creationTime) {
+                        const timeDiff = Date.now() - parseInt(creationTime);
+                        isRecentlyCreated = timeDiff < 5 * 60 * 1000; // 5 minutes
+                        console.log('Workspace created', Math.floor(timeDiff / 1000), 'seconds ago');
+                    }
+                } catch (e) {
+                    console.error('Error parsing workspace data:', e);
+                }
+            }
+            
+            if (pendingWorkspace && isRecentlyCreated) {
                 // Focus the email input for easy typing
                 setTimeout(() => {
                     const emailInput = document.getElementById('user-email');
@@ -625,6 +642,6 @@
             }
         });
     </script>
-    <script src="{{ url_for('static', filename='js/onboarding.js') }}"></script>
+    <!-- Onboarding not needed on sign-in page -->
 </body>
 </html>

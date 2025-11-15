@@ -1033,6 +1033,7 @@
                     
                     // Store in both for maximum persistence
                     sessionStorage.setItem('pending_workspace', JSON.stringify(workspaceDataToStore));
+                    sessionStorage.setItem('workspace_creation_time', Date.now().toString());
                     localStorage.setItem('pending_workspace', JSON.stringify(workspaceDataToStore));
                     
                     // Verify storage worked

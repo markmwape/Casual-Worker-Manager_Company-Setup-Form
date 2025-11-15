@@ -1015,8 +1015,18 @@
                         document.getElementById('create-warning').classList.remove('hidden');
                     }
                     
-                    // Store workspace data for later use in sessionStorage
-                    sessionStorage.setItem('pending_workspace', JSON.stringify(data.workspace));
+                    // Store workspace data for later use in both sessionStorage and localStorage
+                    // localStorage persists across tabs, sessionStorage is for the current tab
+                    const workspaceDataToStore = data.workspace;
+                    console.log('Storing workspace data:', workspaceDataToStore);
+                    
+                    // Store in both for maximum persistence
+                    sessionStorage.setItem('pending_workspace', JSON.stringify(workspaceDataToStore));
+                    localStorage.setItem('pending_workspace', JSON.stringify(workspaceDataToStore));
+                    
+                    // Verify storage worked
+                    console.log('SessionStorage verification:', sessionStorage.getItem('pending_workspace'));
+                    console.log('LocalStorage verification:', localStorage.getItem('pending_workspace'));
                     
                     // Show success modal and redirect to sign-in
                     showSuccessModal(

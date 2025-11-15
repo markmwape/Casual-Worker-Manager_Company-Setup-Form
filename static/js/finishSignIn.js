@@ -139,6 +139,13 @@ document.addEventListener('DOMContentLoaded', function() {
             email = window.prompt('Please provide your email for confirmation');
         }
         console.log('Attempting to sign in with email link...');
+        
+        // Debug session storage state
+        console.log('=== Session Storage Debug ===');
+        console.log('All session storage keys:', Object.keys(sessionStorage));
+        console.log('pending_workspace value:', sessionStorage.getItem('pending_workspace'));
+        console.log('localStorage emailForSignIn:', localStorage.getItem('emailForSignIn'));
+        
         signInWithEmailLink(window.firebaseAuth, email, window.location.href)
         .then(async (result) => {
             console.log('Email link sign-in successful');
@@ -147,13 +154,22 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('User data:', user);
             
             // Check for pending workspace first (newly created workspace)
-            const pendingWorkspace = sessionStorage.getItem('pending_workspace');
+            // Check both sessionStorage and localStorage for cross-tab persistence
+            let pendingWorkspace = sessionStorage.getItem('pending_workspace') || localStorage.getItem('pending_workspace');
             let workspaceData = pendingWorkspace ? JSON.parse(pendingWorkspace) : null;
             
+            console.log('Checking for pending workspace...');
+            console.log('SessionStorage pending_workspace:', sessionStorage.getItem('pending_workspace'));
+            console.log('LocalStorage pending_workspace:', localStorage.getItem('pending_workspace'));
+            console.log('Final workspace data to use:', workspaceData);
+            
             if (workspaceData) {
-                console.log('Found pending workspace, using it directly:', workspaceData.name);
+                console.log('Found pending workspace, using it directly:', workspaceData.name || workspaceData.company_name);
+                // Mark this workspace for deferred creation
+                workspaceData.deferred_creation = true;
                 // User just created a workspace, use it directly without showing selection
             } else {
+                console.log('No pending workspace found, checking existing workspaces...');
                 // No pending workspace, fetch user's existing workspaces and show selection modal
                 try {
                     const workspacesResponse = await fetch('/api/user/workspaces', {
@@ -178,9 +194,15 @@ document.addEventListener('DOMContentLoaded', function() {
                                 return;
                             }
                         } else {
-                            // No workspaces found, redirect to create workspace
-                            showCustomModal('No Workspaces Found', 'No workspaces found. You will be redirected to create a new workspace.', 'info');
-                            setTimeout(() => window.location.href = '/create-workspace', 2000);
+                            // No workspaces found - this could be a new user
+                            console.warn('No existing workspaces found for user:', user.email);
+                            console.log('This might be a new user who just created a workspace');
+                            showCustomModal(
+                                'No Existing Workspaces', 
+                                'No existing workspaces found for your account. If you just created a workspace, there may have been an issue. You will be redirected to create a new workspace.', 
+                                'warning'
+                            );
+                            setTimeout(() => window.location.href = '/create-workspace', 3000);
                             return;
                         }
                     } else {
@@ -218,7 +240,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.log('Session set successfully');
                     // Clear all pending workspace storage after successful session creation
                     window.localStorage.removeItem('pendingWorkspace');
+                    window.localStorage.removeItem('pending_workspace');
                     window.sessionStorage.removeItem('pending_workspace');
+                    console.log('Cleared pending workspace data from storage');
                     
                     console.log('Redirecting to home');
                     window.location.href = '/home';

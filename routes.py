@@ -369,6 +369,7 @@ def set_session():
             # Handle workspace assignment if workspace data is provided
             if workspace_data:
                 logging.info(f"Processing workspace_data: {workspace_data}")
+                logging.info(f"Deferred creation check: deferred_creation={workspace_data.get('deferred_creation')}, temp_code={workspace_data.get('temp_code')}")
                 # Check if this is a deferred workspace creation (new workspace)
                 if workspace_data.get('deferred_creation') or workspace_data.get('temp_code'):
                     # Create the workspace now with the actual admin user
@@ -410,7 +411,12 @@ def set_session():
                     
                     # Activity logging removed for now
                     
-                    logging.info(f"Created new workspace {workspace.name} with admin {email}")
+                    logging.info(f"Successfully created new workspace:")
+                    logging.info(f"  - Workspace ID: {workspace.id}")
+                    logging.info(f"  - Workspace Name: {workspace.name}")
+                    logging.info(f"  - Admin User: {email} (ID: {user.id})")
+                    logging.info(f"  - Company: {company.name} (ID: {company.id})")
+                    logging.info(f"  - UserWorkspace Role: {user_workspace.role}")
                     
                 elif workspace_data.get('id'):
                     # Existing workspace

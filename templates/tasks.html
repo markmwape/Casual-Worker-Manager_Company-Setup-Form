@@ -105,6 +105,7 @@
         align-items: center;
         gap: 12px;
         transition: all 0.2s ease;
+        flex-wrap: wrap;
     }
     .status-menu-item:hover:not(.disabled) { 
         background: #f3f4f6; 
@@ -121,6 +122,14 @@
         height: 8px; 
         border-radius: 50%; 
         flex-shrink: 0; 
+    }
+    .past-task-indicator,
+    .future-task-indicator {
+        flex-basis: 100%;
+        margin-left: 20px;
+        font-size: 0.75rem;
+        color: #6b7280;
+        font-style: italic;
     }
     .status-indicator.pending { 
         background: #eab308; 

@@ -1020,9 +1020,13 @@
                     console.log('Storing workspace data:', workspaceDataToStore);
                     console.log('Creation type:', data.immediate_creation ? 'Immediate' : 'Deferred');
                     
-                    // Add creation type flag to workspace data
+                    // Add creation type flag and token to workspace data
                     if (data.immediate_creation) {
                         workspaceDataToStore.immediate_creation = true;
+                        if (data.workspace.creation_token) {
+                            workspaceDataToStore.creation_token = data.workspace.creation_token;
+                            console.log('Storing creation token:', data.workspace.creation_token);
+                        }
                     } else {
                         workspaceDataToStore.deferred_creation = true;
                     }

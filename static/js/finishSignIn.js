@@ -82,13 +82,17 @@ function showWorkspaceSelectionModal(workspaces) {
                                         </div>
                                     </div>
                                     <div class="ml-4">
-                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                                            ws.role === 'Admin' ? 'bg-purple-100 text-purple-800' :
-                                            ws.role === 'Accountant' ? 'bg-blue-100 text-blue-800' :
-                                            'bg-green-100 text-green-800'
-                                        }">
-                                            ${ws.role}
-                                        </span>
+                                        <div class="flex flex-col items-end gap-1">
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                                                ws.role === 'Admin' ? 'bg-purple-100 text-purple-800' :
+                                                ws.role === 'Accountant' ? 'bg-blue-100 text-blue-800' :
+                                                'bg-green-100 text-green-800'
+                                            }">
+                                                ${ws.role}
+                                            </span>
+                                            ${ws.session_created ? '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">Just Created</span>' : ''}
+                                            ${ws.cross_browser_available ? `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">Available (${ws.created_minutes_ago}m ago)</span>` : ''}
+                                        </div>
                                     </div>
                                 </div>
                             </button>
@@ -153,76 +157,69 @@ document.addEventListener('DOMContentLoaded', function() {
             const user = result.user;
             console.log('User data:', user);
             
-            // Check for pending workspace first (newly created workspace)
-            // Check both sessionStorage and localStorage for cross-tab persistence
-            let pendingWorkspace = sessionStorage.getItem('pending_workspace') || localStorage.getItem('pending_workspace');
-            let workspaceData = pendingWorkspace ? JSON.parse(pendingWorkspace) : null;
+            // Always fetch workspaces from database by email
+            // This ensures we find workspaces regardless of browser storage state
+            console.log('Fetching all workspaces for user email:', user.email);
+            let workspaceData = null;
             
-            console.log('Checking for pending workspace...');
-            console.log('SessionStorage pending_workspace:', sessionStorage.getItem('pending_workspace'));
-            console.log('LocalStorage pending_workspace:', localStorage.getItem('pending_workspace'));
-            console.log('Final workspace data to use:', workspaceData);
-            
-            if (workspaceData) {
-                console.log('Found pending workspace, using it directly:', workspaceData.name || workspaceData.company_name);
-                // Mark this workspace appropriately based on creation type
-                if (workspaceData.id) {
-                    // Immediate creation - workspace already exists in database
-                    workspaceData.immediate_creation = true;
-                    console.log('Workspace was immediately created, ID:', workspaceData.id);
-                } else {
-                    // Legacy deferred creation
-                    workspaceData.deferred_creation = true;
-                }
-                // User just created a workspace, use it directly without showing selection
-            } else {
-                console.log('No pending workspace found, checking existing workspaces...');
-                // No pending workspace, fetch user's existing workspaces and show selection modal
-                try {
-                    const workspacesResponse = await fetch('/api/user/workspaces', {
-                        method: 'POST',
-                        credentials: 'same-origin',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email: user.email })
-                    });
+            try {
+                const workspacesResponse = await fetch('/api/user/workspaces', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: user.email })
+                });
+                
+                if (workspacesResponse.ok) {
+                    const workspacesJson = await workspacesResponse.json();
+                    console.log('Workspaces found:', workspacesJson.workspaces?.length || 0);
                     
-                    if (workspacesResponse.ok) {
-                        const workspacesJson = await workspacesResponse.json();
+                    if (workspacesJson.success && workspacesJson.workspaces.length > 0) {
+                        // Check if any workspace was created in this session
+                        const sessionCreated = workspacesJson.workspaces.find(ws => ws.session_created);
+                        const crossBrowserAvailable = workspacesJson.workspaces.find(ws => ws.cross_browser_available);
                         
-                        if (workspacesJson.success && workspacesJson.workspaces.length > 0) {
-                            // Show workspace selection modal
-                            const selectedWorkspace = await showWorkspaceSelectionModal(workspacesJson.workspaces);
-                            if (selectedWorkspace) {
-                                workspaceData = selectedWorkspace;
-                                console.log('User selected workspace:', selectedWorkspace.name);
-                            } else {
-                                // User cancelled selection
-                                showCustomModal('Selection Required', 'Please select a workspace to continue.', 'warning');
-                                return;
-                            }
+                        if (sessionCreated) {
+                            console.log('Found workspace created in this session:', sessionCreated.name);
+                            console.log('This user can become admin regardless of their email address');
+                        } else if (crossBrowserAvailable) {
+                            console.log('Found recently created workspace available for cross-browser sign-in:', crossBrowserAvailable.name);
+                            console.log('Created', crossBrowserAvailable.created_minutes_ago, 'minutes ago');
+                        }
+                        
+                        // Always show workspace selection modal - even for single workspace
+                        // This gives user control and shows them what workspace they're entering
+                        console.log('Showing workspace selection modal with', workspacesJson.workspaces.length, 'workspaces');
+                        const selectedWorkspace = await showWorkspaceSelectionModal(workspacesJson.workspaces);
+                        if (selectedWorkspace) {
+                            workspaceData = selectedWorkspace;
+                            console.log('User selected workspace:', selectedWorkspace.name);
                         } else {
-                            // No workspaces found - this could be a new user
-                            console.warn('No existing workspaces found for user:', user.email);
-                            console.log('This might be a new user who just created a workspace');
-                            showCustomModal(
-                                'No Existing Workspaces', 
-                                'No existing workspaces found for your account. If you just created a workspace, there may have been an issue. You will be redirected to create a new workspace.', 
-                                'warning'
-                            );
-                            setTimeout(() => window.location.href = '/create-workspace', 3000);
+                            // User cancelled selection
+                            showCustomModal('Selection Required', 'Please select a workspace to continue.', 'warning');
                             return;
                         }
                     } else {
-                        const errorData = await workspacesResponse.json();
-                        console.error('Failed to fetch workspaces:', errorData);
-                        showCustomModal('Error', 'Failed to retrieve workspaces: ' + (errorData.error || 'Please try again.'), 'error');
+                        // No workspaces found - redirect to create workspace
+                        console.warn('No workspaces found for user:', user.email);
+                        showCustomModal(
+                            'No Workspaces Found', 
+                            'No workspaces found for your account. You will be redirected to create a new workspace.', 
+                            'info'
+                        );
+                        setTimeout(() => window.location.href = '/create-workspace', 2000);
                         return;
                     }
-                } catch (err) {
-                    console.error('Error fetching user workspaces:', err);
-                    showCustomModal('Error', 'Failed to retrieve workspaces. Please try again.', 'error');
+                } else {
+                    const errorData = await workspacesResponse.json();
+                    console.error('Failed to fetch workspaces:', errorData);
+                    showCustomModal('Error', 'Failed to retrieve workspaces: ' + (errorData.error || 'Please try again.'), 'error');
                     return;
                 }
+            } catch (err) {
+                console.error('Error fetching user workspaces:', err);
+                showCustomModal('Error', 'Failed to retrieve workspaces. Please try again.', 'error');
+                return;
             }
             
             // Set session on server including workspaceData if any

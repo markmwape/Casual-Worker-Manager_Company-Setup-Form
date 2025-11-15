@@ -78,16 +78,22 @@ def get_user_workspaces():
         
         # Find user by email
         user = User.query.filter_by(email=email).first()
-        if not user:
-            return jsonify({"error": "No account found with this email address"}), 404
         
-        # Get all workspaces this user has access to
-        user_workspaces = UserWorkspace.query.filter_by(user_id=user.id).all()
+        # If user doesn't exist, create them (they might be signing in for first time)
+        if not user:
+            user = User(email=email, profile_picture="")
+            db.session.add(user)
+            db.session.commit()
+            logging.info(f"Created new user during workspace lookup: {email}")
         
         workspaces_data = []
+        processed_workspace_ids = set()
+        
+        # Get all workspaces this user already has explicit access to
+        user_workspaces = UserWorkspace.query.filter_by(user_id=user.id).all()
         for uw in user_workspaces:
             workspace = uw.workspace
-            if workspace:
+            if workspace and workspace.id not in processed_workspace_ids:
                 workspaces_data.append({
                     "id": workspace.id,
                     "name": workspace.name,
@@ -97,6 +103,62 @@ def get_user_workspaces():
                     "industry": workspace.industry_type,
                     "created_at": workspace.created_at.strftime('%Y-%m-%d') if workspace.created_at else None
                 })
+                processed_workspace_ids.add(workspace.id)
+        
+        # Email is already associated with workspace when sign-in link was sent
+        # Just need to fetch the user's workspaces normally
+        # (The association happens in /api/workspace/associate-email)
+        
+        # CROSS-BROWSER FALLBACK: Check for recently created workspaces without real admin
+        # This handles sign-in from different browser/device than creation
+        from datetime import datetime, timedelta
+        recent_cutoff = datetime.utcnow() - timedelta(hours=1)
+        
+        recent_workspaces = Workspace.query.filter(
+            Workspace.created_at >= recent_cutoff  # Created within last hour
+        ).all()
+        
+        for workspace in recent_workspaces:
+            if workspace.id not in processed_workspace_ids:
+                # Check if workspace still has placeholder admin
+                placeholder_user = User.query.get(workspace.created_by)
+                if placeholder_user and placeholder_user.email.startswith('pending_'):
+                    logging.info(f"Found recently created workspace available for cross-browser sign-in: {workspace.name}")
+                    workspaces_data.append({
+                        "id": workspace.id,
+                        "name": workspace.name,
+                        "code": workspace.workspace_code,
+                        "role": "Admin",  # They will become admin
+                        "country": workspace.country,
+                        "industry": workspace.industry_type,
+                        "created_at": workspace.created_at.strftime('%Y-%m-%d') if workspace.created_at else None,
+                        "cross_browser_available": True,  # Flag for cross-browser sign-in
+                        "created_minutes_ago": int((datetime.utcnow() - workspace.created_at).total_seconds() / 60)
+                    })
+                    processed_workspace_ids.add(workspace.id)
+        
+        # Also check for workspaces where this email should be admin (company_email match)
+        pending_admin_workspaces = Workspace.query.filter_by(company_email=email).all()
+        for workspace in pending_admin_workspaces:
+            if workspace.id not in processed_workspace_ids:
+                # Check if this workspace was created with a placeholder user
+                placeholder_email = f"pending_{email}"
+                placeholder_user = User.query.filter_by(email=placeholder_email).first()
+                
+                if placeholder_user and workspace.created_by == placeholder_user.id:
+                    # This workspace is waiting for this user to become admin
+                    workspaces_data.append({
+                        "id": workspace.id,
+                        "name": workspace.name,
+                        "code": workspace.workspace_code,
+                        "role": "Admin",  # They will become admin
+                        "country": workspace.country,
+                        "industry": workspace.industry_type,
+                        "created_at": workspace.created_at.strftime('%Y-%m-%d') if workspace.created_at else None,
+                        "pending_admin": True  # Flag to indicate this needs admin assignment
+                    })
+                    processed_workspace_ids.add(workspace.id)
+                    logging.info(f"Found pending admin workspace for {email}: {workspace.name}")
         
         return jsonify({
             "success": True,
@@ -319,6 +381,26 @@ def create_workspace():
         db.session.add(workspace)
         db.session.flush()  # Get the workspace ID
         
+        # Generate a unique creation token to link this workspace to whoever signs in next
+        import secrets
+        import string
+        creation_token = ''.join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(32))
+        
+        # Store the workspace-token mapping in session (temporary)
+        # This links the workspace to whoever created it, regardless of their sign-in email
+        session['workspace_creation_token'] = creation_token
+        session['created_workspace_id'] = workspace.id
+        
+        # CROSS-BROWSER FALLBACK: Also store in database for 1 hour
+        # This allows sign-in from different browsers/devices
+        from datetime import datetime, timedelta
+        workspace.workspace_code = f"{workspace.workspace_code}_{creation_token[:8]}"  # Embed token for lookup
+        
+        # Set a temporary flag that this workspace is awaiting admin assignment
+        # We'll use created_at timestamp to expire this after 1 hour
+        workspace_expiry = datetime.utcnow() + timedelta(hours=1)
+        logging.info(f"Workspace {workspace.name} available for cross-browser sign-in until {workspace_expiry}")
+        
         # Create a company for this workspace
         company = Company(
             name=company_name,
@@ -332,9 +414,9 @@ def create_workspace():
         db.session.add(company)
         db.session.commit()
         
-        logging.info(f"Created workspace immediately: {workspace.name} (ID: {workspace.id}) for pending admin: {company_email}")
+        logging.info(f"Created workspace immediately: {workspace.name} (ID: {workspace.id}) with creation token: {creation_token}")
         
-        # Return the workspace data
+        # Return the workspace data with creation token
         return jsonify({
             "success": True,
             "workspace": {
@@ -344,7 +426,8 @@ def create_workspace():
                 "country": workspace.country,
                 "industry_type": workspace.industry_type,
                 "company_phone": workspace.company_phone,
-                "company_email": workspace.company_email
+                "company_email": workspace.company_email,
+                "creation_token": creation_token  # Frontend will store this
             },
             "immediate_creation": True
         }), 200
@@ -481,52 +564,150 @@ def set_session():
                     logging.info(f"  - UserWorkspace Role: {user_workspace.role}")
                     
                 elif workspace_data.get('id'):
-                    # Existing workspace
+                    # Existing workspace or pending admin assignment
                     workspace = Workspace.query.get(workspace_data['id'])
                     logging.info(f"Found workspace for ID {workspace_data['id']}: {workspace.name if workspace else 'None'}")
                     
                     if workspace:
-                        # Check if user is already in this workspace
-                        user_workspace = UserWorkspace.query.filter_by(
-                            user_id=user.id, 
-                            workspace_id=workspace.id
-                        ).first()
-                        
-                        logging.info(f"Session setting - User ID: {user.id}, Workspace ID: {workspace.id}, Workspace created_by: {workspace.created_by}")
-                        logging.info(f"Session setting - Existing UserWorkspace: {user_workspace.role if user_workspace else 'None'}")
-                        
-                        if not user_workspace:
-                            # Check if user is the workspace creator (admin)
-                            if workspace.created_by == user.id:
-                                # Workspace creator gets admin access
-                                role = 'Admin'
-                                user_workspace = UserWorkspace(
-                                    user_id=user.id,
-                                    workspace_id=workspace.id,
-                                    role=role
-                                )
-                                db.session.add(user_workspace)
-                                db.session.commit()
-                                logging.info(f"Added workspace creator {email} to workspace {workspace.name} with role {role}")
-                            else:
-                                # This should not happen if user was found via /api/user/workspaces
-                                logging.error(f"CRITICAL: User {email} (ID: {user.id}) found via /api/user/workspaces but no UserWorkspace relationship exists for workspace {workspace.name} (ID: {workspace.id})")
+                        # Check if this is a session-created workspace (any email can become admin)
+                        if workspace_data.get('session_created'):
+                            logging.info(f"Processing session-created workspace for {email} to workspace {workspace.name}")
+                            
+                            # Find and clean up placeholder user
+                            placeholder_email = f"pending_{workspace.company_email}"
+                            placeholder_user = User.query.filter_by(email=placeholder_email).first()
+                            
+                            if placeholder_user and workspace.created_by == placeholder_user.id:
+                                # Transfer ownership from placeholder to actual user
+                                workspace.created_by = user.id
                                 
-                                # Let's check if there are any UserWorkspace records for this user
-                                all_user_workspaces = UserWorkspace.query.filter_by(user_id=user.id).all()
-                                logging.error(f"All UserWorkspace records for user {user.id}: {[(uw.workspace_id, uw.role) for uw in all_user_workspaces]}")
+                                # Update company ownership too
+                                company = Company.query.filter_by(workspace_id=workspace.id).first()
+                                if company and company.created_by == placeholder_user.id:
+                                    company.created_by = user.id
                                 
-                                # For now, let's be permissive and create the relationship
-                                user_workspace = UserWorkspace(
-                                    user_id=user.id,
-                                    workspace_id=workspace.id,
-                                    role='Member'
-                                )
-                                db.session.add(user_workspace)
-                                db.session.commit()
-                                logging.info(f"Created missing UserWorkspace relationship for {email} to workspace {workspace.name}")
+                                # Delete placeholder user
+                                db.session.delete(placeholder_user)
+                                logging.info(f"Cleaned up placeholder user: {placeholder_email}")
+                            
+                            # Add admin user to workspace
+                            user_workspace = UserWorkspace(
+                                user_id=user.id,
+                                workspace_id=workspace.id,
+                                role='Admin'
+                            )
+                            db.session.add(user_workspace)
+                            
+                            # Clear the session creation token since it's been used
+                            session.pop('workspace_creation_token', None)
+                            session.pop('created_workspace_id', None)
+                            
+                            db.session.commit()
+                            logging.info(f"Successfully assigned admin {email} to session-created workspace {workspace.name}")
+                            
+                        # Check if this is a cross-browser available workspace
+                        elif workspace_data.get('cross_browser_available'):
+                            logging.info(f"Processing cross-browser workspace assignment for {email} to workspace {workspace.name}")
+                            
+                            # Find and clean up placeholder user
+                            placeholder_user = User.query.get(workspace.created_by)
+                            if placeholder_user and placeholder_user.email.startswith('pending_'):
+                                # Transfer ownership from placeholder to actual user
+                                workspace.created_by = user.id
+                                
+                                # Update company ownership too
+                                company = Company.query.filter_by(workspace_id=workspace.id).first()
+                                if company and company.created_by == placeholder_user.id:
+                                    company.created_by = user.id
+                                
+                                # Delete placeholder user
+                                db.session.delete(placeholder_user)
+                                logging.info(f"Cleaned up placeholder user: {placeholder_user.email}")
+                            
+                            # Add admin user to workspace
+                            user_workspace = UserWorkspace(
+                                user_id=user.id,
+                                workspace_id=workspace.id,
+                                role='Admin'
+                            )
+                            db.session.add(user_workspace)
+                            db.session.commit()
+                            
+                            logging.info(f"Successfully assigned admin {email} to cross-browser workspace {workspace.name}")
+                            
+                        # Check if this is a pending admin assignment (email match)
+                        elif workspace_data.get('pending_admin'):
+                            logging.info(f"Processing pending admin assignment for {email} to workspace {workspace.name}")
+                            
+                            # Find and clean up placeholder user
+                            placeholder_email = f"pending_{email}"
+                            placeholder_user = User.query.filter_by(email=placeholder_email).first()
+                            
+                            if placeholder_user and workspace.created_by == placeholder_user.id:
+                                # Transfer ownership from placeholder to actual user
+                                workspace.created_by = user.id
+                                
+                                # Update company ownership too
+                                company = Company.query.filter_by(workspace_id=workspace.id).first()
+                                if company and company.created_by == placeholder_user.id:
+                                    company.created_by = user.id
+                                
+                                # Delete placeholder user
+                                db.session.delete(placeholder_user)
+                                logging.info(f"Cleaned up placeholder user: {placeholder_email}")
+                            
+                            # Add admin user to workspace
+                            user_workspace = UserWorkspace(
+                                user_id=user.id,
+                                workspace_id=workspace.id,
+                                role='Admin'
+                            )
+                            db.session.add(user_workspace)
+                            db.session.commit()
+                            
+                            logging.info(f"Successfully assigned admin {email} to workspace {workspace.name}")
                         else:
-                            logging.info(f"User {email} already has access to workspace {workspace.name} with role {user_workspace.role}")
+                            # Check if user is already in this workspace
+                            user_workspace = UserWorkspace.query.filter_by(
+                                user_id=user.id, 
+                                workspace_id=workspace.id
+                            ).first()
+                            
+                            logging.info(f"Session setting - User ID: {user.id}, Workspace ID: {workspace.id}, Workspace created_by: {workspace.created_by}")
+                            logging.info(f"Session setting - Existing UserWorkspace: {user_workspace.role if user_workspace else 'None'}")
+                            
+                            if not user_workspace:
+                                # Check if user is the workspace creator (admin)
+                                if workspace.created_by == user.id:
+                                    # Workspace creator gets admin access
+                                    role = 'Admin'
+                                    user_workspace = UserWorkspace(
+                                        user_id=user.id,
+                                        workspace_id=workspace.id,
+                                        role=role
+                                    )
+                                    db.session.add(user_workspace)
+                                    db.session.commit()
+                                    logging.info(f"Added workspace creator {email} to workspace {workspace.name} with role {role}")
+                                else:
+                                    # This should not happen if user was found via /api/user/workspaces
+                                    logging.error(f"CRITICAL: User {email} (ID: {user.id}) found via /api/user/workspaces but no UserWorkspace relationship exists for workspace {workspace.name} (ID: {workspace.id})")
+                                    
+                                    # Let's check if there are any UserWorkspace records for this user
+                                    all_user_workspaces = UserWorkspace.query.filter_by(user_id=user.id).all()
+                                    logging.error(f"All UserWorkspace records for user {user.id}: {[(uw.workspace_id, uw.role) for uw in all_user_workspaces]}")
+                                    
+                                    # For now, let's be permissive and create the relationship
+                                    user_workspace = UserWorkspace(
+                                        user_id=user.id,
+                                        workspace_id=workspace.id,
+                                        role='Member'
+                                    )
+                                    db.session.add(user_workspace)
+                                    db.session.commit()
+                                    logging.info(f"Created missing UserWorkspace relationship for {email} to workspace {workspace.name}")
+                            else:
+                                logging.info(f"User {email} already has access to workspace {workspace.name} with role {user_workspace.role}")
                         
                         # Ensure a company exists for this workspace
                         existing_company = Company.query.filter_by(workspace_id=workspace.id).first()

@@ -340,6 +340,29 @@
 
                 await sendSignInLinkToEmail(window.firebaseAuth, email, actionCodeSettings);
                 localStorage.setItem('emailForSignIn', email);
+                
+                // Save email to database and associate with pending workspace
+                try {
+                    const pendingWorkspace = sessionStorage.getItem('pending_workspace') || localStorage.getItem('pending_workspace');
+                    if (pendingWorkspace) {
+                        const workspaceData = JSON.parse(pendingWorkspace);
+                        console.log('Associating email with workspace:', email, workspaceData.name);
+                        
+                        await fetch('/api/workspace/associate-email', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                workspace_id: workspaceData.id,
+                                email: email
+                            })
+                        });
+                        console.log('Email successfully associated with workspace');
+                    }
+                } catch (error) {
+                    console.warn('Could not associate email with workspace:', error);
+                    // Don't fail the whole flow if this fails
+                }
+                
                 showSuccess('Sign-in link sent! Check your email (and spam folder)');
             } catch (error) {
                 console.error('Error:', error);

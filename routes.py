@@ -91,9 +91,12 @@ def get_user_workspaces():
         
         # Get all workspaces this user already has explicit access to
         user_workspaces = UserWorkspace.query.filter_by(user_id=user.id).all()
+        logging.info(f"Found {len(user_workspaces)} workspace memberships for user {email} (ID: {user.id})")
+        
         for uw in user_workspaces:
             workspace = uw.workspace
             if workspace and workspace.id not in processed_workspace_ids:
+                logging.info(f"Adding workspace to list: {workspace.name} (Role: {uw.role})")
                 workspaces_data.append({
                     "id": workspace.id,
                     "name": workspace.name,
@@ -391,13 +394,9 @@ def create_workspace():
         session['workspace_creation_token'] = creation_token
         session['created_workspace_id'] = workspace.id
         
-        # CROSS-BROWSER FALLBACK: Also store in database for 1 hour
+        # CROSS-BROWSER FALLBACK: Recently created workspaces (within 1 hour) are available
         # This allows sign-in from different browsers/devices
         from datetime import datetime, timedelta
-        workspace.workspace_code = f"{workspace.workspace_code}_{creation_token[:8]}"  # Embed token for lookup
-        
-        # Set a temporary flag that this workspace is awaiting admin assignment
-        # We'll use created_at timestamp to expire this after 1 hour
         workspace_expiry = datetime.utcnow() + timedelta(hours=1)
         logging.info(f"Workspace {workspace.name} available for cross-browser sign-in until {workspace_expiry}")
         
@@ -2884,6 +2883,8 @@ def add_team_member():
         )
         db.session.add(user_workspace)
         db.session.commit()
+        
+        logging.info(f"Successfully added team member: {email} (User ID: {existing_user.id}) to workspace {workspace_id} with role {role}")
 
         # Activity logging removed for now
 

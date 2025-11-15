@@ -210,9 +210,12 @@ class EnhancedOnboardingSystem {
         
         // Prevent scroll and re-position spotlight on any scroll attempt
         this.scrollHandler = () => this.updateSpotlightPosition();
+        this.wheelHandler = (e) => e.preventDefault();
+        this.touchmoveHandler = (e) => e.preventDefault();
+        
         window.addEventListener('scroll', this.scrollHandler, true);
-        window.addEventListener('wheel', (e) => e.preventDefault(), { passive: false });
-        window.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+        window.addEventListener('wheel', this.wheelHandler, { passive: false });
+        window.addEventListener('touchmove', this.touchmoveHandler, { passive: false });
     }
     
     showStep(stepIndex) {
@@ -372,8 +375,20 @@ class EnhancedOnboardingSystem {
         this.overlay.classList.remove('active');
         this.tooltip.classList.remove('active');
         
+        // Re-enable scrolling
         document.body.style.overflow = '';
         document.documentElement.style.overflow = '';
+        
+        // Remove all scroll prevention event listeners
+        if (this.scrollHandler) {
+            window.removeEventListener('scroll', this.scrollHandler, true);
+        }
+        if (this.wheelHandler) {
+            window.removeEventListener('wheel', this.wheelHandler, { passive: false });
+        }
+        if (this.touchmoveHandler) {
+            window.removeEventListener('touchmove', this.touchmoveHandler, { passive: false });
+        }
         
         if (completed) {
             localStorage.setItem('embee_onboarding_completed', 'true');
@@ -624,8 +639,12 @@ class EnhancedOnboardingSystem {
     }
     
     restartOnboarding() {
+        // Clear all onboarding completion flags
         localStorage.removeItem('embee_onboarding_completed');
         sessionStorage.removeItem('embee_onboarding_completed');
+        sessionStorage.setItem('user_session_started', 'true');
+        
+        // Start onboarding immediately
         this.startOnboarding();
     }
     
@@ -703,19 +722,21 @@ const onboardingStyles = `
         width: 100%;
         height: 100%;
         background: rgba(15, 23, 42, 0.85);
-        backdrop-filter: blur(4px);
-        -webkit-backdrop-filter: blur(4px);
+        pointer-events: none;
     }
     
     .onboarding-spotlight {
         position: absolute;
         background: transparent;
         border-radius: 20px;
-        box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.85);
-        border: 3px solid #3b82f6;
+        box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.92);
+        border: 4px solid #3b82f6;
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         z-index: 10001;
         animation: glow 2s ease-in-out infinite;
+        pointer-events: none;
+        /* Ensure content inside is not affected */
+        mix-blend-mode: normal;
     }
     
     .onboarding-spotlight.pulse {
@@ -1149,6 +1170,7 @@ function addHelpButton() {
     
     document.body.appendChild(helpButton);
     
+    // Always keep the button visible, hide only during active onboarding
     const observer = new MutationObserver(() => {
         if (window.onboardingSystem?.isActive) {
             helpButton.classList.add('hidden');
@@ -1158,6 +1180,9 @@ function addHelpButton() {
     });
     
     observer.observe(document.body, { childList: true, subtree: true });
+    
+    // Ensure button is always visible on page load
+    helpButton.classList.remove('hidden');
 }
 
 window.EnhancedOnboardingSystem = EnhancedOnboardingSystem;

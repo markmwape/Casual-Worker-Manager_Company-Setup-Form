@@ -440,18 +440,18 @@ class EnhancedOnboardingSystem {
                 <div class="completion-tips bg-blue-50 rounded-lg p-4 mb-6 text-left border border-blue-200">
                     <p class="font-semibold text-blue-900 mb-3 text-sm">Quick wins to get started:</p>
                     <div class="space-y-2 text-sm text-blue-800">
-                        <div class="flex items-start gap-2">
+                        <a href="/workers" class="flex items-start gap-2 p-2 rounded hover:bg-blue-100 transition-colors cursor-pointer">
                             <span class="text-lg">👥</span>
-                            <span>Add your first workers</span>
-                        </div>
-                        <div class="flex items-start gap-2">
+                            <span class="hover:underline">Add your first workers</span>
+                        </a>
+                        <a href="/tasks" class="flex items-start gap-2 p-2 rounded hover:bg-blue-100 transition-colors cursor-pointer">
                             <span class="text-lg">📋</span>
-                            <span>Create a task and assign workers</span>
-                        </div>
-                        <div class="flex items-start gap-2">
+                            <span class="hover:underline">Create a task and assign workers</span>
+                        </a>
+                        <a href="/reports" class="flex items-start gap-2 p-2 rounded hover:bg-blue-100 transition-colors cursor-pointer">
                             <span class="text-lg">✅</span>
-                            <span>Track attendance and generate reports</span>
-                        </div>
+                            <span class="hover:underline">Track attendance and generate reports</span>
+                        </a>
                     </div>
                 </div>
                 

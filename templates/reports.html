@@ -133,9 +133,9 @@
                 <div class="mt-8 p-6 bg-gradient-to-br from-brand-navy-50 to-brand-navy-100 rounded-2xl border border-brand-navy-200 shadow-sm">
                     <div class="flex items-start gap-4">
                         <i data-feather="info" class="w-5 h-5 text-brand-navy-600 flex-shrink-0 mt-1"></i>
-                        <div>
+                        <div class="flex-1 min-w-0">
                             <h3 class="font-semibold text-brand-navy-800 mb-1 text-sm">About Report Generation</h3>
-                            <p class="text-brand-navy-700 text-sm">Reports will include all attendance records, task completions, and worker activities within your selected date range. Make sure to choose an appropriate timeframe for accurate analytics.</p>
+                            <p class="text-brand-navy-700 text-sm leading-relaxed">Reports will include all attendance records, task completions, and worker activities within your selected date range. Make sure to choose an appropriate timeframe for accurate analytics.</p>
                         </div>
                     </div>
                 </div>
@@ -285,10 +285,10 @@
                                 <i data-feather="calendar" class="w-8 h-8 text-green-500"></i>
                             </div>
                             <h3 class="text-lg font-semibold text-gray-800 mb-2">No Per Day Attendance Records Found</h3>
-                            <p class="text-gray-600 max-w-md mx-auto mb-6">Attendance records will appear here once you start marking workers as Present or Absent in your tasks.</p>
-                            <div class="bg-green-50 border border-green-200 rounded-lg p-4 max-w-lg mx-auto">
+                            <p class="text-gray-600 max-w-md mx-auto mb-6 px-4 leading-relaxed">Attendance records will appear here once you start marking workers as Present or Absent in your tasks.</p>
+                            <div class="bg-green-50 border border-green-200 rounded-lg p-4 max-w-lg mx-auto overflow-hidden">
                                 <div class="text-green-800 font-medium text-sm mb-2">💡 How to record attendance:</div>
-                                <div class="text-green-700 text-xs space-y-1">
+                                <div class="text-green-700 text-xs space-y-1 leading-relaxed">
                                     <div>1. Go to Tasks → Select a Task → Mark Attendance</div>
                                     <div>2. Choose Present or Absent for each worker</div>
                                     <div>3. Click Save - your data will appear in reports!</div>
@@ -297,13 +297,13 @@
                         </div>
                         {% else %}
                         <!-- Add info when data is present -->
-                        <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4 w-full overflow-hidden">
                             <div class="flex flex-col items-center justify-center text-center gap-2 text-green-800 text-sm">
-                                <div class="flex items-center justify-center gap-2">
-                                    <i class="fas fa-check-circle"></i>
+                                <div class="flex items-center justify-center gap-2 flex-wrap">
+                                    <i class="fas fa-check-circle flex-shrink-0"></i>
                                     <span class="font-medium">{{ per_day_records|length }} attendance record(s) found</span>
                                 </div>
-                                <span class="text-green-600 text-xs">• Data automatically synced from task attendance</span>
+                                <span class="text-green-600 text-xs break-words">• Data automatically synced from task attendance</span>
                             </div>
                         </div>
                         {% endif %}
@@ -477,10 +477,10 @@
                                 <i data-feather="package" class="w-8 h-8 text-blue-500"></i>
                             </div>
                             <h3 class="text-lg font-semibold text-gray-800 mb-2">No Per Unit/Part Records Found</h3>
-                            <p class="text-gray-600 max-w-md mx-auto mb-6">Unit completion records will appear here once you start recording completed units for per-unit tasks.</p>
-                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-lg mx-auto">
+                            <p class="text-gray-600 max-w-md mx-auto mb-6 px-4 leading-relaxed">Unit completion records will appear here once you start recording completed units for per-unit tasks.</p>
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-lg mx-auto overflow-hidden">
                                 <div class="text-blue-800 font-medium text-sm mb-2">💡 How to record units:</div>
-                                <div class="text-blue-700 text-xs space-y-1">
+                                <div class="text-blue-700 text-xs space-y-1 leading-relaxed">
                                     <div>1. Create a "Per Unit/Part" payment type task</div>
                                     <div>2. Go to task attendance and enter units completed</div>
                                     <div>3. Click Save - your data will appear in reports!</div>
@@ -489,13 +489,13 @@
                         </div>
                         {% else %}
                         <!-- Add info when data is present -->
-                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 w-full overflow-hidden">
                             <div class="flex flex-col items-center justify-center text-center gap-2 text-blue-800 text-sm">
-                                <div class="flex items-center justify-center gap-2">
-                                    <i class="fas fa-check-circle"></i>
+                                <div class="flex items-center justify-center gap-2 flex-wrap">
+                                    <i class="fas fa-check-circle flex-shrink-0"></i>
                                     <span class="font-medium">{{ per_part_records|length }} unit completion record(s) found</span>
                                 </div>
-                                <span class="text-blue-600 text-xs">• Data automatically synced from task units</span>
+                                <span class="text-blue-600 text-xs break-words">• Data automatically synced from task units</span>
                             </div>
                         </div>
                         {% endif %}
@@ -658,10 +658,10 @@
                                 <i data-feather="clock" class="w-8 h-8 text-purple-500"></i>
                             </div>
                             <h3 class="text-lg font-semibold text-gray-800 mb-2">No Hours Worked Data</h3>
-                            <p class="text-gray-600 max-w-md mx-auto mb-6">No hourly work records found for the selected date range. Make sure workers have logged hours for per-hour tasks.</p>
-                            <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 max-w-lg mx-auto">
+                            <p class="text-gray-600 max-w-md mx-auto mb-6 px-4 leading-relaxed">No hourly work records found for the selected date range. Make sure workers have logged hours for per-hour tasks.</p>
+                            <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 max-w-lg mx-auto overflow-hidden">
                                 <div class="text-purple-800 font-medium text-sm mb-2">💡 How to record hours:</div>
-                                <div class="text-purple-700 text-xs space-y-1">
+                                <div class="text-purple-700 text-xs space-y-1 leading-relaxed">
                                     <div>1. Create a "Per Hour" payment type task</div>
                                     <div>2. Go to task hours worked page and enter hours worked</div>
                                     <div>3. Click Save - your data will appear in reports!</div>
@@ -669,13 +669,13 @@
                             </div>
                         </div>
                         {% else %}
-                        <div class="bg-gradient-to-r from-purple-50 to-purple-100 p-4 border-t border-purple-200">
+                        <div class="bg-gradient-to-r from-purple-50 to-purple-100 p-4 border-t border-purple-200 w-full overflow-hidden">
                             <div class="flex flex-col items-center justify-center text-center gap-2 text-purple-700">
-                                <div class="flex items-center justify-center gap-2">
-                                    <i class="fas fa-check-circle"></i>
+                                <div class="flex items-center justify-center gap-2 flex-wrap">
+                                    <i class="fas fa-check-circle flex-shrink-0"></i>
                                     <span class="font-medium">{{ per_hour_records|length }} hourly work record(s) found</span>
                                 </div>
-                                <span class="text-purple-600 text-xs">• Data automatically synced from task hours tracking</span>
+                                <span class="text-purple-600 text-xs break-words">• Data automatically synced from task hours tracking</span>
                             </div>
                         </div>
                         {% endif %}

@@ -317,7 +317,9 @@
         // Email Sign-in
         emailForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            console.log('Form submit triggered');
             const email = emailInput.value.trim();
+            console.log('Email value:', email);
 
             if (!email) {
                 showError('Please enter your email address');
@@ -328,7 +330,14 @@
             emailSubmitBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="animation: spin 1s linear infinite;"></i> Sending...';
 
             try {
+                // Check if Firebase is ready
+                if (!window.firebaseAuth) {
+                    throw new Error('Firebase not initialized. Please refresh the page.');
+                }
+                console.log('Firebase auth ready');
+                
                 // Get runtime URL
+                console.log('Fetching runtime URL...');
                 const urlResponse = await fetch('/url');
                 const urlData = await urlResponse.json();
                 const baseUrl = urlData.url;
@@ -338,7 +347,9 @@
                     handleCodeInApp: true,
                 };
 
+                console.log('Sending sign-in link to:', email);
                 await sendSignInLinkToEmail(window.firebaseAuth, email, actionCodeSettings);
+                console.log('Sign-in link sent successfully');
                 localStorage.setItem('emailForSignIn', email);
                 
                 // Save email to database and associate with pending workspace

@@ -96,7 +96,7 @@ def get_user_workspaces():
         for uw in user_workspaces:
             workspace = uw.workspace
             if workspace and workspace.id not in processed_workspace_ids:
-                logging.info(f"Adding workspace to list: {workspace.name} (Role: {uw.role})")
+                logging.info(f"Adding workspace to list: {workspace.name} (ID: {workspace.id}, Role: {uw.role})")
                 workspaces_data.append({
                     "id": workspace.id,
                     "name": workspace.name,
@@ -107,6 +107,10 @@ def get_user_workspaces():
                     "created_at": workspace.created_at.strftime('%Y-%m-%d') if workspace.created_at else None
                 })
                 processed_workspace_ids.add(workspace.id)
+            elif not workspace:
+                logging.warning(f"UserWorkspace {uw.id} has no associated workspace!")
+            else:
+                logging.warning(f"Workspace {workspace.name} (ID: {workspace.id}) already processed")
         
         # Email is already associated with workspace when sign-in link was sent
         # Just need to fetch the user's workspaces normally
@@ -114,19 +118,21 @@ def get_user_workspaces():
         
         # CROSS-BROWSER FALLBACK: Check for recently created workspaces without real admin
         # This handles sign-in from different browser/device than creation
+        # SECURITY: Only show workspaces where THIS user should be admin
         from datetime import datetime, timedelta
         recent_cutoff = datetime.utcnow() - timedelta(hours=1)
         
         recent_workspaces = Workspace.query.filter(
-            Workspace.created_at >= recent_cutoff  # Created within last hour
+            Workspace.created_at >= recent_cutoff,  # Created within last hour
+            Workspace.company_email == email  # SECURITY: Only workspaces created with THIS email
         ).all()
         
         for workspace in recent_workspaces:
             if workspace.id not in processed_workspace_ids:
-                # Check if workspace still has placeholder admin
+                # Check if workspace still has placeholder admin for THIS email
                 placeholder_user = User.query.get(workspace.created_by)
-                if placeholder_user and placeholder_user.email.startswith('pending_'):
-                    logging.info(f"Found recently created workspace available for cross-browser sign-in: {workspace.name}")
+                if placeholder_user and placeholder_user.email == f"pending_{email}":
+                    logging.info(f"Found recently created workspace for {email}: {workspace.name}")
                     workspaces_data.append({
                         "id": workspace.id,
                         "name": workspace.name,
@@ -565,7 +571,8 @@ def set_session():
                 elif workspace_data.get('id'):
                     # Existing workspace or pending admin assignment
                     workspace = Workspace.query.get(workspace_data['id'])
-                    logging.info(f"Found workspace for ID {workspace_data['id']}: {workspace.name if workspace else 'None'}")
+                    logging.info(f"Queried workspace by ID {workspace_data['id']}: {workspace.name if workspace else 'None'}")
+                    logging.info(f"workspace_data flags - session_created: {workspace_data.get('session_created')}, cross_browser_available: {workspace_data.get('cross_browser_available')}, pending_admin: {workspace_data.get('pending_admin')}")
                     
                     if workspace:
                         # Check if this is a session-created workspace (any email can become admin)
@@ -731,6 +738,10 @@ def set_session():
                     return jsonify({"error": "Invalid workspace data"}), 400
             
             # Set workspace info in session if we have a workspace
+            logging.info(f"About to set session - workspace in locals: {'workspace' in locals()}")
+            if 'workspace' in locals():
+                logging.info(f"workspace variable exists, value: {workspace if workspace else 'None'}")
+            
             if 'workspace' in locals() and workspace:
                 # Always query for the UserWorkspace relationship to get the role
                 user_workspace_rel = UserWorkspace.query.filter_by(
@@ -2854,7 +2865,7 @@ def add_team_member():
             return jsonify({'success': False, 'error': 'Only admins can add team members'}), 403
         
         data = request.get_json()
-        email = data.get('email')
+        email = data.get('email', '').strip().lower()  # Normalize email to lowercase
         role = data.get('role')
 
         if not email or not role:

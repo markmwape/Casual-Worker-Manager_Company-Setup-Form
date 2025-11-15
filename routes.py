@@ -267,13 +267,10 @@ def associate_workspace_email():
             company = Company.query.filter_by(workspace_id=workspace.id).first()
             if company:
                 logging.info(f"Found company: {company.name} (ID: {company.id}), current created_by: {company.created_by}")
-                if company.created_by == placeholder_user.id:
+                if company.created_by == placeholder_user.id or company.created_by is None:
+                    # Assign ownership to the real user
                     company.created_by = user.id
-                    logging.info(f"✓ Updated company {company.id} ownership from {placeholder_user.id} to {user.id}")
-                elif company.created_by is None:
-                    # Orphaned company without owner - assign to user
-                    company.created_by = user.id
-                    logging.info(f"✓ Assigned orphaned company {company.id} to user {user.id}")
+                    logging.info(f"✓ Updated company {company.id} ownership to user {user.id}")
                 else:
                     logging.info(f"Company {company.id} already has a different owner: {company.created_by}")
             else:
@@ -651,7 +648,7 @@ def set_session():
                             
                             # Update company ownership too
                             company = Company.query.filter_by(workspace_id=workspace.id).first()
-                            if company:
+                            if company and (company.created_by == placeholder_user.id or company.created_by is None):
                                 company.created_by = user.id
                             
                             # Delete placeholder user
@@ -739,7 +736,7 @@ def set_session():
                                 
                                 # Update company ownership too
                                 company = Company.query.filter_by(workspace_id=workspace.id).first()
-                                if company and company.created_by == placeholder_user.id:
+                                if company and (company.created_by == placeholder_user.id or company.created_by is None):
                                     company.created_by = user.id
                                 
                                 # Delete placeholder user
@@ -773,7 +770,7 @@ def set_session():
                                 
                                 # Update company ownership too
                                 company = Company.query.filter_by(workspace_id=workspace.id).first()
-                                if company and company.created_by == placeholder_user.id:
+                                if company and (company.created_by == placeholder_user.id or company.created_by is None):
                                     company.created_by = user.id
                                 
                                 # Delete placeholder user
@@ -805,7 +802,7 @@ def set_session():
                                 
                                 # Update company ownership too
                                 company = Company.query.filter_by(workspace_id=workspace.id).first()
-                                if company and company.created_by == placeholder_user.id:
+                                if company and (company.created_by == placeholder_user.id or company.created_by is None):
                                     company.created_by = user.id
                                 
                                 # Delete placeholder user

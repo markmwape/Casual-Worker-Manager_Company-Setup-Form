@@ -266,8 +266,8 @@
 
                 <!-- Create Workspace Link -->
                 <div class="mt-6 pt-6 border-t border-gray-300" data-onboarding="workspace-section">
-                    <p class="text-center text-gray-600 text-sm mb-3 font-medium">Don't have a workspace yet?</p>
-                    <a href="/create-workspace" class="block w-full py-3 px-4 border-2 border-blue-500 text-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition text-center shadow-md hover:shadow-lg hover:scale-105">
+                    <p class="text-center text-gray-600 text-sm mb-3 font-medium" id="workspace-prompt-text">Don't have a workspace yet?</p>
+                    <a href="/create-workspace" id="create-workspace-link" class="block w-full py-3 px-4 border-2 border-blue-500 text-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition text-center shadow-md hover:shadow-lg hover:scale-105">
                         <i class="fas fa-plus mr-2"></i>Create New Workspace
                     </a>
                 </div>
@@ -587,6 +587,30 @@
                         console.log('Auto-focused email input for workspace creator');
                     }
                 }, 300);
+
+                // Disable "Create New Workspace" link since they just created one
+                const createWorkspaceLink = document.getElementById('create-workspace-link');
+                const workspacePromptText = document.getElementById('workspace-prompt-text');
+                
+                if (createWorkspaceLink) {
+                    // Make it look disabled
+                    createWorkspaceLink.classList.remove('border-blue-500', 'text-blue-600', 'hover:bg-blue-50', 'hover:shadow-lg', 'hover:scale-105');
+                    createWorkspaceLink.classList.add('border-gray-300', 'text-gray-400', 'cursor-not-allowed', 'opacity-50');
+                    
+                    // Prevent clicking
+                    createWorkspaceLink.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        console.log('Create workspace disabled - workspace already created');
+                    });
+                    
+                    // Update text to show they already created one
+                    if (workspacePromptText) {
+                        workspacePromptText.textContent = 'You just created a workspace! Sign in to access it.';
+                        workspacePromptText.classList.add('text-green-600', 'font-semibold');
+                    }
+                    
+                    console.log('Disabled create workspace link - user just created a workspace');
+                }
             }
         });
     </script>

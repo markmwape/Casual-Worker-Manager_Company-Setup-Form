@@ -53,6 +53,10 @@ class EnhancedOnboardingSystem {
         const currentPage = this.getCurrentPage();
         if (currentPage === 'unknown') return false;
         
+        // Check if a modal is open - don't show onboarding
+        const modalOpen = document.querySelector('.modal.show, .modal.active, [role="dialog"][aria-hidden="false"]');
+        if (modalOpen) return false;
+        
         const isNewSession = !sessionStorage.getItem('user_session_started');
         if (isNewSession) {
             sessionStorage.setItem('user_session_started', 'true');
@@ -195,6 +199,13 @@ class EnhancedOnboardingSystem {
     startOnboarding() {
         if (!this.flows[this.currentPage]) {
             console.warn(`No onboarding flow for: ${this.currentPage}`);
+            return;
+        }
+        
+        // Don't start if a modal is currently open
+        const modalOpen = document.querySelector('.modal.show, .modal.active, [role="dialog"][aria-hidden="false"]');
+        if (modalOpen) {
+            console.log('Modal is open, skipping onboarding');
             return;
         }
         
@@ -601,6 +612,41 @@ class EnhancedOnboardingSystem {
                 padding: 8
             },
             {
+                title: "Custom Fields Workflow 🎯",
+                description: "Custom fields let you add dynamic data to your reports. You can create fields like bonuses, deductions, or special rates that change per worker or task.",
+                selector: "[data-onboarding='custom-fields'], .custom-fields-section, .report-fields",
+                position: "bottom",
+                padding: 8
+            },
+            {
+                title: "Add Custom Field",
+                description: "Click to create a new custom field. Give it a name (e.g., 'Bonus', 'Transport', 'Lunch Deduction') and set the field type.",
+                selector: "[data-onboarding='add-field-btn'], .btn-add-field, .add-custom-field-btn",
+                position: "bottom",
+                padding: 8
+            },
+            {
+                title: "Field Configuration",
+                description: "Set up your custom field: Choose a name, select the payout type (Deduction, Addition, or Custom Rate), and decide if it applies to all workers or specific ones.",
+                selector: "[data-onboarding='field-config'], .field-settings, .custom-field-form",
+                position: "top",
+                padding: 8
+            },
+            {
+                title: "Field Value Entry",
+                description: "Enter the value for each worker. Use positive numbers for additions/bonuses, negative for deductions. Values are applied during calculation.",
+                selector: "[data-onboarding='field-values'], .field-input, .value-column",
+                position: "right",
+                padding: 8
+            },
+            {
+                title: "Apply & Calculate",
+                description: "Once all custom fields are filled, the system automatically calculates the final payroll with additions, deductions, and custom rates included.",
+                selector: "[data-onboarding='calculate-btn'], .btn-primary, .calculate-report-btn",
+                position: "bottom",
+                padding: 8
+            },
+            {
                 title: "Export & Download",
                 description: "Download as CSV or Excel for accounting, payroll, or record-keeping.",
                 selector: "[data-onboarding='export-buttons'], .export-options, .download-btn",
@@ -740,20 +786,16 @@ const onboardingStyles = `
     
     .onboarding-spotlight {
         position: absolute;
-        background: white;
+        background: transparent;
         border-radius: 20px;
         /* Create a cutout effect - the box-shadow creates the dark overlay around it */
-        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0),
-                    0 0 1px 1px rgba(255, 255, 255, 0.1),
-                    0 0 0 9999px rgba(15, 23, 42, 0.92);
+        box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.92);
         border: 4px solid #3b82f6;
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         z-index: 10001;
         animation: glow 2s ease-in-out infinite;
         pointer-events: none;
-        /* This makes the white background punch through */
         mix-blend-mode: normal;
-        isolation: isolate;
     }
     
     .onboarding-spotlight.pulse {
@@ -764,7 +806,6 @@ const onboardingStyles = `
     .onboarding-highlight {
         position: relative !important;
         z-index: 10002 !important;
-        background: inherit !important;
         isolation: isolate !important;
     }
     
@@ -773,6 +814,7 @@ const onboardingStyles = `
     .onboarding-highlight * {
         opacity: 1 !important;
         filter: none !important;
+        visibility: visible !important;
     }
     
     .onboarding-tooltip {
@@ -1187,6 +1229,12 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function addHelpButton() {
+    // Don't show help button on sign-in page
+    const path = window.location.pathname;
+    if (path === '/signin' || path === '/finishSignin') {
+        return;
+    }
+    
     const helpButton = document.createElement('button');
     helpButton.className = 'onboarding-help-button';
     helpButton.innerHTML = '<i class="fas fa-question"></i>';

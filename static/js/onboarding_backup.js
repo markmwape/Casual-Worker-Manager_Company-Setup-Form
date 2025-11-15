@@ -1,7 +1,7 @@
 /**
- * Casual Worker Manager - Complete Interactive Onboarding System
- * Comprehensive guided tour from sign-in through all main features
- * Features: Dashboard, Workers, Tasks, and Reports (excludes billing/payments)
+ * Embee Accounting - Interactive Onboarding System
+ * Complete guided tour for Casual Worker Manager
+ * Guides users from sign-in through all main features: Dashboard, Workers, Tasks, and Reports
  */
 
 class OnboardingSystem {
@@ -134,14 +134,7 @@ class OnboardingSystem {
                 <div class="bg-white rounded-lg p-6 m-4 max-w-md text-center shadow-xl">
                     <div class="text-4xl mb-4">👋</div>
                     <h2 class="text-xl font-bold mb-2">Welcome to Casual Worker Manager!</h2>
-                    <p class="text-gray-600 mb-4">Let us show you around with a quick guided tour to help you get started with managing your workforce effectively.</p>
-                    <div class="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                        <div class="flex items-center gap-2 text-blue-800">
-                            <i class="fas fa-clock"></i>
-                            <span class="font-semibold">About Your Trial</span>
-                        </div>
-                        <p class="text-sm text-blue-700 mt-1">You're currently on a free trial. When your trial period ends, you'll need to choose a subscription plan to continue using all features.</p>
-                    </div>
+                    <p class="text-gray-600 mb-4">Let us show you around with a quick guided tour to help you get started.</p>
                     <div class="flex gap-2 justify-center">
                         <button id="start-tour-btn" class="btn btn-primary">Start Tour</button>
                         <button id="skip-tour-btn" class="btn btn-outline">Skip for Now</button>
@@ -161,6 +154,91 @@ class OnboardingSystem {
             document.getElementById('welcome-message').remove();
             localStorage.setItem('embee_onboarding_completed', 'true');
         });
+    }
+    
+    createOverlay() {plication features from sign-in to all main pages
+ */
+
+class OnboardingSystem {
+    constructor() {
+        this.currentStep = 0;
+        this.totalSteps = 0;
+        this.isActive = false;
+        this.overlay = null;
+        this.tooltip = null;
+        this.currentPage = this.getCurrentPage();
+        
+        // Onboarding flow configuration
+        this.flows = {
+            'signin': this.getSignInFlow(),
+            'home': this.getHomeFlow(),
+            'workers': this.getWorkersFlow(),
+            'tasks': this.getTasksFlow(),
+            'reports': this.getReportsFlow(),
+            'attendance': this.getAttendanceFlow()
+        };
+        
+        this.init();
+    }
+    
+    init() {
+        this.createOverlay();
+        this.createTooltip();
+        this.bindEvents();
+        
+        // Check if user should see onboarding
+        this.checkAndStartOnboarding();
+    }
+    
+    getCurrentPage() {
+        const path = window.location.pathname;
+        if (path === '/signin' || path === '/finishSignin') return 'signin';
+        if (path === '/home' || path === '/') return 'home';
+        if (path === '/workers') return 'workers';
+        if (path === '/tasks' || path.includes('/task/')) return 'tasks';
+        if (path === '/reports') return 'reports';
+        if (path.includes('/attendance') || path.includes('/task_attendance')) return 'attendance';
+        return 'unknown';
+    }
+    
+    shouldShowOnboarding() {
+        // Multiple checks to ensure onboarding only shows for first-time users
+        
+        // 1. Check localStorage - most reliable for returning users
+        const hasSeenOnboarding = localStorage.getItem('embee_onboarding_completed');
+        if (hasSeenOnboarding === 'true') {
+            return false;
+        }
+        
+        // 2. Check URL parameter to skip onboarding
+        const skipOnboarding = new URLSearchParams(window.location.search).get('skip_onboarding');
+        if (skipOnboarding === 'true') {
+            return false;
+        }
+        
+        // 3. Check session storage (in case localStorage is disabled)
+        const sessionCompleted = sessionStorage.getItem('embee_onboarding_completed'); 
+        if (sessionCompleted === 'true') {
+            return false;
+        }
+        
+        // 4. Additional check: Don't show onboarding if user is on certain pages
+        const currentPage = this.getCurrentPage();
+        if (currentPage === 'unknown') {
+            return false;
+        }
+        
+        // 5. Check if user just signed in (new session indicator)
+        // This helps identify truly first-time users vs returning users
+        const isNewSession = !sessionStorage.getItem('user_session_started');
+        if (isNewSession) {
+            sessionStorage.setItem('user_session_started', 'true');
+            return true; // Show onboarding for new sessions
+        }
+        
+        // 6. Fallback: Only show if explicitly requested
+        const forceOnboarding = new URLSearchParams(window.location.search).get('show_onboarding');
+        return forceOnboarding === 'true';
     }
     
     createOverlay() {
@@ -373,17 +451,8 @@ class OnboardingSystem {
                         </div>
                     </div>
                 </div>
-                <h3>🎉 Onboarding Complete!</h3>
-                <p>You're now ready to manage your casual workers like a pro! Remember that your trial has limitations, and you'll need to upgrade when it expires to continue using all features.</p>
-                <div class="completion-tips">
-                    <p><strong>💡 Quick Tips:</strong></p>
-                    <ul class="text-left mt-2 space-y-1">
-                        <li>• Start by adding your first workers</li>
-                        <li>• Create tasks and assign workers to them</li>
-                        <li>• Track attendance and generate reports</li>
-                        <li>• Use the help button (?) anytime for guidance</li>
-                    </ul>
-                </div>
+                <h3>🎉 Tour Complete!</h3>
+                <p>You're now ready to manage your casual workers like a pro! Start by adding your first worker or creating a task.</p>
                 <div class="completion-actions">
                     <button class="btn-dismiss">Start Managing Workers</button>
                     <button class="btn-replay" onclick="window.onboardingSystem?.restartOnboarding()">Replay Tour</button>
@@ -402,28 +471,27 @@ class OnboardingSystem {
             if (message.parentNode) {
                 message.remove();
             }
-        }, 8000);
+        }, 5000);
     }
     
-    // ONBOARDING FLOWS FOR EACH PAGE
-    
+    // Onboarding flows for each page
     getSignInFlow() {
         return [
             {
-                title: "Welcome to Casual Worker Manager!",
-                description: "This powerful platform helps you manage your casual workforce efficiently. Let's start with a quick tour to show you everything you need to know about managing workers, tasks, and reports.",
+                title: "Welcome to Embee Accounting!",
+                description: "Let's get you started with our powerful worker management system. This tour will show you how to use all the main features.",
                 selector: null
             },
             {
-                title: "Sign In to Get Started",
-                description: "Use your Google account or email to sign in. If you're new, you can create a workspace for your company right here. This is where your workforce management journey begins!",
-                selector: ".auth-container, .signin-form",
+                title: "Sign In Options",
+                description: "You can sign in using your Google account or email. If you're new, you can also create a workspace for your company.",
+                selector: ".auth-container",
                 position: "bottom"
             },
             {
-                title: "Join or Create Your Workspace",
-                description: "If you have a workspace code from your team, enter it here to join an existing workspace. Otherwise, create a new workspace for your organization to start fresh.",
-                selector: "[data-onboarding='workspace-section'], .workspace-section",
+                title: "Join or Create Workspace",
+                description: "If you already have a workspace code from your team, enter it here. Otherwise, create a new workspace for your organization.",
+                selector: "[data-onboarding='workspace-section']",
                 position: "top"
             }
         ];
@@ -433,38 +501,32 @@ class OnboardingSystem {
         return [
             {
                 title: "Welcome to Your Dashboard!",
-                description: "This is your control center where you can see an overview of your workers, tasks, and business metrics at a glance. Everything you need to manage your workforce is accessible from here.",
-                selector: ".dashboard-container, .hero-glass"
+                description: "This is your control center where you can see an overview of your workers, tasks, and business metrics at a glance.",
+                selector: ".dashboard-container"
             },
             {
                 title: "Quick Stats Overview",
-                description: "These cards show your key metrics - total workers, active tasks, and reports. Click any card to navigate directly to that section and manage your workforce data.",
-                selector: "[data-onboarding='stats-container'], .stat-card",
+                description: "These cards show your key metrics - total workers, active tasks, and other important numbers for your business.",
+                selector: ".stats-container, .grid",
                 position: "bottom"
             },
             {
                 title: "Quick Actions",
-                description: "Use these buttons to quickly add new workers, create tasks, or record attendance without navigating to other pages. These shortcuts save you time in daily operations.",
-                selector: "[data-onboarding='quick-actions'], .quick-action-btn",
+                description: "Use these buttons to quickly add new workers or create tasks without navigating to other pages.",
+                selector: "[data-onboarding='quick-actions']",
                 position: "top"
             },
             {
                 title: "Navigation Sidebar",
-                description: "Use the sidebar to navigate between different sections: Dashboard (home), Workers (team management), Tasks (project management), and Reports (analytics). Each section has specialized tools for managing your business.",
-                selector: ".sidebar, .sidebar-container",
+                description: "Use this sidebar to navigate between different sections: Dashboard, Workers, Tasks, and Reports. Each section has specialized tools for managing your business.",
+                selector: ".sidebar-container",
                 position: "right"
             },
             {
                 title: "Team Members",
-                description: "See who has access to your workspace and their roles. If you're an admin, you can add new team members and manage their permissions here.",
-                selector: "[data-onboarding='team-section'], .team-table",
+                description: "See who has access to your workspace and their roles. You can manage team permissions here.",
+                selector: "[data-onboarding='team-section']",
                 position: "top"
-            },
-            {
-                title: "Trial Information",
-                description: "Keep track of your trial period here. You can see how much time is remaining and upgrade your plan when needed. The timer shows exactly when your trial expires.",
-                selector: ".subscription-success-alert, .trial-info, #trial-info",
-                position: "bottom"
             }
         ];
     }
@@ -473,37 +535,31 @@ class OnboardingSystem {
         return [
             {
                 title: "Worker Management Hub",
-                description: "This is your central place for managing all workers. Here you can add new team members, view their details, organize your workforce, and track their information efficiently.",
+                description: "This is where you manage all your workers. You can add new workers, view their details, and organize your team efficiently.",
                 selector: ".workers-container, .page-container"
             },
             {
                 title: "Add New Workers",
-                description: "Click this button to add individual workers to your team. You can enter their personal details, contact information, and any custom fields specific to your business needs.",
-                selector: "[data-onboarding='add-worker-btn'], .btn-primary, .add-worker-btn",
+                description: "Click this button to add individual workers or use the import feature to add multiple workers from an Excel file.",
+                selector: "[data-onboarding='add-worker-btn'], .btn-primary",
                 position: "bottom"
             },
             {
                 title: "Workers List",
-                description: "All your workers are displayed here with their information. You can search for specific workers, filter the list, and click on any worker to edit their details or view their work history.",
+                description: "All your workers are displayed here with their information. You can search, filter, and manage individual worker details.",
                 selector: "[data-onboarding='workers-table'], .workers-table, table",
                 position: "top"
             },
             {
-                title: "Search and Filter Workers",
-                description: "Use these tools to quickly find specific workers or filter your team by different criteria. This is especially useful when you have a large workforce to manage.",
-                selector: "[data-onboarding='search-workers'], .search-input, input[type='search']",
-                position: "bottom"
-            },
-            {
                 title: "Custom Fields",
-                description: "Create custom fields to capture additional information about your workers that's specific to your business. This could include skills, certifications, or any other relevant data.",
-                selector: "[data-onboarding='custom-fields'], .custom-fields-section",
+                description: "You can create custom fields to capture additional information about your workers that's specific to your business needs.",
+                selector: "[data-onboarding='custom-fields']",
                 position: "left"
             },
             {
-                title: "Import Workers from Excel",
-                description: "Save time by importing multiple workers at once from an Excel spreadsheet. The system will guide you through mapping your data columns to worker information fields.",
-                selector: "[data-onboarding='import-btn'], .import-workers-btn",
+                title: "Import Workers",
+                description: "Save time by importing multiple workers at once from an Excel spreadsheet. The system will guide you through mapping your data.",
+                selector: "[data-onboarding='import-btn']",
                 position: "bottom"
             }
         ];
@@ -513,38 +569,50 @@ class OnboardingSystem {
         return [
             {
                 title: "Task Management Center",
-                description: "Create and manage all your work projects here. You can assign workers to tasks, set deadlines, define payment structures, and track progress efficiently across all your projects.",
+                description: "Create and manage all your work tasks here. Assign workers, set deadlines, and track progress efficiently.",
                 selector: ".tasks-container, .page-container"
             },
             {
                 title: "Create New Tasks",
-                description: "Click here to create a new task or project. You can set different payment types (daily rate, hourly rate, or piece-rate work), assign specific workers, and set schedules and deadlines.",
-                selector: "[data-onboarding='create-task-btn'], .btn-primary, .create-task-btn",
+                description: "Click here to create a new task. You can set payment types (per day, per hour, or per piece), assign workers, and set schedules.",
+                selector: "[data-onboarding='create-task-btn'], .btn-primary",
                 position: "bottom"
             },
             {
-                title: "Task List & Status Tracking",
-                description: "View all your tasks with their current status: Pending (not started), In Progress (currently running), or Completed (finished). Tasks automatically update their status based on start dates and completion.",
+                title: "Task List & Status",
+                description: "View all your tasks with their current status: Pending, In Progress, or Completed. Tasks automatically update based on their start dates.",
                 selector: "[data-onboarding='tasks-table'], .tasks-table, table",
                 position: "top"
             },
             {
-                title: "Payment Structure Options",
-                description: "Tasks support different payment structures to match your business needs: daily rates (fixed amount per day), hourly rates (payment per hour worked), or piece-rate work (payment per unit completed).",
-                selector: "[data-onboarding='payment-types'], .payment-type-selector",
+                title: "Payment Types",
+                description: "Tasks support different payment structures: daily rates, hourly rates, or piece-rate work. Choose what works best for each job.",
+                selector: "[data-onboarding='payment-types']",
                 position: "left"
             },
             {
-                title: "Track Worker Attendance",
-                description: "Click on any task to track worker attendance and productivity. You can record who showed up, how many hours they worked, or how many units they completed for accurate payment calculation.",
-                selector: "[data-onboarding='attendance-link'], .task-row a, .attendance-link",
+                title: "Attendance Tracking",
+                description: "Click on any task to track worker attendance. You can record who showed up, how many hours they worked, or units they completed.",
+                selector: "[data-onboarding='attendance-link'], .task-row a",
                 position: "right"
             },
             {
-                title: "Assign Workers to Tasks",
-                description: "Select which workers will be part of each task. You can assign multiple workers to a single task and track their individual performance and attendance separately.",
-                selector: "[data-onboarding='assign-workers'], .worker-assignment",
+                title: "Hours Worked Tracking",
+                description: "For hourly-paid tasks, track exact hours worked per worker. Enter start/end times or total hours to calculate accurate payments.",
+                selector: "[data-onboarding='hours-tracking'], .hours-input",
+                position: "bottom"
+            },
+            {
+                title: "Units Completed",
+                description: "For piece-rate work, track units completed by each worker (e.g., items produced, tasks finished). This automatically calculates their payment based on the per-unit rate.",
+                selector: "[data-onboarding='units-completed'], .units-input",
                 position: "top"
+            },
+            {
+                title: "Attendance Status",
+                description: "Mark workers as Present, Absent, or Late. This affects their payment calculation and helps you track reliability and productivity patterns.",
+                selector: "[data-onboarding='attendance-status'], .attendance-checkbox",
+                position: "left"
             }
         ];
     }
@@ -552,38 +620,32 @@ class OnboardingSystem {
     getReportsFlow() {
         return [
             {
-                title: "Reports & Analytics Hub",
-                description: "Generate comprehensive reports for payroll processing, attendance tracking, and productivity analysis. Export your data in various formats for accounting software or team sharing.",
+                title: "Reports & Analytics",
+                description: "Generate detailed reports for payroll, attendance, and productivity. Export data in CSV or Excel format for your records.",
                 selector: ".reports-container, .page-container"
             },
             {
-                title: "Report Type Selection",
-                description: "Choose from different report types based on your payment structure: 'Per Day' reports for daily-rate workers, 'Per Part' for piece-rate work, or 'Per Hour' for hourly workers. Each type provides relevant calculations.",
-                selector: "[data-onboarding='report-types'], .report-type-selector, .report-tabs",
+                title: "Report Types",
+                description: "Choose from different report types: Per Day reports for daily workers, Per Part for piece-rate work, or Per Hour for hourly workers.",
+                selector: "[data-onboarding='report-types'], .report-type-selector",
                 position: "bottom"
             },
             {
                 title: "Date Range Selection",
-                description: "Select the specific date range for your report. You can generate reports for daily, weekly, monthly, or custom periods to match your payroll cycles and business needs.",
-                selector: "[data-onboarding='date-range'], .date-inputs, .date-picker",
+                description: "Select the date range for your report. You can generate reports for specific periods to match your payroll cycles.",
+                selector: "[data-onboarding='date-range'], .date-inputs",
                 position: "top"
             },
             {
-                title: "Filter Options",
-                description: "Use filters to narrow down your reports by specific workers, tasks, or other criteria. This helps you generate focused reports for specific teams or projects.",
-                selector: "[data-onboarding='report-filters'], .filter-section",
-                position: "left"
-            },
-            {
-                title: "Export and Download",
-                description: "Download your reports in CSV or Excel format. These files are perfect for importing into accounting software like Excel, QuickBooks, or for sharing with your accounting team.",
-                selector: "[data-onboarding='export-buttons'], .export-options, .download-btn",
+                title: "Export Options",
+                description: "Download your reports in CSV or Excel format. Perfect for importing into accounting software or sharing with your team.",
+                selector: "[data-onboarding='export-buttons'], .export-options",
                 position: "left"
             },
             {
                 title: "Custom Report Fields",
-                description: "Add custom calculations and additional fields to your reports to match your specific business requirements and payment structures. Customize reports to show exactly what you need.",
-                selector: "[data-onboarding='custom-fields-report'], .custom-report-fields",
+                description: "Add custom calculations and fields to your reports to match your specific business requirements and payment structures.",
+                selector: "[data-onboarding='custom-fields-report']",
                 position: "right"
             }
         ];
@@ -593,69 +655,65 @@ class OnboardingSystem {
         return [
             {
                 title: "Task Attendance Tracking",
-                description: "This is where you record worker attendance and track productivity for specific tasks. You can manage who showed up, hours worked, units completed, and calculate accurate payments.",
+                description: "This is where you record worker attendance and track their productivity for this specific task. You can manage hours, units completed, and attendance status.",
                 selector: ".attendance-container, .page-container"
             },
             {
                 title: "Worker Attendance List",
-                description: "All workers assigned to this task are listed here. You can see their attendance status, hours worked, and units completed at a glance. Each row represents one worker's performance for this task.",
+                description: "All assigned workers for this task are listed here. You can see their attendance status, hours worked, and units completed at a glance.",
                 selector: "[data-onboarding='attendance-table'], .attendance-table, table",
                 position: "top"
             },
             {
                 title: "Mark Attendance Status",
-                description: "Use these checkboxes to mark workers as Present, Absent, or Late. Only workers marked as present can have hours or units recorded, ensuring accurate payment calculations.",
-                selector: "[data-onboarding='attendance-checkbox'], input[type='checkbox'], .attendance-status",
+                description: "Use these checkboxes to mark workers as Present, Absent, or Late. Only present workers can have hours or units recorded.",
+                selector: "[data-onboarding='attendance-checkbox'], input[type='checkbox']",
                 position: "right"
             },
             {
-                title: "Record Hours Worked",
-                description: "For hourly-paid tasks, enter the exact hours each worker worked. You can use decimal format (e.g., 8.5 for 8 hours 30 minutes). This directly affects their payment calculation.",
-                selector: "[data-onboarding='hours-input'], input[name*='hours'], .hours-input",
+                title: "Hours Worked Entry",
+                description: "For hourly-paid tasks, enter the exact hours each worker worked. You can use decimal format (e.g., 8.5 for 8 hours 30 minutes). This directly affects their pay calculation.",
+                selector: "[data-onboarding='hours-input'], input[name*='hours']",
                 position: "bottom"
             },
             {
-                title: "Track Units Completed",
-                description: "For piece-rate work, enter how many units each worker completed (e.g., pieces produced, tasks finished, items assembled). Payment is automatically calculated as units × rate per unit.",
-                selector: "[data-onboarding='units-input'], input[name*='units'], .units-input",
+                title: "Units Completed Tracking",
+                description: "For piece-rate work, enter how many units each worker completed (e.g., pieces produced, tasks finished, items assembled). Payment is automatically calculated based on units × rate.",
+                selector: "[data-onboarding='units-input'], input[name*='units']",
                 position: "top"
             },
             {
                 title: "Save Attendance Data",
-                description: "Click this button to save all attendance, hours, and units data. The system will automatically calculate payments based on the task's payment structure (daily, hourly, or piece-rate).",
-                selector: "[data-onboarding='save-attendance'], .btn-primary, .save-btn",
+                description: "Click this button to save all attendance, hours, and units data. The system will automatically calculate payments based on the task's payment structure.",
+                selector: "[data-onboarding='save-attendance'], .btn-primary",
                 position: "bottom"
             },
             {
-                title: "Real-time Payment Preview",
-                description: "See live payment calculations as you enter data. This shows how much each worker will earn based on their attendance, hours worked, or units completed, helping you verify accuracy.",
-                selector: "[data-onboarding='payment-preview'], .payment-calculation, .payment-summary",
+                title: "Payment Calculation Preview",
+                description: "See real-time payment calculations as you enter data. This shows how much each worker will earn based on their hours worked or units completed.",
+                selector: "[data-onboarding='payment-preview'], .payment-calculation",
                 position: "left"
             },
             {
-                title: "Add Performance Notes",
-                description: "Add notes about worker performance, issues, or special circumstances. These notes help with future scheduling decisions and performance reviews.",
-                selector: "[data-onboarding='attendance-notes'], textarea[name*='notes'], .notes-section",
+                title: "Attendance Notes",
+                description: "Add notes about worker performance, issues, or special circumstances. These notes help with future scheduling and performance reviews.",
+                selector: "[data-onboarding='attendance-notes'], textarea[name*='notes']",
                 position: "right"
             }
         ];
     }
     
-    // PUBLIC METHODS
-    
-    // Restart onboarding (removes completion flag and starts tour)
+    // Public methods to restart onboarding
     restartOnboarding() {
         localStorage.removeItem('embee_onboarding_completed');
-        sessionStorage.removeItem('embee_onboarding_completed');
         this.startOnboarding();
     }
     
-    // Skip onboarding entirely
     skipOnboarding() {
         this.endOnboarding();
     }
     
-    // Start onboarding for a specific page (useful for testing)
+    // Method to start onboarding for a specific page (useful for testing)
     startOnboardingForPage(pageName) {
         if (this.flows[pageName]) {
             this.currentPage = pageName;
@@ -731,8 +789,8 @@ const onboardingStyles = `
             0 25px 50px rgba(0, 0, 0, 0.25),
             0 0 0 1px rgba(255, 255, 255, 0.05),
             inset 0 1px 0 rgba(255, 255, 255, 0.9);
-        max-width: 450px;
-        min-width: 350px;
+        max-width: 420px;
+        min-width: 340px;
         z-index: 10002;
         opacity: 0;
         transform: scale(0.8) translateY(-10px);
@@ -920,7 +978,7 @@ const onboardingStyles = `
         background: white;
         border-radius: 20px;
         padding: 40px;
-        max-width: 500px;
+        max-width: 400px;
         text-align: center;
         box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
         z-index: 10003;
@@ -933,6 +991,12 @@ const onboardingStyles = `
         transform: translate(-50%, -50%) scale(1);
     }
     
+    .completion-icon {
+        font-size: 48px;
+        color: #10B981;
+        margin-bottom: 20px;
+    }
+    
     .completion-content h3 {
         font-size: 24px;
         color: #1A2B48;
@@ -941,66 +1005,24 @@ const onboardingStyles = `
     
     .completion-content p {
         color: #6B7280;
-        margin: 0 0 20px 0;
+        margin: 0 0 24px 0;
         line-height: 1.6;
-    }
-    
-    .completion-tips {
-        background: #f0f9ff;
-        border: 2px solid #bae6fd;
-        border-radius: 12px;
-        padding: 16px;
-        margin: 20px 0;
-        text-align: left;
-    }
-    
-    .completion-tips p {
-        color: #0369a1;
-        font-weight: 600;
-        margin: 0 0 8px 0;
-    }
-    
-    .completion-tips ul {
-        color: #0284c7;
-        font-size: 14px;
-        line-height: 1.4;
-    }
-    
-    .completion-actions {
-        display: flex;
-        gap: 12px;
-        justify-content: center;
-        margin-top: 24px;
-    }
-    
-    .btn-dismiss, .btn-replay {
-        padding: 12px 24px;
-        border-radius: 12px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        border: none;
     }
     
     .btn-dismiss {
         background: linear-gradient(135deg, #1A2B48, #E5B23A);
         color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
     }
     
     .btn-dismiss:hover {
         transform: translateY(-1px);
         box-shadow: 0 4px 12px rgba(26, 43, 72, 0.3);
-    }
-    
-    .btn-replay {
-        background: #f8fafc;
-        color: #475569;
-        border: 1px solid #e2e8f0;
-    }
-    
-    .btn-replay:hover {
-        background: #f1f5f9;
-        transform: translateY(-1px);
     }
     
     /* Mobile responsive styles */
@@ -1036,10 +1058,6 @@ const onboardingStyles = `
         .onboarding-completion {
             max-width: 90vw;
             padding: 30px 20px;
-        }
-        
-        .completion-actions {
-            flex-direction: column;
         }
     }
     
@@ -1094,7 +1112,7 @@ function addHelpButton() {
     const helpButton = document.createElement('button');
     helpButton.className = 'onboarding-help-button';
     helpButton.innerHTML = '<i class="fas fa-question"></i>';
-    helpButton.title = 'Take a tour of the application - Learn how to manage workers, tasks, and reports';
+    helpButton.title = 'Take a tour of the application';
     
     helpButton.addEventListener('click', () => {
         if (window.onboardingSystem) {

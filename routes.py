@@ -732,12 +732,20 @@ def set_session():
             
             # Set workspace info in session if we have a workspace
             if 'workspace' in locals() and workspace:
-                logging.info(f"Setting current_workspace in session: {workspace.name} (ID: {workspace.id})")
+                # Always query for the UserWorkspace relationship to get the role
+                user_workspace_rel = UserWorkspace.query.filter_by(
+                    user_id=user.id,
+                    workspace_id=workspace.id
+                ).first()
+                
+                role = user_workspace_rel.role if user_workspace_rel else 'Admin'
+                logging.info(f"Setting current_workspace in session: {workspace.name} (ID: {workspace.id}), Role: {role}")
+                
                 session['current_workspace'] = {
                     'id': workspace.id,
                     'name': workspace.name,
                     'code': workspace.workspace_code,
-                    'role': user_workspace.role if user_workspace else 'Admin',
+                    'role': role,
                     'company_email': workspace.company_email,
                     'company_phone': workspace.company_phone
                 }

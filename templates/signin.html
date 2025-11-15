@@ -374,7 +374,7 @@
                     // Don't fail the whole flow if this fails
                 }
                 
-                showSuccess('Sign-in link sent! Check your email (and spam folder)');
+                showSuccess('✉️ Sign-in link sent! Check your email inbox. If you don\'t see it, check your SPAM/JUNK folder!');
             } catch (error) {
                 console.error('Error:', error);
                 showError(error.message || 'Failed to send sign-in link. Please try again.');

@@ -1,10 +1,9 @@
 /**
- * Casual Worker Manager - Complete Interactive Onboarding System
- * Comprehensive guided tour from sign-in through all main features
- * Features: Dashboard, Workers, Tasks, and Reports (excludes billing/payments)
+ * Enhanced Casual Worker Manager Onboarding System
+ * Improved UX with interactive elements, better animations, and refined flows
  */
 
-class OnboardingSystem {
+class EnhancedOnboardingSystem {
     constructor() {
         this.currentStep = 0;
         this.totalSteps = 0;
@@ -12,8 +11,8 @@ class OnboardingSystem {
         this.overlay = null;
         this.tooltip = null;
         this.currentPage = this.getCurrentPage();
+        this.completedFlows = new Set();
         
-        // Onboarding flow configuration
         this.flows = {
             'signin': this.getSignInFlow(),
             'home': this.getHomeFlow(),
@@ -30,8 +29,6 @@ class OnboardingSystem {
         this.createOverlay();
         this.createTooltip();
         this.bindEvents();
-        
-        // Check if user should see onboarding
         this.checkAndStartOnboarding();
     }
     
@@ -47,106 +44,72 @@ class OnboardingSystem {
     }
     
     shouldShowOnboarding() {
-        // Multiple checks to ensure onboarding only shows for first-time users
-        
-        // 1. Check localStorage - most reliable for returning users
         const hasSeenOnboarding = localStorage.getItem('embee_onboarding_completed');
-        if (hasSeenOnboarding === 'true') {
-            return false;
-        }
+        if (hasSeenOnboarding === 'true') return false;
         
-        // 2. Check URL parameter to skip onboarding
         const skipOnboarding = new URLSearchParams(window.location.search).get('skip_onboarding');
-        if (skipOnboarding === 'true') {
-            return false;
-        }
+        if (skipOnboarding === 'true') return false;
         
-        // 3. Check session storage (in case localStorage is disabled)
-        const sessionCompleted = sessionStorage.getItem('embee_onboarding_completed'); 
-        if (sessionCompleted === 'true') {
-            return false;
-        }
-        
-        // 4. Additional check: Don't show onboarding if user is on certain pages
         const currentPage = this.getCurrentPage();
-        if (currentPage === 'unknown') {
-            return false;
-        }
+        if (currentPage === 'unknown') return false;
         
-        // 5. Check if user just signed in (new session indicator)
-        // This helps identify truly first-time users vs returning users
         const isNewSession = !sessionStorage.getItem('user_session_started');
         if (isNewSession) {
             sessionStorage.setItem('user_session_started', 'true');
-            return true; // Show onboarding for new sessions
+            return true;
         }
         
-        // 6. Fallback: Only show if explicitly requested
         const forceOnboarding = new URLSearchParams(window.location.search).get('show_onboarding');
         return forceOnboarding === 'true';
     }
     
     async checkAndStartOnboarding() {
-        // First do quick client-side check
-        if (!this.shouldShowOnboarding()) {
-            return;
-        }
+        if (!this.shouldShowOnboarding()) return;
         
-        // Additional server-side check for more accurate first-time user detection
         try {
             const response = await fetch('/api/user/onboarding-status', {
                 method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
+                headers: { 'Content-Type': 'application/json' }
             });
             
             if (response.ok) {
                 const data = await response.json();
-                
-                // If server says user has completed onboarding, don't show it
                 if (data.completed) {
                     localStorage.setItem('embee_onboarding_completed', 'true');
                     return;
                 }
                 
-                // If server confirms this is a first-time user, show onboarding
                 if (data.isFirstTime) {
-                    setTimeout(() => this.showWelcomeMessage(() => this.startOnboarding()), 1000);
+                    setTimeout(() => this.showWelcomeMessage(() => this.startOnboarding()), 800);
                     return;
                 }
             }
         } catch (error) {
-            console.warn('Could not check server-side onboarding status:', error);
-            // Fall back to client-side only detection
+            console.warn('Onboarding status check failed:', error);
         }
         
-        // Fallback to client-side detection if server check fails
         if (this.shouldShowOnboarding()) {
-            setTimeout(() => this.startOnboarding(), 1000);
+            setTimeout(() => this.startOnboarding(), 800);
         }
     }
     
-    // Show a welcome message for first-time users
     showWelcomeMessage(callback) {
         const welcomeHtml = `
-            <div id="welcome-message" class="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center p-4">
-                <div class="bg-white rounded-2xl p-8 m-4 max-w-lg text-center shadow-2xl transform animate-fadeIn">
-                    <div class="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
-                        <span class="text-2xl">👋</span>
+            <div id="welcome-message" class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+                <div class="bg-white rounded-2xl p-8 max-w-md shadow-2xl transform animate-slideUp">
+                    <div class="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center shadow-lg">
+                        <span class="text-3xl">✨</span>
                     </div>
-                    <h2 class="text-2xl font-bold mb-3 text-gray-800">Welcome!</h2>
-                    <p class="text-gray-600 mb-6 leading-relaxed">Ready for a quick 2-minute tour? We'll show you the essentials to get started managing your team.</p>
-                    <div class="mb-6 text-sm text-gray-500 flex items-center justify-center gap-2">
-                        <i class="fas fa-clock text-blue-500"></i>
-                        <span>You're on a free trial - upgrade anytime to unlock all features</span>
-                    </div>
-                    <div class="flex gap-3 justify-center">
-                        <button id="start-tour-btn" class="px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors">
-                            Start Quick Tour
+                    <h2 class="text-3xl font-bold text-gray-900 mb-2 text-center">Welcome!</h2>
+                    <p class="text-gray-600 text-center mb-1 leading-relaxed">Let us show you around in 2 minutes</p>
+                    <p class="text-sm text-gray-500 text-center mb-6">We'll guide you through managing your team</p>
+                    
+                    <div class="flex gap-3">
+                        <button id="start-tour-btn" class="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-all shadow-md hover:shadow-lg transform hover:scale-105">
+                            Start Tour
                         </button>
-                        <button id="skip-tour-btn" class="px-6 py-3 text-gray-600 rounded-xl font-medium hover:bg-gray-100 transition-colors">
-                            Skip for Now
+                        <button id="skip-tour-btn" class="flex-1 px-6 py-3 text-gray-700 bg-gray-100 rounded-lg font-semibold hover:bg-gray-200 transition-all">
+                            Skip
                         </button>
                     </div>
                 </div>
@@ -182,11 +145,11 @@ class OnboardingSystem {
         this.tooltip.innerHTML = `
             <div class="tooltip-content">
                 <div class="tooltip-header">
-                    <div class="flex items-center justify-between mb-3">
-                        <h3 class="tooltip-title"></h3>
-                        <div class="tooltip-progress">
-                            <span class="progress-text"><span class="current-step">1</span>/<span class="total-steps">1</span></span>
-                        </div>
+                    <div class="flex items-start justify-between gap-4 mb-3">
+                        <h3 class="tooltip-title flex-1"></h3>
+                        <span class="tooltip-progress text-xs font-semibold text-gray-500 whitespace-nowrap">
+                            <span class="current-step">1</span>/<span class="total-steps">1</span>
+                        </span>
                     </div>
                     <div class="progress-bar">
                         <div class="progress-fill"></div>
@@ -194,10 +157,11 @@ class OnboardingSystem {
                 </div>
                 <div class="tooltip-body">
                     <p class="tooltip-description"></p>
+                    <div class="tooltip-highlight-hint"></div>
                     <div class="tooltip-actions">
                         <button class="btn-skip">Skip</button>
                         <div class="nav-buttons">
-                            <button class="btn-prev">← Back</button>
+                            <button class="btn-prev" style="display: none;">← Back</button>
                             <button class="btn-next">Next →</button>
                         </div>
                     </div>
@@ -208,25 +172,28 @@ class OnboardingSystem {
     }
     
     bindEvents() {
-        // Navigation buttons
         this.tooltip.querySelector('.btn-next').addEventListener('click', () => this.nextStep());
         this.tooltip.querySelector('.btn-prev').addEventListener('click', () => this.prevStep());
         this.tooltip.querySelector('.btn-skip').addEventListener('click', () => this.endOnboarding());
         
-        // Escape key to exit
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && this.isActive) {
                 this.endOnboarding();
             }
+            if (e.key === 'ArrowRight' && this.isActive) {
+                this.nextStep();
+            }
+            if (e.key === 'ArrowLeft' && this.isActive) {
+                this.prevStep();
+            }
         });
         
-        // Manual onboarding trigger
         window.addEventListener('start-onboarding', () => this.startOnboarding());
     }
     
     startOnboarding() {
         if (!this.flows[this.currentPage]) {
-            console.warn(`No onboarding flow defined for page: ${this.currentPage}`);
+            console.warn(`No onboarding flow for: ${this.currentPage}`);
             return;
         }
         
@@ -235,10 +202,16 @@ class OnboardingSystem {
         this.totalSteps = this.flows[this.currentPage].length;
         
         this.overlay.classList.add('active');
-        this.showStep(this.currentStep);
+        this.showStep(0);
         
-        // Disable page scrolling
         document.body.style.overflow = 'hidden';
+        document.documentElement.style.overflow = 'hidden';
+        
+        // Prevent scroll and re-position spotlight on any scroll attempt
+        this.scrollHandler = () => this.updateSpotlightPosition();
+        window.addEventListener('scroll', this.scrollHandler, true);
+        window.addEventListener('wheel', (e) => e.preventDefault(), { passive: false });
+        window.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
     }
     
     showStep(stepIndex) {
@@ -248,90 +221,99 @@ class OnboardingSystem {
         const step = flow[stepIndex];
         this.currentStep = stepIndex;
         
-        // Update tooltip content
         this.tooltip.querySelector('.tooltip-title').textContent = step.title;
         this.tooltip.querySelector('.tooltip-description').innerHTML = step.description;
         this.tooltip.querySelector('.current-step').textContent = stepIndex + 1;
         this.tooltip.querySelector('.total-steps').textContent = this.totalSteps;
         
-        // Update progress bar
         const progress = ((stepIndex + 1) / this.totalSteps) * 100;
         this.tooltip.querySelector('.progress-fill').style.width = `${progress}%`;
         
-        // Update navigation buttons
         this.tooltip.querySelector('.btn-prev').style.display = stepIndex === 0 ? 'none' : 'inline-block';
-        this.tooltip.querySelector('.btn-next').textContent = stepIndex === this.totalSteps - 1 ? 'Finish' : 'Next';
+        const isLast = stepIndex === this.totalSteps - 1;
+        this.tooltip.querySelector('.btn-next').textContent = isLast ? '✓ Finish' : 'Next →';
         
-        // Position spotlight and tooltip
+        // Add helpful hint for clickable elements
+        const hint = this.tooltip.querySelector('.tooltip-highlight-hint');
+        if (step.action) {
+            hint.innerHTML = '<p class="text-xs text-blue-600 mt-3 flex items-center gap-2"><span>👆</span> Try clicking on the highlighted area</p>';
+        } else {
+            hint.innerHTML = '';
+        }
+        
         this.positionElements(step);
-        
-        // Show tooltip
         this.tooltip.classList.add('active');
         
-        // Execute step action if any
-        if (step.action) {
-            step.action();
+        if (step.action) step.action();
+    }
+    
+    updateSpotlightPosition() {
+        const flow = this.flows[this.currentPage];
+        const step = flow[this.currentStep];
+        if (step) {
+            this.positionElements(step);
         }
     }
     
     positionElements(step) {
-        const targetElement = step.selector ? document.querySelector(step.selector) : null;
+        const target = step.selector ? document.querySelector(step.selector) : null;
         
-        if (targetElement) {
-            const rect = targetElement.getBoundingClientRect();
+        if (target && target.offsetParent !== null) {
+            const rect = target.getBoundingClientRect();
             const spotlight = this.overlay.querySelector('.onboarding-spotlight');
+            const padding = step.padding || 12;
             
-            // Position spotlight
-            spotlight.style.left = `${rect.left - 10}px`;
-            spotlight.style.top = `${rect.top - 10}px`;
-            spotlight.style.width = `${rect.width + 20}px`;
-            spotlight.style.height = `${rect.height + 20}px`;
+            spotlight.style.left = `${rect.left - padding}px`;
+            spotlight.style.top = `${rect.top - padding}px`;
+            spotlight.style.width = `${rect.width + padding * 2}px`;
+            spotlight.style.height = `${rect.height + padding * 2}px`;
+            spotlight.classList.add('pulse');
             
-            // Position tooltip
             this.positionTooltip(rect, step.position || 'bottom');
         } else {
-            // No target element, center tooltip
             this.centerTooltip();
         }
     }
     
-    positionTooltip(targetRect, position) {
+    positionTooltip(rect, position) {
         const tooltip = this.tooltip;
-        const tooltipRect = tooltip.getBoundingClientRect();
+        const w = tooltip.offsetWidth;
+        const h = tooltip.offsetHeight;
+        const gap = 24;
         let left, top;
         
-        switch (position) {
-            case 'top':
-                left = targetRect.left + (targetRect.width / 2) - (tooltipRect.width / 2);
-                top = targetRect.top - tooltipRect.height - 20;
-                break;
-            case 'bottom':
-                left = targetRect.left + (targetRect.width / 2) - (tooltipRect.width / 2);
-                top = targetRect.bottom + 20;
-                break;
-            case 'left':
-                left = targetRect.left - tooltipRect.width - 20;
-                top = targetRect.top + (targetRect.height / 2) - (tooltipRect.height / 2);
-                break;
-            case 'right':
-                left = targetRect.right + 20;
-                top = targetRect.top + (targetRect.height / 2) - (tooltipRect.height / 2);
-                break;
-        }
+        const positions = {
+            top: {
+                left: rect.left + rect.width / 2 - w / 2,
+                top: rect.top - h - gap
+            },
+            bottom: {
+                left: rect.left + rect.width / 2 - w / 2,
+                top: rect.bottom + gap
+            },
+            left: {
+                left: rect.left - w - gap,
+                top: rect.top + rect.height / 2 - h / 2
+            },
+            right: {
+                left: rect.right + gap,
+                top: rect.top + rect.height / 2 - h / 2
+            }
+        };
         
-        // Ensure tooltip stays within viewport
-        left = Math.max(10, Math.min(left, window.innerWidth - tooltipRect.width - 10));
-        top = Math.max(10, Math.min(top, window.innerHeight - tooltipRect.height - 10));
+        ({ left, top } = positions[position]);
+        
+        left = Math.max(16, Math.min(left, window.innerWidth - w - 16));
+        top = Math.max(16, Math.min(top, window.innerHeight - h - 16));
         
         tooltip.style.left = `${left}px`;
         tooltip.style.top = `${top}px`;
     }
     
     centerTooltip() {
-        const tooltip = this.tooltip;
-        tooltip.style.left = '50%';
-        tooltip.style.top = '50%';
-        tooltip.style.transform = 'translate(-50%, -50%)';
+        this.tooltip.style.left = '50%';
+        this.tooltip.style.top = '50%';
+        this.tooltip.style.transform = 'translate(-50%, -50%)';
     }
     
     nextStep() {
@@ -353,8 +335,8 @@ class OnboardingSystem {
         this.overlay.classList.remove('active');
         this.tooltip.classList.remove('active');
         
-        // Re-enable page scrolling
         document.body.style.overflow = '';
+        document.documentElement.style.overflow = '';
         
         if (completed) {
             localStorage.setItem('embee_onboarding_completed', 'true');
@@ -367,64 +349,68 @@ class OnboardingSystem {
         message.className = 'onboarding-completion';
         message.innerHTML = `
             <div class="completion-content">
-                <div class="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
-                    <span class="text-2xl">✅</span>
+                <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center shadow-lg">
+                    <span class="text-2xl">🎉</span>
                 </div>
-                <h3 class="text-xl font-bold text-gray-800 mb-3">You're All Set!</h3>
-                <p class="text-gray-600 mb-6">Ready to start managing your team. Remember, you're on a free trial - upgrade anytime for full access.</p>
-                <div class="completion-tips bg-blue-50 rounded-lg p-4 mb-6">
-                    <p class="font-semibold text-blue-800 mb-2">Next Steps:</p>
-                    <div class="text-sm text-blue-700 space-y-1">
-                        <div>1. Add your first workers</div>
-                        <div>2. Create a task and assign workers</div>
-                        <div>3. Track attendance and generate reports</div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-2">All Set!</h3>
+                <p class="text-gray-600 mb-6">You're ready to manage your team like a pro</p>
+                
+                <div class="completion-tips bg-blue-50 rounded-lg p-4 mb-6 text-left border border-blue-200">
+                    <p class="font-semibold text-blue-900 mb-3 text-sm">Quick wins to get started:</p>
+                    <div class="space-y-2 text-sm text-blue-800">
+                        <div class="flex items-start gap-2">
+                            <span class="text-lg">👥</span>
+                            <span>Add your first workers</span>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <span class="text-lg">📋</span>
+                            <span>Create a task and assign workers</span>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <span class="text-lg">✅</span>
+                            <span>Track attendance and generate reports</span>
+                        </div>
                     </div>
                 </div>
-                <div class="completion-actions flex gap-3 justify-center">
-                    <button class="btn-dismiss px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
-                        Get Started
-                    </button>
-                    <button class="btn-replay px-6 py-3 text-gray-600 rounded-lg font-medium hover:bg-gray-100 transition-colors" onclick="window.onboardingSystem?.restartOnboarding()">
-                        Replay Tour
-                    </button>
-                </div>
+                
+                <button class="btn-dismiss w-full px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-all shadow-md">
+                    Get Started
+                </button>
             </div>
         `;
         
         document.body.appendChild(message);
-        setTimeout(() => message.classList.add('active'), 100);
+        setTimeout(() => message.classList.add('active'), 50);
         
         message.querySelector('.btn-dismiss').addEventListener('click', () => {
             message.remove();
         });
         
-        setTimeout(() => {
-            if (message.parentNode) {
-                message.remove();
-            }
-        }, 8000);
+        setTimeout(() => message.parentNode && message.remove(), 10000);
     }
     
-    // ONBOARDING FLOWS FOR EACH PAGE
+    // ONBOARDING FLOWS
     
     getSignInFlow() {
         return [
             {
-                title: "Let's Get Started! 🚀",
-                description: "Welcome to your workforce management platform. We'll show you the key features in just a few quick steps.",
+                title: "Welcome to Your Team Hub 🚀",
+                description: "Let's get you set up in less than 2 minutes. We'll show you everything you need to manage your workforce effectively.",
                 selector: null
             },
             {
-                title: "Sign In",
-                description: "Use Google or email to sign in. New here? You can create your company workspace right from this page.",
+                title: "Sign In or Create Account",
+                description: "Use Google or email to sign in. New here? Create your company workspace right from this page.",
                 selector: ".auth-container, .signin-form",
-                position: "bottom"
+                position: "bottom",
+                padding: 10
             },
             {
-                title: "Workspace Setup",
-                description: "Join your team's workspace with a code, or create a new one for your company.",
+                title: "Join or Create Workspace",
+                description: "Already have a team? Join with a workspace code. Otherwise, create a new workspace for your company.",
                 selector: "[data-onboarding='workspace-section'], .workspace-section",
-                position: "top"
+                position: "top",
+                padding: 10
             }
         ];
     }
@@ -433,26 +419,30 @@ class OnboardingSystem {
         return [
             {
                 title: "Your Dashboard 📊",
-                description: "This is your control center. See your team stats and access everything in one place.",
-                selector: ".dashboard-container, .hero-glass"
+                description: "This is your mission control. See your team stats, active tasks, and access all features from here.",
+                selector: ".dashboard-container, .hero-glass",
+                padding: 8
             },
             {
-                title: "Key Metrics",
-                description: "These cards show your workers, tasks, and reports. Click any card to dive deeper.",
+                title: "Team Stats at a Glance",
+                description: "Quick overview of workers, active tasks, and recent reports. Click any card to explore.",
                 selector: "[data-onboarding='stats-container'], .stat-card",
-                position: "bottom"
+                position: "bottom",
+                padding: 8
             },
             {
                 title: "Quick Actions",
-                description: "Fast shortcuts to add workers, create tasks, or record attendance.",
+                description: "Fast-track buttons to add workers, create tasks, or track attendance without navigating menus.",
                 selector: "[data-onboarding='quick-actions'], .quick-action-btn",
-                position: "top"
+                position: "top",
+                padding: 8
             },
             {
                 title: "Main Navigation",
-                description: "Use the sidebar to navigate: Workers, Tasks, and Reports. Each has specialized tools.",
+                description: "Navigate between Workers, Tasks, Reports, and more. Each section has specialized tools for your needs.",
                 selector: ".sidebar, .sidebar-container",
-                position: "right"
+                position: "right",
+                padding: 8
             }
         ];
     }
@@ -461,26 +451,31 @@ class OnboardingSystem {
         return [
             {
                 title: "Manage Your Team 👥",
-                description: "Add, organize, and track all your workers in one place.",
-                selector: ".workers-container, .page-container"
+                description: "Central hub for all your workers. Add, update, and organize your team in one place.",
+                selector: ".workers-container, .page-container",
+                padding: 8
             },
             {
-                title: "Add Workers",
-                description: "Click here to add new team members with their details and contact info.",
+                title: "Add New Workers",
+                description: "Click to add individual workers with their contact info, rates, and availability.",
                 selector: "[data-onboarding='add-worker-btn'], .btn-primary, .add-worker-btn",
-                position: "bottom"
+                position: "bottom",
+                padding: 8,
+                action: () => {}
             },
             {
-                title: "Workers List",
-                description: "View all your workers here. Click on any worker to edit their details.",
+                title: "Your Workers List",
+                description: "All workers in one view. Click any worker to edit details or view their task history.",
                 selector: "[data-onboarding='workers-table'], .workers-table, table",
-                position: "top"
+                position: "top",
+                padding: 8
             },
             {
-                title: "Import from Excel",
-                description: "Add multiple workers at once by uploading a spreadsheet.",
+                title: "Bulk Import",
+                description: "Add multiple workers at once by uploading an Excel spreadsheet. Saves tons of time!",
                 selector: "[data-onboarding='import-btn'], .import-workers-btn",
-                position: "bottom"
+                position: "bottom",
+                padding: 8
             }
         ];
     }
@@ -489,26 +484,31 @@ class OnboardingSystem {
         return [
             {
                 title: "Manage Tasks 📋",
-                description: "Create projects, assign workers, and track progress all in one place.",
-                selector: ".tasks-container, .page-container"
+                description: "Create projects, assign workers, and track completion all in one place.",
+                selector: ".tasks-container, .page-container",
+                padding: 8
             },
             {
-                title: "Create Tasks",
-                description: "Click here to create new tasks. Set payment type (daily, hourly, or per-piece) and assign workers.",
+                title: "Create New Task",
+                description: "Set payment type (daily, hourly, or per-piece), add details, and assign workers.",
                 selector: "[data-onboarding='create-task-btn'], .btn-primary, .create-task-btn",
-                position: "bottom"
+                position: "bottom",
+                padding: 8,
+                action: () => {}
             },
             {
-                title: "Task Status",
-                description: "See all tasks with their status: Pending, In Progress, or Completed.",
+                title: "Task Status Overview",
+                description: "See all tasks with their status: Pending, Active, or Completed.",
                 selector: "[data-onboarding='tasks-table'], .tasks-table, table",
-                position: "top"
+                position: "top",
+                padding: 8
             },
             {
-                title: "Track Attendance",
-                description: "Click any task to record who showed up and track hours or units completed.",
+                title: "Record Attendance",
+                description: "Click any task to mark workers present/absent and record hours or units worked.",
                 selector: "[data-onboarding='attendance-link'], .task-row a, .attendance-link",
-                position: "right"
+                position: "right",
+                padding: 8
             }
         ];
     }
@@ -517,26 +517,30 @@ class OnboardingSystem {
         return [
             {
                 title: "Generate Reports 📈",
-                description: "Create payroll and attendance reports for your team.",
-                selector: ".reports-container, .page-container"
+                description: "Create payroll, attendance, and performance reports for payouts and analysis.",
+                selector: ".reports-container, .page-container",
+                padding: 8
             },
             {
                 title: "Report Types",
-                description: "Choose 'Per Day', 'Per Hour', or 'Per Part' based on how you pay workers.",
+                description: "Choose how to calculate: Per Day, Per Hour, or Per Unit. Matches your payment structure.",
                 selector: "[data-onboarding='report-types'], .report-type-selector, .report-tabs",
-                position: "bottom"
+                position: "bottom",
+                padding: 8
             },
             {
                 title: "Select Date Range",
-                description: "Pick the time period for your report - daily, weekly, or custom range.",
+                description: "Pick your reporting period: daily, weekly, or custom date range.",
                 selector: "[data-onboarding='date-range'], .date-inputs, .date-picker",
-                position: "top"
+                position: "top",
+                padding: 8
             },
             {
-                title: "Export Reports",
-                description: "Download as CSV or Excel for your accounting software or records.",
+                title: "Export & Download",
+                description: "Download as CSV or Excel for accounting, payroll, or record-keeping.",
                 selector: "[data-onboarding='export-buttons'], .export-options, .download-btn",
-                position: "left"
+                position: "left",
+                padding: 8
             }
         ];
     }
@@ -545,63 +549,83 @@ class OnboardingSystem {
         return [
             {
                 title: "Track Attendance ✅",
-                description: "Record who showed up and track hours or units completed for payment.",
-                selector: ".attendance-container, .page-container"
+                description: "Record who showed up and track hours/units for accurate payment calculation.",
+                selector: ".attendance-container, .page-container",
+                padding: 8
             },
             {
                 title: "Worker List",
-                description: "See all workers assigned to this task. Each row shows their attendance and performance.",
+                description: "All workers assigned to this task. Each row shows status and performance.",
                 selector: "[data-onboarding='attendance-table'], .attendance-table, table",
-                position: "top"
+                position: "top",
+                padding: 8
             },
             {
-                title: "Mark Present/Absent",
-                description: "Check the box to mark workers as present. Only present workers get paid.",
+                title: "Mark Attendance",
+                description: "Check the box for present workers. Only marked workers will be paid for this task.",
                 selector: "[data-onboarding='attendance-checkbox'], input[type='checkbox'], .attendance-status",
-                position: "right"
+                position: "right",
+                padding: 8
             },
             {
-                title: "Record Hours or Units",
-                description: "Enter hours worked (e.g., 8.5) or units completed (e.g., 50 pieces) for payment calculation.",
+                title: "Record Work Done",
+                description: "Enter hours (e.g., 8.5) or units (e.g., 50) completed. Used for payment calculation.",
                 selector: "[data-onboarding='hours-input'], input[name*='hours'], .hours-input",
-                position: "bottom"
+                position: "bottom",
+                padding: 8
             },
             {
-                title: "Save Data",
-                description: "Click to save all attendance data. Payments are calculated automatically.",
+                title: "Save & Calculate",
+                description: "Save all data. Payments calculate automatically based on your rates.",
                 selector: "[data-onboarding='save-attendance'], .btn-primary, .save-btn",
-                position: "bottom"
+                position: "bottom",
+                padding: 8,
+                action: () => {}
             }
         ];
     }
     
-    // PUBLIC METHODS
-    
-    // Restart onboarding (removes completion flag and starts tour)
     restartOnboarding() {
         localStorage.removeItem('embee_onboarding_completed');
         sessionStorage.removeItem('embee_onboarding_completed');
         this.startOnboarding();
     }
     
-    // Skip onboarding entirely
     skipOnboarding() {
         this.endOnboarding();
     }
     
-    // Start onboarding for a specific page (useful for testing)
     startOnboardingForPage(pageName) {
         if (this.flows[pageName]) {
             this.currentPage = pageName;
             this.startOnboarding();
-        } else {
-            console.warn(`No onboarding flow found for page: ${pageName}`);
         }
     }
 }
 
-// CSS Styles for onboarding
+// Enhanced CSS Styles
 const onboardingStyles = `
+    @keyframes slideUp {
+        from { 
+            opacity: 0; 
+            transform: translateY(20px); 
+        }
+        to { 
+            opacity: 1; 
+            transform: translateY(0); 
+        }
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.95); }
+        to { opacity: 1; transform: scale(1); }
+    }
+    
+    @keyframes pulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+        50% { box-shadow: 0 0 0 8px rgba(59, 130, 246, 0); }
+    }
+    
     .onboarding-overlay {
         position: fixed;
         top: 0;
@@ -611,7 +635,7 @@ const onboardingStyles = `
         z-index: 10000;
         pointer-events: none;
         opacity: 0;
-        transition: opacity 0.3s ease;
+        transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
     .onboarding-overlay.active {
@@ -625,51 +649,46 @@ const onboardingStyles = `
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        backdrop-filter: blur(1px);
+        background: rgba(15, 23, 42, 0.7);
     }
     
     .onboarding-spotlight {
         position: absolute;
         background: transparent;
-        border-radius: 8px;
-        box-shadow: 
-            0 0 0 3px rgba(59, 130, 246, 0.6),
-            0 0 0 9999px rgba(0, 0, 0, 0.5);
-        pointer-events: none;
-        transition: all 0.3s ease;
+        border-radius: 12px;
+        box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.7);
+        border: 3px solid #3b82f6;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         z-index: 10001;
     }
     
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
+    .onboarding-spotlight.pulse {
+        animation: pulse 2s infinite;
     }
     
     .onboarding-tooltip {
         position: fixed;
         background: white;
-        border: 1px solid #e5e7eb;
-        border-radius: 16px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-        max-width: 380px;
+        border-radius: 12px;
+        box-shadow: 0 20px 50px rgba(30, 58, 138, 0.2);
+        max-width: 400px;
         min-width: 300px;
         z-index: 10002;
         opacity: 0;
-        transform: translateY(10px);
-        transition: all 0.2s ease;
+        transform: translateY(10px) scale(0.95);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         pointer-events: all;
     }
     
     .onboarding-tooltip.active {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateY(0) scale(1);
         animation: fadeIn 0.3s ease;
     }
     
     .tooltip-content {
         padding: 24px;
-        position: relative;
+        border: 1px solid #dbeafe;
     }
     
     .tooltip-content::before {
@@ -678,61 +697,59 @@ const onboardingStyles = `
         top: 0;
         left: 0;
         right: 0;
-        height: 3px;
-        background: linear-gradient(90deg, #3b82f6, #06b6d4);
-        border-radius: 16px 16px 0 0;
+        height: 4px;
+        background: linear-gradient(90deg, #2563eb 0%, #3b82f6 50%, #0ea5e9 100%);
+        border-radius: 12px 12px 0 0;
     }
     
     .tooltip-header {
         margin-bottom: 16px;
-        margin-top: 4px;
     }
     
     .tooltip-title {
         font-size: 18px;
-        font-weight: 600;
-        color: #1f2937;
+        font-weight: 700;
+        color: #1e3a8a;
         margin: 0;
-        line-height: 1.4;
-    }
-    
-    .tooltip-progress {
-        align-items: center;
-    }
-    
-    .progress-text {
-        font-size: 12px;
-        color: #6b7280;
-        font-weight: 500;
+        line-height: 1.3;
     }
     
     .progress-bar {
         width: 100%;
-        height: 3px;
-        background: #f3f4f6;
-        border-radius: 3px;
+        height: 4px;
+        background: #e0e7ff;
+        border-radius: 2px;
         overflow: hidden;
-        margin-top: 8px;
+        margin-top: 12px;
     }
     
     .progress-fill {
         height: 100%;
-        background: linear-gradient(90deg, #3b82f6, #06b6d4);
-        border-radius: 3px;
+        background: linear-gradient(90deg, #2563eb, #3b82f6, #0ea5e9);
         transition: width 0.3s ease;
     }
     
     .tooltip-description {
         font-size: 14px;
-        line-height: 1.5;
-        color: #4b5563;
-        margin: 0 0 20px 0;
+        line-height: 1.6;
+        color: #334155;
+        margin: 0 0 12px 0;
+    }
+    
+    .tooltip-highlight-hint {
+        margin-bottom: 4px;
+    }
+    
+    .tooltip-highlight-hint p {
+        color: #1e40af;
     }
     
     .tooltip-actions {
         display: flex;
         justify-content: space-between;
         align-items: center;
+        gap: 12px;
+        margin-top: 20px;
     }
     
     .btn-skip {
@@ -743,13 +760,13 @@ const onboardingStyles = `
         cursor: pointer;
         padding: 8px 12px;
         border-radius: 6px;
-        transition: all 0.2s ease;
+        transition: all 0.2s;
         font-weight: 500;
     }
     
     .btn-skip:hover {
-        background: #f3f4f6;
-        color: #374151;
+        background: #eff6ff;
+        color: #1e40af;
     }
     
     .nav-buttons {
@@ -760,42 +777,35 @@ const onboardingStyles = `
     .btn-prev, .btn-next {
         padding: 8px 16px;
         border-radius: 8px;
-        font-size: 14px;
-        font-weight: 500;
+        font-size: 13px;
+        font-weight: 600;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all 0.2s;
         border: none;
     }
     
     .btn-prev {
-        background: #f9fafb;
-        color: #374151;
-        border: 1px solid #e5e7eb;
+        background: #eff6ff;
+        color: #1e40af;
+        border: 1px solid #dbeafe;
     }
     
     .btn-prev:hover {
-        background: #f3f4f6;
+        background: #dbeafe;
+        color: #1e3a8a;
     }
     
     .btn-next {
-        background: #3b82f6;
+        background: #2563eb;
         color: white;
     }
     
     .btn-next:hover {
-        background: #2563eb;
+        background: #1d4ed8;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
     }
     
-    .tooltip-arrow {
-        position: absolute;
-        width: 12px;
-        height: 12px;
-        background: white;
-        transform: rotate(45deg);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-    
-    /* Completion message styles */
     .onboarding-completion {
         position: fixed;
         top: 50%;
@@ -804,67 +814,98 @@ const onboardingStyles = `
         background: white;
         border-radius: 16px;
         padding: 32px;
-        max-width: 450px;
+        max-width: 480px;
         text-align: center;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
         z-index: 10003;
         opacity: 0;
-        transition: all 0.3s ease;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
     .onboarding-completion.active {
         opacity: 1;
-        animation: fadeIn 0.3s ease;
+        animation: slideUp 0.4s ease;
     }
     
     .completion-content h3 {
-        font-size: 20px;
-        color: #1f2937;
-        margin: 0 0 12px 0;
-        font-weight: 600;
+        font-size: 24px;
+        color: #111827;
+        margin: 0 0 8px 0;
+        font-weight: 700;
     }
     
     .completion-content p {
         color: #6b7280;
-        margin: 0 0 24px 0;
-        line-height: 1.5;
+        margin: 0 0 20px 0;
+        line-height: 1.6;
     }
     
     .completion-tips {
-        background: #f0f9ff;
+        background: linear-gradient(135deg, #f0f9ff 0%, #f0fdf4 100%);
         border: 1px solid #e0f2fe;
-        border-radius: 8px;
-        padding: 16px;
+        border-radius: 12px;
+        padding: 20px;
         margin: 24px 0;
         text-align: left;
     }
     
     .completion-tips p {
         color: #0369a1;
-        font-weight: 600;
-        margin: 0 0 8px 0;
+        font-weight: 700;
+        margin: 0 0 12px 0;
         font-size: 14px;
     }
     
-    .completion-tips div {
-        color: #0284c7;
-        font-size: 13px;
-        line-height: 1.4;
+    .btn-dismiss {
+        transition: all 0.2s;
+        cursor: pointer;
     }
     
-    .completion-actions {
+    .btn-dismiss:hover {
+        background: #2563eb;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+    }
+    
+    .onboarding-help-button {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        width: 56px;
+        height: 56px;
+        background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        font-size: 20px;
+        cursor: pointer;
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+        z-index: 1000;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         display: flex;
-        gap: 12px;
+        align-items: center;
         justify-content: center;
-        margin-top: 0;
     }
     
-    /* Mobile responsive styles */
+    .onboarding-help-button:hover {
+        transform: translateY(-4px) scale(1.1);
+        box-shadow: 0 12px 28px rgba(59, 130, 246, 0.4);
+    }
+    
+    .onboarding-help-button:active {
+        transform: translateY(-2px) scale(1.05);
+    }
+    
+    .onboarding-help-button.hidden {
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(20px) scale(0.8);
+    }
+    
     @media (max-width: 768px) {
         .onboarding-tooltip {
-            max-width: 90vw;
-            min-width: 280px;
-            margin: 16px;
+            max-width: 88vw;
+            min-width: 260px;
         }
         
         .tooltip-content {
@@ -875,82 +916,71 @@ const onboardingStyles = `
             font-size: 16px;
         }
         
+        .tooltip-description {
+            font-size: 13px;
+        }
+        
         .tooltip-actions {
             flex-direction: column;
-            gap: 12px;
-            align-items: stretch;
+            gap: 10px;
+        }
+        
+        .btn-skip {
+            width: 100%;
         }
         
         .nav-buttons {
             width: 100%;
-            justify-content: space-between;
+            gap: 10px;
         }
         
         .btn-prev, .btn-next {
             flex: 1;
+            padding: 10px 12px;
+            font-size: 12px;
         }
         
         .onboarding-completion {
-            max-width: 90vw;
+            max-width: 88vw;
             padding: 24px 20px;
-            margin: 16px;
         }
         
-        .completion-actions {
-            flex-direction: column;
-            gap: 8px;
+        .completion-tips {
+            padding: 16px;
         }
         
         #welcome-message .bg-white {
-            margin: 16px;
             padding: 24px;
         }
     }
     
-    /* Help button styles */
-    .onboarding-help-button {
-        position: fixed;
-        bottom: 24px;
-        right: 24px;
-        width: 56px;
-        height: 56px;
-        background: linear-gradient(135deg, #1A2B48, #E5B23A);
-        color: white;
-        border: none;
-        border-radius: 50%;
-        font-size: 20px;
-        cursor: pointer;
-        box-shadow: 0 4px 20px rgba(26, 43, 72, 0.3);
-        z-index: 1000;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .onboarding-help-button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(26, 43, 72, 0.4);
-    }
-    
-    .onboarding-help-button.hidden {
-        opacity: 0;
-        pointer-events: none;
-        transform: translateY(20px);
+    @media (max-width: 480px) {
+        .onboarding-help-button {
+            width: 48px;
+            height: 48px;
+            font-size: 18px;
+            bottom: 16px;
+            right: 16px;
+        }
+        
+        .tooltip-title {
+            font-size: 15px;
+        }
+        
+        .btn-prev, .btn-next {
+            padding: 8px 10px;
+            font-size: 11px;
+        }
     }
 `;
 
-// Initialize onboarding system when DOM is loaded
+// Initialize onboarding when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    // Inject styles
     const styleSheet = document.createElement('style');
     styleSheet.textContent = onboardingStyles;
     document.head.appendChild(styleSheet);
     
-    // Initialize onboarding system
-    window.onboardingSystem = new OnboardingSystem();
-    
-    // Add help button for manual onboarding restart
+    window.onboardingSystem = new EnhancedOnboardingSystem();
     addHelpButton();
 });
 
@@ -958,9 +988,11 @@ function addHelpButton() {
     const helpButton = document.createElement('button');
     helpButton.className = 'onboarding-help-button';
     helpButton.innerHTML = '<i class="fas fa-question"></i>';
-    helpButton.title = 'Take a tour of the application - Learn how to manage workers, tasks, and reports';
+    helpButton.title = 'Replay tour - Learn how to use all features';
+    helpButton.setAttribute('aria-label', 'Start onboarding tour');
     
-    helpButton.addEventListener('click', () => {
+    helpButton.addEventListener('click', (e) => {
+        e.preventDefault();
         if (window.onboardingSystem) {
             window.onboardingSystem.restartOnboarding();
         }
@@ -968,9 +1000,8 @@ function addHelpButton() {
     
     document.body.appendChild(helpButton);
     
-    // Hide help button during onboarding
     const observer = new MutationObserver(() => {
-        if (window.onboardingSystem && window.onboardingSystem.isActive) {
+        if (window.onboardingSystem?.isActive) {
             helpButton.classList.add('hidden');
         } else {
             helpButton.classList.remove('hidden');
@@ -980,5 +1011,4 @@ function addHelpButton() {
     observer.observe(document.body, { childList: true, subtree: true });
 }
 
-// Export for external use
-window.OnboardingSystem = OnboardingSystem;
+window.EnhancedOnboardingSystem = EnhancedOnboardingSystem;

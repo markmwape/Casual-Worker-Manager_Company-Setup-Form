@@ -265,21 +265,19 @@ def associate_workspace_email():
             workspace.created_by = user.id
             logging.info(f"✓ Updated workspace.created_by to {user.id}")
             
-            # Update company ownership too - CRITICAL: Do this BEFORE deleting placeholder user
-            # to avoid foreign key constraint violation
-            company = Company.query.filter_by(workspace_id=workspace.id).first()
-            if company:
-                old_owner = company.created_by
-                logging.info(f"Found company: {company.name} (ID: {company.id}), current created_by: {old_owner}")
-                # Always update to the new user if it was owned by placeholder or None
-                if company.created_by == current_creator.id or company.created_by is None:
-                    # Assign ownership to the real user
-                    company.created_by = user.id
-                    logging.info(f"✓ Updated company {company.id} ownership from {old_owner} to user {user.id}")
-                else:
-                    logging.info(f"Company {company.id} already has a different owner: {company.created_by}")
+            # CRITICAL: Update ALL companies owned by the placeholder user before deleting it
+            # This prevents foreign key constraint violations when the placeholder is deleted
+            companies_to_update = Company.query.filter_by(created_by=current_creator.id).all()
+            logging.info(f"Found {len(companies_to_update)} companies owned by placeholder user {current_creator.email}")
+            
+            for company in companies_to_update:
+                logging.info(f"Updating company {company.name} (ID: {company.id}) ownership from {company.created_by} to {user.id}")
+                company.created_by = user.id
+            
+            if companies_to_update:
+                logging.info(f"✓ Updated {len(companies_to_update)} companies to be owned by user {user.id}")
             else:
-                logging.warning(f"No company found for workspace {workspace.id}")
+                logging.warning(f"No companies found owned by placeholder user {current_creator.id}")
             
             # Create UserWorkspace with Admin role
             user_workspace = UserWorkspace(

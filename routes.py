@@ -3258,10 +3258,19 @@ def get_trial_info():
         else:
             days_remaining = 0
         
+        # Format trial_end_date properly for JavaScript
+        trial_end_str = None
+        if workspace.trial_end_date:
+            # If it's a datetime object, convert to date string only
+            if hasattr(workspace.trial_end_date, 'date'):
+                trial_end_str = workspace.trial_end_date.date().isoformat()
+            else:
+                trial_end_str = str(workspace.trial_end_date)
+        
         return jsonify({
             'success': True,
             'days_remaining': days_remaining,
-            'trial_end_date': workspace.trial_end_date.isoformat() if workspace.trial_end_date else None,
+            'trial_end_date': trial_end_str,
             'is_trial': workspace.subscription_status == 'trial' or workspace.subscription_tier == 'trial'
         })
         

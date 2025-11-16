@@ -262,42 +262,65 @@ def associate_workspace_email():
             # This workspace is waiting for its admin - transfer ownership to THIS user
             logging.info(f"✓ TRANSFERRING OWNERSHIP: workspace {workspace.name} from {current_creator.email} to {email}")
             
-            workspace.created_by = user.id
-            logging.info(f"✓ Updated workspace.created_by to {user.id}")
-            
-            # CRITICAL: Update ALL companies owned by the placeholder user before deleting it
-            # This prevents foreign key constraint violations when the placeholder is deleted
-            companies_to_update = Company.query.filter_by(created_by=current_creator.id).all()
-            logging.info(f"Found {len(companies_to_update)} companies owned by placeholder user {current_creator.email}")
-            
-            for company in companies_to_update:
-                logging.info(f"Updating company {company.name} (ID: {company.id}) ownership from {company.created_by} to {user.id}")
-                company.created_by = user.id
-            
-            if companies_to_update:
-                logging.info(f"✓ Updated {len(companies_to_update)} companies to be owned by user {user.id}")
-            else:
-                logging.warning(f"No companies found owned by placeholder user {current_creator.id}")
-            
-            # Create UserWorkspace with Admin role
-            user_workspace = UserWorkspace(
-                user_id=user.id,
-                workspace_id=workspace.id,
-                role='Admin'
-            )
-            db.session.add(user_workspace)
-            logging.info(f"✓ Created UserWorkspace: user_id={user.id}, workspace_id={workspace.id}, role=Admin")
-            
-            # Flush changes to ensure company.created_by is updated before deleting placeholder
-            db.session.flush()
-            logging.info(f"✓ Flushed changes - company ownership updated before placeholder deletion")
-            
-            # Now safe to delete placeholder user
-            db.session.delete(current_creator)
-            logging.info(f"✓ Deleted placeholder user: {current_creator.email}")
-            
-            db.session.commit()
-            logging.info(f"✓ COMMITTED: All changes saved to database")
+            try:
+                # CRITICAL: Update ALL foreign key references to the placeholder user before deleting it
+                # This prevents foreign key constraint violations when the placeholder is deleted
+                
+                # 1. Update workspace ownership
+                workspace.created_by = user.id
+                logging.info(f"✓ Updated workspace.created_by to {user.id}")
+                
+                # 2. Update ALL companies owned by the placeholder user
+                companies_to_update = Company.query.filter_by(created_by=current_creator.id).all()
+                logging.info(f"Found {len(companies_to_update)} companies owned by placeholder user {current_creator.email}")
+                
+                for company in companies_to_update:
+                    logging.info(f"Updating company {company.name} (ID: {company.id}) ownership from {company.created_by} to {user.id}")
+                    company.created_by = user.id
+                
+                if companies_to_update:
+                    logging.info(f"✓ Updated {len(companies_to_update)} companies to be owned by user {user.id}")
+                else:
+                    logging.warning(f"No companies found owned by placeholder user {current_creator.id}")
+                
+                # 3. Handle existing UserWorkspace records for the placeholder user
+                # Delete any existing UserWorkspace records for the placeholder user
+                placeholder_user_workspaces = UserWorkspace.query.filter_by(user_id=current_creator.id).all()
+                for placeholder_uw in placeholder_user_workspaces:
+                    logging.info(f"Deleting placeholder UserWorkspace: user_id={placeholder_uw.user_id}, workspace_id={placeholder_uw.workspace_id}")
+                    db.session.delete(placeholder_uw)
+                
+                # 4. Update any workers that might reference the placeholder user (nullable field)
+                workers_to_update = Worker.query.filter_by(user_id=current_creator.id).all()
+                for worker in workers_to_update:
+                    logging.info(f"Updating worker {worker.first_name} {worker.last_name} user_id from {worker.user_id} to None")
+                    worker.user_id = None  # Set to None since it's nullable
+                
+                # 5. Create new UserWorkspace with Admin role for the real user
+                user_workspace = UserWorkspace(
+                    user_id=user.id,
+                    workspace_id=workspace.id,
+                    role='Admin'
+                )
+                db.session.add(user_workspace)
+                logging.info(f"✓ Created UserWorkspace: user_id={user.id}, workspace_id={workspace.id}, role=Admin")
+                
+                # Flush changes to ensure all foreign key references are updated before deleting placeholder
+                db.session.flush()
+                logging.info(f"✓ Flushed changes - all foreign key references updated before placeholder deletion")
+                
+                # Now safe to delete placeholder user - all foreign keys have been updated
+                db.session.delete(current_creator)
+                logging.info(f"✓ Deleted placeholder user: {current_creator.email}")
+                
+                db.session.commit()
+                logging.info(f"✓ COMMITTED: All changes saved to database")
+                
+            except Exception as e:
+                logging.error(f"ERROR during ownership transfer: {str(e)}")
+                db.session.rollback()
+                logging.info(f"✓ ROLLED BACK: Transaction rolled back due to error")
+                return jsonify({"error": f"Failed to transfer ownership: {str(e)}"}), 500
             
             # Verify the UserWorkspace was created with fresh query
             db.session.expire_all()  # Clear any cached objects
@@ -310,6 +333,22 @@ def associate_workspace_email():
                 all_uw = UserWorkspace.query.filter_by(user_id=user.id).all()
                 logging.error(f"All UserWorkspace records for user {user.id}: {[(uw.workspace_id, uw.role) for uw in all_uw]}")
                 return jsonify({"error": "Failed to create workspace association"}), 500
+            
+            # Additional verification: Ensure placeholder user was actually deleted
+            placeholder_check = User.query.get(current_creator.id)
+            if placeholder_check:
+                logging.error(f"CRITICAL: Placeholder user {current_creator.email} was not deleted properly!")
+                return jsonify({"error": "Failed to complete ownership transfer"}), 500
+            else:
+                logging.info(f"✓ VERIFIED: Placeholder user was successfully deleted")
+            
+            # Verify workspace ownership transfer
+            updated_workspace = Workspace.query.get(workspace.id)
+            if updated_workspace.created_by == user.id:
+                logging.info(f"✓ VERIFIED: Workspace ownership successfully transferred to user {user.id}")
+            else:
+                logging.error(f"CRITICAL: Workspace ownership not properly transferred! Expected: {user.id}, Got: {updated_workspace.created_by}")
+                return jsonify({"error": "Failed to transfer workspace ownership"}), 500
             
             logging.info(f"✓✓✓ Successfully associated email {email} with workspace {workspace.name} as Admin ✓✓✓")
             

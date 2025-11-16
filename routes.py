@@ -266,9 +266,19 @@ def associate_workspace_email():
                 # CRITICAL: Update ALL foreign key references to the placeholder user before deleting it
                 # This prevents foreign key constraint violations when the placeholder is deleted
                 
-                # 1. Update workspace ownership
-                workspace.created_by = user.id
-                logging.info(f"✓ Updated workspace.created_by to {user.id}")
+                # 1. Update ALL workspaces owned by the placeholder user (not just the current one!)
+                # This is critical because a placeholder user might have created multiple workspaces
+                workspaces_to_update = Workspace.query.filter_by(created_by=current_creator.id).all()
+                logging.info(f"Found {len(workspaces_to_update)} workspaces owned by placeholder user {current_creator.email}")
+                
+                for ws in workspaces_to_update:
+                    logging.info(f"Updating workspace {ws.name} (ID: {ws.id}) ownership from {ws.created_by} to {user.id}")
+                    ws.created_by = user.id
+                
+                if workspaces_to_update:
+                    logging.info(f"✓ Updated {len(workspaces_to_update)} workspaces to be owned by user {user.id}")
+                else:
+                    logging.warning(f"No workspaces found owned by placeholder user {current_creator.id}")
                 
                 # 2. Update ALL companies owned by the placeholder user
                 companies_to_update = Company.query.filter_by(created_by=current_creator.id).all()

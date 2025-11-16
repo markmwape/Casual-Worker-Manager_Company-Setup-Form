@@ -846,6 +846,10 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
+                // Close modal and reset form
+                document.getElementById('add-team-member-modal').close();
+                document.getElementById('addTeamMemberForm').reset();
+                
                 if (typeof showToast === 'function') {
                     showToast('Team member added successfully!', 'success');
                 }

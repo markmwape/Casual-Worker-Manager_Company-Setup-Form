@@ -3301,7 +3301,7 @@ def handle_team_members():
                 return jsonify({'success': False, 'error': 'Only admins can add team members'}), 403
             
             data = request.get_json()
-            email = data.get('email')
+            email = data.get('email', '').strip().lower()  # Normalize email to lowercase
             role = data.get('role')
 
             if not email or not role:

@@ -226,8 +226,7 @@ def associate_workspace_email():
         if not user:
             user = User(email=email, profile_picture="")
             db.session.add(user)
-            db.session.flush()
-            db.session.commit()  # Commit to ensure user.id is set
+            db.session.flush()  # Get the user ID without committing
             logging.info(f"Created new user for email association: {email} (ID: {user.id})")
         else:
             logging.info(f"Found existing user: {email} (ID: {user.id})")
@@ -235,6 +234,7 @@ def associate_workspace_email():
         # Verify user.id is set
         if not user.id:
             logging.error(f"CRITICAL: User ID is None for {email}")
+            db.session.rollback()
             return jsonify({"error": "Failed to create user"}), 500
         
         # Check if UserWorkspace relationship already exists
@@ -265,14 +265,17 @@ def associate_workspace_email():
             workspace.created_by = user.id
             logging.info(f"✓ Updated workspace.created_by to {user.id}")
             
-            # Update company ownership too
+            # Update company ownership too - CRITICAL: Do this BEFORE deleting placeholder user
+            # to avoid foreign key constraint violation
             company = Company.query.filter_by(workspace_id=workspace.id).first()
             if company:
-                logging.info(f"Found company: {company.name} (ID: {company.id}), current created_by: {company.created_by}")
+                old_owner = company.created_by
+                logging.info(f"Found company: {company.name} (ID: {company.id}), current created_by: {old_owner}")
+                # Always update to the new user if it was owned by placeholder or None
                 if company.created_by == current_creator.id or company.created_by is None:
                     # Assign ownership to the real user
                     company.created_by = user.id
-                    logging.info(f"✓ Updated company {company.id} ownership to user {user.id}")
+                    logging.info(f"✓ Updated company {company.id} ownership from {old_owner} to user {user.id}")
                 else:
                     logging.info(f"Company {company.id} already has a different owner: {company.created_by}")
             else:
@@ -287,7 +290,11 @@ def associate_workspace_email():
             db.session.add(user_workspace)
             logging.info(f"✓ Created UserWorkspace: user_id={user.id}, workspace_id={workspace.id}, role=Admin")
             
-            # Delete placeholder user
+            # Flush changes to ensure company.created_by is updated before deleting placeholder
+            db.session.flush()
+            logging.info(f"✓ Flushed changes - company ownership updated before placeholder deletion")
+            
+            # Now safe to delete placeholder user
             db.session.delete(current_creator)
             logging.info(f"✓ Deleted placeholder user: {current_creator.email}")
             
@@ -335,10 +342,14 @@ def associate_workspace_email():
             
     except Exception as e:
         logging.error(f"Error associating email with workspace: {str(e)}")
+        logging.error(f"Exception type: {type(e).__name__}")
         import traceback
         logging.error(f"Traceback: {traceback.format_exc()}")
         db.session.rollback()
-        return jsonify({"error": "Failed to associate email with workspace"}), 500
+        return jsonify({
+            "error": "Failed to associate email with workspace",
+            "details": str(e) if app.debug else None
+        }), 500
 
 @app.route('/api/send-workspace-email', methods=['POST'])
 def send_workspace_email():

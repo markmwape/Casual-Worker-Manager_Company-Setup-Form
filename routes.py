@@ -144,7 +144,6 @@ def get_user_workspaces():
         # CROSS-BROWSER FALLBACK: Check for recently created workspaces with placeholder admins
         # This handles sign-in from different browser/device than creation
         # NEW: Accepts ANY sign-in email, not restricted to company_email
-        from datetime import datetime, timedelta
         recent_cutoff = datetime.utcnow() - timedelta(hours=1)
         
         # Find ALL recently created workspaces with placeholder admins

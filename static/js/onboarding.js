@@ -246,17 +246,20 @@ class EnhancedOnboardingSystem {
         this.overlay.classList.add('active');
         this.showStep(0);
         
-        document.body.style.overflow = 'hidden';
-        document.documentElement.style.overflow = 'hidden';
+        // Don't completely prevent scrolling - we need it for positioning elements
+        // Allow scrolling but prevent excessive user scrolling that interferes with tour
         
-        // Prevent scroll and re-position spotlight on any scroll attempt
-        this.scrollHandler = () => this.updateSpotlightPosition();
-        this.wheelHandler = (e) => e.preventDefault();
-        this.touchmoveHandler = (e) => e.preventDefault();
+        // Only re-position spotlight when user manually scrolls (not programmatic scrolls)
+        this.scrollHandler = (e) => {
+            // Debounce to avoid excessive updates during smooth scrolling
+            clearTimeout(this.scrollTimeout);
+            this.scrollTimeout = setTimeout(() => {
+                this.updateSpotlightPosition();
+            }, 100);
+        };
         
+        // Allow scrolling but update positions - don't prevent wheel/touch completely
         window.addEventListener('scroll', this.scrollHandler, true);
-        window.addEventListener('wheel', this.wheelHandler, { passive: false });
-        window.addEventListener('touchmove', this.touchmoveHandler, { passive: false });
     }
     
     showStep(stepIndex) {
@@ -295,8 +298,12 @@ class EnhancedOnboardingSystem {
     updateSpotlightPosition() {
         const flow = this.flows[this.currentPage];
         const step = flow[this.currentStep];
-        if (step) {
-            this.positionElements(step);
+        if (step && step.selector) {
+            const target = document.querySelector(step.selector);
+            if (target && target.offsetParent !== null) {
+                console.log('Updating spotlight position for:', step.selector);
+                this.positionSpotlightAndTooltip(target, step);
+            }
         }
     }
     
@@ -305,18 +312,23 @@ class EnhancedOnboardingSystem {
         
         const rect = element.getBoundingClientRect();
         const isVisible = (
-            rect.top >= 0 &&
+            rect.top >= 80 && // Account for header/navbar
             rect.left >= 0 &&
-            rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+            rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) - 80 &&
             rect.right <= (window.innerWidth || document.documentElement.clientWidth)
         );
         
         if (!isVisible) {
-            // Calculate scroll position to center the element in viewport
+            // Get element's position relative to the document
             const elementTop = element.offsetTop;
             const elementHeight = element.offsetHeight;
             const windowHeight = window.innerHeight;
-            const scrollTo = elementTop - (windowHeight / 2) + (elementHeight / 2);
+            
+            // Calculate scroll position to center the element, accounting for header space
+            const scrollTo = elementTop - (windowHeight / 2) + (elementHeight / 2) - 100;
+            
+            console.log('Scrolling to element:', element);
+            console.log('Element top:', elementTop, 'Window height:', windowHeight, 'Scroll to:', scrollTo);
             
             // Smooth scroll to element
             window.scrollTo({
@@ -326,8 +338,9 @@ class EnhancedOnboardingSystem {
             
             // Wait for scroll to complete before positioning spotlight
             setTimeout(() => {
+                console.log('Updating spotlight position after scroll');
                 this.updateSpotlightPosition();
-            }, 500);
+            }, 600); // Increased timeout for smoother scrolling
         }
     }
     
@@ -351,23 +364,39 @@ class EnhancedOnboardingSystem {
             // Scroll to element if it's not visible or if step requires scrolling
             if (step.scrollToElement !== false) {
                 this.scrollToElement(target);
+                // Position spotlight after scroll delay
+                setTimeout(() => {
+                    this.positionSpotlightAndTooltip(target, step);
+                }, 650);
+                return; // Exit early, positioning will happen after scroll
             }
             
-            const rect = target.getBoundingClientRect();
-            const spotlight = this.overlay.querySelector('.onboarding-spotlight');
-            const padding = step.padding || 12;
-            
-            spotlight.style.left = `${rect.left - padding}px`;
-            spotlight.style.top = `${rect.top - padding}px`;
-            spotlight.style.width = `${rect.width + padding * 2}px`;
-            spotlight.style.height = `${rect.height + padding * 2}px`;
-            spotlight.classList.add('pulse');
-            
-            this.positionTooltip(rect, step.position || 'bottom');
+            this.positionSpotlightAndTooltip(target, step);
         } else {
             console.log('Centering tooltip - no target element or element not visible');
             this.centerTooltip();
         }
+    }
+    
+    positionSpotlightAndTooltip(target, step) {
+        const rect = target.getBoundingClientRect();
+        const spotlight = this.overlay.querySelector('.onboarding-spotlight');
+        const padding = step.padding || 12;
+        
+        console.log('Positioning spotlight at:', {
+            left: rect.left - padding,
+            top: rect.top - padding,
+            width: rect.width + padding * 2,
+            height: rect.height + padding * 2
+        });
+        
+        spotlight.style.left = `${rect.left - padding}px`;
+        spotlight.style.top = `${rect.top - padding}px`;
+        spotlight.style.width = `${rect.width + padding * 2}px`;
+        spotlight.style.height = `${rect.height + padding * 2}px`;
+        spotlight.classList.add('pulse');
+        
+        this.positionTooltip(rect, step.position || 'bottom');
     }
     
     positionTooltip(rect, position) {
@@ -435,19 +464,16 @@ class EnhancedOnboardingSystem {
             el.classList.remove('onboarding-highlight');
         });
         
-        // Re-enable scrolling
+        // Re-enable scrolling (was never fully disabled)
         document.body.style.overflow = '';
         document.documentElement.style.overflow = '';
         
-        // Remove all scroll prevention event listeners
+        // Remove scroll update event listeners
         if (this.scrollHandler) {
             window.removeEventListener('scroll', this.scrollHandler, true);
         }
-        if (this.wheelHandler) {
-            window.removeEventListener('wheel', this.wheelHandler, { passive: false });
-        }
-        if (this.touchmoveHandler) {
-            window.removeEventListener('touchmove', this.touchmoveHandler, { passive: false });
+        if (this.scrollTimeout) {
+            clearTimeout(this.scrollTimeout);
         }
         
         if (completed) {
@@ -619,7 +645,8 @@ class EnhancedOnboardingSystem {
                 description: "Create payroll, attendance, and performance reports for payouts and analysis.",
                 selector: "[data-onboarding='page-container']",
                 padding: 8,
-                position: "bottom"
+                position: "bottom",
+                scrollToElement: false
             },
             {
                 title: "Select Date Range",
@@ -627,7 +654,7 @@ class EnhancedOnboardingSystem {
                 selector: "[data-onboarding='date-range']",
                 position: "bottom",
                 padding: 12,
-                scrollToElement: false
+                scrollToElement: true
             },
             {
                 title: "Report Types",
@@ -870,17 +897,20 @@ class EnhancedOnboardingSystem {
         this.overlay.classList.add('active');
         this.showStep(0);
         
-        document.body.style.overflow = 'hidden';
-        document.documentElement.style.overflow = 'hidden';
+        // Don't completely prevent scrolling - we need it for positioning elements
+        // Allow scrolling but prevent excessive user scrolling that interferes with tour
         
-        // Prevent scroll and re-position spotlight on any scroll attempt
-        this.scrollHandler = () => this.updateSpotlightPosition();
-        this.wheelHandler = (e) => e.preventDefault();
-        this.touchmoveHandler = (e) => e.preventDefault();
+        // Only re-position spotlight when user manually scrolls (not programmatic scrolls)
+        this.scrollHandler = (e) => {
+            // Debounce to avoid excessive updates during smooth scrolling
+            clearTimeout(this.scrollTimeout);
+            this.scrollTimeout = setTimeout(() => {
+                this.updateSpotlightPosition();
+            }, 100);
+        };
         
+        // Allow scrolling but update positions - don't prevent wheel/touch completely
         window.addEventListener('scroll', this.scrollHandler, true);
-        window.addEventListener('wheel', this.wheelHandler, { passive: false });
-        window.addEventListener('touchmove', this.touchmoveHandler, { passive: false });
         
         console.log('✅ Force started onboarding tour with', this.totalSteps, 'steps');
     }

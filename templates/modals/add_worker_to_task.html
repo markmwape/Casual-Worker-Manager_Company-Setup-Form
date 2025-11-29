@@ -166,8 +166,7 @@
                 if (worker.date_of_birth) {
                     infoParts.push(`DOB: ${worker.date_of_birth}`);
                 }
-                infoParts.push(`ID: ${worker.id}`);
-                subText.textContent = infoParts.join(' • ');
+                subText.textContent = infoParts.length > 0 ? infoParts.join(' • ') : 'No additional info';
                 
                 // Add icon
                 const icon = document.createElement('div');

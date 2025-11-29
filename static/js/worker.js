@@ -2,6 +2,98 @@
 console.log('[worker.js] Script loading...');
 console.log('[worker.js] window.addCustomField before definition:', typeof window.addCustomField);
 
+// ============================================================================
+// DUPLICATE DETECTION AND DATE VALIDATION FUNCTIONS
+// ============================================================================
+
+async function checkDuplicateValues(formData) {
+    /**
+     * Check for duplicate values in custom fields marked with duplicate detection
+     * Returns: { hasDuplicates: boolean, warnings: string[] }
+     */
+    try {
+        const response = await fetch('/api/worker/check-duplicates', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify(formData)
+        });
+        
+        if (!response.ok) {
+            console.error('Failed to check duplicates:', response.status);
+            return { hasDuplicates: false, warnings: [] };
+        }
+        
+        return await response.json();
+    } catch (error) {
+        console.error('Error checking duplicates:', error);
+        return { hasDuplicates: false, warnings: [] };
+    }
+}
+
+async function validateDateFormat(dateStr) {
+    /**
+     * Validate and normalize date format
+     * Handles multiple formats: YYYY-MM-DD, DD/MM/YYYY, MM/DD/YYYY, etc.
+     */
+    if (!dateStr) return { isValid: true, normalizedDate: null };
+    
+    const dateStr_trimmed = dateStr.trim();
+    
+    // Already in correct format
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr_trimmed)) {
+        // Validate the date is real
+        const date = new Date(dateStr_trimmed + 'T00:00:00Z');
+        if (!isNaN(date.getTime())) {
+            return { isValid: true, normalizedDate: dateStr_trimmed };
+        }
+        return { isValid: false, normalizedDate: null };
+    }
+    
+    // Try to parse other formats
+    let parsedDate = null;
+    
+    // DD/MM/YYYY or DD-MM-YYYY
+    const slashMatch = dateStr_trimmed.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
+    if (slashMatch) {
+        const [_, part1, part2, year] = slashMatch;
+        const p1 = parseInt(part1);
+        const p2 = parseInt(part2);
+        
+        // Determine if DD/MM or MM/DD based on values
+        let month, day;
+        if (p1 > 12) {
+            // Must be DD/MM
+            day = p1;
+            month = p2;
+        } else if (p2 > 12) {
+            // Must be MM/DD
+            month = p1;
+            day = p2;
+        } else {
+            // Ambiguous - assume DD/MM (European format is more common)
+            day = p1;
+            month = p2;
+        }
+        
+        parsedDate = new Date(parseInt(year), month - 1, day);
+    }
+    
+    // Validate the parsed date
+    if (parsedDate && !isNaN(parsedDate.getTime())) {
+        const normalized = `${parsedDate.getFullYear()}-${String(parsedDate.getMonth() + 1).padStart(2, '0')}-${String(parsedDate.getDate()).padStart(2, '0')}`;
+        return { isValid: true, normalizedDate: normalized };
+    }
+    
+    return { isValid: false, normalizedDate: null };
+}
+
+window.checkDuplicateValues = checkDuplicateValues;
+window.validateDateFormat = validateDateFormat;
+
 // Custom Modal Functions
 function showCustomModal(title, message, type = 'info') {
     return new Promise((resolve) => {
@@ -261,6 +353,8 @@ window.openEditWorkerModal = function(workerId) {
     const modal = document.getElementById('add-worker-modal');
     const form = document.getElementById('workerForm');
     
+    console.log('[openEditWorkerModal] Opening modal for worker:', workerId);
+    
     // Fetch worker data from the API
     fetch(`/api/worker/${workerId}`)
         .then(response => {
@@ -270,35 +364,59 @@ window.openEditWorkerModal = function(workerId) {
             return response.json();
         })
         .then(worker => {
+            console.log('[openEditWorkerModal] Loaded worker data:', worker);
+            
             // Load custom fields first, then populate the form
             reloadCustomFields();
             
-            // Wait a brief moment for custom fields to load, then populate the form
+            // Wait for custom fields to load, then populate all form fields
             setTimeout(() => {
-                // Reset form first
-                form.reset();
+                // Do NOT reset form - preserve custom field data!
+                // Only clear specific fields we're about to populate
                 
                 // Set standard fields
-                if (form.querySelector('input[name="first_name"]')) {
-                    form.querySelector('input[name="first_name"]').value = worker.first_name || '';
-                }
-                if (form.querySelector('input[name="last_name"]')) {
-                    form.querySelector('input[name="last_name"]').value = worker.last_name || '';
-                }
-                if (form.querySelector('input[name="date_of_birth"]')) {
-                    form.querySelector('input[name="date_of_birth"]').value = worker.date_of_birth || '';
+                const firstNameInput = form.querySelector('input[name="first_name"]');
+                if (firstNameInput) {
+                    firstNameInput.value = worker.first_name || '';
                 }
                 
-                // Set custom fields
+                const lastNameInput = form.querySelector('input[name="last_name"]');
+                if (lastNameInput) {
+                    lastNameInput.value = worker.last_name || '';
+                }
+                
+                const dobInput = form.querySelector('input[name="date_of_birth"]');
+                if (dobInput) {
+                    dobInput.value = worker.date_of_birth || '';
+                }
+                
+                // Set custom fields using field ID mapping
+                console.log('[openEditWorkerModal] Setting custom field values');
                 if (worker.custom_fields) {
-                    Object.keys(worker.custom_fields).forEach(fieldName => {
-                        const input = form.querySelector(`input[name="${fieldName}"]`);
-                        if (input) {
-                            input.value = worker.custom_fields[fieldName] || '';
+                    // Try both field name and field ID approaches
+                    const customFieldInputs = form.querySelectorAll('input[name^="custom_field_"]');
+                    customFieldInputs.forEach(input => {
+                        const fieldId = input.getAttribute('name').replace('custom_field_', '');
+                        console.log('[openEditWorkerModal] Processing field:', fieldId);
+                        
+                        // Find matching custom field value from worker data
+                        for (const [fieldName, fieldValue] of Object.entries(worker.custom_fields)) {
+                            if (fieldValue) {
+                                const labelElement = input.closest('.form-control').querySelector('.label-text');
+                                const labelText = labelElement ? labelElement.textContent.trim() : '';
+                                
+                                if (labelText === fieldName) {
+                                    input.value = fieldValue || '';
+                                    console.log('[openEditWorkerModal] Set field', fieldName, 'to:', fieldValue);
+                                    break;
+                                }
+                            }
                         }
                     });
                 }
-            }, 200); // Small delay to allow custom fields to load
+                
+                console.log('[openEditWorkerModal] Form populated successfully');
+            }, 300); // Slightly longer delay for custom fields to fully load
             
             // Change modal title and button text
             const modalTitle = modal.querySelector('h3');
@@ -315,6 +433,10 @@ window.openEditWorkerModal = function(workerId) {
             
             // Show modal
             modal.showModal();
+            
+            if (window.feather) {
+                feather.replace();
+            }
         })
         .catch(error => {
             console.error('Error fetching worker data:', error);
@@ -357,9 +479,17 @@ function reloadCustomFields() {
                 const div = document.createElement('div');
                 div.className = 'form-control w-full custom-field-item';
                 div.setAttribute('data-field-id', field.id);
+                
+                const duplicateCheckBadge = field.enable_duplicate_detection 
+                    ? '<span class="badge badge-warning badge-sm ml-2">Duplicate Check</span>'
+                    : '';
+                
                 div.innerHTML = `
                     <label class="label">
-                        <span class="label-text text-black">${field.name}</span>
+                        <div class="flex items-center gap-2 flex-1">
+                            <span class="label-text text-black">${field.name}</span>
+                            ${duplicateCheckBadge}
+                        </div>
                         <button type="button" class="btn btn-ghost btn-sm text-red-500 hover:text-red-700 px-2 py-1" onclick="deleteCustomField(${field.id}, '${field.name}')" title="Delete this field">
                             <i data-feather="trash-2" class="h-5 w-5"></i>
                         </button>
@@ -439,6 +569,19 @@ function addCustomField(sourceModal = null) {
         return;
     }
     
+    // Save current form data before reloading custom fields
+    const formData = {};
+    const form = document.getElementById('workerForm') || document.getElementById('importWorkersForm');
+    if (form) {
+        const inputs = form.querySelectorAll('input[type="text"]');
+        inputs.forEach(input => {
+            if (input.name && input.value) {
+                formData[input.name] = input.value;
+            }
+        });
+        console.log('[addCustomField] Saved form data:', formData);
+    }
+    
     console.log('[addCustomField] Sending request to create field...');
     
     fetch('/api/import-field', {
@@ -475,11 +618,24 @@ function addCustomField(sourceModal = null) {
             }
             showToast(`Custom field "${fieldName}" added successfully!`, 'success');
             
-            // Reload fields for both modals if they exist
+            // Reload fields and restore form data
             reloadCustomFields();
             if (sourceModal === 'import' || document.getElementById('import-workers-modal')?.open) {
                 loadImportFields();
             }
+            
+            // Restore form data after a brief delay to allow custom fields to load
+            setTimeout(() => {
+                if (form && Object.keys(formData).length > 0) {
+                    Object.keys(formData).forEach(fieldName => {
+                        const input = form.querySelector(`input[name="${fieldName}"]`);
+                        if (input) {
+                            input.value = formData[fieldName];
+                        }
+                    });
+                    console.log('[addCustomField] Form data restored');
+                }
+            }, 350);
         }
     })
     .catch(error => {

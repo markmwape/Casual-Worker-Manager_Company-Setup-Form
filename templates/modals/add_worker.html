@@ -19,8 +19,9 @@
                 <div class="form-control w-full">
                     <label class="label">
                         <span class="label-text text-black">Date of Birth</span>
+                        <span id="dobFormatHint" class="label-text-alt text-gray-500 text-xs">YYYY-MM-DD</span>
                     </label>
-                    <input type="text" name="date_of_birth" class="input input-bordered w-full h-10">
+                    <input type="text" id="dateOfBirthInput" name="date_of_birth" class="input input-bordered w-full h-10" placeholder="YYYY-MM-DD">
                 </div>
             </div>
             
@@ -33,7 +34,12 @@
                         {% if field.id is number %}
                             <div class="form-control w-full custom-field-item" data-field-id="{{ field.id }}">
                                 <label class="label">
-                                    <span class="label-text text-black">{{ field.name }}</span>
+                                    <div class="flex items-center gap-2 flex-1">
+                                        <span class="label-text text-black">{{ field.name }}</span>
+                                        {% if field.enable_duplicate_detection %}
+                                        <span class="badge badge-warning badge-sm">Duplicate Check</span>
+                                        {% endif %}
+                                    </div>
                                     <button type="button" class="btn btn-ghost btn-sm text-red-500 hover:text-red-700 px-2 py-1" onclick="deleteCustomField({{ field.id }}, '{{ field.name }}')" title="Delete this field">
                                         <i data-feather="trash-2" class="h-5 w-5"></i>
                                     </button>
@@ -83,5 +89,77 @@
         <button>close</button>
     </form>
 </dialog>
+
+<script>
+    // Initialize date format on modal open
+    document.getElementById('add-worker-modal')?.addEventListener('show', function() {
+        detectAndSetDateFormat();
+    });
+    
+    function detectAndSetDateFormat() {
+        // Get all date of birth values from the workers table to detect format
+        const dobInputs = document.querySelectorAll('table tbody tr td:nth-child(4)'); // Assuming DOB is in the 4th column
+        let detectedFormat = 'YYYY-MM-DD'; // Default format
+        
+        if (dobInputs.length > 0) {
+            // Analyze first non-empty date value
+            for (let cell of dobInputs) {
+                const dateStr = cell.textContent.trim();
+                if (dateStr && dateStr !== 'N/A') {
+                    detectedFormat = detectDateFormat(dateStr);
+                    break;
+                }
+            }
+        }
+        
+        // Update the format hint
+        const dobFormatHint = document.getElementById('dobFormatHint');
+        if (dobFormatHint) {
+            dobFormatHint.textContent = detectedFormat;
+        }
+        
+        // Update the placeholder
+        const dobInput = document.getElementById('dateOfBirthInput');
+        if (dobInput) {
+            let placeholder = 'YYYY-MM-DD';
+            if (detectedFormat.includes('/')) {
+                placeholder = detectedFormat.toLowerCase();
+            }
+            dobInput.placeholder = placeholder;
+            dobInput.dataset.format = detectedFormat;
+        }
+    }
+    
+    function detectDateFormat(dateStr) {
+        // Try to detect date format from a sample date string
+        if (!dateStr) return 'YYYY-MM-DD';
+        
+        const dateStr_trimmed = dateStr.trim();
+        
+        // Check for YYYY-MM-DD
+        if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(dateStr_trimmed)) {
+            return 'YYYY-MM-DD';
+        }
+        // Check for DD/MM/YYYY or DD-MM-YYYY
+        else if (/^\d{1,2}[/-]\d{1,2}[/-]\d{4}$/.test(dateStr_trimmed)) {
+            const separator = dateStr_trimmed.includes('/') ? '/' : '-';
+            const parts = dateStr_trimmed.split(separator);
+            // If first part is > 12, it's likely DD/MM/YYYY
+            if (parseInt(parts[0]) > 12) {
+                return `DD${separator}MM${separator}YYYY`;
+            }
+            return `MM${separator}DD${separator}YYYY`;
+        }
+        // Check for MM/DD/YYYY (US format)
+        else if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr_trimmed)) {
+            return 'MM/DD/YYYY';
+        }
+        
+        return 'YYYY-MM-DD'; // Default
+    }
+    
+    // Call on page load
+    document.addEventListener('DOMContentLoaded', detectAndSetDateFormat);
+</script>
 
 <!-- Inline script removed; custom field handlers now in static/js/worker.js -->

@@ -835,6 +835,46 @@ function showToast(message, type = 'success') {
     }, 3000);
 }
 
+// Fallback implementation of showCustomConfirm for form validation
+function showCustomConfirm(title, message) {
+    return new Promise((resolve) => {
+        const modal = document.createElement('dialog');
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-box">
+                <h3 class="font-bold text-lg flex items-center gap-2">
+                    <i class="fas fa-question-circle text-blue-500"></i>
+                    <span>${title}</span>
+                </h3>
+                <p class="py-4 whitespace-pre-wrap">${message}</p>
+                <div class="modal-action">
+                    <button type="button" class="btn btn-ghost cancel-btn">Cancel</button>
+                    <button type="button" class="btn btn-primary confirm-btn">Confirm</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        const cancelBtn = modal.querySelector('.cancel-btn');
+        const confirmBtn = modal.querySelector('.confirm-btn');
+        
+        cancelBtn.addEventListener('click', () => {
+            modal.close();
+            modal.remove();
+            resolve(false);
+        });
+        
+        confirmBtn.addEventListener('click', () => {
+            modal.close();
+            modal.remove();
+            resolve(true);
+        });
+        
+        modal.showModal();
+    });
+}
+
 function showLoading(element) {
     element.disabled = true;
     element.innerHTML = '<div class="loading-spinner mr-2"></div>Loading...';
@@ -1076,7 +1116,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const workerForm = document.getElementById('workerForm');
     if (workerForm) {
         console.log('Worker form found, adding submit handler');
-        workerForm.addEventListener('submit', function(e) {
+        workerForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             console.log('Worker form submitted');
             
@@ -1089,6 +1129,29 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             console.log('Sending worker data:', data);
+            
+            // Validate and normalize date format
+            if (data.date_of_birth) {
+                const dateValidation = await validateDateFormat(data.date_of_birth);
+                if (!dateValidation.isValid) {
+                    showToast('Invalid date format. Please use YYYY-MM-DD or similar valid formats.', 'error');
+                    return;
+                }
+                if (dateValidation.normalizedDate) {
+                    data.date_of_birth = dateValidation.normalizedDate;
+                }
+            }
+            
+            // Check for duplicates in fields marked with duplicate detection
+            const duplicateCheck = await checkDuplicateValues(data);
+            if (duplicateCheck.hasDuplicates && duplicateCheck.warnings && duplicateCheck.warnings.length > 0) {
+                const warningMessage = `Warning: Potential duplicates detected:\n\n${duplicateCheck.warnings.join('\n\n')}\n\nDo you want to continue?`;
+                const confirmed = await showCustomConfirm('Duplicate Values Detected', warningMessage);
+                if (!confirmed) {
+                    console.log('User cancelled form submission due to duplicate warnings');
+                    return;
+                }
+            }
             
             const editWorkerId = workerForm.getAttribute('data-edit-worker-id');
             let url, method;

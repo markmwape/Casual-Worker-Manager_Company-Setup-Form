@@ -14,6 +14,24 @@
         transform: translateY(-4px);
         box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
     }
+    
+    /* Worker count badge styling */
+    .worker-count-badge {
+        background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .worker-count-badge:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+    }
+    
+    .task-card:hover .worker-count-badge {
+        transform: scale(1.08);
+        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.5);
+    }
+    
     .group.relative {
         overflow: visible;
     }
@@ -604,7 +622,7 @@
                                         {% endif %}
                                     </div>
 
-                                    <!-- Footer with Date -->
+                                    <!-- Footer with Date and Worker Count -->
                                     <div class="pt-4 border-t border-gray-200">
                                         <div class="flex items-center justify-between">
                                             <div class="flex items-center text-sm text-gray-600">
@@ -616,9 +634,26 @@
                                                     <div class="text-sm font-semibold text-gray-800">{{ task.start_date.strftime('%B %d, %Y') }}</div>
                                                 </div>
                                             </div>
-                                            <div class="flex-shrink-0">
-                                                <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                                                    <i class="fas fa-arrow-right text-blue-600 text-xs"></i>
+                                            <div class="flex items-center gap-4">
+                                                <!-- Worker Count Badge -->
+                                                <div class="flex items-center">
+                                                    <div class="worker-count-badge flex-shrink-0 w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center border-2 border-indigo-300">
+                                                        <div class="flex flex-col items-center justify-center">
+                                                            <div class="text-lg font-bold text-indigo-600">{{ task.workers.count() }}</div>
+                                                            <div class="text-xs text-indigo-600 font-medium">
+                                                                {% if task.workers.count() == 1 %}
+                                                                    person
+                                                                {% else %}
+                                                                    people
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="flex-shrink-0">
+                                                    <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                                        <i class="fas fa-arrow-right text-blue-600 text-xs"></i>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>

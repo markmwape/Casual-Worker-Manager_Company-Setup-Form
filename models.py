@@ -93,6 +93,7 @@ class ImportField(db.Model):
     company_id = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
     name = db.Column(db.String(100), nullable=False)
     field_type = db.Column(db.String(50), nullable=True)
+    enable_duplicate_detection = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     custom_field_values = db.relationship('WorkerCustomFieldValue', backref='import_field', lazy=True, cascade='all, delete-orphan')
 

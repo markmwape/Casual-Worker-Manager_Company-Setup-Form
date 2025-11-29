@@ -1,7 +1,7 @@
 """Add enable_duplicate_detection column to import_field table
 
 Revision ID: 051
-Revises: 
+Revises: 2c65fbb8ec7f
 Create Date: 2025-11-29 20:00:00.000000
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '051'
-down_revision = None
+down_revision = '2c65fbb8ec7f'
 branch_labels = None
 depends_on = None
 

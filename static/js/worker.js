@@ -9,13 +9,8 @@ console.log('[worker.js] window.addCustomField before definition:', typeof windo
 async function checkDuplicateValues(formData) {
     /**
      * Check for duplicate values in custom fields marked with duplicate detection
-     * NOTE: This feature requires database migration 051 to be applied
      * Returns: { hasDuplicates: boolean, warnings: string[] }
      */
-    // TODO: Re-enable once migration 051 runs successfully
-    return { hasDuplicates: false, warnings: [] };
-    
-    /* Original implementation (disabled until migration is applied):
     try {
         const response = await fetch('/api/worker/check-duplicates', {
             method: 'POST',
@@ -37,7 +32,6 @@ async function checkDuplicateValues(formData) {
         console.error('Error checking duplicates:', error);
         return { hasDuplicates: false, warnings: [] };
     }
-    */
 }
 
 async function validateDateFormat(dateStr) {
@@ -714,6 +708,73 @@ function confirmDeleteCustomField() {
         });
 }
 
+function toggleDuplicateDetection(fieldId, enabled) {
+    console.log(`[toggleDuplicateDetection] Toggling field ${fieldId} to ${enabled}`);
+    
+    fetch(`/api/import-field/${fieldId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+            enable_duplicate_detection: enabled
+        })
+    })
+    .then(res => {
+        if (res.status === 401) {
+            throw new Error('Authentication required. Please refresh the page and log in again.');
+        }
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+    })
+    .then(result => {
+        if (result.error) {
+            showToast(result.error, 'error');
+            // Revert the toggle if there was an error
+            const toggle = document.querySelector(`[data-field-id="${fieldId}"] .toggle`);
+            if (toggle) {
+                toggle.checked = !enabled;
+            }
+        } else {
+            const fieldName = result.name;
+            const status = enabled ? 'enabled' : 'disabled';
+            showToast(`Duplicate detection ${status} for "${fieldName}"`, 'success');
+            
+            // Update the badge visibility
+            const fieldItem = document.querySelector(`[data-field-id="${fieldId}"]`);
+            if (fieldItem) {
+                const badge = fieldItem.querySelector('.badge');
+                if (enabled && !badge) {
+                    // Add badge if it doesn't exist
+                    const labelDiv = fieldItem.querySelector('.flex.items-center.gap-2.flex-1');
+                    if (labelDiv) {
+                        const badgeElement = document.createElement('span');
+                        badgeElement.className = 'badge badge-warning badge-sm';
+                        badgeElement.textContent = 'Duplicate Check';
+                        labelDiv.appendChild(badgeElement);
+                    }
+                } else if (!enabled && badge) {
+                    // Remove badge if it exists
+                    badge.remove();
+                }
+            }
+        }
+    })
+    .catch(error => {
+        console.error('[toggleDuplicateDetection] Error:', error);
+        showToast('Failed to update duplicate detection setting. Please try again.', 'error');
+        // Revert the toggle on error
+        const toggle = document.querySelector(`[data-field-id="${fieldId}"] .toggle`);
+        if (toggle) {
+            toggle.checked = !enabled;
+        }
+    });
+}
+
 // Add and close worker modal functions (imported from script.js behavior)
 function openAddWorkerModal() {
     const modal = document.getElementById('add-worker-modal');
@@ -971,6 +1032,7 @@ window.openDeleteAllWorkersModal = openDeleteAllWorkersModal;
 window.openImportWorkersModal = openImportWorkersModal;
 window.closeImportWorkersModal = closeImportWorkersModal;
 window.loadImportFields = loadImportFields;
+window.toggleDuplicateDetection = toggleDuplicateDetection;
 
 console.log('[worker.js] Script fully loaded.');
 console.log('[worker.js] window.addCustomField type:', typeof window.addCustomField);

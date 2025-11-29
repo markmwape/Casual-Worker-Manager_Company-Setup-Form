@@ -9,8 +9,13 @@ console.log('[worker.js] window.addCustomField before definition:', typeof windo
 async function checkDuplicateValues(formData) {
     /**
      * Check for duplicate values in custom fields marked with duplicate detection
+     * NOTE: This feature requires database migration 050_add_duplicate_detection_flag.sql to be applied
      * Returns: { hasDuplicates: boolean, warnings: string[] }
      */
+    // TODO: Re-enable once migration 050 is applied
+    return { hasDuplicates: false, warnings: [] };
+    
+    /* Original implementation (disabled until migration is applied):
     try {
         const response = await fetch('/api/worker/check-duplicates', {
             method: 'POST',
@@ -32,6 +37,7 @@ async function checkDuplicateValues(formData) {
         console.error('Error checking duplicates:', error);
         return { hasDuplicates: false, warnings: [] };
     }
+    */
 }
 
 async function validateDateFormat(dateStr) {
@@ -480,15 +486,10 @@ function reloadCustomFields() {
                 div.className = 'form-control w-full custom-field-item';
                 div.setAttribute('data-field-id', field.id);
                 
-                const duplicateCheckBadge = field.enable_duplicate_detection 
-                    ? '<span class="badge badge-warning badge-sm ml-2">Duplicate Check</span>'
-                    : '';
-                
                 div.innerHTML = `
                     <label class="label">
                         <div class="flex items-center gap-2 flex-1">
                             <span class="label-text text-black">${field.name}</span>
-                            ${duplicateCheckBadge}
                         </div>
                         <button type="button" class="btn btn-ghost btn-sm text-red-500 hover:text-red-700 px-2 py-1" onclick="deleteCustomField(${field.id}, '${field.name}')" title="Delete this field">
                             <i data-feather="trash-2" class="h-5 w-5"></i>

@@ -9,13 +9,8 @@ console.log('[worker.js] window.addCustomField before definition:', typeof windo
 async function checkDuplicateValues(formData) {
     /**
      * Check for duplicate values in custom fields marked with duplicate detection
-     * NOTE: This feature requires database migration 050_add_duplicate_detection_flag.sql to be applied
      * Returns: { hasDuplicates: boolean, warnings: string[] }
      */
-    // TODO: Re-enable once migration 050 is applied
-    return { hasDuplicates: false, warnings: [] };
-    
-    /* Original implementation (disabled until migration is applied):
     try {
         const response = await fetch('/api/worker/check-duplicates', {
             method: 'POST',
@@ -37,7 +32,6 @@ async function checkDuplicateValues(formData) {
         console.error('Error checking duplicates:', error);
         return { hasDuplicates: false, warnings: [] };
     }
-    */
 }
 
 async function validateDateFormat(dateStr) {

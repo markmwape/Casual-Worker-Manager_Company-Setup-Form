@@ -514,17 +514,20 @@ function addCustomField(sourceModal = null) {
     console.log('[addCustomField] ========== FUNCTION CALLED ==========');
     console.log('[addCustomField] Called from:', sourceModal || 'unknown');
     
-    // Determine which input field to use based on the modal
+    // Determine which input field and checkbox to use based on the modal
     let fieldNameInput;
+    let duplicateDetectionCheckbox;
     let modalId;
 
     if (sourceModal === 'import') {
         modalId = '#import-workers-modal';
         fieldNameInput = document.querySelector('#import-workers-modal #newFieldNameImport');
+        duplicateDetectionCheckbox = document.querySelector('#import-workers-modal #enableDuplicateDetectionImport');
         console.log('[addCustomField] Using IMPORT modal input');
     } else if (sourceModal === 'add-worker') {
         modalId = '#add-worker-modal';
         fieldNameInput = document.querySelector('#add-worker-modal #newFieldNameAddWorker');
+        duplicateDetectionCheckbox = document.querySelector('#add-worker-modal #enableDuplicateDetectionAddWorker');
         console.log('[addCustomField] Using ADD WORKER modal input');
     } else {
         // Fallback for when sourceModal is not provided
@@ -533,11 +536,13 @@ function addCustomField(sourceModal = null) {
             modalId = '#import-workers-modal';
             sourceModal = 'import';
             fieldNameInput = document.querySelector('#import-workers-modal #newFieldNameImport');
+            duplicateDetectionCheckbox = document.querySelector('#import-workers-modal #enableDuplicateDetectionImport');
             console.log('[addCustomField] Fallback to IMPORT modal');
         } else {
             modalId = '#add-worker-modal';
             sourceModal = 'add-worker';
             fieldNameInput = document.querySelector('#add-worker-modal #newFieldNameAddWorker');
+            duplicateDetectionCheckbox = document.querySelector('#add-worker-modal #enableDuplicateDetectionAddWorker');
             console.log('[addCustomField] Fallback to ADD WORKER modal');
         }
     }
@@ -585,6 +590,8 @@ function addCustomField(sourceModal = null) {
     
     console.log('[addCustomField] Sending request to create field...');
     
+    const enableDuplicateDetection = duplicateDetectionCheckbox ? duplicateDetectionCheckbox.checked : false;
+    
     fetch('/api/import-field', {
         method: 'POST', 
         headers: {
@@ -592,7 +599,11 @@ function addCustomField(sourceModal = null) {
             'X-Requested-With': 'XMLHttpRequest'
         },
         credentials: 'same-origin',
-        body: JSON.stringify({ name: fieldName, type: 'text' })
+        body: JSON.stringify({ 
+            name: fieldName, 
+            type: 'text',
+            enable_duplicate_detection: enableDuplicateDetection
+        })
     })
     .then(res => {
         console.log('[addCustomField] Response status:', res.status);
@@ -612,10 +623,13 @@ function addCustomField(sourceModal = null) {
         if (result.error) {
             showToast(result.error, 'error');
         } else {
-            // Clear the input field
+            // Clear the input field and checkbox
             if (fieldNameInput) {
                 fieldNameInput.value = '';
                 fieldNameInput.focus();
+            }
+            if (duplicateDetectionCheckbox) {
+                duplicateDetectionCheckbox.checked = false;
             }
             showToast(`Custom field "${fieldName}" added successfully!`, 'success');
             
@@ -913,6 +927,15 @@ function loadImportFields() {
             
             const fieldNameSpan = document.createElement('span');
             fieldNameSpan.textContent = field.name;
+            
+            // Add duplicate detection badge if enabled
+            if (field.enable_duplicate_detection) {
+                const badge = document.createElement('span');
+                badge.className = 'badge badge-warning badge-xs ml-1';
+                badge.textContent = 'Dup';
+                badge.title = 'Duplicate detection enabled';
+                fieldNameSpan.appendChild(badge);
+            }
             
             const deleteBtn = document.createElement('button');
             deleteBtn.className = 'btn btn-ghost btn-sm text-red-500 hover:text-red-700 ml-2 px-2 py-1';

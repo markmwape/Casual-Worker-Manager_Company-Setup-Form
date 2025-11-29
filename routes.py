@@ -1802,6 +1802,13 @@ def handle_workers():
     """Handle workers operations - get list or create new worker"""
     try:
         if request.method == 'GET':
+            fields = ImportField.query.filter_by(company_id=company.id).all()
+            return jsonify([{
+                'id': field.id,
+                'name': field.name,
+                'field_type': field.field_type,
+                'enable_duplicate_detection': field.enable_duplicate_detection
+            } for field in fields])
             # Get current company from workspace
             company = get_current_company()
             

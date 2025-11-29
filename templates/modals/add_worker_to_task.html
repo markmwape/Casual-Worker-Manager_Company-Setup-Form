@@ -139,7 +139,7 @@
             const limitedMatches = matches.slice(0, 8);
             limitedMatches.forEach((worker, idx) => {
                 const div = document.createElement('div');
-                div.className = 'px-4 py-3 hover:bg-blue-50 cursor-pointer border-b border-blue-100 last:border-b-0 transition-all duration-200 group';
+                div.className = 'px-4 py-3 hover:bg-blue-50 cursor-pointer border-b border-blue-100 last:border-b-0 transition-all duration-200 group select-none touch-manipulation';
                 
                 // Create enhanced display with avatar placeholder and better info
                 const container = document.createElement('div');
@@ -181,7 +181,7 @@
                 container.appendChild(icon);
                 div.appendChild(container);
                 
-                div.onclick = function() {
+                const selectWorker = function() {
                     const input = document.getElementById('workerSearch');
                     input.value = worker.name;
                     document.getElementById('selectedWorkerId').value = worker.id;
@@ -190,6 +190,15 @@
                     input.blur();
                     console.log('Selected worker:', worker.name, 'ID:', worker.id); // Debug log
                 };
+                
+                // Add both click and touch event listeners for full compatibility
+                div.addEventListener('click', selectWorker);
+                div.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    selectWorker();
+                });
+                
                 div.setAttribute('data-index', idx);
                 dropdown.appendChild(div);
             });
@@ -209,9 +218,15 @@
     }
 
     document.getElementById('workerSearch').addEventListener('blur', function() {
+        // Delay hiding dropdown to allow click/touch handlers to execute
+        // Check if a selection was just made by checking if lastDropdownSelection is true
         setTimeout(() => {
-            document.getElementById('workersDropdown').classList.add('hidden');
-        }, 200);
+            if (!lastDropdownSelection) {
+                document.getElementById('workersDropdown').classList.add('hidden');
+            }
+            // Reset the flag for next blur
+            lastDropdownSelection = false;
+        }, 100);
     });
 
     document.getElementById('workerSearch').addEventListener('keydown', function(e) {

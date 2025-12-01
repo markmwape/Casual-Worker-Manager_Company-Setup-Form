@@ -669,9 +669,6 @@
                                             <div class="flex items-center gap-3">
                                                 <div class="text-right">
                                                     <div class="text-[10px] text-gray-400 font-medium uppercase tracking-wide">Workers</div>
-                                                    <div class="text-sm font-semibold text-gray-800">
-                                                        {{ task.workers.count() }} {% if task.workers.count() == 1 %}person{% else %}people{% endif %}
-                                                    </div>
                                                 </div>
                                                 <div class="worker-count-badge flex-shrink-0 w-11 h-11 rounded-lg flex items-center justify-center">
                                                     <div class="worker-count-number">{{ task.workers.count() }}</div>

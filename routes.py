@@ -2775,8 +2775,8 @@ def import_field():
         db.session.rollback()
         return jsonify({'error': 'Failed to handle import field request'}), 500
 
-@app.route("/api/import-field/<int:field_id>", methods=['DELETE'])
-def delete_import_field(field_id):
+@app.route("/api/import-field/<int:field_id>", methods=['DELETE', 'PUT'])
+def manage_import_field(field_id):
     try:
         # Get current company from workspace
         company = get_current_company()
@@ -2784,21 +2784,42 @@ def delete_import_field(field_id):
         if not company:
             return jsonify({'error': 'Company not found'}), 404
             
-        # Find and delete field
+        # Find field
         field = ImportField.query.filter_by(id=field_id, company_id=company.id).first()
         
         if not field:
             return jsonify({'error': 'Field not found'}), 404
-            
-        db.session.delete(field)
-        db.session.commit()
         
-        return jsonify({'message': 'Field deleted successfully'}), 200
+        if request.method == 'DELETE':
+            # Delete the field
+            db.session.delete(field)
+            db.session.commit()
+            return jsonify({'message': 'Field deleted successfully'}), 200
+        
+        elif request.method == 'PUT':
+            # Update field properties (e.g., enable_duplicate_detection)
+            data = request.get_json()
+            
+            if 'enable_duplicate_detection' in data:
+                field.enable_duplicate_detection = bool(data['enable_duplicate_detection'])
+                db.session.commit()
+                
+                return jsonify({
+                    'message': 'Field updated successfully',
+                    'field': {
+                        'id': field.id,
+                        'name': field.name,
+                        'field_type': field.field_type,
+                        'enable_duplicate_detection': field.enable_duplicate_detection
+                    }
+                }), 200
+            else:
+                return jsonify({'error': 'No valid fields to update'}), 400
         
     except Exception as e:
-        logging.error(f"Error deleting import field: {str(e)}")
+        logging.error(f"Error managing import field: {str(e)}")
         db.session.rollback()
-        return jsonify({'error': 'Failed to delete import field'}), 500
+        return jsonify({'error': 'Failed to manage import field'}), 500
 
 from abilities import llm
 

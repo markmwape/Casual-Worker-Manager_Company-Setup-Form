@@ -52,30 +52,25 @@
     }
     
     .worker-count-number {
-        font-size: 1.5rem;
+        font-size: 1.25rem;
         font-weight: 800;
-        background: linear-gradient(135deg, #ffffff 0%, #dbeafe 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        color: white;
         line-height: 1;
     }
     
     .worker-count-label {
-        font-size: 0.65rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        color: rgba(255, 255, 255, 0.9);
-        margin-top: 2px;
+        font-size: 0.7rem;
+        font-weight: 500;
+        color: #6b7280;
+        margin-top: 4px;
     }
     
     .worker-icon-container {
         position: absolute;
-        top: -4px;
-        right: -4px;
-        width: 20px;
-        height: 20px;
+        top: -3px;
+        right: -3px;
+        width: 18px;
+        height: 18px;
         background: white;
         border-radius: 50%;
         display: flex;
@@ -86,7 +81,7 @@
     
     .worker-icon-container i {
         color: #3b82f6;
-        font-size: 10px;
+        font-size: 9px;
     }
     
     .group.relative {
@@ -693,21 +688,19 @@
                                             </div>
                                             <div class="flex items-center gap-4">
                                                 <!-- Worker Count Badge -->
-                                                <div class="flex items-center">
-                                                    <div class="worker-count-badge flex-shrink-0 w-16 h-16 rounded-xl flex items-center justify-center relative">
+                                                <div class="flex flex-col items-center gap-1">
+                                                    <div class="worker-count-badge flex-shrink-0 w-12 h-12 rounded-lg flex items-center justify-center relative">
                                                         <div class="worker-icon-container">
                                                             <i class="fas fa-users"></i>
                                                         </div>
-                                                        <div class="flex flex-col items-center justify-center">
-                                                            <div class="worker-count-number">{{ task.workers.count() }}</div>
-                                                            <div class="worker-count-label">
-                                                                {% if task.workers.count() == 1 %}
-                                                                    person
-                                                                {% else %}
-                                                                    people
-                                                                {% endif %}
-                                                            </div>
-                                                        </div>
+                                                        <div class="worker-count-number">{{ task.workers.count() }}</div>
+                                                    </div>
+                                                    <div class="worker-count-label">
+                                                        {% if task.workers.count() == 1 %}
+                                                            person
+                                                        {% else %}
+                                                            people
+                                                        {% endif %}
                                                     </div>
                                                 </div>
                                                 <div class="flex-shrink-0">

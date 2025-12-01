@@ -1172,6 +1172,12 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(response => {
                 console.log('Response status:', response.status);
+                if (response.status === 409) {
+                    // Duplicate detected by backend
+                    return response.json().then(data => {
+                        throw { isDuplicate: true, data: data };
+                    });
+                }
                 return response.json();
             })
             .then(result => {
@@ -1188,7 +1194,13 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => {
                 console.error('Error saving worker:', error);
-                showToast('Failed to save worker', 'error');
+                if (error.isDuplicate) {
+                    // Show detailed duplicate error
+                    const duplicateMessage = error.data.error || 'Duplicate values detected';
+                    showToast(duplicateMessage, 'error');
+                } else {
+                    showToast('Failed to save worker', 'error');
+                }
             })
             .finally(() => {
                 workerForm.removeAttribute('data-edit-worker-id');

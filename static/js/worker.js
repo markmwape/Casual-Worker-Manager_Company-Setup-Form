@@ -480,14 +480,27 @@ function reloadCustomFields() {
                 div.className = 'form-control w-full custom-field-item';
                 div.setAttribute('data-field-id', field.id);
                 
+                const badgeHtml = field.enable_duplicate_detection ? 
+                    '<span class="badge badge-warning badge-sm">Duplicate Check</span>' : '';
+                
                 div.innerHTML = `
                     <label class="label">
                         <div class="flex items-center gap-2 flex-1">
                             <span class="label-text text-black">${field.name}</span>
+                            ${badgeHtml}
                         </div>
-                        <button type="button" class="btn btn-ghost btn-sm text-red-500 hover:text-red-700 px-2 py-1" onclick="deleteCustomField(${field.id}, '${field.name}')" title="Delete this field">
-                            <i data-feather="trash-2" class="h-5 w-5"></i>
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <label class="label cursor-pointer">
+                                <input type="checkbox" 
+                                       class="toggle toggle-sm toggle-primary" 
+                                       onchange="toggleDuplicateDetection(${field.id}, this.checked)"
+                                       ${field.enable_duplicate_detection ? 'checked' : ''}>
+                                <span class="label-text text-xs ml-1">Check duplicates</span>
+                            </label>
+                            <button type="button" class="btn btn-ghost btn-sm text-red-500 hover:text-red-700 px-2 py-1" onclick="deleteCustomField(${field.id}, '${field.name}')" title="Delete this field">
+                                <i data-feather="trash-2" class="h-5 w-5"></i>
+                            </button>
+                        </div>
                     </label>
                     <input type="text" name="custom_field_${field.id}" class="input input-bordered w-full h-10" placeholder="Enter ${field.name}">
                 `;
@@ -711,6 +724,83 @@ function confirmDeleteCustomField() {
 function toggleDuplicateDetection(fieldId, enabled) {
     console.log(`[toggleDuplicateDetection] Toggling field ${fieldId} to ${enabled}`);
     
+    // If disabling duplicate detection, show warning modal
+    if (!enabled) {
+        // Store the field ID for the confirmation callback
+        window._pendingDuplicateToggle = { fieldId, enabled };
+        
+        // Show the warning modal
+        const warningModal = document.getElementById('disableDuplicateWarningModal');
+        if (warningModal) {
+            warningModal.showModal();
+        } else {
+            // Fallback to browser confirm if modal not found
+            const proceed = confirm(
+                '⚠️ Warning: Disabling Duplicate Detection\n\n' +
+                'If you turn off duplicate detection for this field, the system will allow multiple workers to have the same value for this field.\n\n' +
+                'This means duplicate entries will be possible when:\n' +
+                '• Adding workers manually\n' +
+                '• Importing workers from Excel\n\n' +
+                'Are you sure you want to disable duplicate detection?'
+            );
+            
+            if (!proceed) {
+                // User cancelled, revert the toggle
+                const toggle = document.querySelector(`[data-field-id="${fieldId}"] .toggle`);
+                if (toggle) {
+                    toggle.checked = true;
+                }
+                return;
+            }
+            // If they confirmed via fallback, proceed with the API call
+            performDuplicateToggle(fieldId, enabled);
+        }
+        return;
+    }
+    
+    // If enabling, proceed directly
+    performDuplicateToggle(fieldId, enabled);
+}
+
+function cancelDisableDuplicateDetection() {
+    // Close the modal
+    const warningModal = document.getElementById('disableDuplicateWarningModal');
+    if (warningModal) {
+        warningModal.close();
+    }
+    
+    // Revert the toggle
+    const data = window._pendingDuplicateToggle;
+    if (data) {
+        const toggle = document.querySelector(`[data-field-id="${data.fieldId}"] .toggle`);
+        if (toggle) {
+            toggle.checked = true;
+        }
+    }
+    
+    window._pendingDuplicateToggle = null;
+}
+
+function confirmDisableDuplicateDetection() {
+    // Close the modal
+    const warningModal = document.getElementById('disableDuplicateWarningModal');
+    if (warningModal) {
+        warningModal.close();
+    }
+    
+    // Proceed with disabling
+    const data = window._pendingDuplicateToggle;
+    if (data) {
+        performDuplicateToggle(data.fieldId, data.enabled);
+    }
+    
+    window._pendingDuplicateToggle = null;
+}
+
+function performDuplicateToggle(fieldId, enabled) {
+    console.log(`[performDuplicateToggle] Executing toggle for field ${fieldId} to ${enabled}`);
+    
+    
     fetch(`/api/import-field/${fieldId}`, {
         method: 'PUT',
         headers: {
@@ -744,24 +834,12 @@ function toggleDuplicateDetection(fieldId, enabled) {
             const status = enabled ? 'enabled' : 'disabled';
             showToast(`Duplicate detection ${status} for "${fieldName}"`, 'success');
             
-            // Update the badge visibility
-            const fieldItem = document.querySelector(`[data-field-id="${fieldId}"]`);
-            if (fieldItem) {
-                const badge = fieldItem.querySelector('.badge');
-                if (enabled && !badge) {
-                    // Add badge if it doesn't exist
-                    const labelDiv = fieldItem.querySelector('.flex.items-center.gap-2.flex-1');
-                    if (labelDiv) {
-                        const badgeElement = document.createElement('span');
-                        badgeElement.className = 'badge badge-warning badge-sm';
-                        badgeElement.textContent = 'Duplicate Check';
-                        labelDiv.appendChild(badgeElement);
-                    }
-                } else if (!enabled && badge) {
-                    // Remove badge if it exists
-                    badge.remove();
-                }
-            }
+            // Update all badge visibility across both modals
+            updateDuplicateBadges(fieldId, enabled);
+            
+            // Reload fields to ensure consistency
+            reloadCustomFields();
+            loadImportFields();
         }
     })
     .catch(error => {
@@ -771,6 +849,31 @@ function toggleDuplicateDetection(fieldId, enabled) {
         const toggle = document.querySelector(`[data-field-id="${fieldId}"] .toggle`);
         if (toggle) {
             toggle.checked = !enabled;
+        }
+    });
+}
+
+function updateDuplicateBadges(fieldId, enabled) {
+    /**
+     * Update badge visibility across all modals for a given field
+     */
+    const fieldItems = document.querySelectorAll(`[data-field-id="${fieldId}"]`);
+    
+    fieldItems.forEach(fieldItem => {
+        const badge = fieldItem.querySelector('.badge');
+        
+        if (enabled && !badge) {
+            // Add badge if it doesn't exist
+            const labelDiv = fieldItem.querySelector('.flex.items-center.gap-2.flex-1');
+            if (labelDiv) {
+                const badgeElement = document.createElement('span');
+                badgeElement.className = 'badge badge-warning badge-sm';
+                badgeElement.textContent = 'Duplicate Check';
+                labelDiv.appendChild(badgeElement);
+            }
+        } else if (!enabled && badge) {
+            // Remove badge if it exists
+            badge.remove();
         }
     });
 }
@@ -983,31 +1086,67 @@ function loadImportFields() {
         // Add custom fields
         fields.forEach(field => {
             const fieldDiv = document.createElement('div');
-            fieldDiv.className = 'bg-blue-100 p-2 rounded-lg text-blue-700 font-medium truncate flex justify-between items-center';
+            fieldDiv.className = 'bg-blue-100 p-3 rounded-lg flex flex-col gap-2';
             fieldDiv.setAttribute('data-field', field.name.replace(/ /g, '_'));
+            fieldDiv.setAttribute('data-field-id', field.id);
+            
+            // Top row: field name and actions
+            const topRow = document.createElement('div');
+            topRow.className = 'flex justify-between items-center';
+            
+            const leftSide = document.createElement('div');
+            leftSide.className = 'flex items-center gap-2 flex-1 min-w-0';
             
             const fieldNameSpan = document.createElement('span');
+            fieldNameSpan.className = 'text-blue-700 font-medium truncate';
             fieldNameSpan.textContent = field.name;
+            leftSide.appendChild(fieldNameSpan);
             
             // Add duplicate detection badge if enabled
             if (field.enable_duplicate_detection) {
                 const badge = document.createElement('span');
-                badge.className = 'badge badge-warning badge-xs ml-1';
-                badge.textContent = 'Dup';
+                badge.className = 'badge badge-warning badge-xs flex-shrink-0';
+                badge.textContent = 'Dup Check';
                 badge.title = 'Duplicate detection enabled';
-                fieldNameSpan.appendChild(badge);
+                leftSide.appendChild(badge);
             }
             
             const deleteBtn = document.createElement('button');
-            deleteBtn.className = 'btn btn-ghost btn-sm text-red-500 hover:text-red-700 ml-2 px-2 py-1';
+            deleteBtn.className = 'btn btn-ghost btn-xs text-red-500 hover:text-red-700 flex-shrink-0';
             deleteBtn.title = 'Delete this field';
             deleteBtn.onclick = function() {
                 deleteCustomField(field.id, field.name);
             };
             deleteBtn.innerHTML = '<i class="material-icons text-sm">delete</i>';
             
-            fieldDiv.appendChild(fieldNameSpan);
-            fieldDiv.appendChild(deleteBtn);
+            topRow.appendChild(leftSide);
+            topRow.appendChild(deleteBtn);
+            
+            // Bottom row: duplicate detection toggle
+            const toggleRow = document.createElement('div');
+            toggleRow.className = 'flex items-center gap-2';
+            
+            const toggleLabel = document.createElement('label');
+            toggleLabel.className = 'label cursor-pointer justify-start gap-2 py-0';
+            
+            const toggleInput = document.createElement('input');
+            toggleInput.type = 'checkbox';
+            toggleInput.className = 'toggle toggle-xs toggle-primary';
+            toggleInput.checked = field.enable_duplicate_detection;
+            toggleInput.onchange = function() {
+                toggleDuplicateDetection(field.id, this.checked);
+            };
+            
+            const toggleText = document.createElement('span');
+            toggleText.className = 'label-text text-xs text-blue-700';
+            toggleText.textContent = 'Check for duplicates';
+            
+            toggleLabel.appendChild(toggleInput);
+            toggleLabel.appendChild(toggleText);
+            toggleRow.appendChild(toggleLabel);
+            
+            fieldDiv.appendChild(topRow);
+            fieldDiv.appendChild(toggleRow);
             currentFields.appendChild(fieldDiv);
         });
     })
@@ -1033,6 +1172,9 @@ window.openImportWorkersModal = openImportWorkersModal;
 window.closeImportWorkersModal = closeImportWorkersModal;
 window.loadImportFields = loadImportFields;
 window.toggleDuplicateDetection = toggleDuplicateDetection;
+window.cancelDisableDuplicateDetection = cancelDisableDuplicateDetection;
+window.confirmDisableDuplicateDetection = confirmDisableDuplicateDetection;
+window.updateDuplicateBadges = updateDuplicateBadges;
 
 console.log('[worker.js] Script fully loaded.');
 console.log('[worker.js] window.addCustomField type:', typeof window.addCustomField);

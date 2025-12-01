@@ -33,7 +33,27 @@
                             <div id="currentFields" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                                 {% for field in all_fields %}
                                     {% if field.id is number %}
-                                        <div class="bg-brand-navy-100 p-2 rounded-lg text-brand-navy-700 font-medium truncate" data-field="{{ field.name|replace(' ', '_') }}">{{ field.name }}</div>
+                                        <div class="bg-brand-navy-100 p-3 rounded-lg flex flex-col gap-2" data-field="{{ field.name|replace(' ', '_') }}" data-field-id="{{ field.id }}">
+                                            <!-- Top row: field name and delete button -->
+                                            <div class="flex justify-between items-center">
+                                                <div class="flex items-center gap-2 flex-1 min-w-0">
+                                                    <span class="text-brand-navy-700 font-medium truncate">{{ field.name }}</span>
+                                                    {% if field.enable_duplicate_detection %}
+                                                    <span class="badge badge-warning badge-xs flex-shrink-0">Dup Check</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <!-- Bottom row: duplicate detection toggle -->
+                                            <div class="flex items-center gap-2">
+                                                <label class="label cursor-pointer justify-start gap-2 py-0">
+                                                    <input type="checkbox" 
+                                                           class="toggle toggle-xs toggle-primary" 
+                                                           onchange="toggleDuplicateDetection({{ field.id }}, this.checked)"
+                                                           {% if field.enable_duplicate_detection %}checked{% endif %}>
+                                                    <span class="label-text text-xs text-brand-navy-700">Check for duplicates</span>
+                                                </label>
+                                            </div>
+                                        </div>
                                     {% endif %}
                                 {% endfor %}
                             </div>

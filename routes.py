@@ -1802,13 +1802,6 @@ def handle_workers():
     """Handle workers operations - get list or create new worker"""
     try:
         if request.method == 'GET':
-            fields = ImportField.query.filter_by(company_id=company.id).all()
-            return jsonify([{
-                'id': field.id,
-                'name': field.name,
-                'field_type': field.field_type,
-                'enable_duplicate_detection': field.enable_duplicate_detection
-            } for field in fields])
             # Get current company from workspace
             company = get_current_company()
             
@@ -2418,6 +2411,28 @@ def create_worker():
         if not company:
             return jsonify({'error': 'Company not found'}), 404
         
+        # Collect custom field data for duplicate checking
+        custom_field_data = {}
+        import_fields = ImportField.query.filter_by(company_id=company.id).all()
+        for field in import_fields:
+            # Check for both field.name and custom_field_{field.id} formats
+            field_value = data.get(field.name) or data.get(f'custom_field_{field.id}')
+            if field_value:
+                custom_field_data[field.id] = field_value
+        
+        # Check for duplicates in custom fields with duplicate detection enabled
+        has_duplicates, duplicate_fields = check_duplicate_custom_fields(
+            company.id, 
+            custom_field_data
+        )
+        
+        if has_duplicates:
+            field_list = ', '.join(duplicate_fields)
+            return jsonify({
+                'error': f'Duplicate values detected in: {field_list}',
+                'duplicate_fields': duplicate_fields
+            }), 409  # 409 Conflict status code
+        
         # Handle date_of_birth
         date_of_birth = None
         if data.get('date_of_birth'):
@@ -2434,8 +2449,8 @@ def create_worker():
         )
         db.session.add(new_worker)
         db.session.flush()  # Ensure new_worker.id is available
+        
         # Handle custom fields
-        import_fields = ImportField.query.filter_by(company_id=company.id).all()
         for field in import_fields:
             # Check for both field.name and custom_field_{field.id} formats
             field_value = data.get(field.name) or data.get(f'custom_field_{field.id}')
@@ -2727,7 +2742,8 @@ def import_field():
             return jsonify([{
                 'id': field.id,
                 'name': field.name,
-                'field_type': field.field_type
+                'field_type': field.field_type,
+                'enable_duplicate_detection': field.enable_duplicate_detection
             } for field in fields])
             
         data = request.get_json()
@@ -2740,7 +2756,8 @@ def import_field():
         new_field = ImportField(
             company_id=company.id,
             name=data['name'],
-            field_type=data.get('type', 'text')  # Default to 'text' if type is not provided
+            field_type=data.get('type', 'text'),  # Default to 'text' if type is not provided
+            enable_duplicate_detection=data.get('enable_duplicate_detection', False)
         )
         
         db.session.add(new_field)
@@ -2749,7 +2766,8 @@ def import_field():
         return jsonify({
             'id': new_field.id,
             'name': new_field.name,
-            'type': new_field.field_type
+            'type': new_field.field_type,
+            'enable_duplicate_detection': new_field.enable_duplicate_detection
         }), 201
         
     except Exception as e:
@@ -2783,6 +2801,82 @@ def delete_import_field(field_id):
         return jsonify({'error': 'Failed to delete import field'}), 500
 
 from abilities import llm
+
+def check_duplicate_custom_fields(company_id, custom_field_data, exclude_worker_id=None):
+    """
+    Check if any custom field values violate duplicate detection rules.
+    
+    Args:
+        company_id: The company ID to check within
+        custom_field_data: Dict of {field_id or field_name: value} to check
+        exclude_worker_id: Optional worker ID to exclude from duplicate check (for updates)
+    
+    Returns:
+        Tuple of (has_duplicates: bool, duplicate_fields: list of field names)
+    """
+    try:
+        # Get all custom fields with duplicate detection enabled for this company
+        duplicate_check_fields = ImportField.query.filter_by(
+            company_id=company_id,
+            enable_duplicate_detection=True
+        ).all()
+        
+        if not duplicate_check_fields:
+            # No fields have duplicate detection enabled
+            return False, []
+        
+        duplicate_fields = []
+        
+        # Check each custom field value
+        for field_identifier, value in custom_field_data.items():
+            if not value or not str(value).strip():
+                continue  # Skip empty values
+            
+            # Find the corresponding ImportField
+            import_field = None
+            
+            # Check if field_identifier is a field ID (int or string digit)
+            if isinstance(field_identifier, int) or str(field_identifier).isdigit():
+                field_id = int(field_identifier)
+                import_field = next((f for f in duplicate_check_fields if f.id == field_id), None)
+            else:
+                # field_identifier might be field name or custom_field_{id} format
+                if str(field_identifier).startswith('custom_field_'):
+                    # Extract ID from custom_field_{id} format
+                    try:
+                        field_id = int(field_identifier.split('_')[-1])
+                        import_field = next((f for f in duplicate_check_fields if f.id == field_id), None)
+                    except (ValueError, IndexError):
+                        # Not a valid custom_field_{id} format, try as field name
+                        import_field = next((f for f in duplicate_check_fields if f.name == field_identifier), None)
+                else:
+                    # Try to find by field name
+                    import_field = next((f for f in duplicate_check_fields if f.name == field_identifier), None)
+            
+            # If this field has duplicate detection enabled
+            if import_field:
+                # Build query to check if value already exists
+                query = WorkerCustomFieldValue.query.join(Worker).filter(
+                    WorkerCustomFieldValue.custom_field_id == import_field.id,
+                    WorkerCustomFieldValue.value == str(value).strip(),
+                    Worker.company_id == company_id
+                )
+                
+                # Exclude current worker if this is an update operation
+                if exclude_worker_id:
+                    query = query.filter(Worker.id != exclude_worker_id)
+                
+                existing_value = query.first()
+                
+                if existing_value:
+                    duplicate_fields.append(import_field.name)
+        
+        return len(duplicate_fields) > 0, duplicate_fields
+    
+    except Exception as e:
+        logging.error(f"Error checking duplicate custom fields: {str(e)}")
+        # Return False on error to not block worker creation/update
+        return False, []
 
 @app.route("/api/worker/import", methods=['POST'])
 @subscription_required
@@ -3901,52 +3995,6 @@ def import_mapped_workers():
         
         # Process each row individually
         for index, row in df.iterrows():
-            # Check for duplicates in custom fields with duplicate detection enabled
-            duplicate_found = False
-            duplicate_field_name = None
-
-            # Get all custom fields with duplicate detection enabled for this company
-            duplicate_check_fields = ImportField.query.filter_by(
-                company_id=company.id,
-                enable_duplicate_detection=True
-            ).all()
-
-            # Build custom field data for this row
-            custom_field_data = {}
-            for excel_col, field_name in mapping.items():
-                value = row.get(excel_col, '')
-                custom_field_data[field_name] = value
-
-            # Check each custom field value against existing workers
-            for field_name, value in custom_field_data.items():
-                # Find the corresponding ImportField
-                import_field = None
-                if str(field_name).isdigit():
-                    # field_name is an ID
-                    import_field = next((f for f in duplicate_check_fields if f.id == int(field_name)), None)
-                else:
-                    # field_name is a name
-                    import_field = next((f for f in duplicate_check_fields if f.name == field_name), None)
-
-                # If this field has duplicate detection enabled and we have a value
-                if import_field and value and value.strip():
-                    # Check if this value already exists for any worker in this company
-                    existing_value = WorkerCustomFieldValue.query.join(Worker).filter(
-                        WorkerCustomFieldValue.custom_field_id == import_field.id,
-                        WorkerCustomFieldValue.value == value.strip(),
-                        Worker.company_id == company.id
-                    ).first()
-
-                    if existing_value:
-                        duplicate_found = True
-                        duplicate_field_name = import_field.name
-                        logging.info(f"Duplicate found in field '{import_field.name}' with value '{value.strip()}' for row {index + 2}")
-                        break
-
-            if duplicate_found:
-                duplicate_records += 1
-                logging.info(f"Skipping row {index + 2} due to duplicate in field: {duplicate_field_name}")
-                continue
             try:
                 # Check if we've reached the import limit
                 if worker_limit is not None and successful_imports >= max_can_import:
@@ -4004,17 +4052,18 @@ def import_mapped_workers():
                     logging.info(f"Skipping row {index + 1} - no first name or last name provided")
                     continue
 
-                # Duplicate check – skip if a worker with the same first & last name already exists for this company
-                if worker_data.get('first_name') and worker_data.get('last_name'):
-                    duplicate = Worker.query.filter_by(
-                        first_name=worker_data.get('first_name'),
-                        last_name=worker_data.get('last_name'),
-                        company_id=company.id
-                    ).first()
-                    if duplicate:
-                        duplicate_records += 1
-                        logging.info(f"Skipping duplicate worker: {worker_data.get('first_name')} {worker_data.get('last_name')}")
-                        continue
+                # Check for duplicates in custom fields with duplicate detection enabled
+                has_duplicates, duplicate_fields = check_duplicate_custom_fields(
+                    company.id,
+                    custom_field_data
+                )
+                
+                if has_duplicates:
+                    duplicate_records += 1
+                    field_list = ', '.join(duplicate_fields)
+                    logging.info(f"Skipping row {index + 2} due to duplicate values in: {field_list}")
+                    error_details.append(f"Row {index + 2}: Duplicate values in {field_list}")
+                    continue
                 
                 # Create a savepoint for this worker
                 savepoint = db.session.begin_nested()
@@ -4256,6 +4305,32 @@ def update_worker(worker_id):
         worker = Worker.query.filter_by(id=worker_id, company_id=company.id).first()
         if not worker:
             return jsonify({'error': 'Worker not found'}), 404
+        
+        # Collect custom field data for duplicate checking
+        custom_field_data = {}
+        import_fields = ImportField.query.filter_by(company_id=company.id).all()
+        for field in import_fields:
+            # Check if this field is being updated in the request
+            if field.name in data or f'custom_field_{field.id}' in data:
+                field_value = data.get(field.name) or data.get(f'custom_field_{field.id}')
+                if field_value:
+                    custom_field_data[field.id] = field_value
+        
+        # Check for duplicates in custom fields with duplicate detection enabled
+        # Exclude the current worker from the duplicate check
+        has_duplicates, duplicate_fields = check_duplicate_custom_fields(
+            company.id, 
+            custom_field_data,
+            exclude_worker_id=worker_id
+        )
+        
+        if has_duplicates:
+            field_list = ', '.join(duplicate_fields)
+            return jsonify({
+                'error': f'Duplicate values detected in: {field_list}',
+                'duplicate_fields': duplicate_fields
+            }), 409  # 409 Conflict status code
+        
         # Handle date_of_birth
         if 'date_of_birth' in data:
             if data['date_of_birth']:
@@ -4269,16 +4344,19 @@ def update_worker(worker_id):
         # Update default fields
         worker.first_name = data.get('first_name', worker.first_name)
         worker.last_name = data.get('last_name', worker.last_name)
+        
         # Update custom fields
-        import_fields = ImportField.query.filter_by(company_id=company.id).all()
         for field in import_fields:
-            if field.name in data:
+            if field.name in data or f'custom_field_{field.id}' in data:
+                field_value = data.get(field.name) or data.get(f'custom_field_{field.id}')
                 custom_value = WorkerCustomFieldValue.query.filter_by(worker_id=worker.id, custom_field_id=field.id).first()
                 if custom_value:
-                    custom_value.value = data[field.name]
+                    custom_value.value = field_value
                 else:
-                    new_value = WorkerCustomFieldValue(worker_id=worker.id, custom_field_id=field.id, value=data[field.name])
-                    db.session.add(new_value)
+                    if field_value:  # Only create if there's a value
+                        new_value = WorkerCustomFieldValue(worker_id=worker.id, custom_field_id=field.id, value=field_value)
+                        db.session.add(new_value)
+        
         db.session.commit()
         return jsonify({'message': 'Worker updated successfully'}), 200
     except Exception as e:

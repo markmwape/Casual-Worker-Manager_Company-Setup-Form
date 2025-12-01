@@ -100,9 +100,35 @@
             <button type="button" class="btn btn-error" onclick="confirmDeleteCustomField()">Delete</button>
         </div>
     </div>
-    <form method="dialog" class="modal-backdrop">
-        <button>close</button>
-    </form>
+</dialog>
+
+<!-- Disable Duplicate Detection Warning Modal -->
+<dialog id="disableDuplicateWarningModal" class="modal">
+    <div class="modal-box max-w-md">
+        <h3 class="font-bold text-lg flex items-center gap-2">
+            <span class="text-warning text-2xl">⚠️</span>
+            Disable Duplicate Detection?
+        </h3>
+        <div class="py-4">
+            <p class="text-gray-700 mb-3">
+                If you disable duplicate detection for this field, the system will <strong>allow multiple workers</strong> to have the same value.
+            </p>
+            <div class="bg-warning bg-opacity-10 border-l-4 border-warning p-3 rounded">
+                <p class="text-sm font-semibold mb-2">This means duplicate entries will be possible when:</p>
+                <ul class="text-sm list-disc list-inside space-y-1 text-gray-600">
+                    <li>Adding workers manually</li>
+                    <li>Importing workers from Excel files</li>
+                </ul>
+            </div>
+            <p class="text-gray-600 text-sm mt-3">
+                Are you sure you want to continue?
+            </p>
+        </div>
+        <div class="modal-action">
+            <button type="button" class="btn btn-ghost" onclick="cancelDisableDuplicateDetection()">Cancel</button>
+            <button type="button" class="btn btn-warning" onclick="confirmDisableDuplicateDetection()">Disable Detection</button>
+        </div>
+    </div>
 </dialog>
 
 <script>

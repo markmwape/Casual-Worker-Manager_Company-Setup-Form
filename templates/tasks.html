@@ -6,14 +6,14 @@
     .task-card {
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         border: 1px solid #e5e7eb;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
         position: relative;
         overflow: hidden;
-        background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+        background: #ffffff;
     }
     .task-card:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+        transform: translateY(-4px);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
         border-color: #3b82f6;
     }
     
@@ -23,7 +23,7 @@
         top: 0;
         left: 0;
         right: 0;
-        height: 4px;
+        height: 3px;
         background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
         opacity: 0;
         transition: opacity 0.3s ease;
@@ -528,51 +528,47 @@
                                         </div>
                                     </div>
 
-                                    <!-- Description -->
+                                    <!-- Description (only show if exists) -->
+                                    {% if task.description and task.description.strip() %}
                                     <div class="mb-4">
-                                        <p class="text-xs text-gray-500 line-clamp-2 leading-relaxed">{{ task.description or 'No description provided' }}</p>
+                                        <p class="text-xs text-gray-600 line-clamp-2 leading-relaxed">{{ task.description.strip() }}</p>
                                     </div>
+                                    {% endif %}
 
                                     <!-- Payment Info -->
                                     {% if task.payment_type == 'per_part' and task.per_part_payout %}
-                                    <div class="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-100">
-                                        <div class="flex items-center justify-between">
-                                            <div class="flex items-center gap-2">
-                                                <div class="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-md flex items-center justify-center">
-                                                    <i class="fas fa-coins text-blue-600 text-xs"></i>
-                                                </div>
-                                                <div>
-                                                    <div class="text-[10px] font-medium text-blue-600 uppercase tracking-wide">Per Unit</div>
-                                                    <div class="text-sm font-bold text-blue-700">{{ task.per_part_payout }} {{ task.per_part_currency or '' }}</div>
-                                                </div>
+                                    <div class="mb-5 p-4 bg-gradient-to-r from-blue-50 to-blue-100/50 rounded-xl border border-blue-200/60">
+                                        <div class="flex items-center gap-3">
+                                            <div class="flex-shrink-0 w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                                                <i class="fas fa-coins text-white text-sm"></i>
+                                            </div>
+                                            <div>
+                                                <div class="text-xs font-semibold text-blue-600 uppercase tracking-wide">Per Unit</div>
+                                                <div class="text-lg font-bold text-blue-800">{{ task.per_part_payout }} {{ task.per_part_currency or '' }}</div>
                                             </div>
                                         </div>
                                     </div>
                                     {% elif task.payment_type == 'per_hour' and task.per_hour_payout %}
-                                    <div class="mb-4 p-3 bg-purple-50 rounded-lg border border-purple-100">
-                                        <div class="flex items-center justify-between">
-                                            <div class="flex items-center gap-2">
-                                                <div class="flex-shrink-0 w-8 h-8 bg-purple-100 rounded-md flex items-center justify-center">
-                                                    <i class="fas fa-clock text-purple-600 text-xs"></i>
-                                                </div>
-                                                <div>
-                                                    <div class="text-[10px] font-medium text-purple-600 uppercase tracking-wide">Per Hour</div>
-                                                    <div class="text-sm font-bold text-purple-700">{{ task.per_hour_payout }} {{ task.per_hour_currency or '' }}</div>
-                                                </div>
+                                    <div class="mb-5 p-4 bg-gradient-to-r from-purple-50 to-purple-100/50 rounded-xl border border-purple-200/60">
+                                        <div class="flex items-center gap-3">
+                                            <div class="flex-shrink-0 w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center">
+                                                <i class="fas fa-clock text-white text-sm"></i>
+                                            </div>
+                                            <div>
+                                                <div class="text-xs font-semibold text-purple-600 uppercase tracking-wide">Per Hour</div>
+                                                <div class="text-lg font-bold text-purple-800">{{ task.per_hour_payout }} {{ task.per_hour_currency or '' }}</div>
                                             </div>
                                         </div>
                                     </div>
                                     {% elif task.payment_type == 'per_day' and task.per_day_payout %}
-                                    <div class="mb-4 p-3 bg-green-50 rounded-lg border border-green-100">
-                                        <div class="flex items-center justify-between">
-                                            <div class="flex items-center gap-2">
-                                                <div class="flex-shrink-0 w-8 h-8 bg-green-100 rounded-md flex items-center justify-center">
-                                                    <i class="fas fa-calendar-day text-green-600 text-xs"></i>
-                                                </div>
-                                                <div>
-                                                    <div class="text-[10px] font-medium text-green-600 uppercase tracking-wide">Per Day</div>
-                                                    <div class="text-sm font-bold text-green-700">{{ task.per_day_payout }} {{ task.per_day_currency or '' }}</div>
-                                                </div>
+                                    <div class="mb-5 p-4 bg-gradient-to-r from-green-50 to-green-100/50 rounded-xl border border-green-200/60">
+                                        <div class="flex items-center gap-3">
+                                            <div class="flex-shrink-0 w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
+                                                <i class="fas fa-calendar-day text-white text-sm"></i>
+                                            </div>
+                                            <div>
+                                                <div class="text-xs font-semibold text-green-600 uppercase tracking-wide">Per Day</div>
+                                                <div class="text-lg font-bold text-green-800">{{ task.per_day_payout }} {{ task.per_day_currency or '' }}</div>
                                             </div>
                                         </div>
                                     </div>
@@ -656,16 +652,16 @@
                                     </div>
 
                                     <!-- Footer with Date and Worker Count -->
-                                    <div class="mt-4 pt-4 border-t border-gray-100">
+                                    <div class="mt-6 pt-4 border-t border-gray-100">
                                         <div class="flex items-center justify-between">
                                             <!-- Start Date -->
-                                            <div class="flex items-center gap-2">
-                                                <div class="flex-shrink-0 w-7 h-7 bg-gray-50 rounded-md flex items-center justify-center">
-                                                    <i class="fas fa-calendar-alt text-gray-400 text-[10px]"></i>
+                                            <div class="flex items-center gap-3">
+                                                <div class="flex-shrink-0 w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center">
+                                                    <i class="fas fa-calendar-alt text-gray-400 text-xs"></i>
                                                 </div>
                                                 <div>
                                                     <div class="text-[10px] text-gray-400 font-medium uppercase tracking-wide">Start Date</div>
-                                                    <div class="text-xs font-semibold text-gray-700">{{ task.start_date.strftime('%b %d, %Y') }}</div>
+                                                    <div class="text-sm font-semibold text-gray-800">{{ task.start_date.strftime('%b %d, %Y') }}</div>
                                                 </div>
                                             </div>
                                             
@@ -673,11 +669,11 @@
                                             <div class="flex items-center gap-3">
                                                 <div class="text-right">
                                                     <div class="text-[10px] text-gray-400 font-medium uppercase tracking-wide">Workers</div>
-                                                    <div class="text-xs font-semibold text-gray-700">{{ task.workers.count() }} 
-                                                        {% if task.workers.count() == 1 %}person{% else %}people{% endif %}
+                                                    <div class="text-sm font-semibold text-gray-800">
+                                                        {{ task.workers.count() }} {% if task.workers.count() == 1 %}person{% else %}people{% endif %}
                                                     </div>
                                                 </div>
-                                                <div class="worker-count-badge flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center">
+                                                <div class="worker-count-badge flex-shrink-0 w-11 h-11 rounded-lg flex items-center justify-center">
                                                     <div class="worker-count-number">{{ task.workers.count() }}</div>
                                                 </div>
                                             </div>

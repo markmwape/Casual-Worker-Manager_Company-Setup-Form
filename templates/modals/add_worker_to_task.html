@@ -1,3 +1,31 @@
+<style>
+    /* Enhanced touch and click handling for worker selection */
+    .worker-dropdown-item {
+        -webkit-tap-highlight-color: rgba(59, 130, 246, 0.1);
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+    
+    .worker-dropdown-item:active {
+        background-color: rgba(59, 130, 246, 0.1) !important;
+        transform: scale(0.98);
+    }
+    
+    /* Improve touch targets */
+    #workersDropdown .cursor-pointer {
+        min-height: 60px;
+        touch-action: manipulation;
+    }
+    
+    /* Better visual feedback */
+    .worker-dropdown-item:hover {
+        background-color: rgba(59, 130, 246, 0.05);
+    }
+</style>
+
 <dialog id="add-worker-to-task-modal" class="modal">
     <div class="modal-box max-w-2xl bg-gradient-to-br from-white to-blue-50 border-2 border-blue-200 shadow-2xl">
         <!-- Enhanced Header -->
@@ -117,12 +145,20 @@
         console.log('Input changed:', searchValue); // Debug log
         renderWorkerDropdown(searchValue);
     });
+    
+    // Add focus event to show dropdown if there's content
+    document.getElementById('workerSearch').addEventListener('focus', function(e) {
+        const searchValue = e.target.value.toLowerCase();
+        if (searchValue) {
+            renderWorkerDropdown(searchValue);
+        }
+    });
 
     let currentDropdownIndex = -1;
 
     function renderWorkerDropdown(searchValue) {
         const dropdown = document.getElementById('workersDropdown');
-        dropdown.innerHTML = '';
+            dropdown.innerHTML = '';
         if (!searchValue) {
             dropdown.classList.add('hidden');
             currentDropdownIndex = -1;
@@ -139,9 +175,7 @@
             const limitedMatches = matches.slice(0, 8);
             limitedMatches.forEach((worker, idx) => {
                 const div = document.createElement('div');
-                div.className = 'px-4 py-3 hover:bg-blue-50 cursor-pointer border-b border-blue-100 last:border-b-0 transition-all duration-200 group select-none touch-manipulation';
-                
-                // Create enhanced display with avatar placeholder and better info
+                div.className = 'worker-dropdown-item px-4 py-4 hover:bg-blue-50 active:bg-blue-100 cursor-pointer border-b border-blue-100 last:border-b-0 transition-all duration-200 group select-none touch-manipulation min-h-[60px] flex items-center';                // Create enhanced display with avatar placeholder and better info
                 const container = document.createElement('div');
                 container.className = 'flex items-center gap-3';
                 
@@ -180,22 +214,77 @@
                 container.appendChild(icon);
                 div.appendChild(container);
                 
-                const selectWorker = function() {
+                const selectWorker = function(event) {
+                    // Prevent event from bubbling and potentially triggering blur
+                    if (event) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    
                     const input = document.getElementById('workerSearch');
                     input.value = worker.name;
                     document.getElementById('selectedWorkerId').value = worker.id;
                     dropdown.classList.add('hidden');
                     lastDropdownSelection = true;
-                    input.blur();
+                    
+                    // Don't blur immediately, let the selection settle first
+                    setTimeout(() => {
+                        input.blur();
+                    }, 50);
+                    
                     console.log('Selected worker:', worker.name, 'ID:', worker.id); // Debug log
                 };
                 
-                // Add both click and touch event listeners for full compatibility
+                // Add comprehensive event listeners for cross-platform compatibility
                 div.addEventListener('click', selectWorker);
+                
+                // For touch devices - handle both touchstart and touchend
+                let touchStarted = false;
+                div.addEventListener('touchstart', function(e) {
+                    touchStarted = true;
+                    // Prevent input blur during touch
+                    lastDropdownSelection = true;
+                    // Add visual feedback
+                    this.classList.add('bg-blue-100');
+                });
+                
                 div.addEventListener('touchend', function(e) {
+                    if (touchStarted) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        selectWorker(e);
+                        touchStarted = false;
+                    }
+                });
+                
+                // Handle touch cancel (when user drags away)
+                div.addEventListener('touchcancel', function(e) {
+                    touchStarted = false;
+                    this.classList.remove('bg-blue-100');
+                    lastDropdownSelection = false;
+                });
+                
+                // Add mousedown for better responsiveness on desktop
+                div.addEventListener('mousedown', function(e) {
                     e.preventDefault();
                     e.stopPropagation();
-                    selectWorker();
+                    // Prevent input blur during mouse interaction
+                    lastDropdownSelection = true;
+                    selectWorker(e);
+                });
+                
+                // Prevent blur on mouseenter/mouseleave for desktop
+                div.addEventListener('mouseenter', function() {
+                    lastDropdownSelection = true;
+                });
+                
+                div.addEventListener('mouseleave', function() {
+                    // Reset flag after a delay to allow for clicks
+                    setTimeout(() => {
+                        if (!touchStarted) {
+                            lastDropdownSelection = false;
+                        }
+                    }, 100);
                 });
                 
                 div.setAttribute('data-index', idx);
@@ -215,17 +304,29 @@
         }
         dropdown.classList.remove('hidden');
     }
+    
+    // Prevent dropdown from hiding when interacting with it
+    document.getElementById('workersDropdown').addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        lastDropdownSelection = true;
+    });
+    
+    document.getElementById('workersDropdown').addEventListener('touchstart', function(e) {
+        lastDropdownSelection = true;
+    });
 
     document.getElementById('workerSearch').addEventListener('blur', function() {
         // Delay hiding dropdown to allow click/touch handlers to execute
-        // Check if a selection was just made by checking if lastDropdownSelection is true
+        // Increased delay for better touch device compatibility
         setTimeout(() => {
             if (!lastDropdownSelection) {
                 document.getElementById('workersDropdown').classList.add('hidden');
             }
-            // Reset the flag for next blur
-            lastDropdownSelection = false;
-        }, 100);
+            // Reset the flag for next interaction
+            setTimeout(() => {
+                lastDropdownSelection = false;
+            }, 100);
+        }, 200);
     });
 
     document.getElementById('workerSearch').addEventListener('keydown', function(e) {
@@ -269,10 +370,20 @@
     function addWorkerToTask() {
         const taskId = document.getElementById('addWorkerToTaskForm').dataset.taskId;
         const workerId = document.getElementById('selectedWorkerId').value;
-        const workerName = document.getElementById('workerSearch').value;
+        const workerName = document.getElementById('workerSearch').value.trim();
 
-        if (!workerId || !lastDropdownSelection) {
+        // More robust validation
+        if (!workerId || workerId === '' || !workerName) {
             showCustomModal('Please Select a Worker', 'You must select a valid worker from the search results before proceeding.', 'warning');
+            return;
+        }
+        
+        // Additional check - make sure the selected worker ID matches a valid worker
+        const selectedWorker = allWorkers.find(w => w.id === workerId);
+        if (!selectedWorker) {
+            showCustomModal('Invalid Selection', 'The selected worker is not valid. Please search and select again.', 'warning');
+            document.getElementById('workerSearch').value = '';
+            document.getElementById('selectedWorkerId').value = '';
             return;
         }
 
